@@ -57,16 +57,19 @@ export default function AddEventModal({ isVisible, onClose, onPublish, onGhostUp
   }, []);
 
   const [prevVisible, setPrevVisible] = useState(isVisible);
-  if (isVisible && !prevVisible) {
-    setPrevVisible(true);
-    setStep('CHOICE');
-    setUploadProgress(0);
-    setExtractedData(null);
-    setLinkInput("");
-    setErrorMessage("");
-  } else if (!isVisible && prevVisible) {
-    setPrevVisible(false);
-  }
+  // Avoid render-time mutation: keep visibility-driven initialization inside an effect
+  useEffect(() => {
+    if (isVisible && !prevVisible) {
+      setPrevVisible(true);
+      setStep('CHOICE');
+      setUploadProgress(0);
+      setExtractedData(null);
+      setLinkInput("");
+      setErrorMessage("");
+    } else if (!isVisible && prevVisible) {
+      setPrevVisible(false);
+    }
+  }, [isVisible, prevVisible]);
 
   const handleChoice = (choice: 'UPLOAD' | 'LINK' | 'MANUAL' | 'CENTER') => {
     if (choice === 'UPLOAD') {

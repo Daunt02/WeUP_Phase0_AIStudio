@@ -1,4 +1,104 @@
 "use client";
+import React, { useEffect, useState } from 'react';
+import TopBar from '@/components/TopBar';
+import RadarMap from '@/components/RadarMap';
+import BottomNav from '@/components/BottomNav';
+import CulturalCalendar from '@/components/CulturalCalendar';
+import SocialSignalPanel from '@/components/SocialSignalPanel';
+import SavedEvents from '@/components/SavedEvents';
+import ProfilePanel from '@/components/ProfilePanel';
+import TimelineControl from '@/components/TimelineControl';
+import EventSignalModal from '@/components/EventSignalModal';
+import GeoControls from '@/components/GeoControls';
+import AddEventModal from '@/components/AddEventModal';
+import { NightlifeItem } from '@/types';
+import { eventService } from '@/services/eventService';
+import { useWorldSurfaceState } from '@/hooks/useWorldSurfaceState';
+
+export default function WorldCoordinator() {
+  const { state, selectEvent, interestEvent, openModal, closeModal, setMapCenter, setMapBounds, beginDraft, updateDraft, publishDraft, toggleSave } = useWorldSurfaceState();
+
+  const [events, setEvents] = useState<NightlifeItem[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch events when bounds change
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      if (!state.mapBounds) return;
+      setLoading(true);
+      try {
+        const b = state.mapBounds;
+        const result = await eventService.fetchEventsInBounds({ minLat: b.minLat, maxLat: b.maxLat, minLng: b.minLng, maxLng: b.maxLng });
+        if (!cancelled) setEvents(result);
+      } catch (err) {
+        console.error('Error fetching events', err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [state.mapBounds]);
+
+  // Handlers wired to coordinator actions
+  const handleEventSelect = (e: NightlifeItem) => {
+    selectEvent(e.id);
+    openModal('EVENT_DETAIL');
+  };
+
+  const handleGhostUpdate = (patch: Partial<NightlifeItem> | null) => {
+    if (patch) beginDraft(patch as any);
+    else updateDraft({} as any);
+  };
+
+  const handlePublish = (event: NightlifeItem) => {
+    // Hook currently clears draft and toggles save locally; real persistence is for P09
+    publishDraft(event.id);
+    // keep UI consistent by adding to events list locally
+    setEvents(prev => [event, ...prev]);
+  };
+
+  return (
+    <div className="w-full h-full relative">
+      <TopBar />
+      <RadarMap
+        events={events}
+        onEventSelect={handleEventSelect}
+        onBoundsChange={(bounds) => setMapBounds(bounds)}
+        onCenterChange={(c) => setMapCenter({ lat: c.lat, lng: c.lng })}
+        onAnchorChange={() => {}}
+        selectedEventId={state.selectedEventId || undefined}
+        interestedEventId={state.interestedEventId || undefined}
+        ghostEvent={state.ghostDraft as any}
+        onGhostMove={(lat, lng) => updateDraft({ latitude: lat, longitude: lng } as any)}
+        selectedDate={state.selectedDate}
+        activeMode={state.viewMode}
+      />
+
+      <TimelineControl />
+      <BottomNav />
+
+      <AddEventModal
+        isVisible={state.modal.kind === 'STACK' && state.modal.stack[state.modal.stack.length - 1] === 'ADD_EVENT'}
+        onClose={() => closeModal()}
+        onPublish={handlePublish}
+        onGhostUpdate={handleGhostUpdate}
+        ghostEvent={state.ghostDraft as any}
+        mapCenter={state.mapCenter}
+      />
+
+      {/* Keep other panels rendered for layout; they should be controlled via state in future iterations */}
+      <CulturalCalendar />
+      <SocialSignalPanel />
+      <SavedEvents />
+      <ProfilePanel />
+      <EventSignalModal />
+      <GeoControls />
+    </div>
+  );
+}
+"use client";
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'motion/react';

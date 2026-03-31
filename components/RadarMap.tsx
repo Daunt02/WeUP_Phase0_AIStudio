@@ -295,11 +295,14 @@ export default function RadarMap({
   const [prevDate, setPrevDate] = useState(selectedDate);
   const lastAnchorPoint = useRef<{ x: number, y: number } | null>(null);
 
-  // Trigger sweep when date changes
-  if (selectedDate !== prevDate) {
-    setPrevDate(selectedDate);
-    setIsSweeping(true);
-  }
+  // Trigger sweep when date changes — avoid state updates during render
+  // Move logic into an effect so updates happen in lifecycle, not render.
+  useEffect(() => {
+    if (selectedDate !== prevDate) {
+      setPrevDate(selectedDate);
+      setIsSweeping(true);
+    }
+  }, [selectedDate, prevDate]);
 
   // Handle Anchor Point Calculation
   useEffect(() => {
