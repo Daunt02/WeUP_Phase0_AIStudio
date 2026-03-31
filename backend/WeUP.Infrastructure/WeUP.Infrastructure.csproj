@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>WeUP.Infrastructure</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WeUP.Contracts\WeUP.Contracts.csproj" />
+    <ProjectReference Include="..\WeUP.Domain\WeUP.Domain.csproj" />
+  </ItemGroup>
+  <!-- EF Core packages added in P08 -->
+</Project>
