@@ -25,7 +25,18 @@ builder.Services.AddCors(opts =>
 });
 
 // Domain / Application services
-// Stub repositories — replaced by EF Core implementations in P08–P09
+// To switch from stubs to EF Core:
+//   1. Add EF + Npgsql packages (see backend/WeUP.Infrastructure/Persistence/Migrations/README.md)
+//   2. Set WeUpDb connection string in appsettings / environment
+//   3. Replace the three lines below with the EF registrations (uncommented):
+//
+// var connStr = builder.Configuration.GetConnectionString("WeUpDb")
+//     ?? throw new InvalidOperationException("WeUpDb connection string is required.");
+// builder.Services.AddDbContext<WeUpDbContext>(opts => opts.UseNpgsql(connStr));
+// builder.Services.AddScoped<IEventRepository, EfEventRepository>();
+// builder.Services.AddScoped<IEventSubmissionRepository, EfEventRepository>();
+// builder.Services.AddScoped<ISaveRepository, EfSaveRepository>();
+
 builder.Services.AddSingleton<IEventRepository, StubEventRepository>();
 builder.Services.AddSingleton<IEventSubmissionRepository, StubEventRepository>();
 builder.Services.AddSingleton<ISaveRepository, StubSaveRepository>();
