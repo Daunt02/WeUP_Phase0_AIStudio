@@ -5,3 +5,7 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# .NET build output
+backend/**/obj/
+backend/**/bin/
