@@ -1,0 +1,5 @@
+{
+  "name": "Mapbox Explorer",
+  "description": "An interactive Mapbox map application.",
+  "requestFramePermissions": ["geolocation"]
+}
