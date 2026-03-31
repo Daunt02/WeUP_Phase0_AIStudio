@@ -35,6 +35,9 @@ public sealed class EventEntity
     public DateTimeOffset? EndUtc { get; set; }
     public string Timezone { get; set; } = "America/Chicago";
 
+    // Tags (stored as comma-separated string for Phase 0; upgrade to text[] with PostGIS migration)
+    public string? TagsCsv { get; set; }
+
     // Confidence (0–1)
     public double Confidence { get; set; }
 

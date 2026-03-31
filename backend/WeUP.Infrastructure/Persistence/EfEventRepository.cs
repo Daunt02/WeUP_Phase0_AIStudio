@@ -150,9 +150,7 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
         });
 
         if (request.Tags is { Length: > 0 })
-        {
-            // Tags stored as metadata — full tag entity added in future sprint
-        }
+            entity.TagsCsv = string.Join(',', request.Tags);
 
         db.Events.Add(entity);
         await db.SaveChangesAsync(ct);
@@ -208,7 +206,7 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
         e.EndUtc,
         e.Timezone,
         e.Media.Select(m => new MediaRefDto(m.Url, m.Kind)).ToArray(),
-        [],  // Tags — full tag entity added in future sprint
+        string.IsNullOrEmpty(e.TagsCsv) ? [] : e.TagsCsv.Split(',', StringSplitOptions.RemoveEmptyEntries),
         e.Status,
         e.Confidence,
         e.Sources.FirstOrDefault()?.SourceKind ?? "unknown");

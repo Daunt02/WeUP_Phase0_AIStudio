@@ -23,25 +23,39 @@ public sealed class EfSaveRepository(WeUpDbContext db) : ISaveRepository
         var clampedPage = Math.Max(1, page);
         var clampedSize = Math.Clamp(pageSize, 1, 200);
 
-        var items = await db.SavedEvents
+        // Fetch saves first, then load matching events separately (EF Core does not support Include inside Join)
+        var saves = await db.SavedEvents
             .AsNoTracking()
             .Where(s => s.UserId == userGuid)
             .OrderByDescending(s => s.SavedAt)
             .Skip((clampedPage - 1) * clampedSize)
             .Take(clampedSize)
-            .Join(db.Events.Include(e => e.Media),
-                  save => save.EventId,
-                  evt  => evt.Id,
-                  (save, evt) => new SavedEventDto(
-                      evt.Id.ToString(),
-                      evt.CanonicalTitle,
-                      evt.VenueName,
-                      evt.StartUtc,
-                      evt.Media.FirstOrDefault(m => m.Kind == "poster" || m.Kind == "image") != null
-                          ? evt.Media.First(m => m.Kind == "poster" || m.Kind == "image").Url
-                          : null,
-                      save.SavedAt))
             .ToListAsync(ct);
+
+        var eventIds = saves.Select(s => s.EventId).ToHashSet();
+        var events = await db.Events
+            .AsNoTracking()
+            .Include(e => e.Media)
+            .Where(e => eventIds.Contains(e.Id))
+            .ToListAsync(ct);
+
+        var eventsById = events.ToDictionary(e => e.Id);
+        var items = saves
+            .Where(s => eventsById.ContainsKey(s.EventId))
+            .Select(s =>
+            {
+                var evt = eventsById[s.EventId];
+                var thumb = evt.Media.FirstOrDefault(m => m.Kind == "poster")
+                         ?? evt.Media.FirstOrDefault(m => m.Kind == "image");
+                return new SavedEventDto(
+                    evt.Id.ToString(),
+                    evt.CanonicalTitle,
+                    evt.VenueName,
+                    evt.StartUtc,
+                    thumb?.Url,
+                    s.SavedAt);
+            })
+            .ToList();
 
         return new SavedEventsResponse(
             [.. items],
