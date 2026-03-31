@@ -1,6 +1,10 @@
 using WeUP.Api.Endpoints;
+using WeUP.Application.Ingestion;
 using WeUP.Domain.Events;
+using WeUP.Domain.Ingestion;
 using WeUP.Domain.Users;
+using WeUP.Infrastructure.Ingestion;
+using WeUP.Infrastructure.Ingestion.Adapters;
 using WeUP.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,6 +45,15 @@ builder.Services.AddSingleton<IEventRepository, StubEventRepository>();
 builder.Services.AddSingleton<IEventSubmissionRepository, StubEventRepository>();
 builder.Services.AddSingleton<ISaveRepository, StubSaveRepository>();
 
+// Ingestion services
+builder.Services.AddHttpClient("ingestion");
+builder.Services.AddSingleton<IIngestionJobRepository, InMemoryIngestionJobRepository>();
+builder.Services.AddSingleton<IIngestionAuditWriter, ConsoleIngestionAuditWriter>();
+builder.Services.AddSingleton<ManualSubmissionAdapter>();
+builder.Services.AddSingleton<LinkAdapter>();
+builder.Services.AddSingleton<VenuePageAdapter>();
+builder.Services.AddSingleton<IIngestionDispatcher, IngestionDispatcher>();
+
 // OpenTelemetry seam — wired fully in P22
 // builder.Services.AddOpenTelemetry()...
 
@@ -72,6 +85,7 @@ app.UseHttpsRedirection();
 
 app.MapEventEndpoints();
 app.MapSaveEndpoints();
+app.MapIngestionEndpoints();
 app.MapHealthChecks("/health");
 
 app.Run();
