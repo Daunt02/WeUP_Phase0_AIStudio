@@ -1,105 +1,150 @@
+/**
+ * WeUP Phase 0 — Event Service (frontend API seam)
+ *
+ * This service sits between UI components and data. Currently it returns
+ * mock data; the backend integration step (P09) replaces the internals with
+ * real HTTP calls while the public API surface here stays the same.
+ *
+ * IMPORTANT: generateDynamicEvents() (random synthetic data) is removed.
+ * The service must return deterministic results from the mock dataset only.
+ */
+
 import { NightlifeItem } from '@/types';
 import { MOCK_EVENTS } from '@/constants/mockData';
+import {
+  MapFeedQuery,
+  CalendarFeedQuery,
+  EventDetailQuery,
+  MapFeedResponse,
+  CalendarFeedResponse,
+  EventDetailResponse,
+  GeoBoundingBox,
+} from '@/domains/query/contracts';
+import { toMapCard, toCalendarProjection, toDetailProjection } from '@/domains/event/projections';
+import { EventAggregate, EventStatus } from '@/domains/event/types';
 
-export interface BoundingBox {
-  minLat: number;
-  maxLat: number;
-  minLng: number;
-  maxLng: number;
+// ---------------------------------------------------------------------------
+// Legacy adapter — converts NightlifeItem to EventAggregate for projection use
+// ---------------------------------------------------------------------------
+
+function nightlifeItemToAggregate(item: NightlifeItem): EventAggregate {
+  return {
+    id: item.id,
+    status: (item.status as EventStatus) ?? 'PUBLISHED',
+    canonicalTitle: item.title,
+    canonicalDescription: item.description ?? null,
+    category: item.category as EventAggregate['category'],
+    venue: { venueId: null, name: item.venue_name },
+    address: {
+      line1: item.address,
+      city: '',
+      country: 'US',
+      raw: item.address,
+    },
+    geo: { lat: item.latitude, lng: item.longitude },
+    timeRange: { startUtc: item.start_time, endUtc: item.end_time ?? null },
+    timezone: 'America/Chicago',
+    sourceRefs: [{ kind: item.source as EventAggregate['sourceRefs'][0]['kind'], ref: item.id, ingestedAt: item.start_time }],
+    mediaRefs: item.image_url ? [{ assetId: item.id, url: item.image_url, kind: 'image' }] : [],
+    tags: item.tags ?? [],
+    confidence: item.confidence ?? 0.9,
+    review: {},
+    audit: { createdAt: item.start_time, updatedAt: item.start_time },
+  };
 }
 
+// ---------------------------------------------------------------------------
+// EventService
+// ---------------------------------------------------------------------------
+
 class EventService {
-  private cache: Map<string, NightlifeItem[]> = new Map();
-  private allEvents: NightlifeItem[] = [...MOCK_EVENTS];
+  private readonly allEvents: NightlifeItem[] = [...MOCK_EVENTS];
 
-  /**
-   * Simulates fetching events from multiple sources (Eventbrite, Instagram, Venue Calendars)
-   * and normalizes them into the NightlifeItem schema.
-   */
-  async fetchEventsInBounds(bounds: BoundingBox): Promise<NightlifeItem[]> {
-    // Simulate network latency
-    await new Promise(resolve => setTimeout(resolve, 150));
+  // ------------------------------------------------------------------
+  // Map feed — uses MapFeedQuery contract
+  // ------------------------------------------------------------------
 
-    const cacheKey = `${bounds.minLat.toFixed(3)},${bounds.maxLat.toFixed(3)},${bounds.minLng.toFixed(3)},${bounds.maxLng.toFixed(3)}`;
-    
-    if (this.cache.has(cacheKey)) {
-      return this.cache.get(cacheKey)!;
-    }
+  async fetchMapFeed(query: MapFeedQuery): Promise<MapFeedResponse> {
+    await this._simulateLatency();
+    const { bounds, window, filters } = query;
 
-    // Filter events within the bounding box
-    const filtered = this.allEvents.filter(event => {
-      const lat = event.latitude;
-      const lng = event.longitude;
-      return (
-        lat >= bounds.minLat &&
-        lat <= bounds.maxLat &&
-        lng >= bounds.minLng &&
-        lng <= bounds.maxLng
-      );
-    });
+    const filtered = this.allEvents
+      .filter(e => this._inBounds(e.latitude, e.longitude, bounds))
+      .filter(e => this._inTimeWindow(e.start_time, window.startUtc, window.endUtc))
+      .filter(e => !filters?.categories || filters.categories.includes(e.category as any))
+      .filter(e => (e.confidence ?? 0.9) >= (filters?.minConfidence ?? 0));
 
-    // Simulate "dynamic" ingestion by adding a few random events if the area is sparse
-    // This mimics "scraping" new data on the fly
-    const dynamicEvents = this.generateDynamicEvents(bounds, filtered.length);
-    
-    // Deduplication logic: Ensure we don't add events with the same title at the same venue
-    const combined = this.deduplicate([...filtered, ...dynamicEvents]);
-
-    // Cache the result
-    this.cache.set(cacheKey, combined);
-
-    return combined;
+    const events = filtered.map(e => toMapCard(nightlifeItemToAggregate(e)));
+    return { events, totalCount: events.length };
   }
 
-  private generateDynamicEvents(bounds: BoundingBox, existingCount: number): NightlifeItem[] {
-    // Only generate if we have few events in this view to simulate discovery
-    if (existingCount > 10) return [];
+  // ------------------------------------------------------------------
+  // Calendar feed — uses CalendarFeedQuery contract
+  // ------------------------------------------------------------------
 
-    const count = Math.floor(Math.random() * 3) + 1;
-    const dynamic: NightlifeItem[] = [];
+  async fetchCalendarFeed(query: CalendarFeedQuery): Promise<CalendarFeedResponse> {
+    await this._simulateLatency();
+    const { window, filters, pagination } = query;
+    const page = pagination?.page ?? 1;
+    const pageSize = pagination?.pageSize ?? 50;
 
-    const categories = ['tech', 'startup', 'creator', 'career'];
-    const venues = ['THE_SIGNAL', 'KINETIC_LOUNGE', 'ECHO_CHAMBER', 'NEON_GARDEN', 'VELOCITY_BAR'];
-    const neighborhoods = ['DOWNTOWN', 'NORTH_AUSTIN', 'UT_AREA', 'SOUTH_CONGRESS', 'EAST_AUSTIN'];
+    const filtered = this.allEvents
+      .filter(e => this._inTimeWindow(e.start_time, window.startUtc, window.endUtc))
+      .filter(e => !filters?.categories || filters.categories.includes(e.category as any))
+      .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
 
-    for (let i = 0; i < count; i++) {
-      const lat = bounds.minLat + Math.random() * (bounds.maxLat - bounds.minLat);
-      const lng = bounds.minLng + Math.random() * (bounds.maxLng - bounds.minLng);
-      const id = `dynamic-${Math.random().toString(36).substr(2, 9)}`;
-      
-      dynamic.push({
-        id,
-        title: `SIGNAL_DETECTED_${Math.floor(Math.random() * 1000)}`,
-        description: 'Automatically ingested event from local venue signal.',
-        venue_name: venues[Math.floor(Math.random() * venues.length)],
-        address: 'HOUSTON_DYNAMIC_LOC',
-        latitude: lat,
-        longitude: lng,
-        start_time: new Date().toISOString(),
-        end_time: new Date(Date.now() + 4 * 3600000).toISOString(),
-        category: categories[Math.floor(Math.random() * categories.length)] as any,
-        price_tier: '$$',
-        source: 'scraped',
-        image_url: `https://picsum.photos/seed/${id}/800/1200`,
-        neighborhood: neighborhoods[Math.floor(Math.random() * neighborhoods.length)],
-        energyLevel: Math.floor(Math.random() * 10),
-        tags: ['Dynamic', 'Live'],
-        coordinates: { lat, lng }
-      });
-    }
+    const totalCount = filtered.length;
+    const start = (page - 1) * pageSize;
+    const items = filtered
+      .slice(start, start + pageSize)
+      .map(e => toCalendarProjection(nightlifeItemToAggregate(e)));
 
-    return dynamic;
+    return { items, totalCount, page, pageSize, hasNextPage: start + pageSize < totalCount };
   }
 
-  private deduplicate(events: NightlifeItem[]): NightlifeItem[] {
-    const seen = new Set<string>();
-    return events.filter(event => {
-      const key = `${event.title}-${event.venue_name}`.toLowerCase();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
+  // ------------------------------------------------------------------
+  // Event detail
+  // ------------------------------------------------------------------
+
+  async fetchEventDetail(query: EventDetailQuery): Promise<EventDetailResponse> {
+    await this._simulateLatency();
+    const item = this.allEvents.find(e => e.id === query.eventId);
+    if (!item) return { event: null };
+    return { event: toDetailProjection(nightlifeItemToAggregate(item)) };
+  }
+
+  // ------------------------------------------------------------------
+  // Legacy compat — used by existing components during migration
+  // ------------------------------------------------------------------
+
+  /** @deprecated Use fetchMapFeed() with a MapFeedQuery instead. */
+  async fetchEventsInBounds(bounds: GeoBoundingBox): Promise<NightlifeItem[]> {
+    const filtered = this.allEvents.filter(e =>
+      this._inBounds(e.latitude, e.longitude, bounds),
+    );
+    return filtered;
+  }
+
+  // ------------------------------------------------------------------
+  // Private helpers
+  // ------------------------------------------------------------------
+
+  private async _simulateLatency(): Promise<void> {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  private _inBounds(lat: number, lng: number, bounds: GeoBoundingBox): boolean {
+    return lat >= bounds.minLat && lat <= bounds.maxLat &&
+           lng >= bounds.minLng && lng <= bounds.maxLng;
+  }
+
+  private _inTimeWindow(startTime: string, windowStart: string, windowEnd: string): boolean {
+    const t = new Date(startTime).getTime();
+    return t >= new Date(windowStart).getTime() && t < new Date(windowEnd).getTime();
   }
 }
 
 export const eventService = new EventService();
+
+// Re-export contract types for convenience
+export type { GeoBoundingBox, MapFeedQuery, CalendarFeedQuery, EventDetailQuery } from '@/domains/query/contracts';
