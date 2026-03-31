@@ -1,0 +1,10336 @@
+﻿Hard premise
+The repo is still a UI-forward prototype, so the first pack cannot be “social unlock magic” or “geoaudio futurism.”
+It has to convert WeUP into a real Phase 0 system first: data, ingestion, moderation, auth, persistence, telemetry, release discipline.
+________________
+
+
+Phase ladder
+Phase
+	Mission
+	Must become real
+	Phase 0
+	map-first city MVP
+	event DB, ingestion, moderation, auth, saves, city ops, telemetry
+	Phase 0.15
+	richer media ingestion
+	flyer OCR, video flyers, media review, asset pipeline
+	Phase 0.20
+	trust + invite graph
+	tier unlocks, proximity rules, trust scoring, private reveal
+	Phase 0.25
+	operator / venue / sponsor ops
+	admin console, venue publishing, sponsor analytics, monetization
+	Phase 0.30+
+	intelligence layer
+	ranking, recommendations, live signals, geoaudio, expansion control plane
+	________________
+
+
+Bundle pack program
+Pack 1
+WeUP Phase 0 Conversion Pack
+From AI Studio prototype to city-grade MVP
+Pack 2
+WeUP Phase 0.15 Media Signal Pack
+From static flyers to real media ingestion
+Pack 3
+WeUP Phase 0.20 Trust Graph Pack
+From public discovery to gated cultural access
+Pack 4
+WeUP Phase 0.25 Operator Revenue Pack
+From user app to venue/sponsor operating system
+Pack 5
+WeUP Phase 0.30+ Intelligence Pack
+From city map to adaptive cultural intelligence network
+________________
+
+
+Pack 1 in full
+Bundle 1 — Runtime Spine
+Purpose: stabilize the app and split prototype UI from production runtime.
+Prompt names
+1. P01 — Establish WeUP World Surface Runtime
+2. P02 — Define Environment Contract and Secret Boundaries
+3. P03 — Refactor UI State Topology and Remove Render-Time Mutation
+________________
+
+
+Bundle 2 — Canonical Event Domain
+Purpose: stop treating events as loose frontend objects.
+Prompt names
+4. P04 — Define Canonical Event Aggregate and Status State Machine
+5. P05 — Add Source Provenance, Confidence, and Review Metadata
+6. P06 — Define Temporal and Geospatial Query Contracts
+________________
+
+
+Bundle 3 — Backend and Persistence
+Purpose: create the actual system of record.
+Prompt names
+7. P07 — Scaffold .NET 8 WeUP API with Clean Boundaries
+8. P08 — Create Postgres + EF Core Schema for Events, Sources, Users, Saves, Reviews
+9. P09 — Implement Map Feed, Calendar Feed, Event Detail, and Save APIs
+________________
+
+
+Bundle 4 — Ingestion Engine
+Purpose: replace fake ingestion with real pipelines.
+Prompt names
+10. P10 — Build Source Adapter Framework for Venue Pages, Event Links, and Manual Submission
+11. P11 — Implement Flyer OCR + LLM Normalization Pipeline
+12. P12 — Implement Deduplication, Entity Resolution, and Merge Rules
+________________
+
+
+Bundle 5 — Moderation and Review
+Purpose: make event publishing safe and operable.
+Prompt names
+13. P13 — Build Moderation Queue and Review Dashboard API
+14. P14 — Implement Confidence Scoring and Publish Eligibility Rules
+15. P15 — Add Review Actions, Audit Trail, and Rollback Workflow
+________________
+
+
+Bundle 6 — Identity and User Persistence
+Purpose: move from ephemeral UI to persistent user behavior.
+Prompt names
+16. P16 — Implement Auth, Sessions, and Basic Profile Backbone
+17. P17 — Persist Saved Signals, Itinerary State, and User Preferences
+18. P18 — Implement Event Submission Workflow with Draft, Review, Published States
+________________
+
+
+Bundle 7 — Spatial and Temporal Semantics
+Purpose: make the map and time controls mean something real.
+Prompt names
+19. P19 — Implement Bounding Box, Cluster, and District Query Semantics
+20. P20 — Define City Partitioning, Neighborhood Taxonomy, and Market Freeze Rules
+21. P21 — Convert Timeline and Calendar UX into Real Temporal Query Logic
+________________
+
+
+Bundle 8 — Observability and Release Hardening
+Purpose: make Phase 0 testable and releasable.
+Prompt names
+22. P22 — Add OpenTelemetry, Structured Logging, and Correlation IDs
+23. P23 — Add Product Analytics, Error Telemetry, and Feature Flags
+24. P24 — Add Seed Data, E2E Tests, Smoke Tests, and Release Gates
+________________
+
+
+Pack 2 — Phase 0.15 Media Signal Pack
+Bundle titles
+* Bundle 9 — Flyer Media Intake
+* Bundle 10 — Video Flyer Pipeline
+* Bundle 11 — Asset Moderation and Compliance
+* Bundle 12 — Venue Media Publishing
+* Bundle 13 — Media Search and Ranking
+Prompt names
+25. P25 — Build Media Upload Service for Flyers and Venue Assets
+26. P26 — Extract Frames, Text, and Poster Images from Video Flyers
+27. P27 — Implement Media Validation, File Policy, and Abuse Controls
+28. P28 — Add Venue Asset Library and Reusable Media Catalog
+29. P29 — Add OCR Confidence Review for Flyer and Poster Assets
+30. P30 — Implement Media-Derived Event Enrichment and Thumbnail Ranking
+31. P31 — Add Source Attribution, Copyright Flags, and Takedown Workflow
+32. P32 — Build Media QA Dashboard for Operators
+Phase 0.15 scope
+* flyer upload becomes real
+* video flyer ingest becomes real
+* frame extraction and poster generation
+* media moderation
+* media persistence and asset reuse
+* venue-facing media management
+________________
+
+
+Pack 3 — Phase 0.20 Trust Graph Pack
+Bundle titles
+* Bundle 14 — Trust Identity Graph
+* Bundle 15 — Invite Tier Engine
+* Bundle 16 — Proximity and Reveal Rules
+* Bundle 17 — Private Access Workflows
+* Bundle 18 — Reputation and Anti-Abuse
+Prompt names
+33. P33 — Design User Trust Graph, Edges, and Privacy Boundaries
+34. P34 — Implement Tier Unlock Engine for Public, Adjacent, and Private Layers
+35. P35 — Add Proximity Scoring and Venue-Adjacent Access Rules
+36. P36 — Build Invite Issuance, Acceptance, Expiry, and Revocation
+37. P37 — Add Reputation Signals from Attendance, Host Trust, and Referrals
+38. P38 — Add Anti-Spam, Sockpuppet, and Abuse Detection Rules
+39. P39 — Implement Private Reveal UX Contracts and API Guardrails
+40. P40 — Build Trust Moderation and Appeals Workflow
+Phase 0.20 scope
+* real trust graph
+* real unlock logic
+* real private visibility control
+* real invite lifecycle
+* abuse controls before scale
+________________
+
+
+Pack 4 — Phase 0.25 Operator Revenue Pack
+Bundle titles
+* Bundle 19 — Venue Console
+* Bundle 20 — Sponsor Console
+* Bundle 21 — Campaign and Attribution
+* Bundle 22 — Monetization and Payout Ops
+* Bundle 23 — Admin Governance
+Prompt names
+41. P41 — Build Venue Portal for Event Submission, Editing, and Analytics
+42. P42 — Build Sponsor Portal for Geo-Activation Campaign Creation
+43. P43 — Implement Campaign Attribution Across Views, Saves, Opens, and Attendance Signals
+44. P44 — Add Sponsored Placement Rules and Inventory Guardrails
+45. P45 — Implement Venue Verification, Sponsor Verification, and Role-Based Access
+46. P46 — Add Billing, Invoicing, and Settlement Backbone
+47. P47 — Build Operator Admin Console for City-Level Oversight
+48. P48 — Add KPI Dashboard for Venue Growth, Sponsor Yield, and Market Health
+Phase 0.25 scope
+* turns WeUP into an operating system, not just a map
+* creates revenue paths
+* adds verified publisher roles
+* builds sponsor-facing leverage
+________________
+
+
+Pack 5 — Phase 0.30+ Intelligence Pack
+Bundle titles
+* Bundle 24 — Cultural Ranking Engine
+* Bundle 25 — Live Signal Fusion
+* Bundle 26 — Personalization and Discovery
+* Bundle 27 — GeoAudio / Ambient Detection
+* Bundle 28 — City Expansion Control Plane
+* Bundle 29 — Experimentation and Model Governance
+Prompt names
+49. P49 — Build Event Ranking Engine Using Freshness, Density, Trust, and Intent
+50. P50 — Add Live Signal Fusion from Saves, Opens, Shares, and Venue Activity
+51. P51 — Implement Personalized Discovery Without Breaking Cold-Start UX
+52. P52 — Prototype GeoAudio Ingestion and Venue Match Heuristics
+53. P53 — Build Cultural Heatmap and District Momentum Scoring
+54. P54 — Add Sponsor Recommendation and Placement Optimization Models
+55. P55 — Build City Expansion Control Plane and Market Freeze Config
+56. P56 — Add Experimentation Framework, Model Versioning, and Safety Rollback
+Phase 0.30+ scope
+* ranking and recommendations
+* live city intelligence
+* geoaudio as an experimental edge, not core dependency
+* multi-city control plane
+* experimentation without chaos
+________________
+
+
+Recommended bundle execution order
+1. Pack 1 only
+2. Pack 2
+3. Pack 3
+4. Pack 4
+5. Pack 5
+Do not invert this.
+If you build trust tiers before moderation and persistence, you will manufacture fragile theater again.
+________________
+
+
+Naming convention
+Use this consistently:
+* Pack: WeUP_Pack_01_Phase0_Conversion
+* Bundle: B01_Runtime_Spine
+* Prompt: P01_Establish_WeUP_World_Surface_Runtime
+That gives you deterministic sequencing for Claude Code, Copilot, docs, and issue creation.
+________________
+
+
+Best scope framing
+Phase 0
+“Can a user discover, save, submit, and review real city events on a stable map?”
+Phase 0.15
+“Can WeUP ingest and operationalize real flyer/video media?”
+Phase 0.20
+“Can WeUP gate access through trust and proximity?”
+Phase 0.25
+“Can venues and sponsors operate inside WeUP as customers?”
+Phase 0.30+
+“Can WeUP become the cultural intelligence layer for a city?”
+________________
+
+
+Recommendation
+Start with Pack 1 Bundles 1–3 first.
+That is the minimum needed to stop WeUP from being a beautiful simulation and turn it into a real product skeleton.
+Next: I can turn Pack 1 into the full Claude Code / GitHub Copilot prompt bundle set, one prompt at a time.
+Pack 1 — Bundles 1–3
+Grounding assumption: the current repo has a monolithic app/page.tsx orchestrating map, calendar, saved, profile, add-event, and event detail state in one client component, so the first prompts must establish runtime boundaries before adding features.
+I would sequence these exactly in order.
+________________
+
+
+Bundle 1 — Runtime Spine
+P01 — Establish WeUP World Surface Runtime
+You are working inside the WeUP_Phase0_AIStudio repository.
+
+
+Goal:
+Refactor the current prototype into a production-oriented runtime spine while preserving the existing visual behavior and layered world-surface UX.
+
+
+Context:
+The app currently behaves like a single large client-side orchestration surface. I want to preserve the WeUP design doctrine:
+- persistent map-first world surface
+- no-scroll single viewport
+- layered overlays instead of page navigation
+- cinematic transitions
+- modal depth model
+- mobile-first interaction model
+
+
+What to do:
+1. Inspect the existing frontend structure and identify runtime responsibilities currently mixed together:
+   - view composition
+   - UI state
+   - map state
+   - modal state
+   - async event feed loading
+   - temporal filtering
+   - saved/profile/social/add-event interaction flows
+2. Refactor the app into a clearer runtime architecture with these logical layers:
+   - app shell / world surface
+   - feature state orchestration
+   - data access services
+   - domain models
+   - UI components
+   - shared hooks / utilities
+3. Introduce a scalable folder structure appropriate for a Next.js Phase 0 MVP, such as:
+   - app/
+   - features/
+   - domains/
+   - services/
+   - hooks/
+   - lib/
+   - components/
+   - styles/
+4. Create an explicit world-surface coordinator layer that owns:
+   - active mode
+   - modal stack
+   - selected event
+   - map interaction state
+   - temporal state
+   - side-panel state
+5. Preserve visual behavior unless technically necessary to adjust.
+6. Remove ad hoc coupling between presentational components and orchestration logic where possible.
+7. Keep the frontend in TypeScript and make types strict.
+8. Do not add fake backend logic. Only prepare clean seams for real APIs.
+
+
+Deliverables:
+- revised folder structure
+- refactored coordinator/runtime files
+- extraction of orchestration logic from page.tsx
+- brief architecture note in markdown explaining the runtime spine
+- list of old responsibilities and where each moved
+
+
+Constraints:
+- do not break the current UX flow
+- do not introduce Redux unless clearly justified; prefer React context + custom hooks or a lightweight local architecture
+- preserve map-first rendering model
+- avoid overengineering
+
+
+Acceptance criteria:
+- app/page.tsx becomes thin and mostly composition-oriented
+- runtime responsibilities are separated cleanly
+- feature seams are obvious for future backend integration
+- TypeScript passes
+- the app still renders the world surface correctly
+
+
+Output format:
+1. Explain the target runtime architecture
+2. Show the proposed folder structure
+3. Generate the code changes
+4. Summarize migration decisions and tradeoffs
+
+
+P02 — Define Environment Contract and Secret Boundaries
+You are working inside the WeUP_Phase0_AIStudio repository.
+
+
+Goal:
+Create a production-safe environment and configuration contract for WeUP Phase 0.
+
+
+Context:
+The current prototype relies on environment variables like public Mapbox access and references Gemini/API-style local setup patterns. I need clean configuration boundaries before backend and ingestion work begins.
+
+
+What to do:
+1. Inspect current environment usage across the repo.
+2. Create a formal environment contract separating:
+   - public client config
+   - server-only secrets
+   - optional local-dev settings
+   - feature flags
+3. Introduce typed configuration accessors with validation at startup.
+4. Prevent direct scattered `process.env.X` usage throughout components where possible.
+5. Create an environment module for:
+   - public map config
+   - app runtime mode
+   - API base URL
+   - analytics toggles
+   - feature flags
+6. Add example env files:
+   - .env.example
+   - .env.local.example or equivalent
+7. Add documentation for:
+   - required vars
+   - optional vars
+   - local dev setup
+   - what must never be exposed to the client
+8. Add guardrails so the app fails clearly if required public config is missing.
+
+
+Design requirements:
+- client-safe values must be explicitly whitelisted
+- server-only values must never be imported into client components
+- config access should be typed and centralized
+- feature flags should be easy to extend
+
+
+Suggested outputs:
+- src/lib/env/public.ts
+- src/lib/env/server.ts or equivalent
+- src/lib/env/schema.ts
+- .env.example
+- README or docs/configuration.md update
+
+
+Acceptance criteria:
+- no scattered magic env usage remains in core runtime files
+- client/server config boundaries are explicit
+- missing config produces deterministic and readable failures
+- docs are sufficient for another engineer to run the app locally
+
+
+Output format:
+1. Show current config problems
+2. Define the target env contract
+3. Generate files and refactors
+4. Document security and deployment implications
+
+
+P03 — Refactor UI State Topology and Remove Render-Time Mutation
+You are working inside the WeUP_Phase0_AIStudio repository.
+
+
+Goal:
+Normalize UI state management and eliminate unsafe render-time mutation patterns.
+
+
+Context:
+The current prototype mixes orchestration state directly in top-level render logic. I need a clean state topology that can survive future backend integration, persistence, and test automation.
+
+
+What to do:
+1. Audit current UI state categories:
+   - navigation/view mode
+   - selected event state
+   - modal state
+   - map anchor / center / bounds
+   - temporal selection
+   - saved events
+   - ghost event drafting
+   - social panel state
+2. Define a normalized UI state model with clear ownership rules.
+3. Replace any render-time state mutation or lifecycle-smell patterns with safe effects, reducers, or event handlers.
+4. Introduce a dedicated reducer or coordinator hook for the world-surface UI state.
+5. Split ephemeral UI state from persisted or persistence-ready state.
+6. Model UI transitions explicitly using:
+   - discriminated unions
+   - typed actions
+   - event-driven state transitions
+7. Add comments or lightweight docs explaining the state machine.
+
+
+Preferred architecture:
+- `useWorldSurfaceState()` or similar coordinator hook
+- reducer-based action dispatch for complex interactions
+- typed action names for:
+   - select event
+   - open modal
+   - close modal
+   - set temporal mode
+   - toggle saved state
+   - begin add-event draft
+   - update ghost marker
+   - publish draft signal
+   - enter/exit side panel
+
+
+Acceptance criteria:
+- state ownership is explicit
+- state transitions are typed
+- no state changes occur during render
+- page-level orchestration becomes clearer and easier to test
+- current interactions still work
+
+
+Output format:
+1. Explain the current UI state problems
+2. Propose the normalized state topology
+3. Generate the reducer/hooks/types/refactors
+4. Provide a concise state transition table
+
+
+________________
+
+
+Bundle 2 — Canonical Event Domain
+P04 — Define Canonical Event Aggregate and Status State Machine
+You are working inside the WeUP_Phase0_AIStudio repository.
+
+
+Goal:
+Replace loose prototype event handling with a canonical Phase 0 event aggregate and explicit lifecycle state machine.
+
+
+Context:
+The current frontend event shape is useful but still prototype-grade. I need a production-ready event aggregate that can support ingestion, moderation, publication, saving, ranking, and later venue/operator tooling.
+
+
+What to do:
+1. Review the existing event-related types.
+2. Design a canonical event aggregate for WeUP Phase 0 with strict semantics.
+3. Separate:
+   - source payload fields
+   - normalized event fields
+   - derived display fields
+   - moderation/review fields
+   - geospatial fields
+   - temporal fields
+4. Define an event lifecycle state machine at minimum for:
+   - DRAFT
+   - INGESTED
+   - NEEDS_REVIEW
+   - APPROVED
+   - PUBLISHED
+   - REJECTED
+   - ARCHIVED
+5. Add typed transition rules and illegal transition protections.
+6. Define which fields are required at each state.
+7. Keep the model suitable for both frontend and future .NET backend parity.
+
+
+Include recommended fields for:
+- event identity
+- canonical title
+- description
+- venue identity/reference
+- address and normalized location
+- start/end timestamps with timezone awareness
+- category
+- source provenance
+- confidence
+- status
+- media references
+- tags
+- audit metadata
+
+
+Deliverables:
+- canonical TypeScript domain model
+- state transition map
+- helper functions or guards
+- markdown note explaining the event aggregate
+
+
+Acceptance criteria:
+- event lifecycle is explicit
+- illegal transitions are blocked
+- event shape is backend-ready
+- prototype display-only fields are separated from canonical fields
+
+
+Output format:
+1. Define the event aggregate
+2. Define the lifecycle state machine
+3. Generate types/helpers
+4. Explain how this improves future ingestion and moderation
+
+
+P05 — Add Source Provenance, Confidence, and Review Metadata
+You are working inside the WeUP_Phase0_AIStudio repository.
+
+
+Goal:
+Formalize provenance and review metadata so every event can be traced to its origin and publication confidence.
+
+
+Context:
+WeUP will ingest from manual submissions, flyer OCR, pasted links, venue sources, and later partner feeds. The model must preserve evidence and reviewability from the beginning.
+
+
+What to do:
+1. Extend the event domain model to support source provenance.
+2. Define source metadata structures for:
+   - manual submission
+   - flyer upload
+   - pasted URL
+   - scraped venue page
+   - external feed/API
+3. Add confidence and review metadata such as:
+   - extraction confidence
+   - geocode confidence
+   - moderation confidence
+   - reviewed by
+   - reviewed at
+   - review notes
+   - evidence references
+4. Add utility functions for:
+   - computing a composite review readiness score
+   - determining if an event can be auto-published
+   - determining if manual review is required
+5. Model provenance in a way that can later map to database tables or documents.
+
+
+Acceptance criteria:
+- every event can point to an origin
+- confidence semantics are explicit
+- review metadata is first-class, not improvised
+- future moderation workflows have enough structure to build on
+
+
+Output format:
+1. Define provenance and review metadata structures
+2. Explain field meaning and lifecycle
+3. Generate code updates
+4. Provide example canonical event objects from multiple source types
+
+
+P06 — Define Temporal and Geospatial Query Contracts
+You are working inside the WeUP_Phase0_AIStudio repository.
+
+
+Goal:
+Define canonical temporal and geospatial query contracts for map feed, calendar feed, and event detail discovery.
+
+
+Context:
+The current prototype filters events loosely in the client. I need Phase 0 query contracts that will later map cleanly to .NET API endpoints and PostGIS-capable persistence.
+
+
+What to do:
+1. Design query contracts for:
+   - map viewport feed
+   - date/time window feed
+   - calendar list feed
+   - neighborhood/district filter
+   - category filter
+   - detail lookup
+2. Define a consistent bounding-box contract with validation.
+3. Define temporal filtering semantics:
+   - timezone handling
+   - local city time
+   - date window vs time window
+   - future-only vs archival queries
+4. Define sorting options:
+   - start time
+   - proximity
+   - freshness
+   - confidence
+   - featured/sponsored placeholder seam
+5. Create TypeScript request/response contracts that the frontend can use now and the backend can implement later.
+6. Add helper validation functions.
+7. Update the current frontend feed access seams to use the new contracts.
+
+
+Acceptance criteria:
+- temporal and spatial query semantics are explicit
+- request/response models are typed
+- frontend service seams stop using ad hoc filter logic
+- contracts are compatible with future backend endpoints
+
+
+Output format:
+1. Define query contracts
+2. Explain validation and semantics
+3. Generate TypeScript models/helpers
+4. Show how current services should adapt
+
+
+________________
+
+
+Bundle 3 — Backend and Persistence
+P07 — Scaffold .NET 8 WeUP API with Clean Boundaries
+You are designing the first production backend for WeUP Phase 0.
+
+
+Goal:
+Create a clean .NET 8 backend scaffold that supports the current frontend and is ready for event ingestion, moderation, user saves, and city operations.
+
+
+Important:
+Use C#/.NET 8 as the primary backend. Favor clean architecture without ceremonial overengineering.
+
+
+What to do:
+1. Design a solution structure with clear boundaries, for example:
+   - WeUP.Api
+   - WeUP.Application
+   - WeUP.Domain
+   - WeUP.Infrastructure
+   - WeUP.Contracts
+2. Define core backend responsibilities for Phase 0:
+   - event queries
+   - event submission
+   - event review preparation
+   - saves/shortlist
+   - profile basics
+   - health/config
+3. Add initial endpoint surface for:
+   - GET /api/events/map
+   - GET /api/events/calendar
+   - GET /api/events/{id}
+   - POST /api/events/submissions
+   - POST /api/users/me/saves/{eventId}
+   - DELETE /api/users/me/saves/{eventId}
+4. Define contracts shared with the frontend.
+5. Use:
+   - ASP.NET Core minimal APIs or controllers if justified
+   - records
+   - validation
+   - structured error responses
+   - OpenTelemetry-ready seams
+6. Keep infra seams abstracted for future EF Core/Postgres implementation.
+
+
+Deliverables:
+- proposed backend solution structure
+- core domain interfaces
+- request/response contracts
+- endpoint scaffold
+- README note on how frontend should consume the API
+
+
+Acceptance criteria:
+- backend layout is production-credible
+- endpoint contracts align with frontend needs
+- infra boundaries are clear
+- no fake magic abstractions
+
+
+Output format:
+1. Show the backend architecture
+2. Show the project structure
+3. Generate initial code scaffold
+4. Explain integration steps with the frontend
+
+
+P08 — Create Postgres + EF Core Schema for Events, Sources, Users, Saves, Reviews
+You are implementing the first persistence model for WeUP Phase 0.
+
+
+Goal:
+Design a Postgres-backed EF Core schema for the WeUP Phase 0 MVP.
+
+
+Requirements:
+Model only what Phase 0 genuinely needs:
+- events
+- source records
+- media references
+- user profiles
+- saved events
+- moderation/review records
+- optional venue seed seam if justified
+
+
+What to do:
+1. Design normalized entities and relationships.
+2. Support event lifecycle and provenance.
+3. Include geospatial-ready fields even if PostGIS is introduced later.
+4. Define indexes appropriate for:
+   - map feed queries
+   - date/time window queries
+   - event status queries
+   - user saves
+5. Add EF Core entity configurations.
+6. Generate initial migration.
+7. Keep tables minimal but scalable.
+
+
+Suggested entities:
+- Event
+- EventSource
+- EventMedia
+- UserProfile
+- SavedEvent
+- EventReview
+- Venue (only if clearly justified)
+
+
+Acceptance criteria:
+- schema supports Phase 0 use cases cleanly
+- indexes match likely query patterns
+- provenance and review state are preserved
+- no unnecessary enterprise bloat
+
+
+Output format:
+1. Explain the schema design
+2. Generate entity classes/configurations
+3. Show indexes and migration intent
+4. Explain tradeoffs and future expansion seams
+
+
+P09 — Implement Map Feed, Calendar Feed, Event Detail, and Save APIs
+You are implementing the first functional backend endpoints for WeUP Phase 0.
+
+
+Goal:
+Make the app capable of reading real event data and persisting user saves instead of relying on in-memory mock behavior.
+
+
+What to do:
+1. Implement these endpoints end-to-end:
+   - GET /api/events/map
+   - GET /api/events/calendar
+   - GET /api/events/{id}
+   - GET /api/users/me/saves
+   - POST /api/users/me/saves/{eventId}
+   - DELETE /api/users/me/saves/{eventId}
+2. Use the canonical query contracts from the frontend/domain work.
+3. Add validation and consistent problem responses.
+4. Include pagination where appropriate.
+5. Return DTOs tailored for:
+   - map cards
+   - calendar list
+   - full detail modal
+6. Ensure saves are idempotent.
+7. Add integration-ready service interfaces.
+8. Provide example frontend service replacements for the current mock service.
+
+
+Acceptance criteria:
+- frontend can switch from mock event service to real API service with minimal changes
+- map feed, calendar feed, and detail feed are all backed by persistence
+- save/unsave operations are persistent and idempotent
+- contracts are stable and explicit
+
+
+Output format:
+1. Show endpoint design
+2. Generate backend implementation
+3. Show frontend integration replacement seams
+4. Provide test cases or endpoint verification examples
+
+
+________________
+
+
+Recommended execution order inside Bundles 1–3
+Order
+	Prompt
+	Why
+	1
+	P01
+	establishes structural runtime boundary
+	2
+	P03
+	fixes state topology before more feature work
+	3
+	P02
+	locks config/security contract
+	4
+	P04
+	freezes canonical event model
+	5
+	P05
+	adds provenance/review semantics
+	6
+	P06
+	freezes query contracts
+	7
+	P07
+	scaffolds backend against those contracts
+	8
+	P08
+	adds persistence model
+	9
+	P09
+	wires first real APIs
+	________________
+
+
+Hard warning
+Do not jump to trust graph, sponsor surfaces, or geoaudio before these nine prompts are done.
+Right now the main risk is not lack of imagination. It is state chaos + fake data + no system of record.
+Next move
+Run P01 first exactly as written, then feed me the output or diff and I’ll review it before you move to P03.
+Pack 2 — Phase 0.15 Media Signal Pack
+Purpose: turn WeUP from static event rows into a real media-ingestion system.
+Phase 0.15 is not “full social media intelligence.” It is narrower and more useful:
+* ingest flyer images and video flyers
+* persist media assets correctly
+* extract usable event signals from media
+* review media safely
+* enrich canonical events with media-derived metadata
+* rank/select thumbnails and media previews for map/detail surfaces
+________________
+
+
+Bundle titles
+Bundle 9 — Flyer Media Intake
+Core flyer upload, storage, validation, and asset registration.
+Bundle 10 — Video Flyer Pipeline
+Short-form video ingestion, frame extraction, poster generation, and metadata capture.
+Bundle 11 — Asset Moderation and Compliance
+Media policy checks, abuse filtering, takedown flags, and operator review surfaces.
+Bundle 12 — Venue Media Publishing
+Venue-facing asset library, reusable media sets, submission linkage, and canonical media ownership.
+Bundle 13 — Media-Derived Event Enrichment and Thumbnail Ranking
+Extract event signals from media, score candidate thumbnails, and improve detail/map presentation.
+________________
+
+
+Prompt names
+Bundle 9 — Flyer Media Intake
+25. P25 — Build Media Upload Service for Flyers and Venue Assets
+26. P26 — Add Flyer Asset Validation, Storage References, and Upload Lifecycle
+27. P27 — Persist Flyer Metadata, Provenance, and Review-Ready Evidence
+Bundle 10 — Video Flyer Pipeline
+28. P28 — Build Video Flyer Intake, Asset Registration, and Processing Jobs
+29. P29 — Extract Frames, Poster Images, and Time-Sliced Metadata from Video Flyers
+30. P30 — Generate Preview Assets and Canonical Video-Derived Media Projections
+Bundle 11 — Asset Moderation and Compliance
+31. P31 — Implement Media Policy Checks, Abuse Flags, and Review Routing
+32. P32 — Add Asset Moderation Queue, Takedown States, and Compliance Audit Trail
+Bundle 12 — Venue Media Publishing
+33. P33 — Build Venue Asset Library and Reusable Media Catalog
+34. P34 — Link Venue Media Sets to Event Drafts, Published Events, and Submission Workflows
+35. P35 — Add Venue Ownership, Asset Permissions, and Canonical Media Selection Rules
+Bundle 13 — Media-Derived Event Enrichment and Thumbnail Ranking
+36. P36 — Extract Media-Derived Event Enrichment from Flyer and Video Assets
+37. P37 — Implement Thumbnail Scoring, Poster Selection, and Display Ranking Rules
+38. P38 — Add Media-Enriched Event Projections for Map Cards, Calendar, and Detail Views
+________________
+
+
+Full scope of Pack 2
+What Phase 0.15 should accomplish
+1. Media becomes first-class
+Right now media is mostly decorative. Phase 0.15 makes assets durable objects with:
+* asset ids
+* source provenance
+* uploader/owner linkage
+* moderation state
+* storage refs
+* derived representations
+2. Flyer intake becomes operational
+A flyer is no longer just “uploaded image.” It becomes:
+* stored asset
+* OCR source
+* enrichment source
+* reviewable evidence
+* candidate poster/thumbnail
+* linked submission artifact
+3. Video flyers stop being out-of-band
+Video is high value for nightlife/event discovery, but if you add it badly, it becomes storage debt and moderation pain.
+Phase 0.15 should support:
+* upload
+* duration/type validation
+* poster extraction
+* selected frame extraction
+* preview asset generation
+* event linkage
+* moderation routing
+4. Media moderation becomes mandatory
+Do not let media publishing bypass review logic. You need:
+* asset policy states
+* review-required flags
+* takedown/disabled state
+* safe display gating
+* audit trail
+5. Event display improves materially
+Media should improve:
+* map marker preview confidence
+* event detail modal quality
+* calendar card consistency
+* canonical poster selection
+* sponsor/venue quality later
+________________
+
+
+Suggested execution order
+1. Bundle 9 — Flyer Media Intake
+2. Bundle 10 — Video Flyer Pipeline
+3. Bundle 11 — Asset Moderation and Compliance
+4. Bundle 12 — Venue Media Publishing
+5. Bundle 13 — Media-Derived Event Enrichment and Thumbnail Ranking
+That order matters.
+If you do ranking before storage, provenance, and moderation, you are optimizing chaos.
+________________
+
+
+Hard constraints for Pack 2
+* No direct client-side media publishing into canonical events
+* No untracked media blobs
+* No silent asset replacement without audit
+* No thumbnail selection based on arbitrary last-uploaded behavior
+* No video pipeline without size/type/duration controls
+* No “AI enrichment” that skips evidence retention
+________________
+
+
+Naming convention
+Use this format:
+* Pack: WeUP_Pack_02_Phase015_Media_Signal
+* Bundle: B09_Flyer_Media_Intake
+* Prompt: P25_Build_Media_Upload_Service_For_Flyers_And_Venue_Assets
+________________
+
+
+Best Phase 0.15 framing
+Phase 0: real event system
+Phase 0.15: real media system attached to real events
+That is the correct boundary.
+Recommended next step
+Start with Bundle 9 first. I can generate P25–P27 in the same production prompt format as the earlier bundles.
+
+
+
+
+
+
+
+
+
+
+In my private github repository WeUP_Phase0_AIStudio, look through the entire code. Ascertain what features are missing and whether WeUP Phase0, Phase0.15, Phase0.20, Phase0.25, Phase0.3, etc.
+
+
+I’m locating the repository, then I’ll inventory the codebase and map implemented features against the WeUP phase progression. After that I’ll give you a gap analysis and a blunt read on which phase the repo actually reaches.
+
+
+I found the repo. Now I’m enumerating the structure so I can separate implemented surfaces from implied-but-missing ones; that matters more than counting files.
+
+
+
+
+Received app response
+
+
+Received app response
+A first signal: code search is returning nothing, which usually means either the repo is extremely small, mostly non-code assets, or not indexed in a useful way. I’m switching to branch/commit inspection and raw file retrieval to avoid false confidence.
+
+
+
+
+Received app response
+
+
+Received app response
+
+
+Received app response
+
+
+Received app response
+
+
+Received app response
+
+
+Received app response
+Running app request
+
+
+https://github.com/Daunt02/WeUP_Phase0_AIStudio
+
+
+You gave the direct repo URL; I’m using that plus the connector access. The important question is not “does UI exist,” but “which features are real versus simulated,” because that determines the actual phase.
+
+
+
+
+Received app response
+
+
+Received app response
+
+
+Received app response
+
+
+Received app response
+I’ve confirmed a pattern: polished interaction design, but many features are theater states rather than production surfaces. I’m checking the remaining panels now to avoid overstating what’s actually implemented.
+
+
+
+
+Received app response
+Thought for 5m 45s
+Verdict
+This repository is not a real Phase 0 product build. It is a high-quality frontend concept prototype for WeUP’s map-first interaction model.
+
+
+My blunt assessment:
+
+
+Reached: Phase 0 visual prototype / interaction proof
+
+
+Not reached: true production-grade Phase 0
+
+
+Definitely not reached: Phase 0.15, 0.20, 0.25, 0.30+
+
+
+The core reason is simple: the repo contains a polished UI shell, but many of the important product behaviors are simulated, local-only, or placeholder logic rather than real systems.
+
+
+What is actually implemented
+1. Map-first, single-viewport UI shell
+The main app is a fixed full-screen interface with a world layer, control layer, overlays, modal panels, and a persistent map surface. That matches the WeUP design doctrine well. 
+
+
+
+
+2. Strong Phase 0 interaction prototype
+You do have these front-end interactions:
+
+
+persistent radar map
+
+
+clustered event markers
+
+
+event detail modal
+
+
+time/calendar controls
+
+
+saved events panel
+
+
+profile panel
+
+
+add-event modal
+
+
+geo controls modal
+
+
+This is visible in the main entry page and imported component graph. 
+
+
+ 
+
+
+ 
+
+
+ 
+
+
+
+
+3. Map rendering and clustering
+RadarMap.tsx uses react-map-gl, Mapbox, and use-supercluster, so the spatial UI is real, not fake. 
+
+
+
+
+4. Local event schema
+There is a usable event type model with fields for status, confidence, categories, coordinates, and social tiers. That is a decent schema seed. 
+
+
+
+
+What is simulated or fake
+This is where the phase claim breaks.
+
+
+1. Event ingestion is mocked
+The “event service” does not fetch real data from Eventbrite, Instagram, venue calendars, etc. It loads MOCK_EVENTS, filters them in-memory, then generates random fake events with Math.random(). 
+
+
+
+
+That means:
+
+
+no real ingestion
+
+
+no real scraping
+
+
+no real normalization
+
+
+no deterministic results
+
+
+no persistent inventory
+
+
+2. OCR / AI extraction is not real
+AddEventModal.tsx simulates upload progress and extraction, then injects hardcoded mock event data like NEON_RITUAL and DIGITAL_DREAM. Duplicate and error states are triggered by checking whether the pasted link contains the words "duplicate" or "error". 
+
+
+
+
+That is prototype theater, not a real ingestion pipeline.
+
+
+3. Social layer is mocked
+The social invite tiers are hardcoded in SocialSignalPanel.tsx as MOCK_TIERS. Unlocking is not backed by trust, graph state, or user relationships. 
+
+
+
+
+4. Profile is mostly decorative
+ProfilePanel.tsx shows fake operator stats and only does a light window.ethereum account check. There is no real identity, trust profile, wallet workflow, reputation model, or on-chain logic. 
+
+
+
+
+5. Saved events are local-only
+Saved items are just component state in app/page.tsx; no persistence layer is present in the inspected runtime surfaces. The shortlist panel itself is UI-only. 
+
+
+ 
+
+
+
+
+What phase this repo actually represents
+Phase 0
+What it does satisfy
+It does satisfy the following as a prototype:
+
+
+map-first UX
+
+
+no-scroll/single-viewport feel
+
+
+layered overlays/modals
+
+
+event marker interaction
+
+
+temporal exploration concept
+
+
+event add flow concept
+
+
+aesthetic direction is coherent
+
+
+What it does not satisfy for a real Phase 0 release
+A true Phase 0 needs, at minimum:
+
+
+real event persistence
+
+
+real ingestion source pipeline
+
+
+real OCR/link extraction
+
+
+moderation/review queue
+
+
+dedupe/entity resolution
+
+
+real geospatial city logic
+
+
+auth/user identity
+
+
+save/history persistence
+
+
+basic analytics/telemetry
+
+
+production error handling and state discipline
+
+
+None of that is substantively present in the inspected code.
+
+
+Conclusion: this repo is Phase 0 concept UI, not Phase 0 launch-ready.
+
+
+Phase 0.15
+Assuming 0.15 is your next ingestion/media increment, such as richer flyer/media handling:
+
+
+Missing
+video flyer ingestion
+
+
+video preview/processing
+
+
+media storage pipeline
+
+
+moderation for uploaded media
+
+
+source attribution flow
+
+
+uploader identity / venue identity
+
+
+There is no evidence of a video stack or media backend in the dependencies or inspected components. The package manifest is very lean: Next, React, Mapbox, motion, clustering, Tailwind. No media pipeline tools are present. 
+
+
+
+
+Conclusion: not at 0.15
+
+
+Phase 0.20
+Assuming 0.20 introduces trust/invite/social unlock depth:
+
+
+Present
+conceptual tier model
+
+
+social panel UI
+
+
+unlock visualization
+
+
+Missing
+actual trust score engine
+
+
+relationship graph
+
+
+proximity/auth rules
+
+
+invitation issuance
+
+
+acceptance flow
+
+
+private reveal gating
+
+
+anti-abuse controls
+
+
+The panel is mock-data driven. 
+
+
+
+
+Conclusion: not at 0.20
+
+
+Phase 0.25
+Assuming 0.25 is operator/sponsor/venue tooling:
+
+
+Missing
+venue admin console
+
+
+sponsor console
+
+
+ingestion review dashboard
+
+
+campaign metrics
+
+
+geo-activation analytics
+
+
+event approval workflows
+
+
+publisher roles / moderation roles
+
+
+No inspected runtime files show any real admin, analytics, or operator workflow. The repo is still consumer-facing prototype UI. 
+
+
+ 
+
+
+
+
+Conclusion: not at 0.25
+
+
+Phase 0.30+
+Assuming 0.30 is your advanced signal layer such as geoaudio, discovery intelligence, or higher-order network logic:
+
+
+Missing
+audio ingestion
+
+
+Shazam-like signal matching
+
+
+recommender engine
+
+
+ranking model
+
+
+graph-based routing
+
+
+venue trust network
+
+
+behavioral or sponsorship intelligence
+
+
+Nothing in the inspected code or dependencies suggests that level exists yet. 
+
+
+
+
+Conclusion: not at 0.30
+
+
+Biggest missing features
+Critical missing systems
+Persistent backend
+
+
+no inspected evidence of DB-backed events, users, saves, moderation, or analytics
+
+
+Real ingestion pipeline
+
+
+current ingestion is simulated in client code 
+
+
+ 
+
+
+
+
+Real OCR / link parsing
+
+
+upload and extraction are staged animations with hardcoded outputs 
+
+
+
+
+Moderation / admin review
+
+
+status and confidence exist in types, but no real review workflow is surfaced in the inspected app 
+
+
+
+
+Auth / identity
+
+
+profile is decorative; no session, role, trust, invite, or identity backbone 
+
+
+
+
+Persistence of saves and preferences
+
+
+saved events are ephemeral local state 
+
+
+
+
+Real social unlock system
+
+
+current tiers are mock presentation only 
+
+
+
+
+City coherence
+
+
+the app mixes Houston and Austin mock events, the radar defaults to Austin, page state starts with New York coordinates, and extraction mocks Brooklyn/Manhattan addresses. Spatial product logic is inconsistent. 
+
+
+ 
+
+
+ 
+
+
+ 
+
+
+
+
+Code and architecture risks
+1. State updates during render
+I saw render-time state mutation patterns in at least two components:
+
+
+RadarMap.tsx
+
+
+AddEventModal.tsx
+
+
+That is a React correctness smell and can create unstable renders, subtle loops, and hard-to-debug behavior. 
+
+
+ 
+
+
+
+
+2. Nondeterministic data model
+eventService generates random events with Math.random(). Good for demos, bad for debugging, testing, replay, analytics, and trust. 
+
+
+
+
+3. UI actions with no real execution path
+Examples:
+
+
+geo controls mostly close the modal rather than executing real geo actions 
+
+
+
+
+save/export surfaces are largely presentational 
+
+
+
+
+social tier exploration is not backed by workflow state 
+
+
+
+
+4. Dependency mismatch with product claims
+The manifest is too thin for the product scope being implied. There is no visible OCR library, auth layer, DB client, analytics client, ingestion adapter layer, video stack, or moderation infrastructure in the inspected surface. 
+
+
+
+
+Final phase call
+Phase        Status        Judgment
+Phase 0 visual prototype        Yes        Strong
+Phase 0 product MVP        No        Not reached
+Phase 0.15        No        Not reached
+Phase 0.20        No        Not reached
+Phase 0.25        No        Not reached
+Phase 0.30+        No        Not reached
+Best honest label
+WeUP Phase 0 UI prototype / AI Studio design spike
+
+
+Not:
+
+
+Phase 0 launch build
+
+
+Phase 0.15+
+
+
+production-ready WeUP
+
+
+What to do next
+Minimum path to make this a real Phase 0
+Replace MOCK_EVENTS + eventService with a real backend event store.
+
+
+Implement actual flyer/link ingestion with OCR + LLM normalization + geocoding + dedupe.
+
+
+Add moderation queue and confidence-based review.
+
+
+Persist saves, profiles, and event submissions.
+
+
+Freeze one city first. Do not mix Houston/Austin/NYC demo logic.
+
+
+Only after that, build:
+
+
+0.15: richer media/video ingestion
+
+
+0.20: trust/invite graph
+
+
+0.25: venue/sponsor/operator console
+
+
+0.30: geoaudio / advanced signal intelligence
+
+
+Next: turn this repo into a hardening backlog with exact missing files, backend endpoints, DB schema, and a corrected phase roadmap.
+
+
+
+
+Create the first WeUP Phase0+ bundle pack titles and bundle prompt names. Conceptualize the full scope along with Phase 0.15, 0.20, 0.25, 0.30+
+
+
+I’m grounding this against the actual WeUP Phase0 repo context first, then I’ll convert the gap map into a bundle-pack system with phase-aligned prompt sets.
+
+
+
+
+Received app response
+Thought for 1m 28s
+Hard premise
+The repo is still a UI-forward prototype, so the first pack cannot be “social unlock magic” or “geoaudio futurism.”
+It has to convert WeUP into a real Phase 0 system first: data, ingestion, moderation, auth, persistence, telemetry, release discipline.
+
+
+Phase ladder
+Phase        Mission        Must become real
+Phase 0        map-first city MVP        event DB, ingestion, moderation, auth, saves, city ops, telemetry
+Phase 0.15        richer media ingestion        flyer OCR, video flyers, media review, asset pipeline
+Phase 0.20        trust + invite graph        tier unlocks, proximity rules, trust scoring, private reveal
+Phase 0.25        operator / venue / sponsor ops        admin console, venue publishing, sponsor analytics, monetization
+Phase 0.30+        intelligence layer        ranking, recommendations, live signals, geoaudio, expansion control plane
+Bundle pack program
+Pack 1
+WeUP Phase 0 Conversion Pack
+From AI Studio prototype to city-grade MVP
+
+
+Pack 2
+WeUP Phase 0.15 Media Signal Pack
+From static flyers to real media ingestion
+
+
+Pack 3
+WeUP Phase 0.20 Trust Graph Pack
+From public discovery to gated cultural access
+
+
+Pack 4
+WeUP Phase 0.25 Operator Revenue Pack
+From user app to venue/sponsor operating system
+
+
+Pack 5
+WeUP Phase 0.30+ Intelligence Pack
+From city map to adaptive cultural intelligence network
+
+
+Pack 1 in full
+Bundle 1 — Runtime Spine
+Purpose: stabilize the app and split prototype UI from production runtime.
+
+
+Prompt names
+
+
+P01 — Establish WeUP World Surface Runtime
+
+
+P02 — Define Environment Contract and Secret Boundaries
+
+
+P03 — Refactor UI State Topology and Remove Render-Time Mutation
+
+
+Bundle 2 — Canonical Event Domain
+Purpose: stop treating events as loose frontend objects.
+
+
+Prompt names
+4. P04 — Define Canonical Event Aggregate and Status State Machine
+5. P05 — Add Source Provenance, Confidence, and Review Metadata
+6. P06 — Define Temporal and Geospatial Query Contracts
+
+
+Bundle 3 — Backend and Persistence
+Purpose: create the actual system of record.
+
+
+Prompt names
+7. P07 — Scaffold .NET 8 WeUP API with Clean Boundaries
+8. P08 — Create Postgres + EF Core Schema for Events, Sources, Users, Saves, Reviews
+9. P09 — Implement Map Feed, Calendar Feed, Event Detail, and Save APIs
+
+
+Bundle 4 — Ingestion Engine
+Purpose: replace fake ingestion with real pipelines.
+
+
+Prompt names
+10. P10 — Build Source Adapter Framework for Venue Pages, Event Links, and Manual Submission
+11. P11 — Implement Flyer OCR + LLM Normalization Pipeline
+12. P12 — Implement Deduplication, Entity Resolution, and Merge Rules
+
+
+Bundle 5 — Moderation and Review
+Purpose: make event publishing safe and operable.
+
+
+Prompt names
+13. P13 — Build Moderation Queue and Review Dashboard API
+14. P14 — Implement Confidence Scoring and Publish Eligibility Rules
+15. P15 — Add Review Actions, Audit Trail, and Rollback Workflow
+
+
+Bundle 6 — Identity and User Persistence
+Purpose: move from ephemeral UI to persistent user behavior.
+
+
+Prompt names
+16. P16 — Implement Auth, Sessions, and Basic Profile Backbone
+17. P17 — Persist Saved Signals, Itinerary State, and User Preferences
+18. P18 — Implement Event Submission Workflow with Draft, Review, Published States
+
+
+Bundle 7 — Spatial and Temporal Semantics
+Purpose: make the map and time controls mean something real.
+
+
+Prompt names
+19. P19 — Implement Bounding Box, Cluster, and District Query Semantics
+20. P20 — Define City Partitioning, Neighborhood Taxonomy, and Market Freeze Rules
+21. P21 — Convert Timeline and Calendar UX into Real Temporal Query Logic
+
+
+Bundle 8 — Observability and Release Hardening
+Purpose: make Phase 0 testable and releasable.
+
+
+Prompt names
+22. P22 — Add OpenTelemetry, Structured Logging, and Correlation IDs
+23. P23 — Add Product Analytics, Error Telemetry, and Feature Flags
+24. P24 — Add Seed Data, E2E Tests, Smoke Tests, and Release Gates
+
+
+Pack 2 — Phase 0.15 Media Signal Pack
+Bundle titles
+Bundle 9 — Flyer Media Intake
+
+
+Bundle 10 — Video Flyer Pipeline
+
+
+Bundle 11 — Asset Moderation and Compliance
+
+
+Bundle 12 — Venue Media Publishing
+
+
+Bundle 13 — Media Search and Ranking
+
+
+Prompt names
+P25 — Build Media Upload Service for Flyers and Venue Assets
+
+
+P26 — Extract Frames, Text, and Poster Images from Video Flyers
+
+
+P27 — Implement Media Validation, File Policy, and Abuse Controls
+
+
+P28 — Add Venue Asset Library and Reusable Media Catalog
+
+
+P29 — Add OCR Confidence Review for Flyer and Poster Assets
+
+
+P30 — Implement Media-Derived Event Enrichment and Thumbnail Ranking
+
+
+P31 — Add Source Attribution, Copyright Flags, and Takedown Workflow
+
+
+P32 — Build Media QA Dashboard for Operators
+
+
+Phase 0.15 scope
+flyer upload becomes real
+
+
+video flyer ingest becomes real
+
+
+frame extraction and poster generation
+
+
+media moderation
+
+
+media persistence and asset reuse
+
+
+venue-facing media management
+
+
+Pack 3 — Phase 0.20 Trust Graph Pack
+Bundle titles
+Bundle 14 — Trust Identity Graph
+
+
+Bundle 15 — Invite Tier Engine
+
+
+Bundle 16 — Proximity and Reveal Rules
+
+
+Bundle 17 — Private Access Workflows
+
+
+Bundle 18 — Reputation and Anti-Abuse
+
+
+Prompt names
+P33 — Design User Trust Graph, Edges, and Privacy Boundaries
+
+
+P34 — Implement Tier Unlock Engine for Public, Adjacent, and Private Layers
+
+
+P35 — Add Proximity Scoring and Venue-Adjacent Access Rules
+
+
+P36 — Build Invite Issuance, Acceptance, Expiry, and Revocation
+
+
+P37 — Add Reputation Signals from Attendance, Host Trust, and Referrals
+
+
+P38 — Add Anti-Spam, Sockpuppet, and Abuse Detection Rules
+
+
+P39 — Implement Private Reveal UX Contracts and API Guardrails
+
+
+P40 — Build Trust Moderation and Appeals Workflow
+
+
+Phase 0.20 scope
+real trust graph
+
+
+real unlock logic
+
+
+real private visibility control
+
+
+real invite lifecycle
+
+
+abuse controls before scale
+
+
+Pack 4 — Phase 0.25 Operator Revenue Pack
+Bundle titles
+Bundle 19 — Venue Console
+
+
+Bundle 20 — Sponsor Console
+
+
+Bundle 21 — Campaign and Attribution
+
+
+Bundle 22 — Monetization and Payout Ops
+
+
+Bundle 23 — Admin Governance
+
+
+Prompt names
+P41 — Build Venue Portal for Event Submission, Editing, and Analytics
+
+
+P42 — Build Sponsor Portal for Geo-Activation Campaign Creation
+
+
+P43 — Implement Campaign Attribution Across Views, Saves, Opens, and Attendance Signals
+
+
+P44 — Add Sponsored Placement Rules and Inventory Guardrails
+
+
+P45 — Implement Venue Verification, Sponsor Verification, and Role-Based Access
+
+
+P46 — Add Billing, Invoicing, and Settlement Backbone
+
+
+P47 — Build Operator Admin Console for City-Level Oversight
+
+
+P48 — Add KPI Dashboard for Venue Growth, Sponsor Yield, and Market Health
+
+
+Phase 0.25 scope
+turns WeUP into an operating system, not just a map
+
+
+creates revenue paths
+
+
+adds verified publisher roles
+
+
+builds sponsor-facing leverage
+
+
+Pack 5 — Phase 0.30+ Intelligence Pack
+Bundle titles
+Bundle 24 — Cultural Ranking Engine
+
+
+Bundle 25 — Live Signal Fusion
+
+
+Bundle 26 — Personalization and Discovery
+
+
+Bundle 27 — GeoAudio / Ambient Detection
+
+
+Bundle 28 — City Expansion Control Plane
+
+
+Bundle 29 — Experimentation and Model Governance
+
+
+Prompt names
+P49 — Build Event Ranking Engine Using Freshness, Density, Trust, and Intent
+
+
+P50 — Add Live Signal Fusion from Saves, Opens, Shares, and Venue Activity
+
+
+P51 — Implement Personalized Discovery Without Breaking Cold-Start UX
+
+
+P52 — Prototype GeoAudio Ingestion and Venue Match Heuristics
+
+
+P53 — Build Cultural Heatmap and District Momentum Scoring
+
+
+P54 — Add Sponsor Recommendation and Placement Optimization Models
+
+
+P55 — Build City Expansion Control Plane and Market Freeze Config
+
+
+P56 — Add Experimentation Framework, Model Versioning, and Safety Rollback
+
+
+Phase 0.30+ scope
+ranking and recommendations
+
+
+live city intelligence
+
+
+geoaudio as an experimental edge, not core dependency
+
+
+multi-city control plane
+
+
+experimentation without chaos
+
+
+Recommended bundle execution order
+Pack 1 only
+
+
+Pack 2
+
+
+Pack 3
+
+
+Pack 4
+
+
+Pack 5
+
+
+Do not invert this.
+If you build trust tiers before moderation and persistence, you will manufacture fragile theater again.
+
+
+Naming convention
+Use this consistently:
+
+
+Pack: WeUP_Pack_01_Phase0_Conversion
+
+
+Bundle: B01_Runtime_Spine
+
+
+Prompt: P01_Establish_WeUP_World_Surface_Runtime
+
+
+That gives you deterministic sequencing for Claude Code, Copilot, docs, and issue creation.
+
+
+Best scope framing
+Phase 0
+“Can a user discover, save, submit, and review real city events on a stable map?”
+
+
+Phase 0.15
+“Can WeUP ingest and operationalize real flyer/video media?”
+
+
+Phase 0.20
+“Can WeUP gate access through trust and proximity?”
+
+
+Phase 0.25
+“Can venues and sponsors operate inside WeUP as customers?”
+
+
+Phase 0.30+
+“Can WeUP become the cultural intelligence layer for a city?”
+
+
+Recommendation
+Start with Pack 1 Bundles 1–3 first.
+That is the minimum needed to stop WeUP from being a beautiful simulation and turn it into a real product skeleton.
+
+
+Next: I can turn Pack 1 into the full Claude Code / GitHub Copilot prompt bundle set, one prompt at a time.
+
+
+
+
+Start with Pack 1 Bundles 1–3 first
+
+
+I’m using the repo context as the anchor and drafting the first three production prompts so they can be fed directly into Claude Code or Copilot without hand-waving.
+
+
+
+
+Received app response
+Thought for 38s
+Pack 1 — Bundles 1–3
+Grounding assumption: the current repo has a monolithic app/page.tsx orchestrating map, calendar, saved, profile, add-event, and event detail state in one client component, so the first prompts must establish runtime boundaries before adding features. 
+
+
+
+
+I would sequence these exactly in order.
+
+
+Bundle 1 — Runtime Spine
+P01 — Establish WeUP World Surface Runtime
+You are working inside the WeUP_Phase0_AIStudio repository.
+
+
+Goal:
+Refactor the current prototype into a production-oriented runtime spine while preserving the existing visual behavior and layered world-surface UX.
+
+
+Context:
+The app currently behaves like a single large client-side orchestration surface. I want to preserve the WeUP design doctrine:
+- persistent map-first world surface
+- no-scroll single viewport
+- layered overlays instead of page navigation
+- cinematic transitions
+- modal depth model
+- mobile-first interaction model
+
+
+What to do:
+1. Inspect the existing frontend structure and identify runtime responsibilities currently mixed together:
+   - view composition
+   - UI state
+   - map state
+   - modal state
+   - async event feed loading
+   - temporal filtering
+   - saved/profile/social/add-event interaction flows
+2. Refactor the app into a clearer runtime architecture with these logical layers:
+   - app shell / world surface
+   - feature state orchestration
+   - data access services
+   - domain models
+   - UI components
+   - shared hooks / utilities
+3. Introduce a scalable folder structure appropriate for a Next.js Phase 0 MVP, such as:
+   - app/
+   - features/
+   - domains/
+   - services/
+   - hooks/
+   - lib/
+   - components/
+   - styles/
+4. Create an explicit world-surface coordinator layer that owns:
+   - active mode
+   - modal stack
+   - selected event
+   - map interaction state
+   - temporal state
+   - side-panel state
+5. Preserve visual behavior unless technically necessary to adjust.
+6. Remove ad hoc coupling between presentational components and orchestration logic where possible.
+7. Keep the frontend in TypeScript and make types strict.
+8. Do not add fake backend logic. Only prepare clean seams for real APIs.
+
+
+Deliverables:
+- revised folder structure
+- refactored coordinator/runtime files
+- extraction of orchestration logic from page.tsx
+- brief architecture note in markdown explaining the runtime spine
+- list of old responsibilities and where each moved
+
+
+Constraints:
+- do not break the current UX flow
+- do not introduce Redux unless clearly justified; prefer React context + custom hooks or a lightweight local architecture
+- preserve map-first rendering model
+- avoid overengineering
+
+
+Acceptance criteria:
+- app/page.tsx becomes thin and mostly composition-oriented
+- runtime responsibilities are separated cleanly
+- feature seams are obvious for future backend integration
+- TypeScript passes
+- the app still renders the world surface correctly
+
+
+Output format:
+1. Explain the target runtime architecture
+2. Show the proposed folder structure
+3. Generate the code changes
+4. Summarize migration decisions and tradeoffs
+P02 — Define Environment Contract and Secret Boundaries
+You are working inside the WeUP_Phase0_AIStudio repository.
+
+
+Goal:
+Create a production-safe environment and configuration contract for WeUP Phase 0.
+
+
+Context:
+The current prototype relies on environment variables like public Mapbox access and references Gemini/API-style local setup patterns. I need clean configuration boundaries before backend and ingestion work begins.
+
+
+What to do:
+1. Inspect current environment usage across the repo.
+2. Create a formal environment contract separating:
+   - public client config
+   - server-only secrets
+   - optional local-dev settings
+   - feature flags
+3. Introduce typed configuration accessors with validation at startup.
+4. Prevent direct scattered `process.env.X` usage throughout components where possible.
+5. Create an environment module for:
+   - public map config
+   - app runtime mode
+   - API base URL
+   - analytics toggles
+   - feature flags
+6. Add example env files:
+   - .env.example
+   - .env.local.example or equivalent
+7. Add documentation for:
+   - required vars
+   - optional vars
+   - local dev setup
+   - what must never be exposed to the client
+8. Add guardrails so the app fails clearly if required public config is missing.
+
+
+Design requirements:
+- client-safe values must be explicitly whitelisted
+- server-only values must never be imported into client components
+- config access should be typed and centralized
+- feature flags should be easy to extend
+
+
+Suggested outputs:
+- src/lib/env/public.ts
+- src/lib/env/server.ts or equivalent
+- src/lib/env/schema.ts
+- .env.example
+- README or docs/configuration.md update
+
+
+Acceptance criteria:
+- no scattered magic env usage remains in core runtime files
+- client/server config boundaries are explicit
+- missing config produces deterministic and readable failures
+- docs are sufficient for another engineer to run the app locally
+
+
+Output format:
+1. Show current config problems
+2. Define the target env contract
+3. Generate files and refactors
+4. Document security and deployment implications
+P03 — Refactor UI State Topology and Remove Render-Time Mutation
+You are working inside the WeUP_Phase0_AIStudio repository.
+
+
+Goal:
+Normalize UI state management and eliminate unsafe render-time mutation patterns.
+
+
+Context:
+The current prototype mixes orchestration state directly in top-level render logic. I need a clean state topology that can survive future backend integration, persistence, and test automation.
+
+
+What to do:
+1. Audit current UI state categories:
+   - navigation/view mode
+   - selected event state
+   - modal state
+   - map anchor / center / bounds
+   - temporal selection
+   - saved events
+   - ghost event drafting
+   - social panel state
+2. Define a normalized UI state model with clear ownership rules.
+3. Replace any render-time state mutation or lifecycle-smell patterns with safe effects, reducers, or event handlers.
+4. Introduce a dedicated reducer or coordinator hook for the world-surface UI state.
+5. Split ephemeral UI state from persisted or persistence-ready state.
+6. Model UI transitions explicitly using:
+   - discriminated unions
+   - typed actions
+   - event-driven state transitions
+7. Add comments or lightweight docs explaining the state machine.
+
+
+Preferred architecture:
+- `useWorldSurfaceState()` or similar coordinator hook
+- reducer-based action dispatch for complex interactions
+- typed action names for:
+   - select event
+   - open modal
+   - close modal
+   - set temporal mode
+   - toggle saved state
+   - begin add-event draft
+   - update ghost marker
+   - publish draft signal
+   - enter/exit side panel
+
+
+Acceptance criteria:
+- state ownership is explicit
+- state transitions are typed
+- no state changes occur during render
+- page-level orchestration becomes clearer and easier to test
+- current interactions still work
+
+
+Output format:
+1. Explain the current UI state problems
+2. Propose the normalized state topology
+3. Generate the reducer/hooks/types/refactors
+4. Provide a concise state transition table
+Bundle 2 — Canonical Event Domain
+P04 — Define Canonical Event Aggregate and Status State Machine
+You are working inside the WeUP_Phase0_AIStudio repository.
+
+
+Goal:
+Replace loose prototype event handling with a canonical Phase 0 event aggregate and explicit lifecycle state machine.
+
+
+Context:
+The current frontend event shape is useful but still prototype-grade. I need a production-ready event aggregate that can support ingestion, moderation, publication, saving, ranking, and later venue/operator tooling.
+
+
+What to do:
+1. Review the existing event-related types.
+2. Design a canonical event aggregate for WeUP Phase 0 with strict semantics.
+3. Separate:
+   - source payload fields
+   - normalized event fields
+   - derived display fields
+   - moderation/review fields
+   - geospatial fields
+   - temporal fields
+4. Define an event lifecycle state machine at minimum for:
+   - DRAFT
+   - INGESTED
+   - NEEDS_REVIEW
+   - APPROVED
+   - PUBLISHED
+   - REJECTED
+   - ARCHIVED
+5. Add typed transition rules and illegal transition protections.
+6. Define which fields are required at each state.
+7. Keep the model suitable for both frontend and future .NET backend parity.
+
+
+Include recommended fields for:
+- event identity
+- canonical title
+- description
+- venue identity/reference
+- address and normalized location
+- start/end timestamps with timezone awareness
+- category
+- source provenance
+- confidence
+- status
+- media references
+- tags
+- audit metadata
+
+
+Deliverables:
+- canonical TypeScript domain model
+- state transition map
+- helper functions or guards
+- markdown note explaining the event aggregate
+
+
+Acceptance criteria:
+- event lifecycle is explicit
+- illegal transitions are blocked
+- event shape is backend-ready
+- prototype display-only fields are separated from canonical fields
+
+
+Output format:
+1. Define the event aggregate
+2. Define the lifecycle state machine
+3. Generate types/helpers
+4. Explain how this improves future ingestion and moderation
+P05 — Add Source Provenance, Confidence, and Review Metadata
+You are working inside the WeUP_Phase0_AIStudio repository.
+
+
+Goal:
+Formalize provenance and review metadata so every event can be traced to its origin and publication confidence.
+
+
+Context:
+WeUP will ingest from manual submissions, flyer OCR, pasted links, venue sources, and later partner feeds. The model must preserve evidence and reviewability from the beginning.
+
+
+What to do:
+1. Extend the event domain model to support source provenance.
+2. Define source metadata structures for:
+   - manual submission
+   - flyer upload
+   - pasted URL
+   - scraped venue page
+   - external feed/API
+3. Add confidence and review metadata such as:
+   - extraction confidence
+   - geocode confidence
+   - moderation confidence
+   - reviewed by
+   - reviewed at
+   - review notes
+   - evidence references
+4. Add utility functions for:
+   - computing a composite review readiness score
+   - determining if an event can be auto-published
+   - determining if manual review is required
+5. Model provenance in a way that can later map to database tables or documents.
+
+
+Acceptance criteria:
+- every event can point to an origin
+- confidence semantics are explicit
+- review metadata is first-class, not improvised
+- future moderation workflows have enough structure to build on
+
+
+Output format:
+1. Define provenance and review metadata structures
+2. Explain field meaning and lifecycle
+3. Generate code updates
+4. Provide example canonical event objects from multiple source types
+P06 — Define Temporal and Geospatial Query Contracts
+You are working inside the WeUP_Phase0_AIStudio repository.
+
+
+Goal:
+Define canonical temporal and geospatial query contracts for map feed, calendar feed, and event detail discovery.
+
+
+Context:
+The current prototype filters events loosely in the client. I need Phase 0 query contracts that will later map cleanly to .NET API endpoints and PostGIS-capable persistence.
+
+
+What to do:
+1. Design query contracts for:
+   - map viewport feed
+   - date/time window feed
+   - calendar list feed
+   - neighborhood/district filter
+   - category filter
+   - detail lookup
+2. Define a consistent bounding-box contract with validation.
+3. Define temporal filtering semantics:
+   - timezone handling
+   - local city time
+   - date window vs time window
+   - future-only vs archival queries
+4. Define sorting options:
+   - start time
+   - proximity
+   - freshness
+   - confidence
+   - featured/sponsored placeholder seam
+5. Create TypeScript request/response contracts that the frontend can use now and the backend can implement later.
+6. Add helper validation functions.
+7. Update the current frontend feed access seams to use the new contracts.
+
+
+Acceptance criteria:
+- temporal and spatial query semantics are explicit
+- request/response models are typed
+- frontend service seams stop using ad hoc filter logic
+- contracts are compatible with future backend endpoints
+
+
+Output format:
+1. Define query contracts
+2. Explain validation and semantics
+3. Generate TypeScript models/helpers
+4. Show how current services should adapt
+Bundle 3 — Backend and Persistence
+P07 — Scaffold .NET 8 WeUP API with Clean Boundaries
+You are designing the first production backend for WeUP Phase 0.
+
+
+Goal:
+Create a clean .NET 8 backend scaffold that supports the current frontend and is ready for event ingestion, moderation, user saves, and city operations.
+
+
+Important:
+Use C#/.NET 8 as the primary backend. Favor clean architecture without ceremonial overengineering.
+
+
+What to do:
+1. Design a solution structure with clear boundaries, for example:
+   - WeUP.Api
+   - WeUP.Application
+   - WeUP.Domain
+   - WeUP.Infrastructure
+   - WeUP.Contracts
+2. Define core backend responsibilities for Phase 0:
+   - event queries
+   - event submission
+   - event review preparation
+   - saves/shortlist
+   - profile basics
+   - health/config
+3. Add initial endpoint surface for:
+   - GET /api/events/map
+   - GET /api/events/calendar
+   - GET /api/events/{id}
+   - POST /api/events/submissions
+   - POST /api/users/me/saves/{eventId}
+   - DELETE /api/users/me/saves/{eventId}
+4. Define contracts shared with the frontend.
+5. Use:
+   - ASP.NET Core minimal APIs or controllers if justified
+   - records
+   - validation
+   - structured error responses
+   - OpenTelemetry-ready seams
+6. Keep infra seams abstracted for future EF Core/Postgres implementation.
+
+
+Deliverables:
+- proposed backend solution structure
+- core domain interfaces
+- request/response contracts
+- endpoint scaffold
+- README note on how frontend should consume the API
+
+
+Acceptance criteria:
+- backend layout is production-credible
+- endpoint contracts align with frontend needs
+- infra boundaries are clear
+- no fake magic abstractions
+
+
+Output format:
+1. Show the backend architecture
+2. Show the project structure
+3. Generate initial code scaffold
+4. Explain integration steps with the frontend
+P08 — Create Postgres + EF Core Schema for Events, Sources, Users, Saves, Reviews
+You are implementing the first persistence model for WeUP Phase 0.
+
+
+Goal:
+Design a Postgres-backed EF Core schema for the WeUP Phase 0 MVP.
+
+
+Requirements:
+Model only what Phase 0 genuinely needs:
+- events
+- source records
+- media references
+- user profiles
+- saved events
+- moderation/review records
+- optional venue seed seam if justified
+
+
+What to do:
+1. Design normalized entities and relationships.
+2. Support event lifecycle and provenance.
+3. Include geospatial-ready fields even if PostGIS is introduced later.
+4. Define indexes appropriate for:
+   - map feed queries
+   - date/time window queries
+   - event status queries
+   - user saves
+5. Add EF Core entity configurations.
+6. Generate initial migration.
+7. Keep tables minimal but scalable.
+
+
+Suggested entities:
+- Event
+- EventSource
+- EventMedia
+- UserProfile
+- SavedEvent
+- EventReview
+- Venue (only if clearly justified)
+
+
+Acceptance criteria:
+- schema supports Phase 0 use cases cleanly
+- indexes match likely query patterns
+- provenance and review state are preserved
+- no unnecessary enterprise bloat
+
+
+Output format:
+1. Explain the schema design
+2. Generate entity classes/configurations
+3. Show indexes and migration intent
+4. Explain tradeoffs and future expansion seams
+P09 — Implement Map Feed, Calendar Feed, Event Detail, and Save APIs
+You are implementing the first functional backend endpoints for WeUP Phase 0.
+
+
+Goal:
+Make the app capable of reading real event data and persisting user saves instead of relying on in-memory mock behavior.
+
+
+What to do:
+1. Implement these endpoints end-to-end:
+   - GET /api/events/map
+   - GET /api/events/calendar
+   - GET /api/events/{id}
+   - GET /api/users/me/saves
+   - POST /api/users/me/saves/{eventId}
+   - DELETE /api/users/me/saves/{eventId}
+2. Use the canonical query contracts from the frontend/domain work.
+3. Add validation and consistent problem responses.
+4. Include pagination where appropriate.
+5. Return DTOs tailored for:
+   - map cards
+   - calendar list
+   - full detail modal
+6. Ensure saves are idempotent.
+7. Add integration-ready service interfaces.
+8. Provide example frontend service replacements for the current mock service.
+
+
+Acceptance criteria:
+- frontend can switch from mock event service to real API service with minimal changes
+- map feed, calendar feed, and detail feed are all backed by persistence
+- save/unsave operations are persistent and idempotent
+- contracts are stable and explicit
+
+
+Output format:
+1. Show endpoint design
+2. Generate backend implementation
+3. Show frontend integration replacement seams
+4. Provide test cases or endpoint verification examples
+Recommended execution order inside Bundles 1–3
+Order        Prompt        Why
+1        P01        establishes structural runtime boundary
+2        P03        fixes state topology before more feature work
+3        P02        locks config/security contract
+4        P04        freezes canonical event model
+5        P05        adds provenance/review semantics
+6        P06        freezes query contracts
+7        P07        scaffolds backend against those contracts
+8        P08        adds persistence model
+9        P09        wires first real APIs
+Hard warning
+Do not jump to trust graph, sponsor surfaces, or geoaudio before these nine prompts are done.
+Right now the main risk is not lack of imagination. It is state chaos + fake data + no system of record.
+
+
+Next move
+Run P01 first exactly as written, then feed me the output or diff and I’ll review it before you move to P03.
+
+
+
+
+Generate Bundle 2 — Canonical Event Domain
+
+
+Purpose: stop treating events as loose frontend objects.
+
+
+Prompt names
+4. P04 — Define Canonical Event Aggregate and Status State Machine
+5. P05 — Add Source Provenance, Confidence, and Review Metadata
+6. P06 — Define Temporal and Geospatial Query Contracts
+
+
+I’m grounding the domain prompts against the current event type and service seams so Bundle 2 targets the actual weaknesses instead of generic schema talk.
+
+
+Thought for 9s
+
+
+Received app response
+Bundle 2 — Canonical Event Domain
+The current repo still models events as a loose UI-facing NightlifeItem with mixed canonical, derived, and presentation fields all in one interface, plus only a thin status/confidence layer. 
+
+
+
+
+These prompts are designed to harden that into a real Phase 0 domain contract.
+
+
+P04 — Define Canonical Event Aggregate and Status State Machine
+Writing
+You are working inside the WeUP_Phase0_AIStudio repository.
+
+
+Goal:
+Replace the current loose frontend event object model with a canonical WeUP Phase 0 event aggregate and explicit lifecycle state machine.
+
+
+Context:
+The current event type is a UI-first NightlifeItem that mixes canonical data, geospatial data, review metadata, presentation fields, and compatibility fields in one object. It includes fields like title, venue_name, address, latitude, longitude, start_time, end_time, category, price_tier, source, image_url, optional status, optional confidence, optional neighborhood, optional energyLevel, optional tags, and optional coordinates. This is adequate for prototype rendering but not for ingestion, moderation, deduplication, or backend persistence. I need a production-grade domain model.
+
+
+What to do:
+
+
+Review the existing event-related TypeScript models and identify where prototype/UI concerns are currently mixed into the event object.
+
+
+Design a canonical EventAggregate for WeUP Phase 0 that separates:
+
+
+canonical identity
+
+
+source identity
+
+
+venue and location data
+
+
+temporal data
+
+
+media references
+
+
+moderation/review state
+
+
+derived display projections
+
+
+Define a strict lifecycle state machine for event publication. At minimum support:
+
+
+DRAFT
+
+
+INGESTED
+
+
+NEEDS_REVIEW
+
+
+APPROVED
+
+
+PUBLISHED
+
+
+REJECTED
+
+
+ARCHIVED
+
+
+Encode legal and illegal transitions explicitly.
+
+
+Define field requirements by status. Example:
+
+
+DRAFT may allow partial metadata
+
+
+INGESTED must have at least source + minimal extracted fields
+
+
+NEEDS_REVIEW must carry confidence and review flags
+
+
+PUBLISHED must have canonical venue, normalized location, valid time range, and at least one display-capable media or fallback asset rule
+
+
+Separate domain fields from UI/view-model fields. Keep presentation-only projections outside the canonical aggregate.
+
+
+Preserve a frontend-friendly adapter or mapper so existing UI components can later consume a derived projection without depending on the aggregate internals.
+
+
+Use strict TypeScript with discriminated unions where helpful.
+
+
+Create transition helper functions or guards such as:
+
+
+canTransitionEventStatus
+
+
+transitionEventStatus
+
+
+isPublishableEvent
+
+
+hasRequiredMetadataForStatus
+
+
+Recommended domain structure:
+
+
+EventId
+
+
+VenueRef or VenueSnapshot
+
+
+GeoPoint
+
+
+AddressSnapshot
+
+
+EventTimeRange
+
+
+EventCategory
+
+
+EventStatus
+
+
+EventAggregate
+
+
+EventProjection or EventCardViewModel
+
+
+EventDetailViewModel
+
+
+Suggested fields for canonical aggregate:
+
+
+id
+
+
+slug if justified
+
+
+canonicalTitle
+
+
+canonicalDescription
+
+
+status
+
+
+category
+
+
+venueName
+
+
+address
+
+
+geo
+
+
+timeRange
+
+
+timezone
+
+
+sourceRefs
+
+
+mediaRefs
+
+
+tags
+
+
+audit
+
+
+review
+
+
+createdAt
+
+
+updatedAt
+
+
+Deliverables:
+
+
+canonical TypeScript event domain files
+
+
+status enum / literal union
+
+
+transition rule map or state machine helper
+
+
+separation between aggregate and UI projection models
+
+
+short markdown note explaining the aggregate and lifecycle
+
+
+Constraints:
+
+
+do not overfit to current mock data shape
+
+
+do not keep UI compatibility hacks inside the canonical aggregate
+
+
+make the design suitable for future .NET parity
+
+
+avoid unnecessary DDD ceremony, but make the model explicit and durable
+
+
+Acceptance criteria:
+
+
+the event lifecycle is explicit and enforceable
+
+
+illegal transitions are blocked
+
+
+field requirements vary by state in a clear, typed way
+
+
+canonical data is separated from display data
+
+
+future ingestion and moderation workflows have a stable domain object to build on
+
+
+Output format:
+
+
+Diagnose the current event model problems
+
+
+Define the target canonical event aggregate
+
+
+Define the status state machine and transition rules
+
+
+Generate TypeScript code
+
+
+Explain migration and compatibility strategy
+
+
+P05 — Add Source Provenance, Confidence, and Review Metadata
+Writing
+You are working inside the WeUP_Phase0_AIStudio repository.
+
+
+Goal:
+Add first-class provenance, confidence, and review metadata to the event domain so every event can be traced, scored, reviewed, and published with evidence.
+
+
+Context:
+The current model only has a thin source field and optional confidence field. That is insufficient for real ingestion because WeUP will ingest from manual submissions, flyer uploads, pasted URLs, scraped venue pages, and later partner/API feeds. I need provenance to be explicit from the beginning so moderation and deduplication are not guesswork.
+
+
+What to do:
+
+
+Extend the new canonical event domain from P04 to include provenance and review metadata as first-class structures.
+
+
+Define source provenance models for at least:
+
+
+manual submission
+
+
+flyer upload
+
+
+pasted URL
+
+
+scraped venue page
+
+
+external API/feed
+
+
+Add metadata that captures:
+
+
+origin type
+
+
+source identifier
+
+
+original payload reference or evidence reference
+
+
+submitter identifier if applicable
+
+
+ingestion timestamp
+
+
+extraction version or parser version
+
+
+normalization version if applicable
+
+
+Add confidence sub-models rather than one flat number. At minimum model:
+
+
+extraction confidence
+
+
+geocode confidence
+
+
+temporal confidence
+
+
+venue-match confidence
+
+
+moderation confidence
+
+
+optional aggregate confidence
+
+
+Add review metadata structures for:
+
+
+review status
+
+
+review required reason
+
+
+reviewer id
+
+
+reviewed at
+
+
+review notes
+
+
+rejection reason
+
+
+evidence refs
+
+
+publish decision
+
+
+Add utility functions such as:
+
+
+requiresManualReview
+
+
+computeAggregateConfidence
+
+
+canAutoPublish
+
+
+getReviewBlockers
+
+
+Show how provenance and review metadata attach to the canonical event aggregate without polluting display models.
+
+
+Provide example event objects for:
+
+
+manual event draft
+
+
+flyer-ingested event needing review
+
+
+high-confidence external feed event eligible for approval
+
+
+Suggested structures:
+
+
+EventSourceKind
+
+
+EventSourceRef
+
+
+EvidenceRef
+
+
+ConfidenceVector
+
+
+ReviewStatus
+
+
+ReviewMetadata
+
+
+IngestionMetadata
+
+
+Constraints:
+
+
+provenance must be evidence-oriented, not just descriptive
+
+
+review metadata must be future-backend-friendly
+
+
+do not assume every source is trustworthy
+
+
+keep reviewability and auditability as core design goals
+
+
+Acceptance criteria:
+
+
+every event can trace its origin
+
+
+confidence is multi-dimensional, not a vague scalar only
+
+
+review metadata supports moderation workflows
+
+
+auto-publish logic is expressible and testable
+
+
+sample objects demonstrate real ingestion scenarios
+
+
+Output format:
+
+
+Define provenance model
+
+
+Define confidence and review metadata
+
+
+Generate domain code and helpers
+
+
+Provide example event objects from multiple source paths
+
+
+Explain how this supports moderation and dedupe later
+
+
+P06 — Define Temporal and Geospatial Query Contracts
+Writing
+You are working inside the WeUP_Phase0_AIStudio repository.
+
+
+Goal:
+Define canonical temporal and geospatial query contracts for WeUP Phase 0 so map feed, calendar feed, and event detail views stop depending on ad hoc client-side filtering.
+
+
+Context:
+The current app filters events in the frontend using date parsing and viewport-like bounds logic. I need stable request/response contracts that the frontend can use now and the future .NET backend can implement directly. These contracts must support the map surface, calendar modal, date/time windows, and neighborhood/category filtering without ambiguity. The current event object includes lat/lng and start/end times but no canonical query contract layer.
+
+
+What to do:
+
+
+Define canonical query request and response contracts for:
+
+
+map viewport feed
+
+
+calendar feed
+
+
+date-window feed
+
+
+event detail lookup
+
+
+saved-event query seam if useful
+
+
+Design a bounding-box contract with explicit validation:
+
+
+minLat
+
+
+maxLat
+
+
+minLng
+
+
+maxLng
+
+
+validation rules for range correctness
+
+
+Define temporal semantics clearly:
+
+
+local city time versus UTC handling
+
+
+inclusive/exclusive boundaries
+
+
+start/end window meaning
+
+
+future-only filter
+
+
+same-day versus multi-day event behavior
+
+
+Define optional filters:
+
+
+category
+
+
+neighborhood/district
+
+
+source kind
+
+
+status
+
+
+confidence threshold
+
+
+text search seam if useful
+
+
+Define sorting options for Phase 0:
+
+
+start time
+
+
+proximity
+
+
+freshness
+
+
+confidence
+
+
+featured/sponsored placeholder seam, but only as contract extensibility
+
+
+Define pagination or cursor strategy where appropriate.
+
+
+Create TypeScript contracts such as:
+
+
+MapFeedQuery
+
+
+CalendarFeedQuery
+
+
+EventDetailQuery
+
+
+GeoBoundingBox
+
+
+TimeWindow
+
+
+EventFeedResponse<TProjection>
+
+
+Add validator/helper functions:
+
+
+isValidBoundingBox
+
+
+normalizeTimeWindow
+
+
+buildMapFeedQuery
+
+
+buildCalendarFeedQuery
+
+
+Show how existing frontend service seams should adapt to use these contracts.
+
+
+Keep the design compatible with future Postgres/PostGIS and .NET API implementation.
+
+
+Recommended response projections:
+
+
+EventMapCardProjection
+
+
+EventCalendarProjection
+
+
+EventDetailProjection
+
+
+Constraints:
+
+
+do not hardcode Houston/Austin/NYC assumptions into the contracts
+
+
+define timezone semantics explicitly
+
+
+keep Phase 0 scope tight
+
+
+avoid vague “query object” abstractions with no field-level meaning
+
+
+Acceptance criteria:
+
+
+map/calendar/detail query semantics are explicit
+
+
+bounds and time windows are validated and typed
+
+
+response shapes are fit for their consumer surfaces
+
+
+frontend can stop relying on loose local filter logic
+
+
+backend implementation seams become obvious
+
+
+Output format:
+
+
+Diagnose current query-contract gaps
+
+
+Define temporal and geospatial contracts
+
+
+Generate TypeScript request/response models and validators
+
+
+Show how current services should migrate to the new contracts
+
+
+Explain backend compatibility implications
+
+
+Sequence
+Run them in this order:
+
+
+P04
+
+
+P05
+
+
+P06
+
+
+That preserves dependency flow:
+
+
+canonical aggregate first
+
+
+provenance/review second
+
+
+query contract third
+
+
+Hard note
+Do not let Claude keep NightlifeItem as the canonical domain model. That would preserve the exact failure mode you are trying to eliminate.
+
+
+
+
+Bundle 3 — Backend and Persistence
+Purpose: create the actual system of record.
+Prompt names
+7. P07 — Scaffold .NET 8 WeUP API with Clean Boundaries
+8. P08 — Create Postgres + EF Core Schema for Events, Sources, Users, Saves, Reviews
+9. P09 — Implement Map Feed, Calendar Feed, Event Detail, and Save APIs
+
+
+I’m grounding Bundle 3 against the current repo shape first, then I’ll write the backend/persistence prompts so they map to the existing frontend seams instead of drifting into generic boilerplate.
+
+
+Thought for 10s
+
+
+Received app response
+Bundle 3 — Backend and Persistence
+Right now the repo still uses a frontend eventService that caches MOCK_EVENTS, filters them in memory, and even generates random synthetic events. That is precisely why Bundle 3 exists: replace simulation with a real system of record. 
+
+
+
+
+P07 — Scaffold .NET 8 WeUP API with Clean Boundaries
+Writing
+You are designing and scaffolding the first production backend for WeUP Phase 0.
+
+
+Goal:
+Create a .NET 8 backend with clean boundaries that becomes the system of record for WeUP Phase 0 and supports the existing frontend surfaces without leaking infrastructure concerns into domain logic.
+
+
+Context:
+The current frontend uses an in-memory eventService backed by MOCK_EVENTS, local cache, viewport filtering, and randomly generated synthetic events. I need to replace that with a real API and clean backend architecture.
+
+
+Primary objective:
+Design and scaffold a backend that supports:
+
+
+map feed
+
+
+calendar feed
+
+
+event detail
+
+
+user saved events
+
+
+event submission seam
+
+
+moderation/review seam
+
+
+health/config seam
+
+
+Technology requirements:
+
+
+.NET 8
+
+
+C#
+
+
+ASP.NET Core
+
+
+production-grade structure, but not ceremonial bloat
+
+
+clean separations between API, application, domain, infrastructure, and contracts
+
+
+OpenTelemetry-ready seams
+
+
+EF Core persistence seam to be implemented next
+
+
+Postgres-targeted infrastructure, but abstracted cleanly
+
+
+What to do:
+
+
+Propose and scaffold a solution structure similar to:
+
+
+WeUP.Api
+
+
+WeUP.Application
+
+
+WeUP.Domain
+
+
+WeUP.Infrastructure
+
+
+WeUP.Contracts
+
+
+Define clear responsibilities for each project.
+
+
+Use modern C#:
+
+
+records
+
+
+primary constructors where appropriate
+
+
+pattern matching
+
+
+nullable reference types
+
+
+async/await
+
+
+Create a clean endpoint surface for Phase 0:
+
+
+GET /api/events/map
+
+
+GET /api/events/calendar
+
+
+GET /api/events/{id}
+
+
+POST /api/events/submissions
+
+
+GET /api/users/me/saves
+
+
+POST /api/users/me/saves/{eventId}
+
+
+DELETE /api/users/me/saves/{eventId}
+
+
+GET /health
+
+
+Define domain interfaces and application service interfaces for:
+
+
+event querying
+
+
+event submission
+
+
+saved-event management
+
+
+review/moderation preparation
+
+
+Define request/response DTOs in a contracts project, not in controllers.
+
+
+Add consistent error response strategy using ProblemDetails or an equivalent structured approach.
+
+
+Add validation seams for request models.
+
+
+Prepare the API so the frontend can migrate from local mock service calls to real HTTP calls with minimal contract churn.
+
+
+Add minimal bootstrapping and dependency registration, but keep implementation placeholders where persistence is not yet wired.
+
+
+Design rules:
+
+
+do not put EF entities in the API layer
+
+
+do not mix domain and transport models
+
+
+do not create bloated generic repository abstractions
+
+
+do not fake business logic with random data
+
+
+do not add auth complexity beyond a placeholder seam unless required for save endpoints
+
+
+Recommended outputs:
+
+
+solution/project structure
+
+
+Program.cs
+
+
+API endpoint definitions
+
+
+application interfaces and handlers/services
+
+
+domain model seams and service contracts
+
+
+contracts for map/calendar/detail/save flows
+
+
+architecture markdown note
+
+
+Acceptance criteria:
+
+
+the backend layout is credible for production extension
+
+
+endpoint surface clearly matches current frontend needs
+
+
+boundaries between projects are explicit
+
+
+DTOs are separated from domain objects
+
+
+the scaffold is ready for EF Core/Postgres implementation in the next step
+
+
+Output format:
+
+
+Explain the target backend architecture
+
+
+Show the project/solution structure
+
+
+Generate the scaffold code
+
+
+Explain dependency flow and boundary decisions
+
+
+Explain how the current frontend service should later consume this API
+
+
+P08 — Create Postgres + EF Core Schema for Events, Sources, Users, Saves, Reviews
+Writing
+You are implementing the first persistence layer for the WeUP Phase 0 backend.
+
+
+Goal:
+Create a Postgres-backed EF Core schema that becomes the durable system of record for events, provenance, user saves, and review state.
+
+
+Context:
+The frontend currently operates on local event arrays and in-memory save behavior. Bundle 2 defined the canonical event aggregate, provenance model, confidence/review metadata, and temporal/geospatial query contracts. Now I need an EF Core + Postgres schema that faithfully supports those concepts without unnecessary overengineering.
+
+
+Primary objective:
+Model the minimum durable persistence required for Phase 0:
+
+
+canonical events
+
+
+source/provenance records
+
+
+event media refs
+
+
+user profiles
+
+
+saved events
+
+
+event reviews
+
+
+optional venue seam only if truly justified
+
+
+Technology requirements:
+
+
+.NET 8
+
+
+EF Core
+
+
+PostgreSQL
+
+
+code-first migrations
+
+
+entity configurations via Fluent API
+
+
+indexing for real query patterns
+
+
+future PostGIS compatibility seam, even if not fully enabled yet
+
+
+What to do:
+
+
+Design the relational model for:
+
+
+Event
+
+
+EventSource
+
+
+EventMedia
+
+
+UserProfile
+
+
+SavedEvent
+
+
+EventReview
+
+
+Venue only if clearly justified by the domain
+
+
+Map lifecycle state, provenance, and review metadata into normalized persistence structures.
+
+
+Include geospatial-ready fields for event location:
+
+
+latitude
+
+
+longitude
+
+
+normalized address fields
+
+
+district/neighborhood if part of canonical query model
+
+
+Include temporal fields for:
+
+
+start time
+
+
+end time
+
+
+timezone
+
+
+publish timestamps
+
+
+created/updated timestamps
+
+
+Model source/provenance details in a way that supports:
+
+
+manual submission
+
+
+flyer upload
+
+
+pasted link
+
+
+scraped venue source
+
+
+external feed
+
+
+Model saves as a proper many-to-many relationship with uniqueness guarantees.
+
+
+Model reviews with enough structure to support:
+
+
+review decision
+
+
+reviewer
+
+
+notes
+
+
+rejection reason
+
+
+reviewed timestamp
+
+
+Add EF Core entity classes and Fluent API configurations.
+
+
+Define indexes for likely access patterns:
+
+
+map bounding/window queries
+
+
+status + time queries
+
+
+calendar queries
+
+
+saves lookup by user
+
+
+event review queues
+
+
+source lookup / dedupe support
+
+
+Generate an initial migration.
+
+
+Explain which columns and indexes are Phase 0 essential versus future seams.
+
+
+Design rules:
+
+
+do not denormalize prematurely
+
+
+do not force all review/provenance data into one JSON blob unless there is a strong reason
+
+
+do not add speculative enterprise tables unrelated to Phase 0
+
+
+keep schema minimal but durable
+
+
+Recommended deliverables:
+
+
+entity classes
+
+
+entity configurations
+
+
+DbContext
+
+
+migration
+
+
+schema explanation markdown
+
+
+Acceptance criteria:
+
+
+persistence model supports Phase 0 map feed, calendar feed, detail view, saves, and review state
+
+
+lifecycle and provenance are durable
+
+
+indexes match actual query patterns
+
+
+schema is ready for P09 endpoint implementation
+
+
+design remains compatible with future ranking, moderation, and venue tooling
+
+
+Output format:
+
+
+Explain the schema design
+
+
+List entities and relationships
+
+
+Generate EF Core entities/configurations/DbContext
+
+
+Show index strategy and migration intent
+
+
+Explain tradeoffs and future extension seams
+
+
+P09 — Implement Map Feed, Calendar Feed, Event Detail, and Save APIs
+Writing
+You are implementing the first functional WeUP Phase 0 backend APIs.
+
+
+Goal:
+Replace the current in-memory mock event service with real APIs backed by persistence for map feed, calendar feed, event detail, and user saves.
+
+
+Context:
+The current frontend eventService filters local arrays by bounds, caches them in memory, and even generates random synthetic events when a viewport is sparse. This is unacceptable for a real system of record. I need end-to-end APIs that return durable data from the Postgres + EF Core backend designed in the previous step.
+
+
+Primary objective:
+Implement the first real operational API surface:
+
+
+GET /api/events/map
+
+
+GET /api/events/calendar
+
+
+GET /api/events/{id}
+
+
+GET /api/users/me/saves
+
+
+POST /api/users/me/saves/{eventId}
+
+
+DELETE /api/users/me/saves/{eventId}
+
+
+Assumptions:
+
+
+Bundle 2 already defined the canonical event domain and query contracts
+
+
+P07 scaffolded the .NET 8 API architecture
+
+
+P08 created the EF Core/Postgres schema
+
+
+auth may still be stubbed or simplified, but save endpoints must have a user identity seam
+
+
+What to do:
+
+
+Implement map feed endpoint using canonical temporal + geospatial query contracts.
+
+
+Implement calendar feed endpoint using canonical date/time window contracts.
+
+
+Implement event detail endpoint returning a full detail projection.
+
+
+Implement saved-events read/write endpoints with persistence.
+
+
+Ensure save creation is idempotent.
+
+
+Ensure unsave/delete is safe and idempotent.
+
+
+Use DTO projections suited for each frontend consumer surface:
+
+
+map card projection
+
+
+calendar projection
+
+
+detail projection
+
+
+saved event projection if separate
+
+
+Add validation and consistent problem responses.
+
+
+Add pagination where appropriate.
+
+
+Add application services/handlers that isolate query logic from controllers/endpoints.
+
+
+Add repository/query logic using EF Core without introducing bloated abstractions.
+
+
+Add example frontend integration seam showing how the existing frontend service should be replaced with HTTP-based API calls.
+
+
+Add basic tests or endpoint verification examples for:
+
+
+valid map query
+
+
+invalid bounding box
+
+
+calendar query by date range
+
+
+event detail lookup
+
+
+save/unsave idempotency
+
+
+Performance and design requirements:
+
+
+shape queries for read efficiency
+
+
+avoid loading unnecessary navigation graphs
+
+
+project directly to DTOs where sensible
+
+
+keep endpoint semantics stable
+
+
+do not fall back to random/generated data under any circumstance
+
+
+Acceptance criteria:
+
+
+frontend can consume real APIs instead of local mock services
+
+
+map feed, calendar feed, detail, and saves are persistence-backed
+
+
+save APIs are idempotent
+
+
+query validation is explicit
+
+
+endpoints align with Bundle 2 query contracts
+
+
+the backend now acts as the first true system of record for these flows
+
+
+Output format:
+
+
+Explain endpoint design and responsibilities
+
+
+Generate backend implementation code
+
+
+Show EF-backed query and save logic
+
+
+Show frontend service replacement seam
+
+
+Provide test/verification examples
+
+
+Recommended execution order
+P07
+
+
+P08
+
+
+P09
+
+
+That order matters:
+
+
+P07 establishes boundary discipline
+
+
+P08 gives the backend something durable to store
+
+
+P09 finally replaces the fake client-side service
+
+
+Hard warning
+Do not let the implementation keep the current fallback behavior of “generate random events if the area is sparse.” That is prototype theater and will poison every downstream system: moderation, trust, analytics, sponsor attribution, and user confidence.
+
+
+
+
+Bundle 4 — Ingestion Engine
+Purpose: replace fake ingestion with real pipelines.
+Prompt names
+10. P10 — Build Source Adapter Framework for Venue Pages, Event Links, and Manual Submission
+11. P11 — Implement Flyer OCR + LLM Normalization Pipeline
+12. P12 — Implement Deduplication, Entity Resolution, and Merge Rules
+
+
+I’m anchoring Bundle 4 to the repo’s current fake-ingestion surfaces first, then I’ll turn that into the three production prompts.
+
+
+Thought for 15s
+
+
+Received app response
+Bundle 4 — Ingestion Engine
+The current repo still treats ingestion as staged UI theater: upload and link analysis are simulated in AddEventModal, duplicate/error cases are string-triggered, geocoding is real but extraction is mock, and publication promotes partially synthetic event data directly into the client state. 
+
+
+
+
+These prompts replace that with a real ingestion pipeline.
+
+
+P10 — Build Source Adapter Framework for Venue Pages, Event Links, and Manual Submission
+Writing
+You are implementing the WeUP Phase 0 ingestion engine.
+
+
+Goal:
+Build a real source adapter framework that ingests events from venue pages, pasted event links, and manual submissions through a common pipeline instead of hardcoded frontend simulation.
+
+
+Context:
+The current frontend AddEventModal simulates upload and extraction states, derives fake event objects, and treats link analysis as a UI-only flow. I need a backend ingestion framework that turns multiple input types into canonical ingestion jobs and normalized event candidates.
+
+
+Primary objective:
+Design and implement an ingestion adapter architecture that supports:
+
+
+manual event submission
+
+
+pasted event links
+
+
+venue page ingestion
+
+
+future flyer OCR results as a downstream adapter input
+
+
+future external feed/API sources
+
+
+Technology requirements:
+
+
+.NET 8
+
+
+C#
+
+
+backend-first implementation
+
+
+integration with the WeUP backend scaffold and persistence model from Bundles 2–3
+
+
+durable ingestion job tracking
+
+
+deterministic pipeline stages
+
+
+explicit provenance and evidence capture
+
+
+What to do:
+
+
+Design a source adapter framework with clear abstractions for:
+
+
+IIngestionAdapter
+
+
+IIngestionDispatcher
+
+
+IIngestionJobRepository
+
+
+IExtractionNormalizer
+
+
+IIngestionAuditWriter
+
+
+Define supported source kinds for Phase 0:
+
+
+manual submission
+
+
+pasted event link
+
+
+venue page scrape
+
+
+Introduce a durable ingestion job model with lifecycle states such as:
+
+
+Queued
+
+
+Fetching
+
+
+Extracting
+
+
+Normalizing
+
+
+ReviewPending
+
+
+Completed
+
+
+Failed
+
+
+Build request contracts for:
+
+
+manual event submission
+
+
+link submission
+
+
+venue page ingestion request
+
+
+Implement adapter routing logic:
+
+
+direct manual adapter
+
+
+link adapter
+
+
+venue page adapter
+
+
+For venue pages and links, define extraction workflow seams for:
+
+
+fetch raw content
+
+
+parse structured metadata if available
+
+
+capture evidence refs
+
+
+produce raw candidate payloads
+
+
+Normalize all adapter outputs into a common candidate contract aligned with the canonical event domain from Bundle 2.
+
+
+Persist ingestion jobs, source refs, raw extraction evidence, and normalized candidate outputs.
+
+
+Add structured logging and correlation IDs for each ingestion run.
+
+
+Expose backend endpoints such as:
+
+
+POST /api/ingestion/manual
+
+
+POST /api/ingestion/link
+
+
+POST /api/ingestion/venue-page
+
+
+GET /api/ingestion/jobs/{id}
+
+
+Add validation and problem responses.
+
+
+Add clear extension seams for later adapters like OCR, Eventbrite, RA, Dice, Instagram, or promoter feeds.
+
+
+Design rules:
+
+
+do not implement ingestion inside frontend components
+
+
+do not let adapters return raw UI-facing objects
+
+
+do not let adapters write directly to published events without pipeline review
+
+
+do not hide pipeline failures; persist them
+
+
+preserve provenance and evidence from the first fetch onward
+
+
+Recommended outputs:
+
+
+adapter interfaces
+
+
+ingestion job domain model
+
+
+dispatcher/coordinator service
+
+
+initial adapter implementations
+
+
+ingestion endpoints
+
+
+persistence entities/configuration for jobs/evidence if needed
+
+
+architecture note explaining adapter extension model
+
+
+Acceptance criteria:
+
+
+all ingestion entry points flow through one backend pipeline
+
+
+adapters normalize to a shared candidate contract
+
+
+ingestion jobs are durable and traceable
+
+
+manual, link, and venue-page sources are supported
+
+
+the framework is ready for OCR and dedupe integration next
+
+
+Output format:
+
+
+Explain the target adapter architecture
+
+
+Define the ingestion job lifecycle
+
+
+Generate backend code and contracts
+
+
+Explain persistence/audit decisions
+
+
+Show how the frontend should call this instead of simulating extraction
+
+
+P11 — Implement Flyer OCR + LLM Normalization Pipeline
+Writing
+You are implementing the WeUP Phase 0 flyer ingestion pipeline.
+
+
+Goal:
+Replace the current fake “upload flyer → OCR extraction” flow with a real backend OCR + LLM normalization pipeline that produces reviewable canonical event candidates.
+
+
+Context:
+The current frontend upload path simulates progress and then creates hardcoded extracted event data. I need a real ingestion flow for flyer images that captures raw OCR text, media evidence, extraction confidence, normalization output, and review requirements.
+
+
+Primary objective:
+Build a flyer processing pipeline that supports:
+
+
+flyer image upload
+
+
+media persistence/reference
+
+
+OCR text extraction
+
+
+LLM normalization into canonical event candidate fields
+
+
+confidence scoring
+
+
+review blockers
+
+
+operator-readable evidence trail
+
+
+Technology requirements:
+
+
+.NET 8 backend as orchestrator
+
+
+OCR provider abstraction
+
+
+LLM normalization provider abstraction
+
+
+integration with Bundle 2 canonical event/provenance model
+
+
+integration with Bundle 3 persistence
+
+
+durable job state tracking
+
+
+explicit evidence retention
+
+
+What to do:
+
+
+Design a flyer pipeline with stages such as:
+
+
+file intake
+
+
+asset storage reference creation
+
+
+OCR execution
+
+
+OCR cleanup/post-processing
+
+
+LLM normalization
+
+
+geocoding
+
+
+confidence scoring
+
+
+candidate persistence
+
+
+review routing
+
+
+Define interfaces for:
+
+
+IFlyerStorageService
+
+
+IOcrService
+
+
+IFlyerTextPostProcessor
+
+
+ILlmEventNormalizer
+
+
+IGeocodingService
+
+
+IFlyerConfidenceEvaluator
+
+
+Accept flyer upload through a backend endpoint such as:
+
+
+POST /api/ingestion/flyers
+
+
+Persist:
+
+
+uploaded asset metadata
+
+
+OCR raw text
+
+
+cleaned OCR text
+
+
+normalization prompt/input version metadata
+
+
+normalization output
+
+
+confidence vector
+
+
+evidence refs
+
+
+review blockers
+
+
+Define normalized extraction fields at minimum:
+
+
+title
+
+
+venue name
+
+
+address
+
+
+start date/time
+
+
+end date/time if found
+
+
+timezone if inferable
+
+
+category
+
+
+source type
+
+
+media ref
+
+
+Build a geocoding step that turns normalized address data into validated coordinates and confidence.
+
+
+Model pipeline failure states explicitly:
+
+
+upload failure
+
+
+OCR failure
+
+
+unreadable flyer
+
+
+ambiguous extraction
+
+
+missing required fields
+
+
+geocode failure
+
+
+Route incomplete or low-confidence results into review-required status instead of publishing.
+
+
+Return a reviewable ingestion result to the caller with:
+
+
+job id
+
+
+extraction summary
+
+
+confidence breakdown
+
+
+review required flags
+
+
+Add test fixtures or sample flyer cases covering:
+
+
+clean flyer
+
+
+noisy flyer
+
+
+missing address
+
+
+multiple date/time mentions
+
+
+duplicate-looking flyer
+
+
+Design rules:
+
+
+do not expose raw secrets to the frontend
+
+
+do not let OCR or LLM responses directly become published events
+
+
+do not flatten all confidence to a single vague number
+
+
+preserve raw and cleaned evidence for moderation and debugging
+
+
+keep provider integrations abstracted
+
+
+Recommended outputs:
+
+
+flyer ingestion endpoint
+
+
+OCR service abstraction and stub/provider implementation seam
+
+
+LLM normalizer abstraction and prompt contract
+
+
+pipeline coordinator
+
+
+persistence model updates if needed
+
+
+markdown note on OCR + normalization architecture
+
+
+Acceptance criteria:
+
+
+flyer upload becomes a real backend workflow
+
+
+OCR and normalization outputs are durable and traceable
+
+
+candidate events are reviewable, not auto-published blindly
+
+
+confidence and evidence are captured
+
+
+the system is ready for dedupe and merge processing
+
+
+Output format:
+
+
+Explain the flyer pipeline architecture
+
+
+Define stage-by-stage processing
+
+
+Generate backend code and contracts
+
+
+Show persistence/evidence strategy
+
+
+Explain how the frontend upload flow should integrate with this backend
+
+
+P12 — Implement Deduplication, Entity Resolution, and Merge Rules
+Writing
+You are implementing the WeUP Phase 0 deduplication and entity resolution layer.
+
+
+Goal:
+Prevent duplicate or conflicting event records by adding real deduplication, entity resolution, and merge rules across ingestion sources.
+
+
+Context:
+The current prototype only deduplicates by a loose local key like title + venue in client memory, and the frontend duplicate state is purely simulated. That is not a real duplicate strategy. I need durable backend rules that compare candidates against existing events and other candidates before publication.
+
+
+Primary objective:
+Build a backend dedupe/resolution layer that can:
+
+
+compare new candidates against existing events
+
+
+detect probable duplicates
+
+
+resolve venue/name/address ambiguity
+
+
+decide whether to merge, review, or create a new event
+
+
+preserve provenance from all source records
+
+
+Technology requirements:
+
+
+.NET 8
+
+
+integration with canonical event model from Bundle 2
+
+
+integration with persistence from Bundle 3
+
+
+deterministic scoring heuristics for Phase 0
+
+
+no fuzzy black-box magic without explainability
+
+
+What to do:
+
+
+Define a dedupe/resolution pipeline stage that runs after normalization and geocoding.
+
+
+Create explicit comparison dimensions such as:
+
+
+title similarity
+
+
+venue name similarity
+
+
+address similarity
+
+
+geospatial distance
+
+
+temporal overlap
+
+
+source reliability
+
+
+media similarity placeholder seam if justified
+
+
+Define a deterministic match scoring model that yields outcomes like:
+
+
+NoMatch
+
+
+PossibleDuplicate
+
+
+ProbableDuplicate
+
+
+MergeIntoExisting
+
+
+NeedsManualResolution
+
+
+Implement candidate-to-existing-event comparison logic.
+
+
+Implement candidate-to-candidate comparison logic for concurrent ingestion jobs if appropriate.
+
+
+Define merge rules for safe field consolidation, for example:
+
+
+preserve strongest provenance
+
+
+keep all source refs
+
+
+prefer reviewed/canonical venue name over low-confidence extraction
+
+
+do not overwrite reviewed fields with lower-confidence candidate values
+
+
+Define field-level merge precedence rules for:
+
+
+title
+
+
+description
+
+
+venue
+
+
+address
+
+
+geo
+
+
+time range
+
+
+category
+
+
+media refs
+
+
+Persist dedupe decisions and merge audit records.
+
+
+Create review workflows for ambiguous cases.
+
+
+Add service interfaces such as:
+
+
+IDeduplicationService
+
+
+IEntityResolutionService
+
+
+IMergePolicyEvaluator
+
+
+Add test cases for:
+
+
+same event from flyer + pasted link
+
+
+same event with slightly different venue spelling
+
+
+same event with slightly different start time formatting
+
+
+nearby but truly different events
+
+
+recurring weekly event edge case
+
+
+Surface dedupe results back into ingestion job output and review state.
+
+
+Design rules:
+
+
+do not merge records opaquely without audit
+
+
+do not rely on one naive key like title + venue only
+
+
+do not overwrite trusted reviewed data with weaker data
+
+
+make decisions explainable
+
+
+keep Phase 0 rules heuristic and deterministic before adding ML ranking later
+
+
+Recommended outputs:
+
+
+dedupe scoring model
+
+
+entity resolution services
+
+
+merge policy rules
+
+
+persistence/audit support for dedupe decisions
+
+
+tests and example resolution scenarios
+
+
+architecture note on how dedupe affects publication workflow
+
+
+Acceptance criteria:
+
+
+duplicate suppression is durable and explainable
+
+
+provenance from multiple sources is preserved
+
+
+merge behavior is rule-driven and auditable
+
+
+ambiguous cases route to manual review
+
+
+ingestion can no longer create obvious duplicates silently
+
+
+Output format:
+
+
+Explain the dedupe and entity resolution model
+
+
+Define comparison dimensions and scoring
+
+
+Generate backend services/rules/audit models
+
+
+Show merge precedence strategy
+
+
+Provide concrete test scenarios and expected outcomes
+
+
+Sequence
+Run them in this order:
+
+
+P10
+
+
+P11
+
+
+P12
+
+
+That order matters:
+
+
+P10 creates the ingestion backbone
+
+
+P11 adds the first serious extraction pipeline
+
+
+P12 prevents the new pipeline from polluting the system of record with duplicate junk
+
+
+Hard warning
+Do not let Claude implement OCR and normalization directly inside the UI or inside controller actions with no job orchestration. That will collapse under retries, observability, provider failures, and review workflows almost immediately.
+
+
+
+
+Bundle 5 — Moderation and Review
+Purpose: make event publishing safe and operable.
+Prompt names
+13. P13 — Build Moderation Queue and Review Dashboard API
+14. P14 — Implement Confidence Scoring and Publish Eligibility Rules
+15. P15 — Add Review Actions, Audit Trail, and Rollback Workflow
+
+
+I’m anchoring the moderation prompts to the current repo surfaces first, then I’ll write Bundle 5 so it fits the system you’re actually building rather than a generic review queue.
+
+
+Thought for 11s
+
+
+Received app response
+Bundle 5 — Moderation and Review
+The current repo only hints at moderation through a thin status and optional confidence on the loose NightlifeItem type. That is not an operable review system; it is just a UI marker. Bundle 5 turns review into a real control surface with queueing, eligibility rules, auditability, and rollback. 
+
+
+
+
+P13 — Build Moderation Queue and Review Dashboard API
+Writing
+You are implementing the WeUP Phase 0 moderation and review system.
+
+
+Goal:
+Build a real moderation queue and review dashboard API so event candidates and event changes can be reviewed, filtered, triaged, and resolved through an operator workflow.
+
+
+Context:
+The current frontend type only includes a lightweight status and optional confidence, which is not enough for operational moderation. Bundles 2–4 introduced canonical event lifecycle, provenance, ingestion jobs, OCR normalization, deduplication, and review metadata. I now need an operator-facing moderation backend that can expose a queue of reviewable items with all required evidence and decision context.
+
+
+Primary objective:
+Create a moderation queue API and review dashboard contract that supports:
+
+
+pending event candidate review
+
+
+pending merge/dedupe review
+
+
+failed ingestion review
+
+
+publish-blocked events
+
+
+already-reviewed item history
+
+
+operator triage and filtering
+
+
+Technology requirements:
+
+
+.NET 8
+
+
+C#
+
+
+ASP.NET Core
+
+
+integration with canonical event domain, provenance model, ingestion jobs, and persistence from Bundles 2–4
+
+
+structured API contracts for future admin UI
+
+
+no frontend-only moderation logic
+
+
+What to do:
+
+
+Define a moderation queue item model that can represent at minimum:
+
+
+event candidate awaiting review
+
+
+duplicate resolution awaiting review
+
+
+ingestion failure needing operator attention
+
+
+publish-blocked event needing correction
+
+
+Expose moderation endpoints such as:
+
+
+GET /api/moderation/queue
+
+
+GET /api/moderation/queue/{itemId}
+
+
+GET /api/moderation/stats
+
+
+GET /api/moderation/review-history
+
+
+Support queue filters and sort options:
+
+
+status
+
+
+source type
+
+
+review reason
+
+
+confidence bucket
+
+
+city / district
+
+
+date range
+
+
+assigned reviewer
+
+
+ingestion job id
+
+
+duplicate severity
+
+
+Define moderation projections that include:
+
+
+candidate event snapshot
+
+
+provenance summary
+
+
+confidence summary
+
+
+review blockers
+
+
+dedupe/match summary
+
+
+evidence refs
+
+
+ingestion job summary
+
+
+timestamps
+
+
+Build application services for:
+
+
+moderation queue search
+
+
+moderation item detail retrieval
+
+
+moderation stats aggregation
+
+
+recent review history retrieval
+
+
+Add pagination/cursor design for queue endpoints.
+
+
+Add validation and consistent ProblemDetails responses.
+
+
+Add role/authorization seams for operator/admin access, but keep auth complexity bounded if full auth is not implemented yet.
+
+
+Keep transport DTOs separate from domain and persistence entities.
+
+
+Add example JSON responses for:
+
+
+queue listing
+
+
+item detail
+
+
+queue stats
+
+
+Add a concise architecture note explaining how ingestion, dedupe, and moderation connect.
+
+
+Design rules:
+
+
+do not leak raw provider payloads directly to the UI without evidence wrapping
+
+
+do not make the queue a generic blob of JSON with no structure
+
+
+do not collapse different moderation item types into an untyped catch-all
+
+
+optimize for operator clarity and debugging
+
+
+preserve explainability
+
+
+Recommended outputs:
+
+
+moderation queue DTOs
+
+
+moderation query contracts
+
+
+API endpoints
+
+
+application services/handlers
+
+
+stats and history query services
+
+
+markdown note for future admin dashboard integration
+
+
+Acceptance criteria:
+
+
+moderation items are queryable and filterable
+
+
+item detail includes enough evidence to make a decision
+
+
+queue stats support operational oversight
+
+
+design is ready for a future review dashboard frontend
+
+
+moderation is now a real backend surface, not just a status flag
+
+
+Output format:
+
+
+Explain the moderation queue architecture
+
+
+Define queue item types and contracts
+
+
+Generate API/services/contracts
+
+
+Show example responses and filtering semantics
+
+
+Explain integration with ingestion and review workflows
+
+
+P14 — Implement Confidence Scoring and Publish Eligibility Rules
+Writing
+You are implementing the WeUP Phase 0 publish eligibility engine.
+
+
+Goal:
+Turn review confidence into explicit publish-eligibility rules so events cannot be published based on vague or inconsistent heuristics.
+
+
+Context:
+The existing prototype only models a loose optional confidence number. Bundles 2–4 introduced provenance, review metadata, OCR normalization, geocoding, dedupe, and ingestion evidence. I now need a deterministic confidence scoring and publish-eligibility engine that converts those signals into operational decisions.
+
+
+Primary objective:
+Create a backend rule engine that determines whether an event candidate:
+
+
+can be auto-approved
+
+
+must go to manual review
+
+
+is blocked from publication
+
+
+requires missing-field remediation
+
+
+is too risky because of duplicate ambiguity, OCR ambiguity, or geocode uncertainty
+
+
+Technology requirements:
+
+
+.NET 8
+
+
+C#
+
+
+deterministic, explainable rules
+
+
+integration with Bundle 2 confidence/provenance model
+
+
+integration with Bundle 4 ingestion + dedupe pipeline
+
+
+no black-box scoring without operator-readable breakdown
+
+
+What to do:
+
+
+Define a confidence vector model for publish eligibility using dimensions such as:
+
+
+extraction confidence
+
+
+geocode confidence
+
+
+temporal confidence
+
+
+venue match confidence
+
+
+duplicate confidence / conflict risk
+
+
+source trust level
+
+
+review confidence
+
+
+Create a publish eligibility evaluator service with outputs such as:
+
+
+AutoApproveEligible
+
+
+ManualReviewRequired
+
+
+BlockedMissingRequiredFields
+
+
+BlockedDuplicateConflict
+
+
+BlockedLowConfidence
+
+
+BlockedPolicyViolation
+
+
+Define explicit rules and thresholds for:
+
+
+auto-approval
+
+
+manual review routing
+
+
+publish blocking
+
+
+Add field completeness checks for publishable events:
+
+
+title
+
+
+venue
+
+
+normalized address
+
+
+validated geo
+
+
+valid start time
+
+
+status consistency
+
+
+provenance presence
+
+
+Add rule explainability outputs:
+
+
+overall decision
+
+
+confidence breakdown
+
+
+blockers
+
+
+recommendations for remediation
+
+
+rules triggered
+
+
+Create helper services such as:
+
+
+IConfidenceScoringService
+
+
+IPublishEligibilityService
+
+
+IEligibilityRuleSet
+
+
+Persist evaluation results or snapshots where useful for audit/review history.
+
+
+Expose an internal/admin endpoint or application service seam that can recalculate publish eligibility for a given moderation item or event candidate.
+
+
+Add representative tests for:
+
+
+high-confidence manual submission
+
+
+clean flyer OCR candidate
+
+
+ambiguous venue extraction
+
+
+missing address
+
+
+strong duplicate conflict
+
+
+low-confidence geocode
+
+
+Provide examples of rule outputs in JSON or DTO form.
+
+
+Design rules:
+
+
+do not use one single opaque score as the only decision input
+
+
+do not auto-publish candidates with unresolved duplicate ambiguity
+
+
+do not let lower-confidence extraction override high-confidence reviewed data
+
+
+keep the rules deterministic and explainable
+
+
+make threshold tuning explicit and centralized
+
+
+Recommended outputs:
+
+
+confidence vector types
+
+
+publish eligibility result contract
+
+
+evaluator services/rules
+
+
+tests
+
+
+markdown note documenting the rule system
+
+
+Acceptance criteria:
+
+
+publish decisions are rule-driven and explainable
+
+
+confidence is multi-dimensional
+
+
+blockers and remediation steps are clear
+
+
+the engine integrates cleanly with moderation queue items
+
+
+the system can distinguish auto-approvable candidates from risky ones
+
+
+Output format:
+
+
+Explain the confidence and eligibility model
+
+
+Define rules and thresholds
+
+
+Generate services/contracts/tests
+
+
+Show example decisions for multiple candidate scenarios
+
+
+Explain how moderation uses these outputs
+
+
+P15 — Add Review Actions, Audit Trail, and Rollback Workflow
+Writing
+You are implementing the operational review action system for WeUP Phase 0.
+
+
+Goal:
+Add real moderator actions, durable audit trail recording, and rollback workflow so moderation decisions are reversible, traceable, and safe.
+
+
+Context:
+A moderation queue without action semantics and auditability is not operational. After Bundles 2–4 and P13–P14, the system now has event candidates, reviewable items, provenance, confidence scoring, publish eligibility, and dedupe outcomes. I need review actions that modify state safely and leave an immutable operational history. The current prototype has no such workflow.
+
+
+Primary objective:
+Build moderation review actions and audit capabilities for:
+
+
+approve
+
+
+reject
+
+
+request changes / request correction
+
+
+mark duplicate
+
+
+merge into existing
+
+
+archive
+
+
+rollback publication
+
+
+reopen review
+
+
+Technology requirements:
+
+
+.NET 8
+
+
+C#
+
+
+durable audit trail
+
+
+integration with canonical event lifecycle and moderation queue
+
+
+explicit state transitions
+
+
+idempotent or guarded action handling where appropriate
+
+
+What to do:
+
+
+Define review actions and allowed state transitions for moderation items and events.
+
+
+Create application services such as:
+
+
+IReviewActionService
+
+
+IAuditTrailService
+
+
+IRollbackService
+
+
+Implement review action endpoints such as:
+
+
+POST /api/moderation/queue/{itemId}/approve
+
+
+POST /api/moderation/queue/{itemId}/reject
+
+
+POST /api/moderation/queue/{itemId}/request-changes
+
+
+POST /api/moderation/queue/{itemId}/mark-duplicate
+
+
+POST /api/moderation/queue/{itemId}/merge
+
+
+POST /api/moderation/queue/{itemId}/archive
+
+
+POST /api/moderation/events/{eventId}/rollback
+
+
+POST /api/moderation/queue/{itemId}/reopen
+
+
+Define request payloads where necessary, including:
+
+
+review note
+
+
+rejection reason
+
+
+rollback reason
+
+
+merge target id
+
+
+correction instructions
+
+
+Create an immutable audit trail model that records:
+
+
+actor
+
+
+action type
+
+
+target item/event
+
+
+previous state
+
+
+next state
+
+
+timestamp
+
+
+rationale
+
+
+evidence snapshot refs
+
+
+correlation id
+
+
+Implement rollback workflow rules:
+
+
+rollback a published event into review or archived state
+
+
+preserve history and provenance
+
+
+ensure downstream review queues reflect rollback state
+
+
+Guard against illegal or unsafe actions:
+
+
+approving blocked candidates
+
+
+merging into nonexistent targets
+
+
+rolling back already archived events without rule allowance
+
+
+duplicate actions that should be idempotent or rejected explicitly
+
+
+Add tests for:
+
+
+approve with audit entry
+
+
+reject with reason
+
+
+merge with provenance preservation
+
+
+rollback published event
+
+
+reopen previously resolved moderation item
+
+
+Add example audit log projections for future operator UI.
+
+
+Document action semantics and rollback strategy.
+
+
+Design rules:
+
+
+do not mutate moderation state without audit
+
+
+do not implement rollback as destructive deletion
+
+
+do not allow silent overwrites of review history
+
+
+make state transitions explicit and validated
+
+
+preserve provenance and evidence through merges and rollback
+
+
+Recommended outputs:
+
+
+review action DTOs
+
+
+moderation action endpoints
+
+
+audit trail entities/services
+
+
+rollback service
+
+
+tests
+
+
+markdown documentation for action semantics
+
+
+Acceptance criteria:
+
+
+moderators can take real actions through the backend
+
+
+every action is durably audited
+
+
+rollback is explicit, safe, and reversible in a controlled way
+
+
+illegal transitions are blocked
+
+
+review history becomes an operational record, not an afterthought
+
+
+Output format:
+
+
+Explain the review action and audit architecture
+
+
+Define action semantics and state transitions
+
+
+Generate services/endpoints/contracts/tests
+
+
+Show example audit records and rollback behavior
+
+
+Explain how this closes the moderation loop operationally
+
+
+Sequence
+Run them in this order:
+
+
+P13
+
+
+P14
+
+
+P15
+
+
+That order matters:
+
+
+P13 creates the review surface
+
+
+P14 defines how items become publishable or blocked
+
+
+P15 makes moderator decisions safe, durable, and reversible
+
+
+Hard warning
+Do not let moderation actions directly mutate event state in controllers without application-layer orchestration and audit recording. That would destroy traceability immediately.
+
+
+
+
+Bundle 6 — Identity and User Persistence
+Purpose: move from ephemeral UI to persistent user behavior.
+Prompt names
+16. P16 — Implement Auth, Sessions, and Basic Profile Backbone
+17. P17 — Persist Saved Signals, Itinerary State, and User Preferences
+18. P18 — Implement Event Submission Workflow with Draft, Review, Published States
+
+
+I’m grounding Bundle 6 against the current frontend state model so the identity and persistence prompts target the actual gaps: no auth backbone, ephemeral saves, and client-only submission state.
+
+
+Thought for 9s
+
+
+Received app response
+Bundle 6 — Identity and User Persistence
+The current app still keeps core user behavior in client memory: savedIds, discovered events, and submission/publish flow all live inside app/page.tsx, which means there is no real identity backbone, session persistence, or durable user state. 
+
+
+
+
+P16 — Implement Auth, Sessions, and Basic Profile Backbone
+Writing
+You are implementing identity and user persistence for WeUP Phase 0.
+
+
+Goal:
+Add a production-credible authentication, session, and basic profile backbone so WeUP can move from anonymous ephemeral UI behavior to persistent user-backed behavior.
+
+
+Context:
+The current frontend behaves like a client-only prototype. Saved events and submission state are currently local UI state, and profile behavior is not backed by durable identity. I need a minimal but real identity layer before user saves, itinerary state, and submission ownership can be trusted. The system should support a future trust graph and invite model, but Phase 0 only needs a clean baseline.
+
+
+Primary objective:
+Implement:
+
+
+authentication
+
+
+session management
+
+
+current-user resolution
+
+
+basic user profile persistence
+
+
+profile read/update APIs
+
+
+frontend integration seam for session-aware behavior
+
+
+Technology requirements:
+
+
+.NET 8 backend
+
+
+PostgreSQL + EF Core persistence
+
+
+secure session or token strategy suitable for a Phase 0 MVP
+
+
+clean separation between auth transport, identity domain, and profile persistence
+
+
+frontend integration for session-aware API access
+
+
+Recommended auth scope for Phase 0:
+
+
+email magic link or passwordless auth preferred
+
+
+alternatively a simple OAuth provider if justified
+
+
+keep auth minimal but real
+
+
+do not overengineer enterprise IAM
+
+
+What to do:
+
+
+Design an identity model for:
+
+
+UserAccount
+
+
+UserProfile
+
+
+UserSession
+
+
+Decide on the Phase 0 auth method and justify it briefly.
+
+
+Implement auth endpoints such as:
+
+
+POST /api/auth/start
+
+
+POST /api/auth/verify or callback completion endpoint
+
+
+POST /api/auth/logout
+
+
+GET /api/auth/me
+
+
+Implement current-session resolution middleware or equivalent application-layer user context.
+
+
+Create a durable profile model with fields appropriate for Phase 0, such as:
+
+
+id
+
+
+display name
+
+
+username or handle if justified
+
+
+email
+
+
+city / home market
+
+
+created at
+
+
+updated at
+
+
+onboarding state
+
+
+Add profile endpoints such as:
+
+
+GET /api/users/me
+
+
+PATCH /api/users/me
+
+
+Define contracts for frontend consumption:
+
+
+current session
+
+
+current user profile
+
+
+auth state
+
+
+Add session security basics:
+
+
+expiration
+
+
+revocation
+
+
+secure cookie or token handling
+
+
+anti-replay considerations appropriate for the chosen method
+
+
+Add auth/identity integration notes for future:
+
+
+saved events ownership
+
+
+submission ownership
+
+
+trust graph
+
+
+operator/admin role seams
+
+
+Add tests or verification examples for:
+
+
+login start
+
+
+login completion
+
+
+fetching current user
+
+
+logout
+
+
+unauthorized access to protected endpoints
+
+
+Design rules:
+
+
+do not keep identity as frontend-only state
+
+
+do not implement weak custom password flows if a better Phase 0 path exists
+
+
+do not blur auth/session logic with profile logic
+
+
+preserve clean seams for future RBAC or trust-tier extensions
+
+
+keep implementation grounded and minimal
+
+
+Recommended outputs:
+
+
+identity domain models
+
+
+auth/session persistence models
+
+
+API endpoints
+
+
+current-user resolver
+
+
+profile endpoints
+
+
+frontend integration seam
+
+
+architecture note
+
+
+Acceptance criteria:
+
+
+WeUP has a real current-user concept
+
+
+sessions are durable and revocable
+
+
+basic user profile is persisted
+
+
+protected endpoints can resolve the authenticated user
+
+
+the system is ready for persisted saves and submission ownership
+
+
+Output format:
+
+
+Explain the chosen auth/session approach
+
+
+Define identity and profile models
+
+
+Generate backend code/contracts/endpoints
+
+
+Explain frontend integration
+
+
+Explain future extension seams
+
+
+P17 — Persist Saved Signals, Itinerary State, and User Preferences
+Writing
+You are implementing persistent user state for WeUP Phase 0.
+
+
+Goal:
+Replace ephemeral client-side saves and personal state with durable user-backed persistence for saved signals, itinerary state, and user preferences.
+
+
+Context:
+The current app stores saved events and related user interaction state inside local frontend state, which means all behavior is lost across refreshes and cannot support personalized feeds, trust systems, or real user continuity. I need durable persistence tied to authenticated users.
+
+
+Primary objective:
+Persist:
+
+
+saved signals / bookmarked events
+
+
+lightweight itinerary state
+
+
+user viewing/preferences relevant to Phase 0
+
+
+user-specific defaults that improve continuity without overbuilding
+
+
+Technology requirements:
+
+
+.NET 8 backend
+
+
+EF Core + Postgres
+
+
+authenticated user context from P16
+
+
+clean contracts for frontend read/write flows
+
+
+idempotent write APIs
+
+
+What to do:
+
+
+Review the current frontend state model and identify which user behaviors should become durable:
+
+
+saved events
+
+
+optional itinerary grouping or shortlist ordering
+
+
+selected city / home market
+
+
+preferred categories
+
+
+last-used temporal view or date preference if justified
+
+
+Design persistence models for:
+
+
+SavedSignal
+
+
+UserItinerary
+
+
+UserItineraryItem
+
+
+UserPreference
+
+
+Define which preferences belong in Phase 0 versus which should wait.
+
+
+Implement endpoints such as:
+
+
+GET /api/users/me/saves
+
+
+POST /api/users/me/saves/{eventId}
+
+
+DELETE /api/users/me/saves/{eventId}
+
+
+GET /api/users/me/itinerary
+
+
+PUT /api/users/me/itinerary
+
+
+GET /api/users/me/preferences
+
+
+PATCH /api/users/me/preferences
+
+
+Ensure save and unsave operations are idempotent.
+
+
+Define itinerary semantics clearly:
+
+
+whether it is a single shortlist
+
+
+whether ordering is user-defined
+
+
+whether it stores notes or planned attendance flags
+
+
+Define a minimal but useful preference model, such as:
+
+
+preferred categories
+
+
+preferred market/city
+
+
+map behavior defaults
+
+
+notification opt-in seam
+
+
+Add DTO projections for frontend consumption.
+
+
+Add frontend integration seams to replace local savedIds and related state with API-backed behavior.
+
+
+Add tests or verification examples for:
+
+
+save idempotency
+
+
+unsave idempotency
+
+
+itinerary replacement/update
+
+
+preference patching
+
+
+authenticated access rules
+
+
+Design rules:
+
+
+do not persist every transient UI state toggle
+
+
+do not confuse saved events with submission ownership
+
+
+do not overdesign itinerary into a full social planning product at Phase 0
+
+
+keep the persistence model useful, not speculative
+
+
+model user ownership explicitly
+
+
+Recommended outputs:
+
+
+persistence models and EF configurations
+
+
+service layer for saves/itinerary/preferences
+
+
+endpoints/contracts
+
+
+frontend replacement seam for local save state
+
+
+brief markdown note on user state persistence boundaries
+
+
+Acceptance criteria:
+
+
+saved signals are durable across sessions
+
+
+itinerary state is user-owned and persistent
+
+
+preferences are durable and patchable
+
+
+frontend can stop depending on local-only saved state
+
+
+the system now supports real user continuity
+
+
+Output format:
+
+
+Explain what user state should be persisted in Phase 0
+
+
+Define the persistence and API model
+
+
+Generate backend code/contracts/endpoints
+
+
+Show frontend integration replacement seams
+
+
+Explain scope boundaries and tradeoffs
+
+
+P18 — Implement Event Submission Workflow with Draft, Review, Published States
+Writing
+You are implementing the authenticated user event submission workflow for WeUP Phase 0.
+
+
+Goal:
+Turn the current client-only publish interaction into a real backend submission workflow with draft, review, and published states tied to authenticated users and moderation rules.
+
+
+Context:
+The current add-event flow can create a local event object and immediately push it into frontend state. That is not a valid system of record. I need authenticated submissions with ownership, draft persistence, moderation handoff, and publication status transitions.
+
+
+Primary objective:
+Build a real submission workflow that supports:
+
+
+authenticated user-owned event drafts
+
+
+draft editing
+
+
+draft resubmission
+
+
+review submission
+
+
+moderation handoff
+
+
+publish outcome tracking
+
+
+rejection/correction workflow
+
+
+Technology requirements:
+
+
+.NET 8 backend
+
+
+EF Core + Postgres
+
+
+integration with P16 auth/session/current-user
+
+
+integration with canonical event lifecycle from Bundle 2
+
+
+integration with ingestion/review/moderation from Bundles 4–5
+
+
+clear separation between submission drafts and published events
+
+
+What to do:
+
+
+Design a submission workflow model with states such as:
+
+
+Draft
+
+
+SubmittedForReview
+
+
+NeedsCorrection
+
+
+Approved
+
+
+Published
+
+
+Rejected
+
+
+Archived
+
+
+Define ownership and permissions:
+
+
+only the submitting user can edit their draft before review lock
+
+
+moderators can request corrections or reject
+
+
+published event state is controlled by moderation/publish rules
+
+
+Define persistence models for:
+
+
+UserEventSubmission
+
+
+SubmissionDraftSnapshot
+
+
+SubmissionReviewLink or equivalent seam if useful
+
+
+Implement endpoints such as:
+
+
+POST /api/submissions
+
+
+GET /api/submissions/me
+
+
+GET /api/submissions/{id}
+
+
+PATCH /api/submissions/{id}
+
+
+POST /api/submissions/{id}/submit-for-review
+
+
+POST /api/submissions/{id}/withdraw if justified
+
+
+Ensure the workflow integrates with:
+
+
+provenance tracking
+
+
+confidence scoring
+
+
+publish eligibility
+
+
+moderation queue generation
+
+
+Define what fields a user may edit in draft versus after correction request.
+
+
+Preserve submission history and user ownership metadata.
+
+
+Add frontend integration seam so AddEventModal and related UI stop publishing directly into local arrays and instead:
+
+
+create/update a draft
+
+
+submit for review
+
+
+poll or fetch current status
+
+
+Add tests or verification examples for:
+
+
+create draft
+
+
+update draft
+
+
+submit for review
+
+
+correction requested
+
+
+rejection
+
+
+published outcome tracking
+
+
+Add a concise workflow note documenting:
+
+
+state transitions
+
+
+who can act at each state
+
+
+how submission ties into moderation and publication
+
+
+Design rules:
+
+
+do not let client code directly create published events
+
+
+do not skip draft persistence
+
+
+do not merge submission state with canonical published event state carelessly
+
+
+preserve auditability and ownership
+
+
+keep Phase 0 focused on operational submission, not social co-authoring
+
+
+Recommended outputs:
+
+
+submission domain/persistence models
+
+
+submission workflow services
+
+
+endpoints/contracts
+
+
+state transition rules
+
+
+frontend replacement seam for AddEventModal submit flow
+
+
+workflow documentation
+
+
+Acceptance criteria:
+
+
+user submissions are authenticated and durable
+
+
+drafts can be edited before review
+
+
+submission enters moderation through a real backend workflow
+
+
+publication is no longer a client-side mutation
+
+
+ownership and review state are explicit
+
+
+Output format:
+
+
+Explain the submission workflow architecture
+
+
+Define states, ownership, and permissions
+
+
+Generate backend code/contracts/endpoints
+
+
+Show frontend integration replacement seam
+
+
+Explain how this connects to moderation and publication
+
+
+Sequence
+Run them in this order:
+
+
+P16
+
+
+P17
+
+
+P18
+
+
+That order matters:
+
+
+P16 creates the user identity backbone
+
+
+P17 makes user behavior durable
+
+
+P18 ties event submission to authenticated ownership and moderation
+
+
+Hard warning
+Do not let Claude implement event submission as “authenticated client posts directly to published events.” That would bypass every ingestion, confidence, moderation, and audit control you just built.
+
+
+
+
+Bundle 7 — Spatial and Temporal Semantics
+Purpose: make the map and time controls mean something real.
+Prompt names
+19. P19 — Implement Bounding Box, Cluster, and District Query Semantics
+20. P20 — Define City Partitioning, Neighborhood Taxonomy, and Market Freeze Rules
+21. P21 — Convert Timeline and Calendar UX into Real Temporal Query Logic
+
+
+I’m grounding Bundle 7 against the current map and time UX first so the prompts target real semantic gaps instead of abstract GIS talk.
+
+
+Thought for 14s
+
+
+Received app response
+Bundle 7 — Spatial and Temporal Semantics
+The current map and time UX are still mostly cosmetic:
+
+
+RadarMap clusters client-side, tracks bounds locally, and dims events by comparing selectedDate against event day, but the semantics are not yet tied to real backend query contracts or district logic. 
+
+
+
+
+TimelineControl maps drag distance to labels like NOW, 6PM, 9PM, MIDNIGHT, 3AM, FRI, SAT, SUN, but those labels are not yet bound to canonical temporal query windows. 
+
+
+
+
+Bundle 7 makes those controls mean something operational.
+
+
+P19 — Implement Bounding Box, Cluster, and District Query Semantics
+Writing
+You are implementing spatial semantics for WeUP Phase 0.
+
+
+Goal:
+Replace loose frontend-only viewport behavior with canonical backend-backed bounding-box, cluster, and district query semantics.
+
+
+Context:
+The current RadarMap tracks client-side map bounds, runs client-side clustering with useSupercluster, and filters/animates markers visually, but the system does not yet have a real spatial query model. I need the map surface to query meaningful spatial slices of the city rather than rely on frontend-only approximation.
+
+
+Primary objective:
+Implement backend and contract semantics for:
+
+
+viewport bounding-box queries
+
+
+cluster-ready map responses
+
+
+district/neighborhood filtering
+
+
+map feed projections
+
+
+spatial query validation
+
+
+frontend integration that replaces ad hoc spatial logic where appropriate
+
+
+Technology requirements:
+
+
+.NET 8 backend
+
+
+EF Core + Postgres
+
+
+frontend contract alignment with the existing map surface
+
+
+deterministic spatial query behavior
+
+
+clear separation between backend spatial semantics and frontend rendering
+
+
+What to do:
+
+
+Define canonical spatial query contracts for the map feed:
+
+
+bounding box
+
+
+zoom level
+
+
+category filters
+
+
+district/neighborhood filters
+
+
+status filters
+
+
+time-window seam
+
+
+Implement validation rules for bounding boxes:
+
+
+min/max coordinate correctness
+
+
+anti-invalid range checks
+
+
+anti-worldwide overfetch guardrails if appropriate
+
+
+Define map feed response shapes for:
+
+
+individual event markers
+
+
+cluster-aware projections
+
+
+district summaries if useful
+
+
+Decide where clustering should occur for Phase 0:
+
+
+backend pre-aggregation
+
+
+frontend clustering over canonical feed results
+
+
+or a hybrid seam
+Justify the choice.
+
+
+Introduce a district/neighborhood query model:
+
+
+district code
+
+
+district name
+
+
+polygon or bounding approximation seam
+
+
+city/market association
+
+
+Add backend query services for:
+
+
+viewport event retrieval
+
+
+district-filtered retrieval
+
+
+optional district summary counts
+
+
+Add indexes and query-shaping recommendations for spatial reads.
+
+
+Update frontend service seams so RadarMap consumes canonical spatial feed contracts instead of raw loose arrays.
+
+
+Keep the visual clustering UX intact while making the data semantics real.
+
+
+Add tests or verification examples for:
+
+
+valid bounding-box query
+
+
+invalid bounding-box query
+
+
+zoomed-in dense area
+
+
+district-filtered map query
+
+
+empty viewport response
+
+
+Design rules:
+
+
+do not let the frontend remain the source of truth for map semantics
+
+
+do not hardcode one city’s district model into global contracts
+
+
+do not return unbounded event sets to the map
+
+
+do not collapse district semantics into plain string tags only
+
+
+preserve clean seams for later PostGIS or polygon-based upgrades
+
+
+Recommended outputs:
+
+
+spatial query DTOs/contracts
+
+
+backend query services/endpoints
+
+
+district model/seams
+
+
+frontend service replacement seam for map feed
+
+
+architecture note on spatial query strategy
+
+
+Acceptance criteria:
+
+
+bounding-box semantics are explicit and validated
+
+
+district/neighborhood filtering is first-class
+
+
+clustering strategy is deliberate and documented
+
+
+frontend map feed becomes contract-driven
+
+
+the map surface now reflects real spatial semantics
+
+
+Output format:
+
+
+Explain current spatial-semantic gaps
+
+
+Define target bounding-box, cluster, and district semantics
+
+
+Generate contracts/services/endpoints
+
+
+Show frontend migration seam for RadarMap
+
+
+Explain performance and future PostGIS tradeoffs
+
+
+P20 — Define City Partitioning, Neighborhood Taxonomy, and Market Freeze Rules
+Writing
+You are defining WeUP Phase 0 market semantics.
+
+
+Goal:
+Create a canonical city partitioning model, neighborhood taxonomy, and market freeze rules so the product stops behaving like a loosely mixed geo demo and becomes a market-specific city system.
+
+
+Context:
+The current prototype has map-first UX but lacks a formal market model. Spatial behavior can easily drift into mixed-city demo logic unless the system defines what a market is, how districts/neighborhoods are partitioned, and how a Phase 0 launch market is frozen operationally. I need explicit market boundaries and taxonomy now so ingestion, moderation, ranking, and sponsor workflows do not become geographically incoherent.
+
+
+Primary objective:
+Define:
+
+
+market identity
+
+
+city partitioning model
+
+
+district/neighborhood taxonomy
+
+
+launch-market freeze rules
+
+
+rules for cross-market visibility and expansion seams
+
+
+Technology requirements:
+
+
+backend and contract-first design
+
+
+compatible with the spatial query work from P19
+
+
+extensible to future multi-city expansion
+
+
+precise enough for ingestion, moderation, and analytics
+
+
+What to do:
+
+
+Define core market entities/concepts such as:
+
+
+Market
+
+
+District
+
+
+Neighborhood
+
+
+MarketBoundary
+
+
+MarketStatus
+
+
+Decide whether district and neighborhood are separate concepts or one taxonomy layer with aliases.
+
+
+Define canonical identifiers for:
+
+
+market
+
+
+district
+
+
+neighborhood
+
+
+Create a taxonomy model that supports:
+
+
+canonical names
+
+
+aliases
+
+
+display names
+
+
+sort/order priority
+
+
+parent-child relationships
+
+
+Define launch-market freeze rules for Phase 0, for example:
+
+
+one active launch market
+
+
+limited allowed ingest outside launch market
+
+
+soft/hard blocking of publication outside active market
+
+
+operator override seam
+
+
+Define how events are assigned to:
+
+
+a market
+
+
+a district
+
+
+a neighborhood
+based on normalized geo/address data.
+
+
+Add backend policy services or rule evaluators for:
+
+
+market assignment
+
+
+market eligibility
+
+
+freeze enforcement
+
+
+Add persistence models/configuration for market and taxonomy metadata if appropriate.
+
+
+Expose query endpoints or admin/read seams for:
+
+
+active markets
+
+
+district/neighborhood taxonomy
+
+
+market metadata
+
+
+Add tests or verification examples for:
+
+
+event inside active launch market
+
+
+event outside market but near border
+
+
+unknown neighborhood with known district
+
+
+inactive market event submission
+
+
+alias resolution
+
+
+Provide a migration strategy for the current prototype so city behavior becomes explicit rather than implied.
+
+
+Design rules:
+
+
+do not let city behavior remain implicit in mock data
+
+
+do not mix multiple cities operationally without a market model
+
+
+do not assume neighborhood strings are canonical without taxonomy control
+
+
+keep Phase 0 strict enough to support a focused launch
+
+
+preserve future multi-city expansion seams
+
+
+Recommended outputs:
+
+
+market and taxonomy domain models
+
+
+market policy / freeze rule services
+
+
+persistence models if justified
+
+
+read endpoints/contracts for taxonomy data
+
+
+architecture note on launch-market discipline
+
+
+Acceptance criteria:
+
+
+market identity is explicit
+
+
+district/neighborhood taxonomy is canonical and queryable
+
+
+launch-market freeze rules are enforceable
+
+
+events can be assigned to market geography coherently
+
+
+the system is ready for focused city launch and later controlled expansion
+
+
+Output format:
+
+
+Explain the market/taxonomy problem
+
+
+Define city partitioning and taxonomy model
+
+
+Define market freeze rules and enforcement
+
+
+Generate code/contracts/services
+
+
+Explain how this hardens WeUP for single-city launch discipline
+
+
+P21 — Convert Timeline and Calendar UX into Real Temporal Query Logic
+Writing
+You are implementing temporal semantics for WeUP Phase 0.
+
+
+Goal:
+Convert the current timeline scrubber and calendar UI into real temporal query logic so time-based exploration maps cleanly to backend event queries.
+
+
+Context:
+The current TimelineControl maps drag motion to labels like NOW, 6PM, 9PM, MIDNIGHT, 3AM, FRI, SAT, SUN, but those labels are still UI tokens rather than canonical query windows. The map also visually recesses events based on selected date, but that behavior is still largely frontend-only. I need real temporal semantics and contract-driven time windows.
+
+
+Primary objective:
+Implement:
+
+
+canonical time-window definitions
+
+
+timeline label to query-window mapping
+
+
+calendar date-window semantics
+
+
+local market timezone handling
+
+
+event visibility rules for ongoing, upcoming, and cross-midnight events
+
+
+frontend integration for real time-based feed querying
+
+
+Technology requirements:
+
+
+.NET 8 backend
+
+
+contract-driven temporal query model
+
+
+frontend integration with existing timeline/calendar UX
+
+
+timezone-aware semantics
+
+
+deterministic filtering rules
+
+
+What to do:
+
+
+Define canonical temporal query models such as:
+
+
+TimeWindow
+
+
+DateWindow
+
+
+TemporalPreset
+
+
+TemporalQueryMode
+
+
+Define how each current timeline label maps to a real query:
+
+
+NOW
+
+
+6PM
+
+
+9PM
+
+
+MIDNIGHT
+
+
+3AM
+
+
+FRI
+
+
+SAT
+
+
+SUN
+
+
+Define whether these labels map to:
+
+
+absolute windows
+
+
+relative windows
+
+
+market-local windows
+and justify the choice.
+
+
+Define event temporal rules for:
+
+
+upcoming events
+
+
+ongoing events
+
+
+events spanning midnight
+
+
+multi-day events
+
+
+archival visibility
+
+
+Implement backend query services/contracts for:
+
+
+point-in-time “what’s live now”
+
+
+evening window
+
+
+specific calendar date
+
+
+weekend/day presets
+
+
+Define how calendar selection and timeline scrubbing interact:
+
+
+do they combine
+
+
+does one override the other
+
+
+how should conflicts be resolved
+
+
+Update frontend service seams so timeline and calendar selections request real temporal feed data instead of only doing client-side visual filtering.
+
+
+Add tests or verification examples for:
+
+
+ongoing event across midnight
+
+
+same-day evening query
+
+
+weekend preset query
+
+
+market-local timezone boundary
+
+
+empty-result time window
+
+
+Document temporal semantics clearly for future ranking and recommendation logic.
+
+
+Design rules:
+
+
+do not let time labels remain just decorative UI
+
+
+do not use browser-local time as the product truth if market-local time is required
+
+
+do not mishandle cross-midnight nightlife events
+
+
+keep preset semantics explicit and stable
+
+
+preserve a clear seam for later Kairos-like ranking or temporal scoring if desired
+
+
+Recommended outputs:
+
+
+temporal query contracts
+
+
+preset-to-window mapping logic
+
+
+backend temporal query services/endpoints
+
+
+frontend integration seam for timeline/calendar controls
+
+
+tests and temporal semantics note
+
+
+Acceptance criteria:
+
+
+timeline and calendar selections map to real query windows
+
+
+market-local time semantics are explicit
+
+
+ongoing and cross-midnight events behave correctly
+
+
+frontend time controls become contract-driven
+
+
+temporal exploration now reflects actual event feed logic
+
+
+Output format:
+
+
+Explain current temporal-semantic gaps
+
+
+Define target temporal query model and preset mapping
+
+
+Generate contracts/services/endpoints
+
+
+Show frontend migration seam for timeline/calendar controls
+
+
+Explain tricky edge cases and how they are handled
+
+
+Sequence
+Run them in this order:
+
+
+P19
+
+
+P20
+
+
+P21
+
+
+That order matters:
+
+
+P19 makes viewport and district queries real
+
+
+P20 freezes market geography and taxonomy discipline
+
+
+P21 binds the timeline/calendar UI to actual time windows
+
+
+Hard warning
+Do not let Claude keep temporal semantics inside the UI as string labels plus local filtering. That would preserve the exact illusion you are trying to eliminate.
+
+
+
+
+Bundle 8 — Observability and Release Hardening
+Purpose: make Phase 0 testable and releasable.
+Prompt names
+22. P22 — Add OpenTelemetry, Structured Logging, and Correlation IDs
+23. P23 — Add Product Analytics, Error Telemetry, and Feature Flags
+24. P24 — Add Seed Data, E2E Tests, Smoke Tests, and Release Gates
+
+
+I’m checking the current app surface for observability and release hardening gaps, then I’ll write Bundle 8 as production prompts instead of generic SRE boilerplate.
+
+
+Thought for 11s
+
+
+Received app response
+Bundle 8 — Observability and Release Hardening
+The current repo has essentially no visible observability or release-hardening stack in the frontend package surface: basic Next scripts, linting, and core UI dependencies, but no analytics, error telemetry, feature flagging, or test harness packages are present yet. 
+
+
+
+
+Bundle 8 fixes that so Phase 0 can actually ship and be debugged.
+
+
+P22 — Add OpenTelemetry, Structured Logging, and Correlation IDs
+Writing
+You are implementing observability for WeUP Phase 0.
+
+
+Goal:
+Add OpenTelemetry, structured logging, and correlation IDs across the backend and frontend integration seams so WeUP becomes diagnosable, traceable, and operable in production.
+
+
+Context:
+The current repo shows basic frontend scripts and dependencies but no real observability stack. The platform is evolving from a UI prototype into a backend-driven system with ingestion, moderation, persistence, identity, spatial queries, and temporal logic. I now need cross-cutting observability before Phase 0 can be safely tested or released.
+
+
+Primary objective:
+Implement:
+
+
+OpenTelemetry tracing
+
+
+structured logging
+
+
+correlation IDs across request and job boundaries
+
+
+backend instrumentation for API, ingestion, moderation, and persistence
+
+
+frontend-to-backend request correlation seam
+
+
+basic local/dev export and future production export seams
+
+
+Technology requirements:
+
+
+.NET 8 backend
+
+
+OpenTelemetry for tracing/metrics/log correlation
+
+
+structured logging with clear event schemas
+
+
+correlation propagation through HTTP requests, ingestion jobs, moderation actions, and background workflows
+
+
+minimal frontend correlation support for outgoing API calls
+
+
+What to do:
+
+
+Add OpenTelemetry setup to the backend with instrumentation for:
+
+
+ASP.NET Core requests
+
+
+outgoing HTTP calls
+
+
+EF Core / database access
+
+
+background or ingestion workflows if present
+
+
+Add structured logging conventions across:
+
+
+API requests
+
+
+ingestion pipeline
+
+
+moderation actions
+
+
+identity/session actions
+
+
+spatial/temporal query handlers
+
+
+Define a correlation ID strategy:
+
+
+inbound request correlation
+
+
+propagation through application services
+
+
+propagation through ingestion/moderation job workflows
+
+
+inclusion in logs and trace spans
+
+
+Add middleware or equivalent for correlation ID generation/resolution.
+
+
+Define logging schemas or event templates for important events such as:
+
+
+event ingestion started/completed/failed
+
+
+moderation item created/resolved
+
+
+save/unsave actions
+
+
+auth/session lifecycle
+
+
+event query execution
+
+
+Add structured error logging and exception handling integration.
+
+
+Add environment/config seams for telemetry exporters and sampling.
+
+
+Add a lightweight frontend request helper seam that forwards correlation IDs when calling backend APIs.
+
+
+Document how traces, logs, and correlation IDs should be used during debugging.
+
+
+Add verification steps or tests for:
+
+
+correlation ID present in request logs
+
+
+trace spans emitted for API calls
+
+
+ingestion workflow spans linked to initiating request
+
+
+error logs including correlation metadata
+
+
+Design rules:
+
+
+do not add observability only at controller level; instrument the workflow seams
+
+
+do not emit logs as loose string concatenation
+
+
+do not lose correlation across async boundaries
+
+
+keep config exporter-agnostic where reasonable
+
+
+avoid excessive noise by defining meaningful event boundaries
+
+
+Recommended outputs:
+
+
+OpenTelemetry setup in backend
+
+
+structured logging configuration
+
+
+correlation middleware/services
+
+
+request helper seam for frontend
+
+
+docs/observability.md
+
+
+verification or smoke instructions
+
+
+Acceptance criteria:
+
+
+backend requests are traced
+
+
+structured logs contain stable fields
+
+
+correlation IDs propagate across system workflows
+
+
+failures become diagnosable without ad hoc console debugging
+
+
+the platform is observability-ready for Phase 0 release work
+
+
+Output format:
+
+
+Explain the observability architecture
+
+
+Define logging and correlation strategy
+
+
+Generate backend/frontend integration code
+
+
+Show example log and trace semantics
+
+
+Explain verification steps and tradeoffs
+
+
+P23 — Add Product Analytics, Error Telemetry, and Feature Flags
+Writing
+You are implementing product telemetry and runtime control for WeUP Phase 0.
+
+
+Goal:
+Add product analytics, error telemetry, and feature flags so WeUP can measure real usage, detect failures, and safely control rollout behavior.
+
+
+Context:
+The current repo does not show analytics, telemetry, or feature-flagging dependencies in the package surface. As WeUP moves from prototype to release candidate, it needs product instrumentation and operational kill-switches.
+
+
+Primary objective:
+Implement:
+
+
+product analytics
+
+
+frontend and backend error telemetry
+
+
+feature flag system
+
+
+operational kill switches for high-risk features
+
+
+event taxonomy for core user/product actions
+
+
+Technology requirements:
+
+
+frontend and backend instrumentation
+
+
+provider-agnostic enough to swap analytics/telemetry vendors later
+
+
+flags configurable by environment and extensible for remote control later
+
+
+privacy-conscious event collection
+
+
+What to do:
+
+
+Define a Phase 0 analytics event taxonomy for core product actions such as:
+
+
+map feed viewed
+
+
+event detail opened
+
+
+signal saved
+
+
+signal unsaved
+
+
+calendar opened
+
+
+temporal preset selected
+
+
+submission draft created
+
+
+submission sent for review
+
+
+moderation item resolved
+
+
+Add frontend analytics tracking seams that are centralized and typed.
+
+
+Add backend analytics or event logging seams for server-side operational events where appropriate.
+
+
+Add error telemetry integration for:
+
+
+frontend runtime errors
+
+
+frontend API failures
+
+
+backend exceptions
+
+
+ingestion pipeline failures
+
+
+moderation workflow failures
+
+
+Add feature flag infrastructure for:
+
+
+flyer OCR
+
+
+link ingestion
+
+
+venue page ingestion
+
+
+moderation dashboard
+
+
+profile/preferences surfaces
+
+
+future social/trust unlock features
+
+
+Support flags through:
+
+
+config-based static flags for Phase 0
+
+
+typed accessors
+
+
+optional user/market-targeting seam for future extension
+
+
+Add operational kill switches for risky pathways such as:
+
+
+ingestion disable
+
+
+submission disable
+
+
+moderation disable fallback
+
+
+Define privacy and data minimization rules for analytics events.
+
+
+Add documentation describing:
+
+
+analytics event taxonomy
+
+
+error telemetry strategy
+
+
+feature flag governance
+
+
+Add verification examples for:
+
+
+event tracked on save action
+
+
+frontend exception reported
+
+
+backend exception reported
+
+
+feature flag toggles behavior
+
+
+ingestion disabled by operational flag
+
+
+Design rules:
+
+
+do not scatter analytics calls directly throughout arbitrary UI code without a typed seam
+
+
+do not collect sensitive or unnecessary payloads
+
+
+do not implement feature flags as raw string checks everywhere
+
+
+do not rely on analytics as a substitute for structured operational logging
+
+
+keep product analytics and operational telemetry conceptually distinct
+
+
+Recommended outputs:
+
+
+typed analytics event definitions
+
+
+frontend analytics service/composable/helper
+
+
+backend error telemetry integration seam
+
+
+feature flag config and typed accessors
+
+
+docs/analytics.md and docs/feature-flags.md
+
+
+verification examples
+
+
+Acceptance criteria:
+
+
+core user/product actions are measurable
+
+
+frontend and backend failures are reportable
+
+
+risky features can be disabled without code changes
+
+
+analytics and telemetry are centralized and typed
+
+
+rollout control exists for Phase 0 launch safety
+
+
+Output format:
+
+
+Explain analytics, telemetry, and flag strategy
+
+
+Define event taxonomy and flag model
+
+
+Generate code/config/docs
+
+
+Show sample tracked events and error flows
+
+
+Explain rollout and safety implications
+
+
+P24 — Add Seed Data, E2E Tests, Smoke Tests, and Release Gates
+Writing
+You are implementing release hardening for WeUP Phase 0.
+
+
+Goal:
+Add realistic seed data, end-to-end tests, smoke tests, and release gates so WeUP becomes testable and releasable instead of manually demo-driven.
+
+
+Context:
+The current repo has only basic frontend scripts and no visible test harness or release hardening layer in the package surface. The system now includes backend APIs, ingestion, moderation, identity, user persistence, and spatial/temporal semantics. I need controlled test data and automated release gates before Phase 0 can ship.
+
+
+Primary objective:
+Implement:
+
+
+deterministic seed data
+
+
+realistic local/dev/test environment bootstrapping
+
+
+end-to-end tests for critical flows
+
+
+smoke tests for deployment validation
+
+
+release gates in CI/CD or equivalent build workflow
+
+
+Technology requirements:
+
+
+.NET 8 backend
+
+
+Next.js frontend
+
+
+automated tests appropriate for user-facing workflows
+
+
+deterministic seeded data, not random generation
+
+
+release checks that reflect actual product risk
+
+
+What to do:
+
+
+Design a deterministic seed-data strategy for:
+
+
+markets/city taxonomy
+
+
+venues
+
+
+events
+
+
+users
+
+
+saved signals
+
+
+moderation items
+
+
+ingestion jobs
+
+
+Add seed scripts or backend seeding infrastructure for local/dev/test environments.
+
+
+Remove or neutralize any reliance on random/generated fake event creation in testable environments.
+
+
+Add end-to-end tests covering critical Phase 0 flows such as:
+
+
+load map feed
+
+
+open event detail
+
+
+save/unsave signal
+
+
+login/session flow
+
+
+create submission draft
+
+
+submit for review
+
+
+moderation resolve flow if feasible in test environment
+
+
+Add smoke tests for:
+
+
+backend health
+
+
+basic map feed response
+
+
+auth/me endpoint
+
+
+save endpoint
+
+
+moderation queue endpoint
+
+
+Add release gates such as:
+
+
+typecheck
+
+
+lint
+
+
+backend tests
+
+
+frontend tests
+
+
+E2E critical-path pass
+
+
+smoke validation on deployed environment
+
+
+Define what constitutes a release blocker versus a warning.
+
+
+Add CI/CD workflow examples or actual pipeline config where appropriate.
+
+
+Add docs describing:
+
+
+how to seed local environments
+
+
+how to run E2E tests
+
+
+what release gates exist
+
+
+how to interpret failures
+
+
+Add sample local developer workflows for:
+
+
+fresh environment bootstrap
+
+
+seed database
+
+
+run backend
+
+
+run frontend
+
+
+run tests
+
+
+validate smoke checks
+
+
+Design rules:
+
+
+do not use random demo data in release validation
+
+
+do not create brittle tests that depend on unstable timestamps without control
+
+
+do not define meaningless gates that do not reflect product risk
+
+
+prioritize critical-path reliability over vanity test counts
+
+
+keep the test stack practical and runnable by a small team
+
+
+Recommended outputs:
+
+
+deterministic seed infrastructure
+
+
+E2E test suite and test helpers
+
+
+smoke test suite
+
+
+CI/release workflow config
+
+
+docs/release-hardening.md
+
+
+local bootstrap instructions
+
+
+Acceptance criteria:
+
+
+local/test environments can be seeded deterministically
+
+
+critical user flows are exercised automatically
+
+
+smoke tests verify deployment health
+
+
+release gates are explicit and enforceable
+
+
+WeUP Phase 0 becomes meaningfully releasable
+
+
+Output format:
+
+
+Explain the release-hardening strategy
+
+
+Define seed/test/gate architecture
+
+
+Generate code/config/docs
+
+
+Show critical-path test coverage
+
+
+Explain release blockers, warnings, and developer workflow
+
+
+Sequence
+Run them in this order:
+
+
+P22
+
+
+P23
+
+
+P24
+
+
+That order matters:
+
+
+P22 gives you traceability
+
+
+P23 gives you rollout control and product telemetry
+
+
+P24 gives you deterministic testability and release discipline
+
+
+Hard warning
+Do not let Claude add observability as scattered console.log and ad hoc frontend events. That creates noise, not operations.
+
+
+
+
+Pack 2 — Phase 0.15 Media Signal Pack
+Bundle titles
+Bundle 9 — Flyer Media Intake
+ed Event Enrichment and Thumbnail Ranking
+
+
+
+
+I’m grounding Pack 2 against the same WeUP repo context so the media pack stays tied to the actual Phase 0.15 path rather than drifting into generic content tooling.
+
+
+Thought for 13s
+
+
+Received app response
+Pack 2 — Phase 0.15 Media Signal Pack
+Purpose: turn WeUP from static event rows into a real media-ingestion system.
+
+
+Phase 0.15 is not “full social media intelligence.” It is narrower and more useful:
+
+
+ingest flyer images and video flyers
+
+
+persist media assets correctly
+
+
+extract usable event signals from media
+
+
+review media safely
+
+
+enrich canonical events with media-derived metadata
+
+
+rank/select thumbnails and media previews for map/detail surfaces
+
+
+Bundle titles
+Bundle 9 — Flyer Media Intake
+Core flyer upload, storage, validation, and asset registration.
+
+
+Bundle 10 — Video Flyer Pipeline
+Short-form video ingestion, frame extraction, poster generation, and metadata capture.
+
+
+Bundle 11 — Asset Moderation and Compliance
+Media policy checks, abuse filtering, takedown flags, and operator review surfaces.
+
+
+Bundle 12 — Venue Media Publishing
+Venue-facing asset library, reusable media sets, submission linkage, and canonical media ownership.
+
+
+Bundle 13 — Media-Derived Event Enrichment and Thumbnail Ranking
+Extract event signals from media, score candidate thumbnails, and improve detail/map presentation.
+
+
+Prompt names
+Bundle 9 — Flyer Media Intake
+P25 — Build Media Upload Service for Flyers and Venue Assets
+
+
+P26 — Add Flyer Asset Validation, Storage References, and Upload Lifecycle
+
+
+P27 — Persist Flyer Metadata, Provenance, and Review-Ready Evidence
+
+
+Bundle 10 — Video Flyer Pipeline
+P28 — Build Video Flyer Intake, Asset Registration, and Processing Jobs
+
+
+P29 — Extract Frames, Poster Images, and Time-Sliced Metadata from Video Flyers
+
+
+P30 — Generate Preview Assets and Canonical Video-Derived Media Projections
+
+
+Bundle 11 — Asset Moderation and Compliance
+P31 — Implement Media Policy Checks, Abuse Flags, and Review Routing
+
+
+P32 — Add Asset Moderation Queue, Takedown States, and Compliance Audit Trail
+
+
+Bundle 12 — Venue Media Publishing
+P33 — Build Venue Asset Library and Reusable Media Catalog
+
+
+P34 — Link Venue Media Sets to Event Drafts, Published Events, and Submission Workflows
+
+
+P35 — Add Venue Ownership, Asset Permissions, and Canonical Media Selection Rules
+
+
+Bundle 13 — Media-Derived Event Enrichment and Thumbnail Ranking
+P36 — Extract Media-Derived Event Enrichment from Flyer and Video Assets
+
+
+P37 — Implement Thumbnail Scoring, Poster Selection, and Display Ranking Rules
+
+
+P38 — Add Media-Enriched Event Projections for Map Cards, Calendar, and Detail Views
+
+
+Full scope of Pack 2
+What Phase 0.15 should accomplish
+1. Media becomes first-class
+Right now media is mostly decorative. Phase 0.15 makes assets durable objects with:
+
+
+asset ids
+
+
+source provenance
+
+
+uploader/owner linkage
+
+
+moderation state
+
+
+storage refs
+
+
+derived representations
+
+
+2. Flyer intake becomes operational
+A flyer is no longer just “uploaded image.” It becomes:
+
+
+stored asset
+
+
+OCR source
+
+
+enrichment source
+
+
+reviewable evidence
+
+
+candidate poster/thumbnail
+
+
+linked submission artifact
+
+
+3. Video flyers stop being out-of-band
+Video is high value for nightlife/event discovery, but if you add it badly, it becomes storage debt and moderation pain.
+
+
+Phase 0.15 should support:
+
+
+upload
+
+
+duration/type validation
+
+
+poster extraction
+
+
+selected frame extraction
+
+
+preview asset generation
+
+
+event linkage
+
+
+moderation routing
+
+
+4. Media moderation becomes mandatory
+Do not let media publishing bypass review logic. You need:
+
+
+asset policy states
+
+
+review-required flags
+
+
+takedown/disabled state
+
+
+safe display gating
+
+
+audit trail
+
+
+5. Event display improves materially
+Media should improve:
+
+
+map marker preview confidence
+
+
+event detail modal quality
+
+
+calendar card consistency
+
+
+canonical poster selection
+
+
+sponsor/venue quality later
+
+
+Suggested execution order
+Bundle 9 — Flyer Media Intake
+
+
+Bundle 10 — Video Flyer Pipeline
+
+
+Bundle 11 — Asset Moderation and Compliance
+
+
+Bundle 12 — Venue Media Publishing
+
+
+Bundle 13 — Media-Derived Event Enrichment and Thumbnail Ranking
+
+
+That order matters.
+If you do ranking before storage, provenance, and moderation, you are optimizing chaos.
+
+
+Hard constraints for Pack 2
+No direct client-side media publishing into canonical events
+
+
+No untracked media blobs
+
+
+No silent asset replacement without audit
+
+
+No thumbnail selection based on arbitrary last-uploaded behavior
+
+
+No video pipeline without size/type/duration controls
+
+
+No “AI enrichment” that skips evidence retention
+
+
+Naming convention
+Use this format:
+
+
+Pack: WeUP_Pack_02_Phase015_Media_Signal
+
+
+Bundle: B09_Flyer_Media_Intake
+
+
+Prompt: P25_Build_Media_Upload_Service_For_Flyers_And_Venue_Assets
+
+
+Best Phase 0.15 framing
+Phase 0: real event system
+Phase 0.15: real media system attached to real events
+
+
+That is the correct boundary.
+
+
+Recommended next step
+Start with Bundle 9 first. I can generate P25–P27 in the same production prompt format as the earlier bundles.
+
+
+
+
+Bundle 9 — Flyer Media Intake
+P25 — Build Media Upload Service for Flyers and Venue Assets
+P26 — Add Flyer Asset Validation, Storage References, and Upload Lifecycle
+P27 — Persist Flyer Metadata, Provenance, and Review-Ready Evidence
+
+
+I’m using the existing WeUP repo context as the anchor and turning Bundle 9 into production prompts that fit the actual Phase 0.15 path.
+
+
+Thought for 11s
+
+
+Received app response
+Bundle 9 — Flyer Media Intake
+The current AddEventModal still treats flyer upload as a simulated UI step that creates a mock extracted event object and pushes it into client flow. Bundle 9 replaces that with a real media intake system. 
+
+
+
+
+P25 — Build Media Upload Service for Flyers and Venue Assets
+Writing
+You are implementing the WeUP Phase 0.15 media intake foundation.
+
+
+Goal:
+Build a real backend media upload service for flyer images and venue assets so uploads become durable system objects rather than transient frontend artifacts.
+
+
+Context:
+The current UI has an “Upload Flyer” path inside AddEventModal, but it is simulated and does not create a durable media object, upload record, or reviewable asset. I need a proper media intake foundation that supports flyer uploads now and venue-owned media assets shortly after.
+
+
+Primary objective:
+Implement a media upload service that supports:
+
+
+flyer image upload
+
+
+venue asset upload
+
+
+durable asset registration
+
+
+uploader ownership tracking
+
+
+upload job lifecycle
+
+
+storage references
+
+
+media-type-aware metadata capture
+
+
+Technology requirements:
+
+
+.NET 8 backend
+
+
+PostgreSQL + EF Core
+
+
+storage abstraction with support for local dev and cloud-backed object storage later
+
+
+integration with auth/session/current-user if available
+
+
+integration with submission and moderation workflows
+
+
+no direct client-side publication of uploaded assets
+
+
+What to do:
+
+
+Design a media domain model for at minimum:
+
+
+MediaAsset
+
+
+MediaUpload
+
+
+MediaOwnerRef
+
+
+MediaStorageRef
+
+
+MediaAssetType
+
+
+MediaAssetStatus
+
+
+Support upload categories such as:
+
+
+flyer image
+
+
+venue image
+
+
+promotional poster
+
+
+generic event media seam
+
+
+Define upload lifecycle states such as:
+
+
+Initialized
+
+
+Uploading
+
+
+Uploaded
+
+
+ProcessingPending
+
+
+ProcessingComplete
+
+
+ReviewPending
+
+
+Rejected
+
+
+Archived
+
+
+Build upload endpoints such as:
+
+
+POST /api/media/uploads
+
+
+POST /api/media/uploads/{uploadId}/complete
+
+
+GET /api/media/assets/{assetId}
+
+
+GET /api/media/uploads/{uploadId}
+
+
+Decide whether uploads are:
+
+
+direct multipart upload to backend
+
+
+signed upload URL flow
+and justify the Phase 0.15 choice.
+
+
+Capture uploader context:
+
+
+authenticated user
+
+
+venue owner if available
+
+
+ingestion workflow source if system-generated
+
+
+Persist core asset metadata:
+
+
+content type
+
+
+file size
+
+
+checksum/hash
+
+
+original filename
+
+
+upload timestamp
+
+
+owner/uploader
+
+
+status
+
+
+storage reference
+
+
+Create a storage abstraction such as:
+
+
+IMediaStorageService
+
+
+local filesystem or dev blob adapter
+
+
+future cloud object storage seam
+
+
+Add validation and problem responses for invalid uploads.
+
+
+Add a frontend integration seam so the current “Upload Flyer” step calls a real backend upload service rather than simulating success.
+
+
+Add tests or verification examples for:
+
+
+successful flyer upload
+
+
+oversized file
+
+
+unsupported content type
+
+
+missing auth if required
+
+
+completed upload record retrieval
+
+
+Design rules:
+
+
+do not store uploads as untracked blobs
+
+
+do not mix media persistence with event publication
+
+
+do not let frontend code invent asset ids
+
+
+do not hardwire storage provider logic directly into controllers
+
+
+keep venue asset support as a first-class seam, not an afterthought
+
+
+Recommended outputs:
+
+
+media asset/upload domain and persistence models
+
+
+upload service abstraction
+
+
+storage abstraction
+
+
+API endpoints/contracts
+
+
+frontend integration seam for upload initiation/completion
+
+
+docs/media-intake.md
+
+
+Acceptance criteria:
+
+
+media uploads create durable backend records
+
+
+asset ownership and storage references are preserved
+
+
+upload lifecycle is explicit
+
+
+flyer and venue asset intake share one clean foundation
+
+
+the frontend no longer simulates successful flyer upload
+
+
+Output format:
+
+
+Explain the media upload architecture
+
+
+Define asset and upload lifecycle models
+
+
+Generate backend code/contracts/endpoints
+
+
+Show frontend integration replacement seam
+
+
+Explain storage and ownership tradeoffs
+
+
+P26 — Add Flyer Asset Validation, Storage References, and Upload Lifecycle
+Writing
+You are implementing flyer-specific validation and lifecycle control for WeUP Phase 0.15.
+
+
+Goal:
+Add strict flyer asset validation, storage reference integrity, and upload lifecycle rules so flyer intake is safe, reviewable, and operational.
+
+
+Context:
+The current upload flow is simulated and does not validate real asset characteristics. Phase 0.15 needs a flyer intake path that rejects bad files, preserves storage references cleanly, and moves uploaded assets through a controlled lifecycle before OCR or publication workflows touch them.
+
+
+Primary objective:
+Implement flyer-specific validation and lifecycle handling for:
+
+
+supported image types
+
+
+file size limits
+
+
+dimension sanity checks
+
+
+checksum/hash generation
+
+
+duplicate upload detection seam
+
+
+lifecycle progression from upload to processing readiness
+
+
+Technology requirements:
+
+
+.NET 8 backend
+
+
+integration with media upload service from P25
+
+
+persistence-backed storage references
+
+
+validator services
+
+
+explicit lifecycle transitions
+
+
+future OCR pipeline compatibility
+
+
+What to do:
+
+
+Define flyer asset validation rules for:
+
+
+MIME/content type
+
+
+extension mismatch handling
+
+
+maximum file size
+
+
+minimum image dimensions
+
+
+corrupted file detection
+
+
+unsupported animated formats if not allowed
+
+
+Add a validation service such as:
+
+
+IFlyerAssetValidator
+
+
+IFileSignatureInspector
+
+
+IMediaChecksumService
+
+
+Generate and persist storage references and integrity metadata:
+
+
+canonical storage key/path
+
+
+content hash/checksum
+
+
+upload timestamp
+
+
+asset version or revision seam if justified
+
+
+Define lifecycle transitions for flyer assets such as:
+
+
+Initialized -> Uploaded
+
+
+Uploaded -> ValidationFailed
+
+
+Uploaded -> ProcessingPending
+
+
+ProcessingPending -> ReviewPending
+
+
+ReviewPending -> Approved/Rejected
+
+
+Add lifecycle helper methods or policy services to prevent illegal transitions.
+
+
+Add duplicate-upload detection seam using:
+
+
+file hash
+
+
+uploader
+
+
+recent asset comparison
+
+
+optional same-source reupload handling
+
+
+Expose validation results and lifecycle state through media APIs.
+
+
+Ensure storage references are opaque, durable, and never depend on frontend-generated paths.
+
+
+Add tests or verification examples for:
+
+
+valid flyer image
+
+
+file too large
+
+
+wrong content type
+
+
+corrupted image
+
+
+same asset uploaded twice
+
+
+illegal lifecycle transition
+
+
+Add a brief operations note on how flyer assets move from upload to OCR readiness.
+
+
+Design rules:
+
+
+do not trust file extensions alone
+
+
+do not allow storage refs to be loosely assembled from request data
+
+
+do not permit illegal asset state jumps
+
+
+do not make validation purely client-side
+
+
+keep lifecycle compatible with upcoming OCR and moderation steps
+
+
+Recommended outputs:
+
+
+flyer validation services
+
+
+lifecycle rules and helper methods
+
+
+storage reference design
+
+
+persistence updates
+
+
+endpoint refinements
+
+
+validation/lifecycle documentation
+
+
+Acceptance criteria:
+
+
+flyer files are validated server-side
+
+
+storage references are stable and trustworthy
+
+
+lifecycle transitions are explicit and enforceable
+
+
+invalid uploads fail deterministically
+
+
+the system is ready to hand validated flyer assets into OCR processing
+
+
+Output format:
+
+
+Explain flyer validation and lifecycle design
+
+
+Define validation rules and state transitions
+
+
+Generate backend code/services/contracts/tests
+
+
+Show how storage references and checksums are handled
+
+
+Explain how this prepares for OCR processing
+
+
+P27 — Persist Flyer Metadata, Provenance, and Review-Ready Evidence
+Writing
+You are implementing evidence-grade flyer persistence for WeUP Phase 0.15.
+
+
+Goal:
+Persist flyer metadata, provenance, and review-ready evidence so every uploaded flyer can support OCR, moderation, deduplication, and publication decisions with a durable audit trail.
+
+
+Context:
+A flyer upload is not useful unless the system retains enough structured evidence to explain where it came from, who uploaded it, what file was received, what derivative assets were created, and what review state it is in. The current UI flow does none of this. I need flyer assets to become evidence-bearing system objects.
+
+
+Primary objective:
+Persist:
+
+
+flyer asset metadata
+
+
+uploader provenance
+
+
+source context
+
+
+evidence references
+
+
+review-facing summaries
+
+
+derivative asset seams for later OCR and thumbnail workflows
+
+
+Technology requirements:
+
+
+.NET 8 backend
+
+
+PostgreSQL + EF Core
+
+
+integration with P25/P26 media upload and lifecycle models
+
+
+alignment with canonical provenance/review model from earlier bundles
+
+
+support for moderation and OCR pipelines
+
+
+What to do:
+
+
+Extend media persistence to capture flyer-specific metadata such as:
+
+
+asset id
+
+
+owner/uploader id
+
+
+upload origin
+
+
+source type
+
+
+original filename
+
+
+content type
+
+
+file size
+
+
+checksum/hash
+
+
+width/height
+
+
+uploaded at
+
+
+storage ref
+
+
+current status
+
+
+Define provenance structures for flyer assets:
+
+
+manual uploader
+
+
+venue owner
+
+
+system-imported asset
+
+
+future scraped or partner-provided media seam
+
+
+Define evidence structures for moderation and review such as:
+
+
+original asset ref
+
+
+derivative asset refs
+
+
+OCR-ready flag
+
+
+processing history
+
+
+validation failures
+
+
+linked submission id if applicable
+
+
+Persist relationships between flyer assets and:
+
+
+event submissions
+
+
+ingestion jobs
+
+
+moderation items
+
+
+canonical events if later linked
+
+
+Add media projection contracts for review surfaces that include:
+
+
+basic visual metadata
+
+
+provenance summary
+
+
+lifecycle state
+
+
+evidence summary
+
+
+linked workflow ids
+
+
+Add APIs or query seams for:
+
+
+asset detail lookup
+
+
+uploader-owned asset listing
+
+
+review-facing asset summary retrieval
+
+
+Add tests or verification examples for:
+
+
+persisted flyer asset metadata retrieval
+
+
+uploader provenance retrieval
+
+
+evidence summary generation
+
+
+linked submission/media lookup
+
+
+Document how flyer assets serve as evidence inputs for:
+
+
+OCR normalization
+
+
+moderation queue detail
+
+
+dedupe/media similarity seam
+
+
+eventual thumbnail ranking
+
+
+Design rules:
+
+
+do not flatten provenance into a single source string only
+
+
+do not drop evidence once upload succeeds
+
+
+do not couple flyer persistence directly to published event creation
+
+
+make moderation and OCR consumers able to reference the same asset record
+
+
+keep persistence queryable and operationally useful
+
+
+Recommended outputs:
+
+
+media/flyer persistence model refinements
+
+
+provenance/evidence DTOs
+
+
+asset detail/list query services
+
+
+API endpoints/contracts
+
+
+docs/flyer-evidence-model.md
+
+
+Acceptance criteria:
+
+
+flyer assets carry durable metadata and provenance
+
+
+review surfaces can access evidence-grade asset records
+
+
+flyer records are linkable to submissions, ingestion, and moderation
+
+
+the system is ready for OCR, review, and later media ranking
+
+
+flyer uploads are now operational assets, not just uploaded files
+
+
+Output format:
+
+
+Explain flyer metadata/provenance/evidence model
+
+
+Define persistence structures and relationships
+
+
+Generate backend code/contracts/query seams
+
+
+Show example review-facing asset projections
+
+
+Explain how this supports OCR, moderation, and future media enrichment
+
+
+Sequence
+Run them in this order:
+
+
+P25
+
+
+P26
+
+
+P27
+
+
+That order matters:
+
+
+P25 creates the upload backbone
+
+
+P26 hardens flyer validation and lifecycle
+
+
+P27 turns uploaded flyers into evidence-bearing system objects
+
+
+Hard warning
+Do not let Claude implement flyer intake as “upload image, return URL, done.” That would recreate the same prototype failure mode under a different name.
+
+
+
+
+Bundle 10 — Video Flyer Pipeline
+P28 — Build Video Flyer Intake, Asset Registration, and Processing Jobs
+P29 — Extract Frames, Poster Images, and Time-Sliced Metadata from Video Flyers
+P30 — Generate Preview Assets and Canonical Video-Derived Media Projections
+
+
+I’m anchoring Bundle 10 to the current upload flow first so the video pipeline prompts stay aligned with the existing media-intake path rather than drifting into a separate subsystem.
+
+
+Thought for 14s
+
+
+Received app response
+Bundle 10 — Video Flyer Pipeline
+The current upload flow is still generic and simulated, with no distinction between image flyers and video flyers. Bundle 10 adds a real video asset path with processing jobs, derived poster assets, frame extraction, and canonical projections for the UI. The current AddEventModal upload path is the seam this should replace and extend. 
+
+
+
+
+P28 — Build Video Flyer Intake, Asset Registration, and Processing Jobs
+Writing
+You are implementing the WeUP Phase 0.15 video flyer ingestion foundation.
+
+
+Goal:
+Build a real backend intake path for video flyers that creates durable media assets, registers them correctly, and schedules processing jobs instead of treating video like a generic uploaded file.
+
+
+Context:
+The current WeUP upload flow is simulated and assumes a generic “upload flyer” path in the frontend. There is no durable model yet for video flyer assets, processing jobs, or reviewable derived media. I need a real video intake system that fits the Phase 0.15 media foundation.
+
+
+Primary objective:
+Implement:
+
+
+video flyer upload and registration
+
+
+media asset persistence
+
+
+processing job creation
+
+
+lifecycle states for video assets
+
+
+uploader ownership and provenance
+
+
+durable links to submissions, ingestion, and moderation workflows
+
+
+Technology requirements:
+
+
+.NET 8 backend
+
+
+PostgreSQL + EF Core
+
+
+reuse or extend Bundle 9 media asset/upload foundation
+
+
+storage abstraction with support for large media objects
+
+
+background job or processing queue abstraction
+
+
+no direct frontend publication of uploaded video flyers
+
+
+What to do:
+
+
+Extend the media domain to support video flyer assets with fields such as:
+
+
+asset id
+
+
+asset type
+
+
+uploader/owner
+
+
+content type
+
+
+file size
+
+
+duration if available
+
+
+width/height if available
+
+
+storage ref
+
+
+status
+
+
+created/updated timestamps
+
+
+Define a video-specific lifecycle such as:
+
+
+Initialized
+
+
+Uploading
+
+
+Uploaded
+
+
+ProcessingPending
+
+
+Processing
+
+
+ProcessingComplete
+
+
+ReviewPending
+
+
+Rejected
+
+
+Archived
+
+
+Define processing job models such as:
+
+
+VideoProcessingJob
+
+
+VideoProcessingStage
+
+
+VideoProcessingResult
+
+
+Create endpoints such as:
+
+
+POST /api/media/video-uploads
+
+
+POST /api/media/video-uploads/{uploadId}/complete
+
+
+GET /api/media/video-assets/{assetId}
+
+
+GET /api/media/video-jobs/{jobId}
+
+
+Decide and justify whether upload should be:
+
+
+direct multipart upload
+
+
+signed URL flow
+
+
+hybrid large-file upload flow
+
+
+Register a processing job automatically when a valid upload completes.
+
+
+Add processing job statuses such as:
+
+
+Queued
+
+
+Running
+
+
+Succeeded
+
+
+Failed
+
+
+Cancelled
+
+
+Add job orchestration seams for later frame extraction, poster generation, and metadata extraction.
+
+
+Persist uploader provenance and link the video asset to:
+
+
+user submission
+
+
+venue asset library
+
+
+moderation item seam
+
+
+Add tests or verification examples for:
+
+
+valid video upload
+
+
+unsupported codec/container
+
+
+oversized file
+
+
+upload completion creating a processing job
+
+
+job lookup and lifecycle transitions
+
+
+Design rules:
+
+
+do not treat video flyers as just large image uploads
+
+
+do not process video synchronously inside request handlers
+
+
+do not let frontend invent processing states
+
+
+do not couple raw video asset creation directly to event publication
+
+
+preserve clean seams for storage, processing, and moderation
+
+
+Recommended outputs:
+
+
+video asset domain/persistence models
+
+
+video upload endpoints/contracts
+
+
+processing job models/services
+
+
+storage and job orchestration abstractions
+
+
+frontend integration seam for video upload initiation/completion
+
+
+docs/video-flyer-intake.md
+
+
+Acceptance criteria:
+
+
+video flyers have durable backend asset records
+
+
+valid video uploads create processing jobs
+
+
+asset and job lifecycles are explicit
+
+
+uploader ownership and provenance are preserved
+
+
+the system is ready for frame/poster extraction in the next step
+
+
+Output format:
+
+
+Explain the video intake architecture
+
+
+Define video asset and processing job lifecycles
+
+
+Generate backend code/contracts/endpoints
+
+
+Show uploader/provenance and linkage decisions
+
+
+Explain how the frontend should integrate with the new video upload flow
+
+
+P29 — Extract Frames, Poster Images, and Time-Sliced Metadata from Video Flyers
+Writing
+You are implementing video flyer processing for WeUP Phase 0.15.
+
+
+Goal:
+Extract frames, poster images, and time-sliced metadata from uploaded video flyers so they become usable event-media assets instead of opaque video blobs.
+
+
+Context:
+Bundle 10 now has durable video asset intake and processing jobs. The next step is to turn uploaded videos into reviewable derived assets and usable metadata for display, OCR-like enrichment, and moderation. WeUP needs poster frames and selected stills for map/detail/calendar surfaces, not just raw video files.
+
+
+Primary objective:
+Implement:
+
+
+poster frame generation
+
+
+selected frame extraction
+
+
+time-sliced metadata capture
+
+
+derivative asset registration
+
+
+processing result persistence
+
+
+evidence trail linking derived assets back to the original video flyer
+
+
+Technology requirements:
+
+
+.NET 8 backend orchestrating the workflow
+
+
+external video processing tool seam such as FFmpeg or equivalent
+
+
+integration with media asset persistence from P28
+
+
+durable storage for derived frames/posters
+
+
+explicit processing results and evidence relationships
+
+
+What to do:
+
+
+Define derived asset concepts for:
+
+
+poster image
+
+
+key frames
+
+
+preview strips if justified
+
+
+frame timestamps
+
+
+Add processing stages such as:
+
+
+media inspection
+
+
+duration and dimension read
+
+
+key frame extraction
+
+
+poster frame selection
+
+
+derived asset registration
+
+
+metadata persistence
+
+
+Decide frame extraction strategy for Phase 0.15:
+
+
+fixed interval frames
+
+
+scene-change-aware extraction seam
+
+
+first-pass deterministic extraction
+Justify the choice.
+
+
+Persist time-sliced metadata such as:
+
+
+source video asset id
+
+
+derived asset id
+
+
+extracted timestamp offset
+
+
+frame type
+
+
+width/height
+
+
+storage ref
+
+
+extraction stage/version
+
+
+Add services/interfaces such as:
+
+
+IVideoFrameExtractor
+
+
+IPosterSelectionService
+
+
+IVideoMetadataReader
+
+
+IVideoDerivedAssetRegistrar
+
+
+Ensure all derived assets are linked back to:
+
+
+original video asset
+
+
+processing job
+
+
+uploader/owner context
+
+
+moderation/review seam
+
+
+Add APIs or query seams to retrieve:
+
+
+derived poster image
+
+
+extracted frames metadata
+
+
+processing result summary
+
+
+Add tests or verification examples for:
+
+
+standard short video flyer
+
+
+low-resolution video
+
+
+very short clip
+
+
+processing failure during extraction
+
+
+derived asset persistence and lookup
+
+
+Document how derived video assets will later support:
+
+
+thumbnail ranking
+
+
+moderation review
+
+
+event enrichment
+
+
+display projections
+
+
+Design rules:
+
+
+do not keep extraction results only in ephemeral job memory
+
+
+do not write derived files without registering them as assets
+
+
+do not choose poster frames arbitrarily with no persisted reasoning or result metadata
+
+
+do not assume all videos are high quality
+
+
+preserve traceability from original asset to derived outputs
+
+
+Recommended outputs:
+
+
+frame/poster extraction services
+
+
+derived asset persistence models
+
+
+processing result models
+
+
+retrieval/query endpoints or application services
+
+
+docs/video-derived-assets.md
+
+
+Acceptance criteria:
+
+
+uploaded videos produce registered derived poster/frame assets
+
+
+derived assets are linked to the original video and processing job
+
+
+time-sliced metadata is durable and queryable
+
+
+processing failures are explicit and diagnosable
+
+
+the system is ready for preview and ranking logic
+
+
+Output format:
+
+
+Explain the frame/poster extraction architecture
+
+
+Define stages and derived asset model
+
+
+Generate backend code/services/contracts
+
+
+Show evidence/linkage strategy
+
+
+Explain how this supports preview and enrichment workflows
+
+
+P30 — Generate Preview Assets and Canonical Video-Derived Media Projections
+Writing
+You are implementing video-derived display projections for WeUP Phase 0.15.
+
+
+Goal:
+Generate preview assets and canonical media projections from processed video flyers so the frontend can render consistent map, calendar, and detail experiences without depending on raw asset internals.
+
+
+Context:
+Video flyer assets are now uploaded, registered, processed, and can produce poster frames and extracted stills. The final step in Bundle 10 is to create canonical preview assets and transport projections that the UI can consume safely and consistently. The current frontend preview behavior is tied to loose image fields, not media-aware projections.
+
+
+Primary objective:
+Implement:
+
+
+canonical preview asset generation
+
+
+UI-facing video-derived media projections
+
+
+map/detail/calendar-ready media payloads
+
+
+selection rules for which derived assets become default previews
+
+
+durable projection contracts that hide raw processing complexity from the UI
+
+
+Technology requirements:
+
+
+.NET 8 backend
+
+
+integration with processed video asset and derived asset models from P28/P29
+
+
+DTO/projection layer separate from media persistence/domain models
+
+
+consistent frontend-consumable response contracts
+
+
+What to do:
+
+
+Define canonical video-derived preview concepts such as:
+
+
+primary poster image
+
+
+fallback poster image
+
+
+preview still set
+
+
+playable preview ref seam if justified
+
+
+aspect-ratio-aware display variants
+
+
+Create selection rules for default preview assets:
+
+
+best poster selection
+
+
+fallback rules if poster generation failed
+
+
+preferred still ordering
+
+
+safe display rules for review-pending assets
+
+
+Define projection DTOs for:
+
+
+map card media
+
+
+calendar card media
+
+
+event detail media
+
+
+moderation/review media summary
+
+
+Implement projection builders or services such as:
+
+
+IVideoMediaProjectionService
+
+
+IPreviewAssetSelector
+
+
+Ensure projections include enough metadata for UI rendering without leaking internal processing complexity, for example:
+
+
+asset id
+
+
+preview image URL/ref
+
+
+width/height
+
+
+aspect ratio
+
+
+source type
+
+
+review status
+
+
+placeholder/fallback indicator
+
+
+Add API/query seams to return canonical media projections for:
+
+
+event detail
+
+
+event cards
+
+
+review queue items
+
+
+uploader/owner asset views if useful
+
+
+Add tests or verification examples for:
+
+
+fully processed video flyer with poster
+
+
+poster-generation fallback
+
+
+review-pending asset that should not display publicly
+
+
+missing derived frame edge case
+
+
+Add frontend integration guidance showing how the UI should consume projection contracts rather than raw asset fields.
+
+
+Document how preview projections interact with future:
+
+
+thumbnail ranking
+
+
+media enrichment
+
+
+venue media libraries
+
+
+sponsor surfaces
+
+
+Design rules:
+
+
+do not expose raw processing output arrays directly to UI components
+
+
+do not let the frontend choose poster assets ad hoc
+
+
+do not surface review-pending video previews publicly unless policy allows it
+
+
+keep projection logic centralized
+
+
+preserve clean separation between persistence, processing, and UI models
+
+
+Recommended outputs:
+
+
+canonical preview/projection DTOs
+
+
+projection selection services
+
+
+API/query seams
+
+
+frontend integration notes
+
+
+docs/video-media-projections.md
+
+
+Acceptance criteria:
+
+
+the UI can consume canonical video-derived media projections
+
+
+default preview selection is centralized and deterministic
+
+
+public display rules respect review status
+
+
+projections support map/calendar/detail surfaces cleanly
+
+
+Bundle 10 ends with usable, display-ready video media outputs
+
+
+Output format:
+
+
+Explain the preview/projection architecture
+
+
+Define canonical preview and projection contracts
+
+
+Generate backend code/services/contracts
+
+
+Show frontend integration seam
+
+
+Explain how this closes the loop from video upload to UI-ready media
+
+
+Sequence
+Run them in this order:
+
+
+P28
+
+
+P29
+
+
+P30
+
+
+That order matters:
+
+
+P28 creates the video intake and job backbone
+
+
+P29 turns raw video into derived assets and metadata
+
+
+P30 turns those outputs into canonical UI-facing media projections
+
+
+Hard warning
+Do not let Claude implement video processing directly inside the upload controller or return raw FFmpeg-style outputs to the frontend. That would create an unmaintainable media side channel immediately.

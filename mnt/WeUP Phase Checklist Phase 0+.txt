@@ -1,0 +1,461 @@
+﻿Below is a complete, end‑to‑end feature catalogue for every WeUP development “phase”.
+Each phase → the next builds on the previous one – nothing is skipped or duplicated.
+The list is broken into logical groups (UI/UX, Backend Services, Data & Persistence, Moderation, Security, Analytics & Release‑Hardening) so you can see at a glance what must be implemented, tested and shipped before the following phase can begin.
+________________
+
+
+1️⃣ Phase 0 – “Map‑First City MVP”
+Category
+	Feature
+	Description / Acceptance
+	Core UI / UX
+	World‑Surface (single‑viewport) map
+	Persistent full‑screen map, no page navigation, layered overlays, cinematic transitions; works on mobile & desktop
+	
+
+	Radar‑Map component (Mapbox + use‑supercluster)
+	Real‑time clustering, zoom‑aware marker rendering
+	
+
+	Event‑Detail modal
+	Click a marker → modal with title, description, time, media thumbnail, “Save” button
+	
+
+	Calendar view (timeline scrubber)
+	Swipe / scroll through “Now → 6 pm → 9 pm → Midnight → 3 am → Fri / Sat / Sun” – drives temporal filter
+	
+
+	Saved‑Events side‑panel
+	List of user‑saved events, remove‑save action
+	
+
+	Profile panel (demo only)
+	Shows a static user avatar, wallet hint, placeholder stats
+	
+
+	Add‑Event modal (draft flow)
+	UI for “Create event → paste link / upload flyer → preview → submit” – currently a UI‑only simulation
+	
+
+	Geo‑Controls modal
+	“Center on me”, “Show my neighbourhood”, “Reset map”
+	Frontend Architecture
+	Runtime‐Spine (Bundle 1) – folder layout (app/, features/, domains/, services/, hooks/, lib/, components/, styles/)
+	Clean separation of concerns; page.tsx becomes a thin composition shell
+	
+
+	World‑Surface Coordinator (useWorldSurfaceState)
+	Centralised state for active mode, modal stack, selected event, map bounds, temporal window, side‑panel visibility
+	
+
+	UI‑State Topology (Bundle 1) – reducer‑based state machine, no render‑time mutation
+	Typed actions (SELECT_EVENT, OPEN_MODAL, SET_TEMPORAL_FILTER, TOGGLE_SAVE, …)
+	Domain Model
+	Canonical EventAggregate (Bundle 2) – fields: id, slug, title, description, venueId, address, geoPoint(lat,lng), startTime, endTime, timezone, category, tags, status, confidence, mediaRefs, provenance, auditMeta
+	Immutable from the UI; ready for .NET parity
+	
+
+	Event‑Lifecycle State Machine – DRAFT → INGESTED → NEEDS_REVIEW → APPROVED → PUBLISHED → REJECTED → ARCHIVED
+	Illegal transitions blocked by compile‑time guards
+	
+
+	Source‑Provenance & Confidence sub‑models (Bundle 2) – EventSourceKind, sourceId, extractionConfidence, geocodeConfidence, moderationConfidence, reviewedBy, reviewedAt, reviewNotes
+	Every event can be traced back to its origin
+	Backend / API
+	.NET 8 API scaffold (Bundle 3) – clean‑architecture solution (WeUP.Api, WeUP.Application, WeUP.Domain, WeUP.Infrastructure, WeUP.Contracts)
+	Minimal, production‑grade entry point
+	
+
+	Event Feed endpoints
+	GET /api/events/map, GET /api/events/calendar, GET /api/events/{id}
+	
+
+	Save endpoints
+	GET /api/users/me/saves, POST /api/users/me/saves/{eventId}, DELETE /api/users/me/saves/{eventId}
+	
+
+	Event‑submission placeholder (draft only)
+	POST /api/events/submissions (stores a draft)
+	Persistence
+	Postgres + EF Core schema (Bundle 3) – tables: Events, EventSources, Users, SavedEvents, EventReviews (status, confidence, audit)
+	All data is durable; indexes for map‑feed (bbox), calendar (time‑range) and user‑saves
+	Ingestion (placeholder)
+	Mock event service → MOCK_EVENTS, random‑generation
+	Will be replaced in later phases
+	Moderation (placeholder)
+	Status/Confidence fields only; no queue
+	Will be replaced in later phases
+	Identity & Auth (placeholder)
+	No real users; profile panel only shows a static “wallet” address
+	Will be replaced in later phases
+	Telemetry & Release Hardening
+	None in the prototype
+	Will be introduced in Bundle 8 (OpenTelemetry, analytics, feature‑flags, seed data, E2E tests, release gates)
+	Acceptance Criteria
+	UI still behaves exactly as the prototype but all business logic is now behind typed services & a real database; TypeScript builds with no errors; no direct process.env usage in UI code; the map, calendar and save flows work via the new HTTP API.
+	
+
+	________________
+
+
+2️⃣ Phase 0.15 – “Richer Media Ingestion”
+Category
+	Feature
+	Description / Acceptance
+	Media Upload Service (Bundle 9)
+	Flyer Image Upload – POST /api/media/uploads (multipart)
+	Creates a MediaAsset record, returns uploadId
+	
+
+	Venue Asset Upload – same endpoint with type=VenueImage
+	Ownership = venue‑admin or authenticated user
+	
+
+	Upload Lifecycle – states Initialized → Uploading → Uploaded → ValidationFailed → ProcessingPending → ReviewPending → Approved/Rejected → Archived
+	Enforced via state‑transition guard methods
+	
+
+	Storage Abstraction – IMediaStorageService (local filesystem now, plug‑in for S3/Blob later)
+	Opaque storage keys, checksum verification
+	Flyer‑Specific Validation (Bundle 9)
+	MIME‑type whitelist (image/jpeg, image/png), max‑size 10 MB, min dimensions 600 × 800 px
+	Bad uploads return 422 with precise error payload
+	
+
+	Duplicate‑upload detection (hash‑based) – returns existing assetId with a “duplicate” warning
+	Prevents storage bloat
+	Video Flyer Pipeline (Bundle 10)
+	Video Upload – POST /api/media/video‑uploads (multipart, up to 100 MB)
+	Returns videoAssetId
+	
+
+	Background Processing Job – VideoProcessingJob queued automatically on successful upload
+	Job states: Queued → Running → Succeeded → Failed
+	
+
+	Frame & Poster Extraction – FFmpeg‑based service (IVideoFrameExtractor) extracts:
+• Poster (first frame or highest‑contrast frame)
+• N key frames (configurable)
+	Each derived asset gets its own MediaAsset record linked to the source video
+	
+
+	Derived‑Asset Registration – MediaAssetType = VideoPoster, VideoKeyFrame
+	Stored with reference to original video, timestamps, checksum
+	Media‑Moderation Queue (Bundle 11)
+	API: GET /api/moderation/media-queue, POST /api/moderation/media-queue/{itemId}/approve, reject
+	Only assets in ReviewPending appear; decision writes to MediaReview table, updates asset status
+	
+
+	Policy Checks – file‑type, size, NSFW detection stub, copyright flagging
+	Rejected assets are quarantined, audit logged
+	
+
+	Media QA Dashboard (admin UI) – list of pending assets, confidence scores, thumbnail previews, bulk actions
+	Front‑end consumes same DTOs as the moderation API
+	Venue Asset Library (Bundle 12)
+	Asset Catalog – GET /api/venues/{venueId}/assets, POST /api/venues/{venueId}/assets
+	Allows venue owners to reuse flyers, posters, videos across multiple event submissions
+	
+
+	Asset Permissions – role‑based (owner, venue‑admin, sponsor)
+	Enforced in the API layer
+	Media‑Derived Event Enrichment (Bundle 13)
+	OCR Pipeline – IOcrService (Google Vision / Tesseract stub) reads flyer text & returns raw fields (title, date, address)
+	Confidence per field returned
+	
+
+	LLM Normalisation – ILlmEventNormalizer rewrites OCR raw text to canonical EventAggregate fields
+	Handles ambiguous dates, venue names, categories
+	
+
+	Thumbnail Scoring – ITagThumbnailScorer uses confidence, visual quality, brand‑fit to pick the “primary poster” for map & calendar cards
+	Score persisted, used by UI ranking
+	
+
+	Media‑Enriched Projections – DTOs for map (EventMapMediaProjection), calendar (EventCalendarMediaProjection), detail (EventDetailMediaProjection)
+	Front‑end now receives a media‑aware object instead of a plain image URL
+	Analytics for Media
+	Event‑level media ingestion metrics (bytes, processing time, OCR confidence) exported via OpenTelemetry (later phase)
+	Enables monitoring of media pipeline health
+	Acceptance Criteria
+	• All uploads survive a server restart
+• Validation errors are deterministic
+• Video processing jobs complete and register derived assets
+• Moderation queue only shows assets in ReviewPending
+• UI now displays flyer‑derived thumbnails and video posters from the new DTOs; no longer uses hard‑coded mock images.
+	
+
+	________________
+
+
+3️⃣ Phase 0.20 – “Trust & Invite Graph”
+Category
+	Feature
+	Description / Acceptance
+	Trust Identity Graph (Bundle 14)
+	User‑Trust Node – UserTrustNode { userId, createdAt, reputationScore }
+	Stored in UserTrustGraph table; can be extended with edges later
+	
+
+	Edge Types – InviteEdge (inviterId → inviteeId, tier, expiresAt), InteractionEdge (attendedEventId, rating)
+	Enables tier calculation & reputation updates
+	Invite Tier Engine (Bundle 15)
+	Tier Definitions – Public (0), Adjacent (1), Private (2) – each tier grants additional visibility radius & unlocks certain events
+	Configurable via feature‑flags
+	
+
+	Tier‑Unlock Logic – API GET /api/graph/tier/{userId} returns max radius (km) and list of “private” events the user may see
+	Calculated from graph edges + proximity
+	Proximity Scoring & Reveal Rules (Bundle 16)
+	Geospatial Proximity Score – distance‑based weighting (0‑10 km → full, 10‑30 km → reduced, >30 km → none)
+	Used in event‑visibility query contracts
+	
+
+	Private Reveal UX – UI component “Reveal Nearby Private Events” shows a locked pin; on successful tier check it flips open
+	Server returns isVisible: true/false per event
+	Reputation & Anti‑Abuse (Bundle 18)
+	Reputation Signals – attendance count, host‑trust rating, successful invites, review‑upvotes
+	Weighted → reputationScore updated daily
+	
+
+	Abuse Detection – simple heuristics (rapid invite spam, duplicate accounts, low‑confidence submissions) → UserFlag record
+	Flagged users cannot earn higher tiers until reviewed
+	
+
+	Trust Moderation & Appeals – API POST /api/trust/moderation/{userId}/appeal – logs appeal, notifies admin console
+	All actions recorded in TrustAudit table
+	API & Query Extensions
+	Extend GET /api/events/map to accept trustLevel & proximityScore filters; backend merges with spatial query contracts
+	Users only receive events they are allowed to see
+	Admin Console Enhancements
+	Graph visualiser (admin UI) – node/edge list, tier breakdown, flag summary
+	Read‑only for ops; actions performed via moderation APIs
+	Telemetry
+	Trust‑related metrics (invite acceptance rate, tier churn) exported via OpenTelemetry (later phase)
+	Enables data‑driven tier tuning
+	Acceptance Criteria
+	• Graph can ingest invites, compute tier per user, enforce visibility
+• Private events are hidden from users lacking the needed tier
+• Reputation updates are deterministic and stored
+• Abuse flags prevent tier escalation until cleared
+• Admin UI displays current graph state without affecting production API latency.
+	
+
+	________________
+
+
+4️⃣ Phase 0.25 – “Operator / Venue / Sponsor Ops”
+Category
+	Feature
+	Description / Acceptance
+	Venue Console (Bundle 19)
+	Venue Portal – GET /api/venues/{venueId}, POST /api/venues/{venueId}/events, PUT /api/venues/{venueId}/events/{eventId}
+	Auth‑protected (venue‑owner or venue‑admin role)
+	
+
+	Venue Analytics – dashboards showing event impressions, saves, attendance, media asset usage, revenue (if sponsored)
+	Data served via GET /api/venues/{venueId}/analytics
+	
+
+	Venue Verification – workflow to submit legal documents, admin approves; status Verified vs Unverified (Bundle 22)
+	Verified venues can publish PUBLISHED events; unverified can only be DRAFT
+	Sponsor Console (Bundle 20)
+	Sponsor Portal – GET /api/sponsors/{sponsorId}, POST /api/sponsors/{sponsorId}/campaigns
+	Campaign creation UI for geo‑targeted placements
+	
+
+	Campaign Builder – define radius, start/end, budget, CPM, target tiers (public/adjacent/private)
+	Backend validates budget vs inventory (see Bundle 21)
+	
+
+	Campaign Attribution – event‑level signals (view, save, open, attendance) aggregated per campaign
+	Stored in SponsorCampaignMetrics table
+	Placement Rules & Inventory Guardrails (Bundle 21)
+	Sponsored Placement Engine – decides which events get a sponsor badge / boosted rendering based on inventory caps and tier eligibility
+	API GET /api/events/map?includeSponsored=true returns sponsored: true/false
+	
+
+	Inventory Management – per‑district daily caps, per‑campaign max impressions
+	Enforcement via DB constraints & service guard
+	Monetisation & Payout Ops (Bundle 22)
+	Billing Service – POST /api/billing/invoices, GET /api/billing/invoices/{id}
+	Generates invoices for sponsors (CPM, CPC, CPA)
+	
+
+	Settlement Engine – nightly batch that calculates payouts to venues based on saved‑event conversions (venue‑share %)
+	Writes to Payouts table; exportable CSV
+	
+
+	Revenue‑Sharing Model – configurable percentages (venue‑share, platform‑share, sponsor‑share)
+	Configurable via feature‑flags
+	Operator Admin Console (Bundle 23)
+	City‑Level Oversight UI – list of all venues, sponsors, campaigns, trust‑graph health, media queue length, revenue KPIs
+	Read‑only for ops; actions (e.g., market freeze) performed via dedicated API
+	
+
+	KPI Dashboard – metrics: #active venues, #sponsored impressions, avg. revenue per event, trust‑graph tier distribution, media‑moderation backlog
+	Real‑time graphs powered by OpenTelemetry metrics
+	Governance & Roles
+	RBAC model – Admin, VenueOwner, VenueEditor, Sponsor, Moderator – enforced in every API via attribute filters
+	Permissions stored in UserRoles table
+	Compliance
+	GDPR export endpoint GET /api/users/me/export – returns all personal data, saved events, media uploads, trust graph edges
+	Must be audited by legal
+	Acceptance Criteria
+	• Venue owners can create/edit events, see analytics, and receive payouts
+• Sponsors can launch geo‑targeted campaigns, see attribution
+• All placement rules respect inventory caps and tier eligibility
+• Admin console shows accurate, near‑real‑time KPIs
+• Billing & payout processes generate correct invoices and settlement files, with test‑coverage for edge cases (partial day, zero‑impression)
+	
+
+	________________
+
+
+5️⃣ Phase 0.30+ – “Intelligence Layer”
+Category
+	Feature
+	Description / Acceptance
+	Cultural Ranking Engine (Bundle 24)
+	Ranking algorithm (EventRankingEngine) uses:
+• Freshness (time since start)
+• Density (events per km²)
+• Trust score (venue + event + poster confidence)
+• Intent signals (saves, shares, attendance)
+	Returns a numeric score + ranking bucket (Hot, Trending, New)
+	
+
+	API GET /api/events/ranked?limit=50&city=... returns ordered list of EventRankProjection
+	Supports pagination, cursor‑based navigation
+	Live Signal Fusion (Bundle 25)
+	Real‑time stream processor (Kafka / Azure Event Hub stub) merges:
+• Saves, opens, shares (user actions)
+• Venue activity (check‑ins, foot‑traffic)
+• Sponsor clicks
+	Updates EventLiveSignal table; triggers ranking recalculation every 30 s
+	Personalisation & Discovery (Bundle 26)
+	User‑Based Recommendation Service – collaborative‑filtering on saves + trust‑graph edges + live signals
+	API GET /api/users/me/recommendations returns EventRecommendationProjection
+	
+
+	Cold‑Start Guardrail – fall back to city‑wide “Trending” if user has < 5 interactions
+	Guarantees always‑populated UI
+	GeoAudio / Ambient Detection (Bundle 27)
+	Audio Ingestion – POST /api/audio/ingest receives short ambient clips (≤ 10 s) from venue microphones or user uploads
+	Service extracts BPM, genre, crowd‑noise level via ML model (stub)
+	
+
+	Venue‑Audio Matching – links audio fingerprint to venue AudioProfile; used as extra trust factor for venue‑adjacent tier
+	Audio similarity score stored in VenueAudioScore table
+	
+
+	Audio‑Based Event Highlight – events with matching ambient audio get “Live‑Now” badge
+	Shown only when confidence > 0.8
+	City Expansion Control Plane (Bundle 28)
+	Market‑Freeze State Machine – a city can be Active, Frozen, Closed
+• Active – normal ingestion & publishing
+• Frozen – only existing events visible; new submissions held in queue
+• Closed – no new data, read‑only API
+	Admin endpoint PATCH /api/markets/{cityId}/status
+	
+
+	Multi‑City Config – Market table stores city bounding‑box, timezone, primary language, tax rates (for billing)
+	Enables rapid addition of new launch markets
+	Experimentation & Model Governance (Bundle 29)
+	Experimentation Framework – A/B test runner that can toggle:
+• Ranking algorithm version
+• Personalisation model
+• GeoAudio inclusion
+	Experiments defined in Experiments table, activated via feature‑flags
+	
+
+	Model Versioning – each ranking / recommendation model has a modelVersionId stored with each event’s ranking snapshot for auditability
+	Allows “roll‑back” to previous decision set
+	
+
+	Safety Rollback Service – POST /api/experiments/{expId}/rollback re‑computes rankings using prior model & logs diff
+	Guarantees deterministic fallback if a new model degrades KPIs
+	Sponsor Recommendation & Placement Optimisation (Bundle 24‑25)
+	Sponsor‑Event Matching – machine‑learning service that scores each event for sponsor relevance (category, crowd, location)
+	API returns SponsorPlacementSuggestion used by sponsor console
+	
+
+	Dynamic CPM Pricing – price calculated from expected impressions + trust tier + geo‑audio confidence
+	Exposed in campaign‑creation UI
+	Cultural Heatmap & District Momentum (Bundle 24)
+	Heatmap Service – aggregates event density & activity per district (GeoJSON)
+	Front‑end renders an overlay on the map
+	
+
+	Momentum Scoring – combines recent event count + live‑signal flux, updates every 5 min
+	Used to bias ranking for “hot” districts
+	Analytics & Telemetry (Phase 0.30+)
+	All new services emit OpenTelemetry traces & metrics (ranking latency, recommendation CTR, audio‑match confidence, experiment conversion)
+	Integrated into Grafana dashboards
+	Acceptance Criteria
+	• Ranking API returns deterministic, reproducible order across identical inputs
+• Live‑signal fusion updates scores within 30 s of user action
+• Personalised recommendations respect trust‑graph tier and privacy (no private events leaked)
+• GeoAudio matches achieve ≥ 80 % confidence on test set
+• Market‑freeze correctly blocks new ingest while still serving existing data
+• Experiments can be launched, measured and rolled back without data loss
+• Sponsor placement suggestions improve CPM by ≥ 5 % in staged A/B test
+• All new services are covered by unit + integration tests and emit OpenTelemetry spans.
+	
+
+	________________
+
+
+6️⃣ Cross‑Phase Infrastructure (Bundles 8 & 9)
+Layer
+	Feature
+	When Implemented
+	Notes
+	Observability
+	OpenTelemetry SDK, structured logging, correlation‑ID middleware (request → job → moderation)
+	Bundle 8 – P22 (early Phase 0)
+	
+
+	Product Analytics
+	Event taxonomy (map‑view, save, submit, click, moderation) + error telemetry
+	Bundle 8 – P23 (mid‑Phase 0)
+	
+
+	Feature Flags
+	Typed flag service (IFeatureFlagProvider) – flags for OCR, video‑pipeline, trust‑graph, geo‑audio, sponsor‑placement
+	Bundle 8 – P23
+	
+
+	Release Hardening
+	Seed data scripts (cities, districts, venues, demo events), E2E Cypress tests, smoke tests, CI/CD gates (type‑check, lint, unit, e2e, smoke)
+	Bundle 8 – P24 (late Phase 0)
+	
+
+	Security
+	CSRF protection, rate limiting, upload size limits, content‑type validation, auth token revocation
+	Introduced early (Phase 0) and hardened in each subsequent phase
+	
+
+	CI/CD
+	GitHub Actions workflow: build → test → lint → package → trigger staging → manual approve → production
+	Operational from the start; expanded with experiments (Phase 0.30+)
+	
+
+	________________
+
+
+How to Use This List
+1. Prioritise by Phase – a phase is complete when all its features have passed automated tests and have been demonstrated in a staging environment.
+2. Feature‑Flag Gating – any feature that touches a later phase (e.g., GeoAudio) is shipped behind a flag but not enabled until the corresponding phase is “live”.
+3. Documentation – each feature above maps directly to a Prompt‑Bundle (Pxx) in the engineering backlog; the prompt name is the source of truth for the generated code.
+4. Metrics & Acceptance – every bullet includes a concrete acceptance condition (unit test coverage, API contract, UI visual check). Use those as your Definition of Done.
+________________
+
+
+Takeaway:
+* Phase 0 builds a solid, production‑ready runtime, data model and API surface.
+* Phase 0.15 turns media from “pretty pictures” into first‑class assets with OCR/video pipelines and a moderation queue.
+* Phase 0.20 adds a trust/graph layer that gates visibility and prevents abuse.
+* Phase 0.25 powers venues, sponsors and operators with consoles, analytics and revenue‑capture.
+* Phase 0.30+ layers intelligence (ranking, live‑signal fusion, geo‑audio, multi‑city control, experimentation) on top of the fully‑instrumented platform.
+With this exhaustive feature list you can now map every engineering story, test case and release gate to the appropriate phase and guarantee a clean, incremental path from the current UI‑prototype to a city‑scale, revenue‑generating product (v1.24).

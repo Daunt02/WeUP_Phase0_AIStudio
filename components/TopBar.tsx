@@ -2,9 +2,10 @@
 
 import React from 'react';
 import { ShieldCheck } from 'lucide-react';
+import { publicEnv } from '../lib/env/public';
 
 export default function TopBar() {
-  const isMapOffline = !process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+  const isMapOffline = !publicEnv.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
   return (
     <div className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 sm:px-10 h-16 sm:h-20 pointer-events-none pt-safe">

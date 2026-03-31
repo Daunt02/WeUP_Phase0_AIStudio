@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { NightlifeItem } from '@/types';
+import { publicEnv } from '../lib/env/public';
 
 interface AddEventModalProps {
   isVisible: boolean;
@@ -108,9 +109,9 @@ export default function AddEventModal({ isVisible, onClose, onPublish, onGhostUp
   };
 
   const geocodeAddress = async (address: string) => {
-    const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+    const token = publicEnv.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
     if (!token || !address) return null;
-    
+
     setIsGeocoding(true);
     try {
       const response = await fetch(

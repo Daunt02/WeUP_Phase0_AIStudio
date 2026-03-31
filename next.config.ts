@@ -1,4 +1,5 @@
 import type {NextConfig} from 'next';
+import { getServerEnv } from './lib/env/server';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -24,7 +25,8 @@ const nextConfig: NextConfig = {
   webpack: (config, {dev}) => {
     // HMR is disabled in AI Studio via DISABLE_HMR env var.
     // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
-    if (dev && process.env.DISABLE_HMR === 'true') {
+    const { DISABLE_HMR } = getServerEnv();
+    if (dev && DISABLE_HMR) {
       config.watchOptions = {
         ignored: /.*/,
       };

@@ -1,4 +1,4 @@
-'use client';
+ 'use client';
 
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import Map, { MapRef, Marker } from 'react-map-gl';
@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import Image from 'next/image';
 import { Activity, AlertCircle, Zap, Clock, MapPin, ArrowRight, ChevronRight, X } from 'lucide-react';
 import useSupercluster from 'use-supercluster';
+import { publicEnv } from '../lib/env/public';
 
 // Error Boundary for individual markers to prevent map crashes
 class MarkerErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
@@ -277,7 +278,7 @@ export default function RadarMap({
   activeMode 
 }: RadarMapProps) {
   const mapRef = useRef<MapRef>(null);
-  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+  const mapboxToken = publicEnv.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
   
   const [isClient, setIsClient] = useState(false);
   const [styleLoaded, setStyleLoaded] = useState(false);
