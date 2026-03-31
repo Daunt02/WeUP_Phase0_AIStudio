@@ -10,14 +10,11 @@
 
 // ---------------------------------------------------------------------------
 // Source provenance per kind
+// SourceKind is the canonical definition — imported from types.ts.
 // ---------------------------------------------------------------------------
 
-export type SourceKind =
-  | 'manual_submission'
-  | 'flyer_upload'
-  | 'pasted_url'
-  | 'scraped_venue_page'
-  | 'external_feed';
+import type { SourceKind } from './types';
+export type { SourceKind };
 
 export interface BaseProvenance {
   kind: SourceKind;

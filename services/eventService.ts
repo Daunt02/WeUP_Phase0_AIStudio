@@ -21,11 +21,21 @@ import {
   GeoBoundingBox,
 } from '@/domains/query/contracts';
 import { toMapCard, toCalendarProjection, toDetailProjection } from '@/domains/event/projections';
-import { EventAggregate, EventStatus } from '@/domains/event/types';
+import { EventAggregate, EventStatus, SourceKind } from '@/domains/event/types';
 
 // ---------------------------------------------------------------------------
 // Legacy adapter — converts NightlifeItem to EventAggregate for projection use
 // ---------------------------------------------------------------------------
+
+/** Maps old NightlifeItem.source values to canonical SourceKind. */
+function legacySourceToKind(src: string): SourceKind {
+  switch (src) {
+    case 'manual':   return 'manual_submission';
+    case 'scraped':  return 'scraped_venue_page';
+    case 'api':      return 'external_feed';
+    default:         return 'manual_submission';
+  }
+}
 
 function nightlifeItemToAggregate(item: NightlifeItem): EventAggregate {
   return {
@@ -44,7 +54,7 @@ function nightlifeItemToAggregate(item: NightlifeItem): EventAggregate {
     geo: { lat: item.latitude, lng: item.longitude },
     timeRange: { startUtc: item.start_time, endUtc: item.end_time ?? null },
     timezone: 'America/Chicago',
-    sourceRefs: [{ kind: item.source as EventAggregate['sourceRefs'][0]['kind'], ref: item.id, ingestedAt: item.start_time }],
+    sourceRefs: [{ kind: legacySourceToKind(item.source), ref: item.id, ingestedAt: item.start_time }],
     mediaRefs: item.image_url ? [{ assetId: item.id, url: item.image_url, kind: 'image' }] : [],
     tags: item.tags ?? [],
     confidence: item.confidence ?? 0.9,

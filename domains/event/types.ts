@@ -132,7 +132,7 @@ export interface AuditMetadata {
 }
 
 // ---------------------------------------------------------------------------
-// Review
+// Review (slim aggregate field — full model with evidence refs in provenance.ts)
 // ---------------------------------------------------------------------------
 
 export interface ReviewMetadata {
@@ -141,6 +141,8 @@ export interface ReviewMetadata {
   reviewedAt?: string;
   notes?: string;
   rejectionReason?: string;
+  /** Whether this event was auto-approved or required manual review. */
+  publishDecision?: 'auto_approved' | 'manually_approved' | 'rejected';
 }
 
 // ---------------------------------------------------------------------------

@@ -18,7 +18,11 @@ export interface GhostDraft {
   address?: string;
   category?: string;
   start_time?: string;
-  [k: string]: any;
+  end_time?: string;
+  description?: string;
+  image_url?: string;
+  price_tier?: string;
+  tags?: string[];
 }
 
 export interface WorldSurfaceState {
