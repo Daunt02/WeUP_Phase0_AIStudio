@@ -1,12 +1,15 @@
 using WeUP.Api.Endpoints;
 using WeUP.Application.Ingestion;
+using WeUP.Application.Moderation;
 using WeUP.Domain.Events;
 using WeUP.Domain.Flyer;
 using WeUP.Domain.Ingestion;
+using WeUP.Domain.Moderation;
 using WeUP.Domain.Users;
 using WeUP.Infrastructure.Flyer;
 using WeUP.Infrastructure.Ingestion;
 using WeUP.Infrastructure.Ingestion.Adapters;
+using WeUP.Infrastructure.Moderation;
 using WeUP.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -67,6 +70,17 @@ builder.Services.AddSingleton<IGeocodingService, StubGeocodingService>();
 builder.Services.AddSingleton<IFlyerConfidenceEvaluator, FlyerConfidenceEvaluator>();
 builder.Services.AddSingleton<IFlyerIngestionPipeline, FlyerIngestionPipeline>();
 
+// Moderation queue (P13), publish eligibility (P14), review actions (P15)
+builder.Services.AddSingleton<IModerationQueueRepository, InMemoryModerationQueue>();
+builder.Services.AddSingleton<IAuditTrailService, InMemoryAuditTrail>();
+builder.Services.AddSingleton<IModerationQueueService, ModerationQueueService>();
+builder.Services.AddSingleton<IConfidenceScoringService, ConfidenceScoringService>();
+builder.Services.AddSingleton<IEligibilityRuleSet, PublishEligibilityRuleSet>();
+builder.Services.AddSingleton<IPublishEligibilityService, PublishEligibilityService>();
+builder.Services.AddSingleton<ReviewActionService>();
+builder.Services.AddSingleton<IReviewActionService>(sp => sp.GetRequiredService<ReviewActionService>());
+builder.Services.AddSingleton<IRollbackService>(sp => sp.GetRequiredService<ReviewActionService>());
+
 // OpenTelemetry seam — wired fully in P22
 // builder.Services.AddOpenTelemetry()...
 
@@ -100,6 +114,7 @@ app.MapEventEndpoints();
 app.MapSaveEndpoints();
 app.MapIngestionEndpoints();
 app.MapFlyerEndpoints();
+app.MapModerationEndpoints();
 app.MapHealthChecks("/health");
 
 app.Run();
