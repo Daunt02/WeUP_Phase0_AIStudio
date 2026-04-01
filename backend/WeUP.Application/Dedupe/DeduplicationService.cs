@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using WeUP.Contracts.Ingestion;
 using WeUP.Domain.Dedupe;
 using WeUP.Infrastructure.Persistence;
@@ -75,8 +76,7 @@ public sealed class DeduplicationService(
                 e.StartUtc <= startUtc.Value + window);
         }
 
-        var entities = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions
-            .ToListAsync(query.Take(20), ct);
+        var entities = await query.Take(20).ToListAsync(ct);
 
         return entities.Select(e => new ExistingEventSnapshot(
             e.Id.ToString(),

@@ -1,8 +1,10 @@
 using WeUP.Api.Endpoints;
 using WeUP.Application.Ingestion;
 using WeUP.Domain.Events;
+using WeUP.Domain.Flyer;
 using WeUP.Domain.Ingestion;
 using WeUP.Domain.Users;
+using WeUP.Infrastructure.Flyer;
 using WeUP.Infrastructure.Ingestion;
 using WeUP.Infrastructure.Ingestion.Adapters;
 using WeUP.Infrastructure.Persistence;
@@ -49,10 +51,21 @@ builder.Services.AddSingleton<ISaveRepository, StubSaveRepository>();
 builder.Services.AddHttpClient("ingestion");
 builder.Services.AddSingleton<IIngestionJobRepository, InMemoryIngestionJobRepository>();
 builder.Services.AddSingleton<IIngestionAuditWriter, ConsoleIngestionAuditWriter>();
-builder.Services.AddSingleton<ManualSubmissionAdapter>();
-builder.Services.AddSingleton<LinkAdapter>();
-builder.Services.AddSingleton<VenuePageAdapter>();
+
+// Adapters — each registered as IIngestionAdapter so IngestionDispatcher receives all via IEnumerable<IIngestionAdapter>
+builder.Services.AddSingleton<IIngestionAdapter, ManualSubmissionAdapter>();
+builder.Services.AddSingleton<IIngestionAdapter, LinkAdapter>();
+builder.Services.AddSingleton<IIngestionAdapter, VenuePageAdapter>();
 builder.Services.AddSingleton<IIngestionDispatcher, IngestionDispatcher>();
+
+// Flyer pipeline
+builder.Services.AddSingleton<IFlyerStorageService, LocalFileStorageService>();
+builder.Services.AddSingleton<IOcrService, StubOcrService>();
+builder.Services.AddSingleton<IFlyerTextPostProcessor, FlyerTextPostProcessor>();
+builder.Services.AddSingleton<ILlmEventNormalizer, HeuristicLlmNormalizer>();
+builder.Services.AddSingleton<IGeocodingService, StubGeocodingService>();
+builder.Services.AddSingleton<IFlyerConfidenceEvaluator, FlyerConfidenceEvaluator>();
+builder.Services.AddSingleton<IFlyerIngestionPipeline, FlyerIngestionPipeline>();
 
 // OpenTelemetry seam — wired fully in P22
 // builder.Services.AddOpenTelemetry()...
@@ -86,6 +99,7 @@ app.UseHttpsRedirection();
 app.MapEventEndpoints();
 app.MapSaveEndpoints();
 app.MapIngestionEndpoints();
+app.MapFlyerEndpoints();
 app.MapHealthChecks("/health");
 
 app.Run();
