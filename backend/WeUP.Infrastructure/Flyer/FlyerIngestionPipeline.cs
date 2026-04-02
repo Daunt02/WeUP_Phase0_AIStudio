@@ -107,8 +107,9 @@ public sealed class LocalFileStorageService : IFlyerStorageService
     {
         var assetId = Guid.NewGuid().ToString("N");
         var storageKey = $"flyers/{assetId}/{request.FileName}";
-        var bytes = new byte[request.Content.Length];
-        await request.Content.ReadAsync(bytes, ct);
+        using var ms = new MemoryStream();
+        await request.Content.CopyToAsync(ms, ct);
+        var bytes = ms.ToArray();
         var checksum = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(bytes));
         return new FlyerStorageResult(assetId, storageKey, request.ContentType, bytes.Length, checksum);
     }
