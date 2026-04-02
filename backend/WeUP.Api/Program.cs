@@ -89,6 +89,10 @@ builder.Services.AddSingleton<IUserProfileRepository, InMemoryUserRepository>();
 builder.Services.AddSingleton<ITokenService, BearerTokenService>();
 builder.Services.AddSingleton<UserAuthService>();
 
+// User persistence services (P17)
+builder.Services.AddSingleton<IItineraryRepository, InMemoryItineraryRepository>();
+builder.Services.AddSingleton<IUserPreferencesRepository, InMemoryPreferencesRepository>();
+
 // OpenTelemetry seam — wired fully in P22
 // builder.Services.AddOpenTelemetry()...
 
@@ -119,6 +123,7 @@ app.UseHttpsRedirection();
 // ---------------------------------------------------------------------------
 
 app.MapAuthEndpoints();
+app.MapItineraryEndpoints();
 app.MapEventEndpoints();
 app.MapSaveEndpoints();
 app.MapIngestionEndpoints();

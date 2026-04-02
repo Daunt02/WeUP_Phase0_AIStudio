@@ -12,12 +12,14 @@ public static class SaveEndpoints
         // GET /api/users/me/saves
         group.MapGet("/", async (
             ISaveRepository repo,
+            ITokenService tokens,
             HttpContext ctx,
             int page = 1,
             int pageSize = 50,
             CancellationToken ct = default) =>
         {
-            var userId = ResolveUserId(ctx);
+            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            if (userId is null) return Results.Unauthorized();
             var response = await repo.GetSavesAsync(userId, page, pageSize, ct);
             return Results.Ok(response);
         })
@@ -28,10 +30,12 @@ public static class SaveEndpoints
         group.MapPost("/{eventId}", async (
             string eventId,
             ISaveRepository repo,
+            ITokenService tokens,
             HttpContext ctx,
             CancellationToken ct) =>
         {
-            var userId = ResolveUserId(ctx);
+            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            if (userId is null) return Results.Unauthorized();
             var response = await repo.SaveEventAsync(userId, eventId, ct);
             return Results.Ok(response);
         })
@@ -42,21 +46,16 @@ public static class SaveEndpoints
         group.MapDelete("/{eventId}", async (
             string eventId,
             ISaveRepository repo,
+            ITokenService tokens,
             HttpContext ctx,
             CancellationToken ct) =>
         {
-            var userId = ResolveUserId(ctx);
+            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            if (userId is null) return Results.Unauthorized();
             var response = await repo.UnsaveEventAsync(userId, eventId, ct);
             return Results.Ok(response);
         })
         .WithName("UnsaveEvent")
         .Produces<SaveEventResponse>();
     }
-
-    /// <summary>
-    /// Auth seam — resolves user identity from the session/token.
-    /// Full implementation in P16 (auth backbone).
-    /// </summary>
-    private static string ResolveUserId(HttpContext ctx)
-        => ctx.User?.FindFirst("sub")?.Value ?? "anonymous";
 }
