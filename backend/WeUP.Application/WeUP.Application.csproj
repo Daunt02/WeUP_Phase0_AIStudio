@@ -3,16 +3,16 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>WeUP.Infrastructure</RootNamespace>
+    <RootNamespace>WeUP.Application</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\WeUP.Contracts\WeUP.Contracts.csproj" />
     <ProjectReference Include="..\WeUP.Domain\WeUP.Domain.csproj" />
+    <!-- Infrastructure reference required: DeduplicationService uses WeUpDbContext directly (P12) -->
+    <ProjectReference Include="..\WeUP.Infrastructure\WeUP.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <!-- EF Core + PostgreSQL provider (P08) -->
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.*" />
-    <!-- IHttpClientFactory for ingestion adapters (P10) -->
-    <PackageReference Include="Microsoft.Extensions.Http" Version="8.*" />
+    <!-- EF Core LINQ extension methods used in DeduplicationService -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.*" />
   </ItemGroup>
 </Project>

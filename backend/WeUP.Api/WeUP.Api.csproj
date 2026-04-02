@@ -6,6 +6,7 @@
     <RootNamespace>WeUP.Api</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\WeUP.Application\WeUP.Application.csproj" />
     <ProjectReference Include="..\WeUP.Contracts\WeUP.Contracts.csproj" />
     <ProjectReference Include="..\WeUP.Domain\WeUP.Domain.csproj" />
     <ProjectReference Include="..\WeUP.Infrastructure\WeUP.Infrastructure.csproj" />

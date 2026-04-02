@@ -1,42 +1,46 @@
 using WeUP.Contracts.Ingestion;
 using WeUP.Domain.Ingestion;
-using WeUP.Infrastructure.Ingestion.Adapters;
 
 namespace WeUP.Application.Ingestion;
 
 /// <summary>
-/// Routes ingestion requests to the correct adapter and orchestrates the pipeline:
-/// 1. Create job record
-/// 2. Run adapter → raw candidate
-/// 3. Persist candidate
-/// 4. Route to review or auto-approve
+/// Routes ingestion requests to the correct adapter and orchestrates the pipeline.
+/// Accepts IEnumerable&lt;IIngestionAdapter&gt; — new adapters are registered in DI
+/// without changing this class.
 /// </summary>
 public sealed class IngestionDispatcher(
     IIngestionJobRepository jobs,
     IIngestionAuditWriter audit,
-    ManualSubmissionAdapter manualAdapter,
-    LinkAdapter linkAdapter,
-    VenuePageAdapter venueAdapter) : IIngestionDispatcher
+    IEnumerable<IIngestionAdapter> adapters) : IIngestionDispatcher
 {
+    private readonly Dictionary<IngestionSourceKind, IIngestionAdapter> _adapters =
+        adapters.ToDictionary(a => a.SourceKind);
+
     public async Task<string> DispatchManualAsync(ManualIngestionRequest request, CancellationToken ct = default)
     {
         var jobId = await jobs.CreateJobAsync(IngestionSourceKind.ManualSubmission, request.SubmitterId, ct);
-        await RunPipelineAsync(jobId, manualAdapter, request, ct);
+        await RunPipelineAsync(jobId, GetAdapter(IngestionSourceKind.ManualSubmission), request, ct);
         return jobId;
     }
 
     public async Task<string> DispatchLinkAsync(LinkIngestionRequest request, CancellationToken ct = default)
     {
         var jobId = await jobs.CreateJobAsync(IngestionSourceKind.PastedUrl, request.Url, ct);
-        await RunPipelineAsync(jobId, linkAdapter, request, ct);
+        await RunPipelineAsync(jobId, GetAdapter(IngestionSourceKind.PastedUrl), request, ct);
         return jobId;
     }
 
     public async Task<string> DispatchVenuePageAsync(VenuePageIngestionRequest request, CancellationToken ct = default)
     {
         var jobId = await jobs.CreateJobAsync(IngestionSourceKind.VenuePage, request.PageUrl, ct);
-        await RunPipelineAsync(jobId, venueAdapter, request, ct);
+        await RunPipelineAsync(jobId, GetAdapter(IngestionSourceKind.VenuePage), request, ct);
         return jobId;
+    }
+
+    private IIngestionAdapter GetAdapter(IngestionSourceKind kind)
+    {
+        if (_adapters.TryGetValue(kind, out var adapter)) return adapter;
+        throw new InvalidOperationException($"No adapter registered for source kind: {kind}");
     }
 
     private async Task RunPipelineAsync(string jobId, IIngestionAdapter adapter, object request, CancellationToken ct)
@@ -53,14 +57,10 @@ public sealed class IngestionDispatcher(
             await jobs.UpdateStatusAsync(jobId, IngestionJobStatus.Normalizing, ct: ct);
             await audit.WriteAsync(jobId, "Normalizing", null, ct);
 
-            // Route: if extraction confidence is high enough → auto-route to ReviewPending
-            // Full publish eligibility implemented in P14
-            var nextStatus = candidate.ExtractionConfidence >= 0.85
-                ? IngestionJobStatus.ReviewPending
-                : IngestionJobStatus.ReviewPending; // all go to review in Phase 0
-
-            await jobs.UpdateStatusAsync(jobId, nextStatus, ct: ct);
-            await audit.WriteAsync(jobId, nextStatus.ToString(), null, ct);
+            // All candidates route to ReviewPending in Phase 0
+            // Full auto-approve logic implemented in P14
+            await jobs.UpdateStatusAsync(jobId, IngestionJobStatus.ReviewPending, ct: ct);
+            await audit.WriteAsync(jobId, "ReviewPending", null, ct);
         }
         catch (Exception ex)
         {
