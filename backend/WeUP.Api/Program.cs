@@ -9,6 +9,7 @@ using WeUP.Domain.Moderation;
 using WeUP.Domain.Users;
 using WeUP.Infrastructure.Auth;
 using WeUP.Infrastructure.Flyer;
+using WeUP.Infrastructure.Submissions;
 using WeUP.Infrastructure.Ingestion;
 using WeUP.Infrastructure.Ingestion.Adapters;
 using WeUP.Infrastructure.Moderation;
@@ -93,6 +94,9 @@ builder.Services.AddSingleton<UserAuthService>();
 builder.Services.AddSingleton<IItineraryRepository, InMemoryItineraryRepository>();
 builder.Services.AddSingleton<IUserPreferencesRepository, InMemoryPreferencesRepository>();
 
+// Event submission workflow (P18)
+builder.Services.AddSingleton<IEventSubmissionService, InMemorySubmissionRepository>();
+
 // OpenTelemetry seam — wired fully in P22
 // builder.Services.AddOpenTelemetry()...
 
@@ -124,6 +128,7 @@ app.UseHttpsRedirection();
 
 app.MapAuthEndpoints();
 app.MapItineraryEndpoints();
+app.MapSubmissionEndpoints();
 app.MapEventEndpoints();
 app.MapSaveEndpoints();
 app.MapIngestionEndpoints();

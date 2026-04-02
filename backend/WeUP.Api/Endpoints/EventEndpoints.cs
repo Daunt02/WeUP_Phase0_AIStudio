@@ -10,7 +10,7 @@ public static class EventEndpoints
     {
         var group = app.MapGroup("/api/events").WithTags("Events");
 
-        // GET /api/events/map
+        // POST /api/events/map
         group.MapPost("/map", async (
             [FromBody] MapFeedRequest request,
             IEventRepository repo,
@@ -26,7 +26,7 @@ public static class EventEndpoints
         .Produces<MapFeedResponse>()
         .ProducesValidationProblem();
 
-        // GET /api/events/calendar
+        // POST /api/events/calendar
         group.MapPost("/calendar", async (
             [FromBody] CalendarFeedRequest request,
             IEventRepository repo,
@@ -53,34 +53,7 @@ public static class EventEndpoints
         .Produces<EventDetailResponse>()
         .ProducesProblem(404);
 
-        // POST /api/events/submissions
-        group.MapPost("/submissions", async (
-            [FromBody] EventSubmissionRequest request,
-            IEventSubmissionRepository repo,
-            HttpContext ctx,
-            CancellationToken ct) =>
-        {
-            // Auth seam — userId resolved from session/token in P16
-            var userId = ctx.User?.FindFirst("sub")?.Value ?? "anonymous";
-            var submissionId = await repo.CreateSubmissionAsync(userId, request, ct);
-            return Results.Accepted($"/api/events/submissions/{submissionId}",
-                new EventSubmissionResponse(submissionId, "DRAFT", "Submission created."));
-        })
-        .WithName("CreateEventSubmission")
-        .Produces<EventSubmissionResponse>(202);
-
-        // GET /api/events/submissions/{id}/status
-        group.MapGet("/submissions/{id}/status", async (
-            string id,
-            IEventSubmissionRepository repo,
-            CancellationToken ct) =>
-        {
-            var status = await repo.GetSubmissionStatusAsync(id, ct);
-            return status is null
-                ? Results.NotFound(new ProblemDetails { Title = "Submission not found", Status = 404 })
-                : Results.Ok(new { submissionId = id, status });
-        })
-        .WithName("GetSubmissionStatus");
+        // Submission routes moved to SubmissionEndpoints (P18) — /api/events/submissions/*
     }
 
     private static IResult? ValidateBoundingBox(GeoBoundingBox bb)
