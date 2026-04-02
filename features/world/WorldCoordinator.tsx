@@ -13,6 +13,7 @@ import GeoControls from '@/components/GeoControls';
 import AddEventModal from '@/components/AddEventModal';
 import { NightlifeItem } from '@/types';
 import { eventService } from '@/services/eventService';
+import submissionService from '@/services/submissionService';
 import { useWorldSurfaceState } from '@/hooks/useWorldSurfaceState';
 
 export default function WorldCoordinator() {
@@ -52,11 +53,25 @@ export default function WorldCoordinator() {
     else updateDraft({} as any);
   };
 
-  const handlePublish = (event: NightlifeItem) => {
-    // Hook currently clears draft and toggles save locally; real persistence is for P09
-    publishDraft(event.id);
-    // keep UI consistent by adding to events list locally
-    setEvents(prev => [event, ...prev]);
+  const handlePublish = async (event: NightlifeItem) => {
+    // Attempt to create a durable submission, then submit for review.
+    try {
+      const payload = { ...event };
+      const created = await submissionService.createDraft(payload);
+      try {
+        await submissionService.submitForReview(created.id);
+      } catch (submitErr) {
+        console.warn('Submit for review failed:', submitErr);
+      }
+      // Update UI state to reflect published/queued signal
+      publishDraft(created.id || event.id);
+      setEvents(prev => [event, ...prev]);
+    } catch (err) {
+      console.error('Failed to persist submission:', err);
+      // Fallback to local behavior so UX remains responsive
+      publishDraft(event.id);
+      setEvents(prev => [event, ...prev]);
+    }
   };
 
   return (

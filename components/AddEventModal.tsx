@@ -25,7 +25,7 @@ import { publicEnv } from '../lib/env/public';
 interface AddEventModalProps {
   isVisible: boolean;
   onClose: () => void;
-  onPublish: (event: NightlifeItem) => void;
+  onPublish: (event: NightlifeItem) => Promise<any> | void;
   onGhostUpdate: (event: Partial<NightlifeItem> | null) => void;
   ghostEvent?: Partial<NightlifeItem> | null;
   mapCenter: { lat: number, lng: number };
@@ -38,6 +38,7 @@ export default function AddEventModal({ isVisible, onClose, onPublish, onGhostUp
   const [uploadProgress, setUploadProgress] = useState(0);
   const [extractedData, setExtractedData] = useState<Partial<NightlifeItem> | null>(null);
   const [confidenceScore, setConfidenceScore] = useState(0);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [manualAddress, setManualAddress] = useState("");
   const [linkInput, setLinkInput] = useState("");
@@ -199,27 +200,34 @@ export default function AddEventModal({ isVisible, onClose, onPublish, onGhostUp
     }, 2000);
   };
 
-  const handlePublish = () => {
-    if (extractedData) {
-      // STRICT VALIDATION
-      if (!extractedData.title || !extractedData.start_time || !extractedData.venue_name || !extractedData.address || !extractedData.latitude || !extractedData.longitude) {
-        alert("CRITICAL: Missing required signal data. Title, Time, Venue, and Validated Address are mandatory.");
-        return;
-      }
+  const handlePublish = async () => {
+    if (!extractedData) return;
+    // STRICT VALIDATION
+    if (!extractedData.title || !extractedData.start_time || !extractedData.venue_name || !extractedData.address || !extractedData.latitude || !extractedData.longitude) {
+      alert("CRITICAL: Missing required signal data. Title, Time, Venue, and Validated Address are mandatory.");
+      return;
+    }
 
-      const finalEvent: NightlifeItem = {
-        ...extractedData as NightlifeItem,
-        id: `user-${Date.now()}`,
-        price_tier: extractedData.price_tier || '$$',
-        source: 'manual',
-        status: 'PUBLISHED',
-        confidence: extractedData.confidence || 1,
-      };
-      onPublish(finalEvent);
+    const finalEvent: NightlifeItem = {
+      ...extractedData as NightlifeItem,
+      id: `user-${Date.now()}`,
+      price_tier: extractedData.price_tier || '$$',
+      source: 'manual',
+      status: 'PUBLISHED',
+      confidence: extractedData.confidence || 1,
+    };
+
+    try {
+      setIsPublishing(true);
+      const res = await onPublish(finalEvent);
+      setIsPublishing(false);
       setStep('SUCCESS');
-      setTimeout(() => {
-        onClose();
-      }, 1500);
+      setTimeout(() => onClose(), 1500);
+    } catch (err) {
+      console.error('Publish failed', err);
+      setIsPublishing(false);
+      setStep('ERROR');
+      setErrorMessage((err as any)?.message || 'Publish failed.');
     }
   };
 
@@ -643,7 +651,13 @@ export default function AddEventModal({ isVisible, onClose, onPublish, onGhostUp
                   onClick={handlePublish}
                   className="w-full h-16 bg-brand-primary text-black rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-2 shadow-[0_10px_30px_rgba(var(--brand-primary-rgb),0.3)]"
                 >
-                  Publish Signal <ArrowRight size={16} />
+                  {isPublishing ? (
+                    <>
+                      Publishing... <Loader2 size={16} className="ml-2" />
+                    </>
+                  ) : (
+                    <>Publish Signal <ArrowRight size={16} /></>
+                  )}
                 </button>
               </div>
             )}

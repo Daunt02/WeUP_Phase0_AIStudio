@@ -115,6 +115,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Simple request logging middleware to aid smoke tests and debugging
+app.Use(async (context, next) =>
+{
+    var logger = app.Logger;
+    logger.LogInformation("Incoming request: {Method} {Path}", context.Request.Method, context.Request.Path);
+    await next();
+    logger.LogInformation("Response: {StatusCode} for {Method} {Path}", context.Response.StatusCode, context.Request.Method, context.Request.Path);
+});
+
 app.UseCors("LocalDev");
 app.UseHttpsRedirection();
 
