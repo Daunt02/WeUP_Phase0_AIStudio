@@ -1,11 +1,13 @@
 using WeUP.Api.Endpoints;
 using WeUP.Application.Ingestion;
 using WeUP.Application.Moderation;
+using WeUP.Application.Users;
 using WeUP.Domain.Events;
 using WeUP.Domain.Flyer;
 using WeUP.Domain.Ingestion;
 using WeUP.Domain.Moderation;
 using WeUP.Domain.Users;
+using WeUP.Infrastructure.Auth;
 using WeUP.Infrastructure.Flyer;
 using WeUP.Infrastructure.Ingestion;
 using WeUP.Infrastructure.Ingestion.Adapters;
@@ -81,6 +83,12 @@ builder.Services.AddSingleton<ReviewActionService>();
 builder.Services.AddSingleton<IReviewActionService>(sp => sp.GetRequiredService<ReviewActionService>());
 builder.Services.AddSingleton<IRollbackService>(sp => sp.GetRequiredService<ReviewActionService>());
 
+// Auth services (P16)
+// Phase 0: in-memory token store. Real JWT: add JwtBearer, set WeUp:Auth:JwtSecret in appsettings.
+builder.Services.AddSingleton<IUserProfileRepository, InMemoryUserRepository>();
+builder.Services.AddSingleton<ITokenService, BearerTokenService>();
+builder.Services.AddSingleton<UserAuthService>();
+
 // OpenTelemetry seam — wired fully in P22
 // builder.Services.AddOpenTelemetry()...
 
@@ -102,7 +110,7 @@ if (app.Environment.IsDevelopment())
 app.UseCors("LocalDev");
 app.UseHttpsRedirection();
 
-// Auth middleware seam — full implementation in P16
+// Auth middleware — Phase 0 uses BearerTokenService; JwtBearer added in P16.5+
 // app.UseAuthentication();
 // app.UseAuthorization();
 
@@ -110,6 +118,7 @@ app.UseHttpsRedirection();
 // Endpoints
 // ---------------------------------------------------------------------------
 
+app.MapAuthEndpoints();
 app.MapEventEndpoints();
 app.MapSaveEndpoints();
 app.MapIngestionEndpoints();
