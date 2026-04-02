@@ -20,7 +20,7 @@ public static class SaveEndpoints
         {
             var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
             if (userId is null) return Results.Unauthorized();
-            var response = await repo.GetSavesAsync(userId, page, pageSize, ct);
+            var response = await repo.GetSavesAsync(userId, Math.Max(1, page), Math.Clamp(pageSize, 1, 100), ct);
             return Results.Ok(response);
         })
         .WithName("GetSavedEvents")

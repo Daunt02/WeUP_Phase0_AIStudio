@@ -15,15 +15,18 @@ public sealed class BearerTokenService : ITokenService
 {
     public int ExpiresInSeconds => 86_400; // 24 hours
 
+    // Sweep expired tokens after every N validations to bound memory growth.
+    private const int SweepInterval = 200;
+    private int _validateCount;
+
     private sealed record TokenEntry(string UserId, DateTimeOffset ExpiresAt);
 
     private readonly ConcurrentDictionary<string, TokenEntry> _tokens = new();
 
     public string IssueToken(string userId)
     {
-        var token = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N"); // 64-char hex
-        var entry = new TokenEntry(userId, DateTimeOffset.UtcNow.AddSeconds(ExpiresInSeconds));
-        _tokens[token] = entry;
+        var token = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
+        _tokens[token] = new TokenEntry(userId, DateTimeOffset.UtcNow.AddSeconds(ExpiresInSeconds));
         return token;
     }
 
@@ -35,6 +38,21 @@ public sealed class BearerTokenService : ITokenService
             _tokens.TryRemove(token, out _);
             return null;
         }
+
+        // Periodic sweep — remove expired entries so the dictionary stays bounded.
+        if (Interlocked.Increment(ref _validateCount) % SweepInterval == 0)
+            SweepExpired();
+
         return entry.UserId;
+    }
+
+    private void SweepExpired()
+    {
+        var now = DateTimeOffset.UtcNow;
+        foreach (var (key, entry) in _tokens)
+        {
+            if (entry.ExpiresAt < now)
+                _tokens.TryRemove(key, out _);
+        }
     }
 }

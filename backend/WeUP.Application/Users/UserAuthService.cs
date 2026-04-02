@@ -21,7 +21,7 @@ public sealed class UserAuthService(
         var profile  = existing ?? await users.CreateAsync(request.Email, request.DisplayName, request.HomeMarket, ct);
 
         var token = tokens.IssueToken(profile.UserId);
-        return new AuthResponse(profile.UserId, token, "Bearer", tokens.ExpiresInSeconds, profile);
+        return new AuthResponse(profile.UserId, token, TokenTypes.Bearer, tokens.ExpiresInSeconds, profile);
     }
 
     /// <summary>
@@ -34,7 +34,7 @@ public sealed class UserAuthService(
         if (profile is null) return null;
 
         var token = tokens.IssueToken(profile.UserId);
-        return new AuthResponse(profile.UserId, token, "Bearer", tokens.ExpiresInSeconds, profile);
+        return new AuthResponse(profile.UserId, token, TokenTypes.Bearer, tokens.ExpiresInSeconds, profile);
     }
 
     public Task<UserProfileDto?> GetProfileAsync(string userId, CancellationToken ct = default) =>

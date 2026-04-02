@@ -1,5 +1,16 @@
 namespace WeUP.Contracts.Auth;
 
+public static class TokenTypes
+{
+    public const string Bearer = "Bearer";
+}
+
+public static class OnboardingStates
+{
+    public const string New      = "NEW";
+    public const string Complete = "COMPLETE";
+}
+
 // ---------------------------------------------------------------------------
 // Requests
 // ---------------------------------------------------------------------------

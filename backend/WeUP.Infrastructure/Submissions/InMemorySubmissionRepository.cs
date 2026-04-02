@@ -11,26 +11,21 @@ namespace WeUP.Infrastructure.Submissions;
 public sealed class InMemorySubmissionRepository : IEventSubmissionService
 {
     private readonly ConcurrentDictionary<string, SubmissionRecord> _byId   = new();
-    // userId → list of submissionIds
-    private readonly ConcurrentDictionary<string, List<string>>     _byUser = new();
-
-    // ---------------------------------------------------------------------------
-    // IEventSubmissionService
-    // ---------------------------------------------------------------------------
+    private readonly ConcurrentDictionary<string, ConcurrentBag<string>> _byUser = new();
 
     public Task<SubmissionDto> CreateDraftAsync(string userId, DraftSubmissionRequest request, CancellationToken ct = default)
     {
         var rec = new SubmissionRecord(
-            SubmissionId: Guid.NewGuid().ToString("N"),
+            SubmissionId:      Guid.NewGuid().ToString("N"),
             SubmittedByUserId: userId,
-            Status: SubmissionStatus.Draft,
-            Request: request,
-            ReviewNote: null,
-            CreatedAt: DateTimeOffset.UtcNow,
-            UpdatedAt: DateTimeOffset.UtcNow);
+            Status:            SubmissionStatus.Draft,
+            Request:           request,
+            ReviewNote:        null,
+            CreatedAt:         DateTimeOffset.UtcNow,
+            UpdatedAt:         DateTimeOffset.UtcNow);
 
         _byId[rec.SubmissionId] = rec;
-        _byUser.GetOrAdd(userId, _ => []).Add(rec.SubmissionId);
+        _byUser.GetOrAdd(userId, _ => new ConcurrentBag<string>()).Add(rec.SubmissionId);
 
         return Task.FromResult(rec.ToDto());
     }
@@ -66,28 +61,21 @@ public sealed class InMemorySubmissionRepository : IEventSubmissionService
         if (!_byId.TryGetValue(submissionId, out var rec)) return Task.FromResult<SubmissionDto?>(null);
         if (rec.SubmittedByUserId != userId) return Task.FromResult<SubmissionDto?>(null);
         if (rec.Status is not SubmissionStatus.Draft and not SubmissionStatus.ChangesRequested)
-            return Task.FromResult<SubmissionDto?>(null); // Cannot edit non-draft
+            return Task.FromResult<SubmissionDto?>(null);
 
         var merged = new DraftSubmissionRequest(
             Title:         request.Title         ?? rec.Request.Title,
             VenueName:     request.VenueName     ?? rec.Request.VenueName,
             Address:       request.Address       ?? rec.Request.Address,
             StartUtc:      request.StartUtc      ?? rec.Request.StartUtc,
-            EndUtc:        request.EndUtc        ?? rec.Request.EndUtc,
+            EndUtc:        request.EndUtc         ?? rec.Request.EndUtc,
             Timezone:      request.Timezone      ?? rec.Request.Timezone,
             Category:      request.Category      ?? rec.Request.Category,
             Description:   request.Description   ?? rec.Request.Description,
             Tags:          request.Tags          ?? rec.Request.Tags,
             FlyerAssetIds: request.FlyerAssetIds ?? rec.Request.FlyerAssetIds);
 
-        var updated = rec with
-        {
-            Status = SubmissionStatus.Draft,
-            Request = merged,
-            ReviewNote = null,
-            UpdatedAt = DateTimeOffset.UtcNow
-        };
-
+        var updated = rec with { Status = SubmissionStatus.Draft, Request = merged, ReviewNote = null, UpdatedAt = DateTimeOffset.UtcNow };
         _byId[submissionId] = updated;
         return Task.FromResult<SubmissionDto?>(updated.ToDto());
     }
@@ -109,15 +97,10 @@ public sealed class InMemorySubmissionRepository : IEventSubmissionService
             return Task.FromResult(new SubmitForReviewResponse(submissionId, rec.Status,
                 $"Validation failed: {string.Join("; ", errors.Select(e => $"{e.Field}: {e.Message}"))}"));
 
-        var updated = rec with
-        {
-            Status = SubmissionStatus.SubmittedForReview,
-            UpdatedAt = DateTimeOffset.UtcNow
-        };
+        var updated = rec with { Status = SubmissionStatus.SubmittedForReview, UpdatedAt = DateTimeOffset.UtcNow };
         _byId[submissionId] = updated;
 
-        return Task.FromResult(new SubmitForReviewResponse(
-            submissionId, SubmissionStatus.SubmittedForReview, "Submitted for review."));
+        return Task.FromResult(new SubmitForReviewResponse(submissionId, SubmissionStatus.SubmittedForReview, "Submitted for review."));
     }
 
     public Task<SubmissionDto?> ApplyReviewFeedbackAsync(
@@ -125,34 +108,21 @@ public sealed class InMemorySubmissionRepository : IEventSubmissionService
     {
         if (!_byId.TryGetValue(submissionId, out var rec)) return Task.FromResult<SubmissionDto?>(null);
 
-        var updated = rec with
-        {
-            Status = newStatus,
-            ReviewNote = reviewNote,
-            UpdatedAt = DateTimeOffset.UtcNow
-        };
+        var updated = rec with { Status = newStatus, ReviewNote = reviewNote, UpdatedAt = DateTimeOffset.UtcNow };
         _byId[submissionId] = updated;
         return Task.FromResult<SubmissionDto?>(updated.ToDto());
     }
 
-    // ---------------------------------------------------------------------------
-    // Validation
-    // ---------------------------------------------------------------------------
-
     private static SubmissionValidationError[] ValidateForSubmission(DraftSubmissionRequest r)
     {
         var errors = new List<SubmissionValidationError>();
-        if (string.IsNullOrWhiteSpace(r.Title))       errors.Add(new("title", "Title is required."));
-        if (string.IsNullOrWhiteSpace(r.VenueName))   errors.Add(new("venueName", "Venue name is required."));
-        if (string.IsNullOrWhiteSpace(r.Address))     errors.Add(new("address", "Address is required."));
-        if (r.StartUtc is null)                       errors.Add(new("startUtc", "Start time is required."));
-        if (string.IsNullOrWhiteSpace(r.Category))    errors.Add(new("category", "Category is required."));
+        if (string.IsNullOrWhiteSpace(r.Title))     errors.Add(new("title",     "Title is required."));
+        if (string.IsNullOrWhiteSpace(r.VenueName)) errors.Add(new("venueName", "Venue name is required."));
+        if (string.IsNullOrWhiteSpace(r.Address))   errors.Add(new("address",   "Address is required."));
+        if (r.StartUtc is null)                     errors.Add(new("startUtc",  "Start time is required."));
+        if (string.IsNullOrWhiteSpace(r.Category))  errors.Add(new("category",  "Category is required."));
         return [.. errors];
     }
-
-    // ---------------------------------------------------------------------------
-    // Record
-    // ---------------------------------------------------------------------------
 
     private sealed record SubmissionRecord(
         string SubmissionId,

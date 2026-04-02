@@ -34,7 +34,7 @@ public static class SubmissionEndpoints
             var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
             if (userId is null) return Results.Unauthorized();
 
-            var result = await svc.ListByUserAsync(userId, page, pageSize, ct);
+            var result = await svc.ListByUserAsync(userId, Math.Max(1, page), Math.Clamp(pageSize, 1, 100), ct);
             return Results.Ok(result);
         })
         .WithName("ListMySubmissions")
