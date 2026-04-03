@@ -7,6 +7,7 @@ using WeUP.Domain.Flyer;
 using WeUP.Domain.Ingestion;
 using WeUP.Domain.Moderation;
 using WeUP.Domain.Users;
+using WeUP.Domain.Spatial;
 using WeUP.Infrastructure.Auth;
 using WeUP.Infrastructure.Flyer;
 using WeUP.Infrastructure.Submissions;
@@ -14,6 +15,7 @@ using WeUP.Infrastructure.Ingestion;
 using WeUP.Infrastructure.Ingestion.Adapters;
 using WeUP.Infrastructure.Moderation;
 using WeUP.Infrastructure.Persistence;
+using WeUP.Infrastructure.Spatial;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -96,6 +98,9 @@ builder.Services.AddSingleton<IUserPreferencesRepository, InMemoryPreferencesRep
 
 // Event submission workflow (P18)
 builder.Services.AddSingleton<IEventSubmissionService, InMemorySubmissionRepository>();
+
+// Spatial query services (P19) — bounding box, district, viewport queries
+builder.Services.AddSingleton<IViewportQueryService, ViewportQueryService>();
 
 // OpenTelemetry seam — wired fully in P22
 // builder.Services.AddOpenTelemetry()...

@@ -1,0 +1,219 @@
+﻿WeUP – 12‑Month High‑Level Roadmap
+*Goal: Take the UI‑first prototype through the full Phase‑0 ladder, deliver Phase‑0.15, 0.20, 0.25 and 0.30+, then launch Phase 1 as version 1.24.
+*Version cadence – two public releases each month (early‑month “E” and late‑month “L”) – incrementing the minor version by .01 on each ship.
+*Start date: July 2026 (Month 1).
+________________
+
+
+Versioning Scheme
+Release
+	Meaning
+	v1.0 – v1.23
+	Incremental feature, stability and observability drops.
+	v1.24
+	Final Phase‑1 “city‑scale, revenue & intelligence” release.
+	All releases are fully CI‑tested, semver‑compatible (no breaking API changes after v1.0) and ship to a staging environment for stakeholder review before production rollout.
+________________
+
+
+Monthly Roadmap
+Month
+	Early Release (E)
+	Late Release (L)
+	Primary Pack / Bundles shipped
+	Key Delivered Features
+	Milestones / Acceptance
+	Jul‑2026 (M1)
+	v1.0 – Runtime Spine (P01)
+	v1.1 – Env‑Contract (P02)
+	Pack 1 – Phase 0 Conversion – Bundle 1 (Runtime Spine)
+	• New folder layout (app/, features/, domains/…)
+• World‑surface coordinator & thin page.tsx
+• Typed, typed‑only environment module with .env.example
+	✅ All UI still renders unchanged
+✅ No process.env leaks in client code
+	Aug‑2026 (M2)
+	v1.2 – UI State Refactor (P03)
+	v1.3 – Canonical Event Aggregate (P04)
+	Pack 1 – Continued – Bundle 2 (Event Domain)
+	• useWorldSurfaceState reducer, no render‑time mutation
+• EventAggregate type with strict fields & status enum
+	✅ State machine documented
+✅ UI interactions (modal, save, map) continue to work
+	Sep‑2026 (M3)
+	v1.4 – Source Provenance & Confidence (P05)
+	v1.5 – Temporal & Geospatial Query Contracts (P06)
+	Pack 1 – Wrap‑up
+	• Provenance structs (EventSourceKind, EvidenceRef)
+• Multi‑dimensional confidence vector
+• MapFeedQuery, CalendarFeedQuery contracts
+	✅ Backend‑ready contracts ready for .NET layer
+	Oct‑2026 (M4)
+	v1.6 – .NET 8 API Scaffold (P07)
+	v1.7 – EF Core + Postgres Schema (P08)
+	Pack 3 – Backend & Persistence (first half)
+	• Clean‑arch solution (Api, Application, Domain, Infrastructure)
+• DB schema: Events, EventSources, Users, SavedEvents
+	✅ Project builds, migrations generate cleanly
+	Nov‑2026 (M5)
+	v1.8 – Map / Calendar / Detail / Save APIs (P09)
+	v1.9 – Source Adapter Framework (P10)
+	Pack 3 – Backend & Persistence (second half)
+	• Real endpoints: GET /api/events/map, …/calendar, …/{id}, POST /api/users/me/saves/{id}
+• Adapter base (IIngestionAdapter) for venue pages, URLs, manual submissions
+	✅ Front‑end can switch to real API service
+✅ End‑to‑end tests pass
+	Dec‑2026 (M6)
+	v1.10 – Flyer OCR + LLM Normalisation (P11)
+	v1.11 – Deduplication & Entity Resolution (P12)
+	Pack 4 – Ingestion Engine
+	• OCR service stub (Google Vision‑compatible)
+• LLM normaliser returning canonical fields
+• Deterministic duplicate scoring & merge policy
+	✅ At least 95 % OCR‑confidence on test flyers
+✅ Duplicate‑rejection logs stored
+	Jan‑2027 (M7)
+	v1.12 – Flyer Media Upload Service (P25)
+	v1.13 – Flyer Validation & Lifecycle (P26)
+	Pack 2 – Media Signal – Bundle 9 (Flyer Intake)
+	• Multipart upload → MediaAsset record
+• Size, MIME‑type, dimension checks
+• Lifecycle states (Initialized → Uploaded → ValidationFailed → ProcessingPending)
+	✅ Uploads persisted, checksum stored, validation failures reported
+	Feb‑2027 (M8)
+	v1.14 – Video Flyer Intake & Job Registration (P28)
+	v1.15 – Video Frame / Poster Extraction (P29)
+	Pack 2 – Media Signal – Bundle 10 (Video Pipeline)
+	• Video assets (MediaAssetType=VideoFlyer)
+• Background job (VideoProcessingJob) queued
+• FFmpeg‑based frame extraction, poster selection, derived‑asset registration
+	✅ Video jobs run in a worker queue, assets linked to original upload
+	Mar‑2027 (M9)
+	v1.16 – Thumbnail Scoring & Media Ranking (P36)
+	v1.17 – Trust‑Graph Identity Model (P33)
+	Pack 3 – Trust Graph – Bundle 14
+	• UserTrustGraph schema (nodes = users, edges = invites, reputation)
+• Media‑ranking component using confidence + trust scores
+	✅ Graph persisted, basic tier‑unlock logic functional
+	Apr‑2027 (M10)
+	v1.18 – Invite Tier Engine (P34)
+	v1.19 – Proximity Scoring & Reveal Rules (P35)
+	Pack 3 – Trust Graph – Bundles 15‑16
+	• Tier levels: Public → Adjacent → Private
+• Proximity‑based access checks (distance ≤ X km)
+	✅ Invite flow end‑to‑end (issue → accept → revoke)
+	May‑2027 (M11)
+	v1.20 – Venue Console (P41)
+	v1.21 – Sponsor Console (P42)
+	Pack 4 – Operator Revenue – Bundles 19‑20
+	• Venue portal (event submission, analytics)
+• Sponsor portal (geo‑activated campaigns)
+	✅ Role‑based RBAC gating (venue vs sponsor)
+	Jun‑2027 (M12)
+	v1.22 – Cultural Ranking Engine (P49)
+	v1.23 – Phase 1 “City‑Scale” Prep (Feature Freeze)
+	Pack 5 – Intelligence – Bundle 24 (Ranking) + Phase 1 Foundations
+	• Event‑ranking service using freshness + density + trust
+• Full‑city expansion control plane (city‑status, market‑freeze)
+• Feature‑flag rollout for Phase 1‐only capabilities
+	✅ Rankings served to UI, all previous packs stable
+	Jun‑2027 (End‑Month)
+	v1.24 – Phase 1 Launch
+	—
+	Phase 1 – “Revenue & Intelligence at Scale”
+	• Multi‑City Expansion – add 2 new markets (San Francisco, Chicago) with automated district taxonomy
+• Advanced Personalisation – collaborative‑filtering model (P51)
+• GeoAudio + Ambient Detection (P52) fully integrated
+• Sponsor Marketplace – self‑serve billing + payouts (P46)
+• Public Partner API – versioned OpenAPI spec for third‑party event feeds
+• Enterprise Observability – OpenTelemetry collector, Grafana dashboards, alerting
+• Compliance – GDPR data‑export, consent management UI
+	✅ All Phase 0 packs at production‑grade, Phase 1 features gated behind feature‑flags, full smoke‑test suite passes, release approved by Product & Ops
+	________________
+
+
+How the Roadmap Maps to the Prompt‑Bundle System
+Pack
+	Bundle
+	Prompt(s)
+	Target Release
+	Pack 1 – Phase 0 Conversion
+	B01 Runtime Spine
+	P01, P02, P03
+	v1.0‑v1.5
+	
+
+	B02 Canonical Event
+	P04‑P06
+	v1.3‑v1.5
+	Pack 2 – Media Signal
+	B09 Flyer Intake
+	P25‑P27
+	v1.12‑v1.13
+	
+
+	B10 Video Pipeline
+	P28‑P30
+	v1.14‑v1.15
+	Pack 3 – Trust Graph
+	B14 Trust Identity
+	P33‑P40
+	v1.16‑v1.19
+	Pack 4 – Operator Revenue
+	B19 Venue Console
+	P41‑P48
+	v1.20‑v1.21
+	Pack 5 – Intelligence
+	B24 Cultural Ranking
+	P49‑P56
+	v1.22‑v1.23
+	Phase 1
+	New city‑scale & monetisation
+	(Custom)
+	v1.24
+	Every release ships the code generated by the corresponding prompts; QA/QA‑automation, E2E tests and release‑gate checklists (see Bundle 8) run on each version.
+________________
+
+
+Phase 1 (v1.24) – “WeUP at Scale”
+Feature Area
+	What It Delivers
+	Why It Matters
+	Multi‑City Expansion
+	City‑partitioning service, district taxonomy, market‑freeze rules, auto‑provisioning of venue‑ & sponsor‑data
+	Allows WeUP to launch in any new city without code changes
+	Advanced Personalisation
+	Real‑time signal‑fusion (P50) + collaborative‑filtering ranking (P51)
+	Drives higher engagement and sponsor ROI
+	GeoAudio
+	Ambient‑sound ingestion pipeline, venue‑audio matching heuristics (P52)
+	Differentiator for night‑life discovery
+	Sponsor Marketplace
+	Campaign builder, billing & invoicing (P46), KPI dashboards (P48)
+	Direct revenue stream for the platform
+	Partner API
+	Public, versioned OpenAPI spec, rate‑limiting, API‑key management
+	Opens ecosystem for 3rd‑party curators
+	Compliance & Privacy
+	GDPR data‑export, consent UI, audit‑log retention (P15)
+	Legal risk mitigation for scaling
+	Observability & Reliability
+	OpenTelemetry collector, structured logs, alerting, automated canary releases
+	Guarantees SLA as traffic grows
+	All Phase 1 capabilities are feature‑flag‑gated at launch, giving the product team the ability to roll them out incrementally post‑v1.24.
+________________
+
+
+Quick Summary
+Jul‑2026 → Jun‑2027
+	2 releases / month
+	Final version
+	• Pack 1 – Runtime, Env, UI State, Event model, Backend scaffold, DB schema, core API
+• Pack 2 – Flyer & Video media ingestion, validation, processing
+• Pack 3 – Trust‑graph, invites, proximity rules
+• Pack 4 – Venue & Sponsor consoles, billing
+• Pack 5 – Ranking, live‑signal fusion, experimentation
+• Phase 1 – Multi‑city, personalisation, GeoAudio, partner API, compliance
+	v1.0 – v1.23 (early‑/late‑month)
+	v1.24 – Phase 1 launch
+	With this roadmap the engineering team can track progress by version, coordinate cross‑functional QA, and deliver a production‑ready, revenue‑generating WeUP platform at the end of June 2027.

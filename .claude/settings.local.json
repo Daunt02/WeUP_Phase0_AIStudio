@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(unzip -p \"C:/Users/wdeat/Ben/WeUP_Phase0_AIStudio/mnt/WeUP Phase 0 — Technical Requirements Document \\(TRD\\).docx\" word/document.xml)",
+      "Bash(unzip -p 'C:/Users/wdeat/Ben/WeUP_Phase0_AIStudio/mnt/WeUP Phase 0 — Technical Requirements Document \\(TRD\\).docx' word/document.xml)",
+      "Bash(perl -pe 's/<[^>]+>//g')",
+      "Bash(perl -pe \"s/&\\([a-z]+\\);/ {quot=>''''\"\"''''\"\"'''', amp=>''''&'''', lt=>''''<'''', gt=>''''>''''}->{$1} /ge\")",
+      "Read(//c/Users/wdeat/Ben/WeUP_Phase0_AIStudio/mnt//**)"
+    ]
+  }
+}

@@ -1,0 +1,313 @@
+﻿Documentation Matrix for Every WeUP Release (v1.0 → v1.24)
+Below is a ready‑to‑use checklist that tells you what documents must exist, be versioned and be updated for each published version.
+The list is grouped by release‑type (core, feature‑specific, cross‑cutting) and mapped to the phase‑based version blocks that appear in the 12‑month roadmap (Phase 0 → Phase 0.15 → Phase 0.20 → Phase 0.25 → Phase 0.30+ → Phase 1.0).
+Key conventions
+All docs live in the same Git‑tracked docs/ folder (or a dedicated Confluence space) and are version‑tagged (e.g. v1.07‑API‑Spec.pdf).
+ Each document carries a header block with:  Version, Authors, Last‑Updated, Review‑Status.
+ When a release introduces a new feature, add a new document (or a new section) and increment the version number of the parent doc.
+________________
+
+
+1. Core “Release‑Level” Documents (Every Version)
+#
+	Document
+	Purpose (what it records)
+	When it is created / updated
+	Owner
+	C‑01
+	Release Roadmap & Milestones (MD)
+	High‑level timeline, major milestones, version cadence (2 releases/month).
+	Created once (Q2 2026) → updated each quarter.
+	Product‑Management
+	C‑02
+	Version Change‑Log / Changelog (MD)
+	Bullet‑point list of user‑visible changes, bug‑fixes, deprecations.
+	Updated with every published version (v1.0 → v1.24).
+	Engineering‑Lead
+	C‑03
+	Release Notes (PDF/MD)
+	Narrative description of the release (new features, known issues, upgrade steps).
+	Produced for every version; bundled with the build artefact.
+	Technical‑Writer
+	C‑04
+	Product Requirements Document (PRD) (MD)
+	Business goals, success metrics, stakeholder constraints for the upcoming version.
+	Created at the start of each phase block (e.g. PRD‑v1.0‑Phase0, PRD‑v1.8‑Phase0.15).
+	Product‑Owner
+	C‑05
+	Feature‑Spec Sheet (MD)
+	Detailed description of each new feature in the version (user stories, acceptance criteria, UI mock‑ups).
+	One per feature that ships in the version; compiled into a single “Feature‑Spec‑vX.Y” document.
+	UX‑Designer / PM
+	C‑06
+	Architecture Decision Records (ADRs) (MD)
+	Rationale + alternatives for any major architectural change (e.g., “Switch to OpenTelemetry”, “Introduce Media‑Storage Service”).
+	New ADR for each architectural change; linked from the release notes.
+	Architecture‑Lead
+	C‑07
+	System Architecture Diagram (draw.io / PNG)
+	High‑level component view (frontend, API gateway, services, DB, queue, storage).
+	Updated whenever a new component or integration is added (e.g., Media‑Ingestion Service, Trust‑Graph Service).
+	Solution‑Architect
+	C‑08
+	Data Model / Schema Document (MD + SQL)
+	Logical ER diagram, table definitions, migration steps, deprecation plan.
+	Updated any time the database schema changes (v1.4, v1.11, v1.19, v1.23).
+	DB‑Engineer
+	C‑09
+	OpenAPI / Swagger Specification (YAML/JSON)
+	Machine‑readable contract for all public endpoints.
+	Regenerated for every release; versioned (e.g., api‑v1.09.yaml).
+	API‑Team
+	C‑10
+	Security & Compliance Checklist (MD)
+	Threat model, OWASP controls, GDPR export, data‑retention, auth flows.
+	Reviewed at the start of each phase and updated for new security‑relevant features (e.g., Trust‑Graph, Payments).
+	Security‑Engineer
+	C‑11
+	Test Plan & Test‑Case Matrix (MD / TestRail export)
+	Scope of unit, integration, contract, performance, security tests.
+	Updated when new test scenarios are added (typically per version).
+	QA‑Lead
+	C‑12
+	CI/CD Pipeline Manifest (YAML)
+	Build, lint, test, packaging, deployment stages, gate definitions.
+	Updated when a new gate or job is introduced (e.g., “Run Experimentation Tests”).
+	DevOps
+	C‑13
+	Run‑Book / Operations Manual (MD)
+	Deploy steps, rollback procedure, health‑check endpoints, alert thresholds.
+	Revised any time a run‑time change occurs (e.g., new background worker).
+	Site‑Reliability Engineer
+	C‑14
+	Feature‑Flag Registry (MD)
+	List of all feature flags, default state, owner, rollout plan.
+	Updated whenever a flag is added or its rollout status changes.
+	Product‑Ops
+	C‑15
+	User‑Facing Documentation (HTML/MD) – Help Center
+	“How to use the map”, “How to upload a flyer”, “How to create a campaign”.
+	Incremental updates per released feature; versioned by URL (/v1.12/guide/upload‑flyer).
+	Technical‑Writer
+	C‑16
+	Marketing & Communication Pack (PDF/SlideDeck)
+	Press release, blog post, social‑media assets, FAQ for the version.
+	Produced for major releases (typically every 2‑month “major” version, e.g., v1.6, v1.12, v1.18, v1.24).
+	Marketing
+	________________
+
+
+2. Phase‑Specific Document Sets
+Below is the incremental documentation set needed for each phase block on the roadmap.
+Everything listed under Core Release‑Level still applies, but these are additional docs that appear only once (or when the phase is introduced) and then get version‑bumped as the phase evolves.
+Phase
+	Version Range
+	Documents Introduced (or first‑time needed)
+	Brief Description
+	Phase 0 – Map‑First MVP
+	v1.0‑v1.5
+	C‑01, C‑02, C‑03, C‑04, C‑05, C‑07, C‑08, C‑09, C‑10, C‑11, C‑12, C‑13, C‑14, C‑15, C‑16
+	Baseline product spec, maps UI, simple event CRUD, no auth, simple telemetry.
+	Phase 0.15 – Media‑Signal Pack
+	v1.6‑v1.15
+	New documents:
+M‑01 Media Ingestion Design Doc (architecture of flyer/video pipelines).
+M‑02 Media Asset Schema (tables: MediaAssets, MediaUploads, DerivedAssets).
+M‑03 OCR / LLM Normalisation Spec (service contract, confidence vector).
+M‑04 Video Processing Job Spec (queue, worker, FFmpeg parameters).
+M‑05 Moderation Queue API Spec (queues, actions, audit).
+M‑06 Venue Media Library UI Mock‑ups.
+	These focus on media‑centric flows, validation, storage abstraction, moderation.
+	Phase 0.20 – Trust & Invite Graph
+	v1.16‑v1.19
+	New documents:
+T‑01 Trust Graph Data Model (nodes, edges, tier algorithm).
+T‑02 Invite Lifecycle & Expiry Rules.
+T‑03 Proximity Scoring Formula (geospatial weighting).
+T‑04 Abuse‑Detection Policy (rate‑limits, sock‑puppet heuristics).
+T‑05 Privacy Impact Assessment (GDPR, data‑minimisation for graph data).
+	Introduces a graph‑based access layer and related security considerations.
+	Phase 0.25 – Operator / Revenue Pack
+	v1.20‑v1.23
+	New documents:
+O‑01 Venue Console UI Spec (screens, analytics widgets).
+O‑02 Sponsor Console & Campaign Builder Spec.
+O‑03 Billing & Invoicing Model (subscription, CPM, payout flow).
+O‑04 Revenue Attribution Logic (view → save → attendance → payout).
+O‑05 Operator Admin Dashboard Architecture.
+O‑06 Compliance – PCI‑DSS / Financial‑Data Checklist.
+	Covers all revenue‑generating interactions, financial flows, and admin tooling.
+	Phase 0.30+ – Intelligence Pack
+	v1.24 (final)
+	New documents:
+I‑01 Ranking & Recommendation Engine Design (feature list, scoring formula, model versioning).
+I‑02 Live‑Signal Fusion Architecture (event‑stream, Kafka/Blob, aggregation).
+I‑03 GeoAudio Ingestion & Matching Spec.
+I‑04 City‑Expansion Control Plane (market‑freeze state machine, multi‑city config).
+I‑05 Experimentation Framework & Model Governance (feature‑flag gating, rollback procedures).
+I‑06 Sponsor Placement Optimisation Model (ML spec, KPI targets).
+I‑07 Observability Extensions (metrics for ranking latency, experiment variance).
+	Advanced intelligence, multi‑city, experimentation, and final production‑grade telemetry.
+	Phase 1 – “WeUP at Scale”
+	v1.24‑future
+	New documents (added after v1.24 launch):
+S‑01 Multi‑City Deployment Guide (region‑specific infra, CDN, data‑sovereignty).
+S‑02 Partner API Specification (public event‑feed API for 3rd‑party curators).
+S‑03 Data‑Retention & Archival Policy (legal & cost‑optimisation).
+S‑04 SLAs & Support Playbooks (SLA definitions, incident response).
+	Post‑v1.24 operational docs for scaling, external partners, and enterprise support.
+	Note: The M‑, T‑, O‑, I‑, S‑ prefixes help you locate the document in the repository (e.g., docs/M-02_Media_Asset_Schema.md).
+________________
+
+
+3. Document Lifecycle & Ownership Flow
+Phase
+	Document
+	Owner(s)
+	Review Cadence
+	Publication Target
+	All
+	C‑01 (Roadmap)
+	Product‑Management
+	Quarterly
+	Confluence Roadmap page
+	All
+	C‑02 (Change‑Log)
+	Engineering‑Lead
+	After each release
+	GitHub CHANGELOG.md
+	All
+	C‑03 (Release Notes)
+	Technical‑Writer
+	Per release
+	GitHub Release notes, Docs site
+	Phase 0
+	C‑04 (PRD)
+	Product‑Owner
+	Start of phase
+	Private Confluence page
+	Phase 0.15
+	M‑01 (Media Ingestion Design)
+	Media‑Lead (Backend)
+	Before first media upload release
+	Docs repo (/media/)
+	Phase 0.20
+	T‑01 (Trust Graph Data Model)
+	Trust‑Lead
+	Before any graph‑related API
+	Docs repo (/trust/)
+	Phase 0.25
+	O‑03 (Billing & Invoicing)
+	Finance‑Ops
+	Before sponsor monetisation release
+	Private internal wiki
+	Phase 0.30+
+	I‑01 (Ranking Engine)
+	ML‑Team Lead
+	Before ranking goes GA
+	Docs repo (/intelligence/)
+	Phase 1
+	S‑02 (Partner API Spec)
+	API‑Product
+	Prior to public partner program launch
+	Public developer portal
+	All documents pass a two‑person review (author + a peer) and a final sign‑off by the responsible functional leader before the version is tagged.
+________________
+
+
+4. Version‑Tracking Example (v1.12)
+Document
+	Version
+	Updated In
+	C‑02 Change‑Log
+	v1.12
+	Release v1.12
+	C‑03 Release Notes
+	v1.12
+	Release v1.12
+	C‑05 Feature‑Spec
+	v1.12‑Feature‑Video‑Upload
+	Added video‑flyer intake (Bundle 10)
+	M‑04 Video Processing Job Spec
+	v1.12‑Job‑Spec
+	First version of video‑processing pipeline
+	M‑03 OCR / LLM Normalisation Spec
+	v1.11‑Spec → v1.12‑v2 (added confidence vector)
+	Minor amendment for confidence‑score fields
+	C‑08 Data Model / Schema
+	v1.12‑Schema‑Add‑VideoAssets
+	Added MediaAssets table for video flyers
+	C‑09 OpenAPI Spec
+	v1.12‑api.yaml
+	New endpoints POST /api/media/video-uploads & job status
+	C‑11 Test Plan
+	v1.12‑Test‑Plan
+	Added integration tests for video‑upload + job queue
+	C‑13 Run‑Book
+	v1.12‑Ops
+	Added step “monitor video‑processing worker health”
+	C‑15 User Help
+	v1.12‑Help‑Upload‑Video
+	New article “How to upload a video flyer”
+	The same pattern is repeated for every version – you only add or bump the docs that have changed.
+________________
+
+
+5. Quick‑Start Template for a New Release (e.g., v1.18)
+1. Create PR “Release‑v1.18‑Docs”
+
+   * Duplicate CHANGELOG.md entry.
+   * Add a new section in Release_Notes_v1.18.md.
+   * Update API_v1.18.yaml (add any new endpoints).
+   * Increment version in Architecture_Decision_Records/ADR-XX.md if relevant.
+   2. Feature‑Spec Update
+
+      * For each new feature, add a markdown file under features/ (e.g., features/venue_console_v1.18.md).
+      * Include user stories, acceptance criteria, UI mock‑ups, and a link to the relevant ADR.
+      3. Data‑Model Change
+
+         * Modify db/schema_v1.18.sql (or EF Core migration file).
+         * Update Data_Model_v1.18.md with new tables / columns and migration steps.
+         4. Security Review
+
+            * Run the Security & Compliance Checklist – note any new controls (e.g., “Add rate‑limit to video‑upload endpoint”).
+            5. Test‑Plan Refresh
+
+               * Add/modify unit & integration test cases in tests/ folder.
+               * Update Test_Plan_v1.18.md with new test matrix rows.
+               6. Ops Run‑Book
+
+                  * Add deployment steps for any new background worker (e.g., “Start video‑processing worker service”).
+                  7. User Docs & Marketing
+
+                     * Write a short “How‑to” article for each public‑facing change.
+                     * Prepare a one‑page “What’s New in v1.18” slide deck for internal launch.
+                     8. Final Review & Sign‑off
+
+                        * Peer‑review all changed docs.
+                        * Product‑Owner signs the PR, then it is merged before the CI/CD pipeline tags the release.
+________________
+
+
+TL;DR – What You Must Have for Every WeUP Version
+Category
+	Minimum Docs (per version)
+	Product
+	PRD, Feature‑Spec, Roadmap (C‑01)
+	Architecture
+	ADR, System Diagram, Data Model, API Spec (C‑07‑C‑09)
+	Security
+	Security Checklist, Privacy Impact (C‑10)
+	Testing
+	Test Plan, QA Sign‑off (C‑11)
+	Delivery
+	Change‑Log, Release Notes, Run‑Book, CI/CD Manifest (C‑02‑C‑13)
+	Ops
+	Run‑Book, Monitoring/Telemetry Plan (C‑13, C‑22)
+	User‑Facing
+	Help Center articles, FAQ (C‑15)
+	Marketing
+	Blog/Press kit, FAQ for external audience (C‑16)
+	Feature‑Specific
+	Media‑Ingestion Spec (M‑xx), Trust‑Graph Spec (T‑xx), Revenue‑Ops Spec (O‑xx), Intelligence Spec (I‑xx) – only when the phase introduces those capabilities
+	Follow the table above, keep the docs version‑controlled, and you’ll have a complete, auditable, and searchable knowledge base for every WeUP release from v1.0 through the Phase 1 launch (v1.24).

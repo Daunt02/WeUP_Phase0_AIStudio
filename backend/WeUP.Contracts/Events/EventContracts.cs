@@ -118,3 +118,53 @@ public record EventSubmissionResponse(
     string SubmissionId,
     string Status,
     string Message);
+
+// ---------------------------------------------------------------------------
+// Spatial query extensions
+// ---------------------------------------------------------------------------
+
+/// <summary>
+/// Extension methods for bounding box validation and spatial queries.
+/// </summary>
+public static class GeoBoundingBoxExtensions
+{
+    /// <summary>
+    /// Validates a bounding box for correctness.
+    /// Throws InvalidOperationException if invalid.
+    /// </summary>
+    public static void Validate(this GeoBoundingBox bbox)
+    {
+        if (bbox.MinLat < -90 || bbox.MinLat > 90)
+            throw new InvalidOperationException($"MinLat {bbox.MinLat} must be between -90 and 90");
+        if (bbox.MaxLat < -90 || bbox.MaxLat > 90)
+            throw new InvalidOperationException($"MaxLat {bbox.MaxLat} must be between -90 and 90");
+        if (bbox.MinLng < -180 || bbox.MinLng > 180)
+            throw new InvalidOperationException($"MinLng {bbox.MinLng} must be between -180 and 180");
+        if (bbox.MaxLng < -180 || bbox.MaxLng > 180)
+            throw new InvalidOperationException($"MaxLng {bbox.MaxLng} must be between -180 and 180");
+        if (bbox.MinLat >= bbox.MaxLat)
+            throw new InvalidOperationException($"MinLat ({bbox.MinLat}) must be less than MaxLat ({bbox.MaxLat})");
+        if (bbox.MinLng >= bbox.MaxLng)
+            throw new InvalidOperationException($"MinLng ({bbox.MinLng}) must be less than MaxLng ({bbox.MaxLng})");
+    }
+
+    /// <summary>
+    /// Checks if a coordinate point is within the bounding box.
+    /// </summary>
+    public static bool Contains(this GeoBoundingBox bbox, double latitude, double longitude)
+    {
+        return latitude >= bbox.MinLat && latitude <= bbox.MaxLat &&
+               longitude >= bbox.MinLng && longitude <= bbox.MaxLng;
+    }
+
+    /// <summary>
+    /// Calculates the center point of the bounding box.
+    /// </summary>
+    public static (double Latitude, double Longitude) GetCenter(this GeoBoundingBox bbox)
+    {
+        return (
+            (bbox.MinLat + bbox.MaxLat) / 2,
+            (bbox.MinLng + bbox.MaxLng) / 2
+        );
+    }
+}
