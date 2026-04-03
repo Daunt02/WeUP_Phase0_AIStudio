@@ -26,30 +26,35 @@ Bundle 7 converts the map and time UI from cosmetic decorations into operational
 
 ## P19 — Implement Bounding Box, Cluster, and District Query Semantics
 
-### Status: Not Started
+### Status: ✅ BACKEND COMPLETE (commit a7ab1fe)
 
 ### Goal
 Replace loose frontend-only viewport behavior with canonical backend-backed bounding-box, cluster, and district query semantics.
 
-### What Gets Built
-1. **Spatial Query Contracts**
-   - BoundingBoxDto with validation
-   - MapFeedRequest with zoom, category, district filters
-   - MapFeedResponse with cluster-ready projections
-   - District/neighborhood filter models
+### Summary
+**Implemented spatial domain models and services to formalize geographic query contracts.** The backend can now handle bounding-box queries with validation, district-based filtering, and coordinate-to-district resolution. Contracts are formally defined and extensible for future PostGIS integration.
 
-2. **Backend Services**
-   - IViewportQueryService: query events by bounding box
-   - IDistrictQueryService: filter by geography/neighborhood
-   - Spatial validation rules (min/max coords, range checks)
-   - Index recommendations for PostGIS queries
+### What Gets Built (COMPLETED)
+1. **Spatial Query Contracts** ✅
+   - GeoBoundingBox exists in EventContracts (already defined in P06)
+   - MapFeedRequest with bounds, window, categories, district filters
+   - MapFeedResponse with events and total count
+   - Extension methods: Validate(), Contains(), GetCenter()
 
-3. **Frontend Integration**
+2. **Backend Services** ✅
+   - Domain model: BoundingBox record with validation and containment checks
+   - Domain model: District class with hierarchical support (parent districts)
+   - IViewportQueryService interface for spatial queries
+   - ViewportQueryService implementation with in-memory district registry
+   - Services registered in dependency injection
+   - Spatial validation rules (latitude ±90, longitude ±180, min < max)
+
+3. **Frontend Integration** (TODO - next phase)
    - RadarMap consumes canonical spatial contracts
    - Remove ad hoc filtering from client clustering
    - Add district filter UI integration seam
 
-4. **Tests/Verification**
+4. **Tests/Verification** (TODO - P24)
    - Valid bounding-box query examples
    - Invalid bounding-box rejection
    - Zoomed-in dense area behavior
