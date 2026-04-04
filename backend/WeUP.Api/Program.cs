@@ -18,6 +18,7 @@ using WeUP.Infrastructure.Submissions;
 using WeUP.Infrastructure.Ingestion;
 using WeUP.Infrastructure.Ingestion.Adapters;
 using WeUP.Infrastructure.Moderation;
+using Microsoft.EntityFrameworkCore;
 using WeUP.Infrastructure.Persistence;
 using WeUP.Infrastructure.Spatial;
 using WeUP.Infrastructure.Markets;
@@ -45,22 +46,13 @@ builder.Services.AddCors(opts =>
               .AllowAnyMethod());
 });
 
-// Domain / Application services
-// To switch from stubs to EF Core:
-//   1. Add EF + Npgsql packages (see backend/WeUP.Infrastructure/Persistence/Migrations/README.md)
-//   2. Set WeUpDb connection string in appsettings / environment
-//   3. Replace the three lines below with the EF registrations (uncommented):
-//
-// var connStr = builder.Configuration.GetConnectionString("WeUpDb")
-//     ?? throw new InvalidOperationException("WeUpDb connection string is required.");
-// builder.Services.AddDbContext<WeUpDbContext>(opts => opts.UseNpgsql(connStr));
-// builder.Services.AddScoped<IEventRepository, EfEventRepository>();
-// builder.Services.AddScoped<IEventSubmissionRepository, EfEventRepository>();
-// builder.Services.AddScoped<ISaveRepository, EfSaveRepository>();
-
-builder.Services.AddSingleton<IEventRepository, StubEventRepository>();
-builder.Services.AddSingleton<IEventSubmissionRepository, StubEventRepository>();
-builder.Services.AddSingleton<ISaveRepository, StubSaveRepository>();
+// Domain / Application services — EF Core + PostgreSQL (P57)
+var connStr = builder.Configuration.GetConnectionString("WeUpDb")
+    ?? throw new InvalidOperationException("WeUpDb connection string is required.");
+builder.Services.AddDbContext<WeUpDbContext>(opts => opts.UseNpgsql(connStr));
+builder.Services.AddScoped<IEventRepository, EfEventRepository>();
+builder.Services.AddScoped<IEventSubmissionRepository, EfEventRepository>();
+builder.Services.AddScoped<ISaveRepository, EfSaveRepository>();
 
 // Ingestion services
 builder.Services.AddHttpClient("ingestion");
@@ -106,8 +98,8 @@ builder.Services.AddSingleton<IUserPreferencesRepository, InMemoryPreferencesRep
 // Event submission workflow (P18)
 builder.Services.AddSingleton<IEventSubmissionService, InMemorySubmissionRepository>();
 
-// Spatial query services (P19) — bounding box, district, viewport queries
-builder.Services.AddSingleton<IViewportQueryService, ViewportQueryService>();
+// Spatial query services (P19) — bounding box, district, viewport queries (Scoped: depends on IEventRepository)
+builder.Services.AddScoped<IViewportQueryService, ViewportQueryService>();
 
 // Market policy services (P20) — market boundaries, freeze rules, assignment
 builder.Services.AddSingleton<IMarketPolicyService, MarketPolicyService>();

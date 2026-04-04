@@ -14,5 +14,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.*" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.*" />
+    <!-- EF Core design-time tools for migrations (P57) -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.*">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 </Project>

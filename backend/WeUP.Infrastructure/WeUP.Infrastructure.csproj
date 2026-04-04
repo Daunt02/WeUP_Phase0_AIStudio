@@ -12,6 +12,11 @@
   <ItemGroup>
     <!-- EF Core + PostgreSQL provider (P08) -->
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.*" />
+    <!-- EF Core design-time tools for migrations (P57) -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.*">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <!-- IHttpClientFactory for ingestion adapters (P10) -->
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.*" />
   </ItemGroup>
