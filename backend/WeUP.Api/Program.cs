@@ -187,6 +187,15 @@ app.MapAnalyticsEndpoints(); // P23: Analytics event recording
 app.MapMediaEndpoints(); // P25: Flyer media intake
 app.MapHealthChecks("/health");
 
+// Seed flyer assets from /seed/flyers/ directory (dev only)
+if (app.Environment.IsDevelopment())
+{
+    var flyerStore = app.Services.GetRequiredService<IFlyerAssetStore>();
+    var seedService = new WeUP.Infrastructure.Media.FlyerSeedService(flyerStore);
+    var seedDir = Path.Combine(Directory.GetCurrentDirectory(), "seed", "flyers");
+    await seedService.SeedAsync(seedDir);
+}
+
 app.Run();
 
 /// <summary>Required for integration test host access.</summary>
