@@ -11,7 +11,7 @@ import TimelineControl from '@/components/TimelineControl';
 import EventSignalModal from '@/components/EventSignalModal';
 import GeoControls from '@/components/GeoControls';
 import AddEventModal from '@/components/AddEventModal';
-import { NightlifeItem } from '@/types';
+import { NightlifeItem, ViewMode } from '@/types';
 import { eventService } from '@/services/eventService';
 import submissionService from '@/services/submissionService';
 import { useWorldSurfaceState } from '@/hooks/useWorldSurfaceState';
@@ -21,6 +21,8 @@ export default function WorldCoordinator() {
 
   const [events, setEvents] = useState<NightlifeItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [currentTime, setCurrentTime] = useState('NOW');
+  const [activeMode, setActiveMode] = useState<ViewMode>('RADAR');
 
   // Fetch events when bounds change
   useEffect(() => {
@@ -74,6 +76,12 @@ export default function WorldCoordinator() {
     }
   };
 
+  const handleBottomNavAction = (action: string) => {
+    if (action === 'SAVED') setActiveMode('SAVED');
+    if (action === 'PROFILE') setActiveMode('PROFILE');
+    if (action === 'WORLD_LONG' || action === 'WORLD' || !action) setActiveMode('RADAR');
+  };
+
   return (
     <div className="w-full h-full relative">
       <TopBar />
@@ -91,8 +99,12 @@ export default function WorldCoordinator() {
         activeMode={state.viewMode}
       />
 
-      <TimelineControl />
-      <BottomNav />
+      <TimelineControl onTimeChange={setCurrentTime} />
+      <BottomNav
+        activeMode={activeMode}
+        onModeChange={setActiveMode}
+        onAction={handleBottomNavAction}
+      />
 
       <AddEventModal
         isVisible={state.modal.kind === 'STACK' && state.modal.stack[state.modal.stack.length - 1] === 'ADD_EVENT'}
@@ -103,13 +115,7 @@ export default function WorldCoordinator() {
         mapCenter={state.mapCenter}
       />
 
-      {/* Keep other panels rendered for layout; they should be controlled via state in future iterations */}
-      <CulturalCalendar />
-      <SocialSignalPanel />
-      <SavedEvents />
-      <ProfilePanel />
-      <EventSignalModal />
-      <GeoControls />
+      {/* TODO: Wire remaining panels in future iterations. For P19, focus on map/modal flow. */}
     </div>
   );
 }

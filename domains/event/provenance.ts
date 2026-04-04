@@ -88,6 +88,7 @@ export interface EvidenceRef {
  * Use `computeAggregateConfidence()` for a single scalar.
  */
 export interface ConfidenceVector {
+  [key: string]: number;
   /** How accurately the text extraction retrieved the event fields. */
   extractionConfidence: number;
   /** How accurately the address was geocoded. */
