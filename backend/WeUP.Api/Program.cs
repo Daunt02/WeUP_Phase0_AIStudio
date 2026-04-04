@@ -148,6 +148,7 @@ app.MapSaveEndpoints();
 app.MapIngestionEndpoints();
 app.MapFlyerEndpoints();
 app.MapModerationEndpoints();
+app.MapSpatialEndpoints(); // P19: Spatial/bounding-box queries
 app.MapHealthChecks("/health");
 
 app.Run();
