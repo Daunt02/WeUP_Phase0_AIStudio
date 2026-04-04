@@ -11,9 +11,12 @@ import TimelineControl from '@/components/TimelineControl';
 import EventSignalModal from '@/components/EventSignalModal';
 import GeoControls from '@/components/GeoControls';
 import AddEventModal from '@/components/AddEventModal';
+import TemporalDebugPanel from '@/components/TemporalDebugPanel';
 import { NightlifeItem, ViewMode } from '@/types';
 import { eventService } from '@/services/eventService';
 import submissionService from '@/services/submissionService';
+import * as temporalService from '@/services/temporalService';
+import * as analyticsService from '@/services/analyticsService';
 import { useWorldSurfaceState } from '@/hooks/useWorldSurfaceState';
 
 export default function WorldCoordinator() {
@@ -23,6 +26,8 @@ export default function WorldCoordinator() {
   const [loading, setLoading] = useState(false);
   const [currentTime, setCurrentTime] = useState('NOW');
   const [activeMode, setActiveMode] = useState<ViewMode>('RADAR');
+  const [temporalWindow, setTemporalWindow] = useState<any>(null);
+  const [temporalLoading, setTemporalLoading] = useState(false);
 
   // Fetch events when bounds change
   useEffect(() => {
@@ -43,6 +48,32 @@ export default function WorldCoordinator() {
     load();
     return () => { cancelled = true; };
   }, [state.mapBounds]);
+
+  // Query temporal service when time preset changes
+  useEffect(() => {
+    let cancelled = false;
+    async function queryTemporal() {
+      setTemporalLoading(true);
+      try {
+        const response = await temporalService.getEventsAtTime({
+          preset: currentTime,
+          marketTimezone: 'America/Los_Angeles',
+        });
+        if (!cancelled) {
+          setTemporalWindow(response);
+          // Record analytics event
+          analyticsService.recordSimpleEvent('TemporalPresetSelected', undefined);
+          console.log('Temporal query:', response);
+        }
+      } catch (err) {
+        console.error('Temporal query failed:', err);
+      } finally {
+        if (!cancelled) setTemporalLoading(false);
+      }
+    }
+    queryTemporal();
+    return () => { cancelled = true; };
+  }, [currentTime]);
 
   // Handlers wired to coordinator actions
   const handleEventSelect = (e: NightlifeItem) => {
@@ -100,6 +131,15 @@ export default function WorldCoordinator() {
       />
 
       <TimelineControl onTimeChange={setCurrentTime} />
+      <TemporalDebugPanel
+        preset={currentTime}
+        presetLabel={temporalWindow?.presetLabel}
+        timeWindowStart={temporalWindow?.timeWindowStart}
+        timeWindowEnd={temporalWindow?.timeWindowEnd}
+        timezone={temporalWindow?.timezone}
+        eventCount={temporalWindow?.count}
+        loading={temporalLoading}
+      />
       <BottomNav
         activeMode={activeMode}
         onModeChange={setActiveMode}
