@@ -8,6 +8,7 @@ using WeUP.Domain.Ingestion;
 using WeUP.Domain.Moderation;
 using WeUP.Domain.Users;
 using WeUP.Domain.Spatial;
+using WeUP.Domain.Markets;
 using WeUP.Infrastructure.Auth;
 using WeUP.Infrastructure.Flyer;
 using WeUP.Infrastructure.Submissions;
@@ -16,6 +17,7 @@ using WeUP.Infrastructure.Ingestion.Adapters;
 using WeUP.Infrastructure.Moderation;
 using WeUP.Infrastructure.Persistence;
 using WeUP.Infrastructure.Spatial;
+using WeUP.Infrastructure.Markets;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -102,6 +104,9 @@ builder.Services.AddSingleton<IEventSubmissionService, InMemorySubmissionReposit
 // Spatial query services (P19) — bounding box, district, viewport queries
 builder.Services.AddSingleton<IViewportQueryService, ViewportQueryService>();
 
+// Market policy services (P20) — market boundaries, freeze rules, assignment
+builder.Services.AddSingleton<IMarketPolicyService, MarketPolicyService>();
+
 // OpenTelemetry seam — wired fully in P22
 // builder.Services.AddOpenTelemetry()...
 
@@ -149,6 +154,7 @@ app.MapIngestionEndpoints();
 app.MapFlyerEndpoints();
 app.MapModerationEndpoints();
 app.MapSpatialEndpoints(); // P19: Spatial/bounding-box queries
+app.MapMarketEndpoints(); // P20: Market/taxonomy queries
 app.MapHealthChecks("/health");
 
 app.Run();
