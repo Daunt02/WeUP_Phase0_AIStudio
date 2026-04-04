@@ -137,6 +137,14 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    // Optional: log seed data readiness on startup
+    // Set SeedData:OnStartup=true in appsettings.Development.json to enable
+    var seedOnStartup = builder.Configuration.GetValue<bool>("SeedData:OnStartup");
+    if (seedOnStartup)
+    {
+        app.Logger.LogInformation("Phase 0 seed data mode active. Run 'npm run seed-data' from the frontend directory to populate test data.");
+    }
 }
 
 // Observability middleware (P22) — correlation IDs
