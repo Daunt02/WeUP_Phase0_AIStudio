@@ -29,7 +29,7 @@
     "@tailwindcss/postcss": "latest",
     "@testing-library/jest-dom": "^6.1.5",
     "@testing-library/react": "^14.1.2",
-    "@types/jest": "^29.5.11",
+    "@types/jest": "^29.5.14",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
@@ -40,7 +40,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "postcss": "latest",
     "tailwindcss": "latest",
-    "ts-jest": "^29.1.1",
+    "ts-jest": "^29.4.9",
     "typescript": "latest"
   }
 }
