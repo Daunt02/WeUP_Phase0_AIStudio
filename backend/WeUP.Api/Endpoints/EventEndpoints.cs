@@ -22,7 +22,7 @@ public static class EventEndpoints
             var response = await repo.GetMapFeedAsync(request, ct);
             return Results.Ok(response);
         })
-        .WithName("GetMapFeed")
+        .WithName("GetEventMapFeed")
         .Produces<MapFeedResponse>()
         .ProducesValidationProblem();
 

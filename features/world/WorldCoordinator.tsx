@@ -114,7 +114,7 @@ export default function WorldCoordinator() {
   };
 
   return (
-    <div className="w-full h-full relative">
+    <div className="w-full h-screen relative">
       <TopBar />
       <RadarMap
         events={events}
