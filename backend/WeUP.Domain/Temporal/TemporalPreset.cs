@@ -102,32 +102,27 @@ public static class TemporalPresetMapper
                 new TimeWindow(now.Date.AddHours(3), now.Date.AddHours(4), marketTimezone),
 
             TemporalPreset.Friday =>
-            {
-                // Get next Friday midnight to Saturday midnight
-                var daysUntilFriday = ((int)DayOfWeek.Friday - (int)now.DayOfWeek + 7) % 7;
-                if (daysUntilFriday == 0) daysUntilFriday = 7; // If today is Friday, get next Friday
-                var friday = now.Date.AddDays(daysUntilFriday);
-                return new TimeWindow(friday, friday.AddDays(1), marketTimezone);
-            },
+                GetDayWindow(DayOfWeek.Friday, now, marketTimezone),
 
             TemporalPreset.Saturday =>
-            {
-                var daysUntilSaturday = ((int)DayOfWeek.Saturday - (int)now.DayOfWeek + 7) % 7;
-                if (daysUntilSaturday == 0) daysUntilSaturday = 7;
-                var saturday = now.Date.AddDays(daysUntilSaturday);
-                return new TimeWindow(saturday, saturday.AddDays(1), marketTimezone);
-            },
+                GetDayWindow(DayOfWeek.Saturday, now, marketTimezone),
 
             TemporalPreset.Sunday =>
-            {
-                var daysUntilSunday = ((int)DayOfWeek.Sunday - (int)now.DayOfWeek + 7) % 7;
-                if (daysUntilSunday == 0) daysUntilSunday = 7;
-                var sunday = now.Date.AddDays(daysUntilSunday);
-                return new TimeWindow(sunday, sunday.AddDays(1), marketTimezone);
-            },
+                GetDayWindow(DayOfWeek.Sunday, now, marketTimezone),
 
             _ => throw new ArgumentException($"Unknown preset: {preset}"),
         };
+    }
+
+    /// <summary>
+    /// Helper to compute next occurrence of a day of week (midnight to midnight).
+    /// </summary>
+    private static TimeWindow GetDayWindow(DayOfWeek targetDay, DateTimeOffset now, string timezone)
+    {
+        var daysUntil = ((int)targetDay - (int)now.DayOfWeek + 7) % 7;
+        if (daysUntil == 0) daysUntil = 7; // If today is the target day, get next week's
+        var dayStart = now.Date.AddDays(daysUntil);
+        return new TimeWindow(dayStart, dayStart.AddDays(1), timezone);
     }
 
     /// <summary>
