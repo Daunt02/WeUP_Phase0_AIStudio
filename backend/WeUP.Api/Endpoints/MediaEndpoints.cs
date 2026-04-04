@@ -1,10 +1,11 @@
 using WeUP.Domain.Media;
+using WeUP.Infrastructure.Media;
 
 namespace WeUP.Api.Endpoints;
 
 /// <summary>
-/// P25: Flyer Media Intake Endpoints
-/// Upload, retrieve, and manage flyer assets.
+/// P25/P26: Flyer Media Intake Endpoints
+/// Upload, retrieve, and manage flyer assets with lifecycle and validation.
 /// </summary>
 public static class MediaEndpoints
 {
@@ -58,11 +59,21 @@ public static class MediaEndpoints
         if (!file.ContentType.StartsWith("image/jpeg") && !file.ContentType.StartsWith("image/png"))
             return Results.BadRequest(new { error = "Only JPEG and PNG images allowed" });
 
-        // Upload flyer
-        using var stream = file.OpenReadStream();
-        var assetId = await flyerService.UploadFlyerAsync(stream, file.FileName, file.ContentType, submitterId, ct);
-
-        return Results.Created($"/api/media/flyers/{assetId}", new UploadFlyerResponse(AssetId: assetId));
+        // Upload flyer — validation and lifecycle managed inside the service
+        try
+        {
+            using var stream = file.OpenReadStream();
+            var assetId = await flyerService.UploadFlyerAsync(stream, file.FileName, file.ContentType, submitterId, ct);
+            return Results.Created($"/api/media/flyers/{assetId}", new UploadFlyerResponse(AssetId: assetId));
+        }
+        catch (FlyerUploadException ex) when (ex.ErrorCode == FlyerUploadErrorCode.Duplicate)
+        {
+            return Results.Conflict(new { error = ex.Message, duplicateAssetId = ex.DuplicateAssetId, code = "DUPLICATE" });
+        }
+        catch (FlyerUploadException ex)
+        {
+            return Results.UnprocessableEntity(new { error = ex.Message, code = "VALIDATION_FAILED" });
+        }
     }
 
     /// <summary>

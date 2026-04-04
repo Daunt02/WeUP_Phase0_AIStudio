@@ -115,7 +115,9 @@ builder.Services.AddSingleton<IMarketPolicyService, MarketPolicyService>();
 // Analytics services (P23) — event recording, privacy-compliant telemetry
 builder.Services.AddSingleton<IAnalyticsService, ConsoleAnalyticsService>();
 
-// Media upload services (P25) — flyer asset management
+// Media upload services (P25/P26) — flyer asset management with lifecycle and validation
+builder.Services.AddSingleton<IFlyerAssetStore, InMemoryFlyerAssetStore>();
+builder.Services.AddSingleton<IFlyerAssetValidator, FlyerAssetValidator>();
 builder.Services.AddSingleton<IFlyerUploadService, LocalFlyerUploadService>();
 
 // Observability setup (P22) — correlation IDs, structured logging
