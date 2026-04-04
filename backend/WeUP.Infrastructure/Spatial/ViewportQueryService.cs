@@ -2,6 +2,7 @@ using WeUP.Contracts.Events;
 using WeUP.Domain.Events;
 using WeUP.Domain.Spatial;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace WeUP.Infrastructure.Spatial;
 
@@ -12,6 +13,7 @@ namespace WeUP.Infrastructure.Spatial;
 public class ViewportQueryService : IViewportQueryService
 {
     private readonly IEventRepository _eventRepository;
+    private readonly ILogger<ViewportQueryService> _logger;
 
     // Phase 0 stub: in-memory district registry
     // Future: load from database or configuration
@@ -48,9 +50,10 @@ public class ViewportQueryService : IViewportQueryService
         };
     }
 
-    public ViewportQueryService(IEventRepository eventRepository)
+    public ViewportQueryService(IEventRepository eventRepository, ILogger<ViewportQueryService> logger)
     {
         _eventRepository = eventRepository;
+        _logger = logger;
     }
 
     public async Task<MapFeedResponse> GetEventsInViewportAsync(
@@ -60,6 +63,14 @@ public class ViewportQueryService : IViewportQueryService
         // Validate the bounding box
         request.Bounds.Validate();
 
+        _logger.LogInformation(
+            "Viewport query: bounds=[{MinLat},{MaxLat},{MinLng},{MaxLng}] district={District}",
+            request.Bounds.MinLat,
+            request.Bounds.MaxLat,
+            request.Bounds.MinLng,
+            request.Bounds.MaxLng,
+            request.DistrictCode ?? "all");
+
         // For Phase 0: use stub repository to get all events, then filter client-side
         // Future: send bounding box to PostGIS backend query
         var allEventsResponse = await _eventRepository.GetMapFeedAsync(request, ct);
@@ -68,6 +79,11 @@ public class ViewportQueryService : IViewportQueryService
         var eventsInViewport = allEventsResponse.Events
             .Where(e => request.Bounds.Contains(e.Lat, e.Lng))
             .ToArray();
+
+        _logger.LogInformation(
+            "Viewport query result: {EventCount} events in viewport (total={TotalEvents})",
+            eventsInViewport.Length,
+            allEventsResponse.Events.Length);
 
         return new MapFeedResponse(eventsInViewport, eventsInViewport.Length);
     }
