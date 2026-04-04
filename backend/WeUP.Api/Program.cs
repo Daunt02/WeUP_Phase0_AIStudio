@@ -192,7 +192,10 @@ if (app.Environment.IsDevelopment())
 {
     var flyerStore = app.Services.GetRequiredService<IFlyerAssetStore>();
     var seedService = new WeUP.Infrastructure.Media.FlyerSeedService(flyerStore);
-    var seedDir = Path.Combine(Directory.GetCurrentDirectory(), "seed", "flyers");
+    // Try /flyers/ at project root first (real Houston flyers), fall back to seed/flyers/
+    var rootFlyersDir = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "flyers");
+    var seedFlyersDir = Path.Combine(Directory.GetCurrentDirectory(), "seed", "flyers");
+    var seedDir = Directory.Exists(rootFlyersDir) ? rootFlyersDir : seedFlyersDir;
     await seedService.SeedAsync(seedDir);
 }
 
