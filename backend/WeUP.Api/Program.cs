@@ -1,4 +1,5 @@
 using WeUP.Api.Endpoints;
+using WeUP.Api.Observability;
 using WeUP.Application.Ingestion;
 using WeUP.Application.Moderation;
 using WeUP.Application.Users;
@@ -9,6 +10,8 @@ using WeUP.Domain.Moderation;
 using WeUP.Domain.Users;
 using WeUP.Domain.Spatial;
 using WeUP.Domain.Markets;
+using WeUP.Domain.Analytics;
+using WeUP.Domain.Media;
 using WeUP.Infrastructure.Auth;
 using WeUP.Infrastructure.Flyer;
 using WeUP.Infrastructure.Submissions;
@@ -18,6 +21,8 @@ using WeUP.Infrastructure.Moderation;
 using WeUP.Infrastructure.Persistence;
 using WeUP.Infrastructure.Spatial;
 using WeUP.Infrastructure.Markets;
+using WeUP.Infrastructure.Analytics;
+using WeUP.Infrastructure.Media;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -107,6 +112,15 @@ builder.Services.AddSingleton<IViewportQueryService, ViewportQueryService>();
 // Market policy services (P20) — market boundaries, freeze rules, assignment
 builder.Services.AddSingleton<IMarketPolicyService, MarketPolicyService>();
 
+// Analytics services (P23) — event recording, privacy-compliant telemetry
+builder.Services.AddSingleton<IAnalyticsService, ConsoleAnalyticsService>();
+
+// Media upload services (P25) — flyer asset management
+builder.Services.AddSingleton<IFlyerUploadService, LocalFlyerUploadService>();
+
+// Observability setup (P22) — correlation IDs, structured logging
+builder.AddWeUPObservability();
+
 // OpenTelemetry seam — wired fully in P22
 // builder.Services.AddOpenTelemetry()...
 
@@ -124,6 +138,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Observability middleware (P22) — correlation IDs
+app.UseWeUPObservability();
 
 // Simple request logging middleware to aid smoke tests and debugging
 app.Use(async (context, next) =>
@@ -155,6 +172,9 @@ app.MapFlyerEndpoints();
 app.MapModerationEndpoints();
 app.MapSpatialEndpoints(); // P19: Spatial/bounding-box queries
 app.MapMarketEndpoints(); // P20: Market/taxonomy queries
+app.MapTemporalEndpoints(); // P21: Temporal preset queries
+app.MapAnalyticsEndpoints(); // P23: Analytics event recording
+app.MapMediaEndpoints(); // P25: Flyer media intake
 app.MapHealthChecks("/health");
 
 app.Run();
