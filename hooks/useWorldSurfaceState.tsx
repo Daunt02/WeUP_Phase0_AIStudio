@@ -7,7 +7,7 @@ const initialState: WorldSurfaceState = {
   selectedEventId: null,
   interestedEventId: null,
   modal: { kind: 'NONE' },
-  mapCenter: { lat: 30.2672, lng: -97.7431 },
+  mapCenter: { lat: 34.0522, lng: -118.2437 },
   mapBounds: null,
   temporalMode: 'TODAY',
   selectedDate: 'DAY 1',

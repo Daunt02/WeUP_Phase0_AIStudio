@@ -110,8 +110,12 @@ export default function WorldCoordinator() {
   const handleBottomNavAction = (action: string) => {
     if (action === 'SAVED') setActiveMode('SAVED');
     if (action === 'PROFILE') setActiveMode('PROFILE');
-    if (action === 'WORLD_LONG' || action === 'WORLD' || !action) setActiveMode('RADAR');
+    if (action === 'WORLD_LONG' || action === 'WORLD') setActiveMode('RADAR');
+    if (action === 'TIME_TAP') setActiveMode(activeMode === 'CALENDAR' ? 'RADAR' : 'CALENDAR');
+    if (action === 'ADD' || action === 'ADD_LONG') openModal('ADD_EVENT');
   };
+
+  const savedEventItems = events.filter(e => state.savedEventIds.includes(e.id));
 
   return (
     <div className="w-full h-screen relative">
@@ -130,7 +134,13 @@ export default function WorldCoordinator() {
         activeMode={state.viewMode}
       />
 
-      <TimelineControl onTimeChange={setCurrentTime} />
+      {/* Timeline scrubber — fixed above BottomNav */}
+      <div className="fixed bottom-36 left-0 right-0 z-[150] flex flex-col items-center pointer-events-none">
+        <div className="pointer-events-auto">
+          <TimelineControl onTimeChange={setCurrentTime} />
+        </div>
+      </div>
+
       <TemporalDebugPanel
         preset={currentTime}
         presetLabel={temporalWindow?.presetLabel}
@@ -140,10 +150,30 @@ export default function WorldCoordinator() {
         eventCount={temporalWindow?.count}
         loading={temporalLoading}
       />
+
       <BottomNav
         activeMode={activeMode}
         onModeChange={setActiveMode}
         onAction={handleBottomNavAction}
+      />
+
+      {/* Overlay panels */}
+      <CulturalCalendar
+        isVisible={activeMode === 'CALENDAR'}
+        events={events}
+        onEventSelect={handleEventSelect}
+        onClose={() => setActiveMode('RADAR')}
+        selectedDate={state.selectedDate}
+        onDateSelect={(date) => interestEvent(date as any)}
+      />
+      <SavedEvents
+        isVisible={activeMode === 'SAVED'}
+        onClose={() => setActiveMode('RADAR')}
+        savedEvents={savedEventItems}
+      />
+      <ProfilePanel
+        isVisible={activeMode === 'PROFILE'}
+        onClose={() => setActiveMode('RADAR')}
       />
 
       <AddEventModal
@@ -155,7 +185,13 @@ export default function WorldCoordinator() {
         mapCenter={state.mapCenter}
       />
 
-      {/* TODO: Wire remaining panels in future iterations. For P19, focus on map/modal flow. */}
+      <EventSignalModal
+        event={state.selectedEventId ? (events.find(e => e.id === state.selectedEventId) ?? null) : null}
+        state={state.modal.kind === 'STACK' && state.modal.stack.includes('EVENT_DETAIL') ? 'FULL' : null}
+        onClose={() => closeModal()}
+        onSave={(id) => toggleSave(id)}
+        isSaved={state.selectedEventId ? state.savedEventIds.includes(state.selectedEventId) : false}
+      />
     </div>
   );
 }

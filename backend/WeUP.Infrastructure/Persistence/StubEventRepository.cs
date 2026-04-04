@@ -12,9 +12,11 @@ public sealed class StubEventRepository : IEventRepository, IEventSubmissionRepo
 {
     private static readonly EventMapCardDto[] SampleMapCards = new[]
     {
-        new EventMapCardDto(Guid.NewGuid().ToString("N"), "Evening Street Market", "Central Plaza", "Market", 47.608013, -122.335167, null, "PUBLISHED", 0.92),
-        new EventMapCardDto(Guid.NewGuid().ToString("N"), "Indie Music Night", "The Warehouse", "Music", 47.610100, -122.342500, null, "PUBLISHED", 0.87),
-        new EventMapCardDto(Guid.NewGuid().ToString("N"), "Community Yoga", "Riverside Park", "Fitness", 47.605000, -122.330000, null, "PUBLISHED", 0.75),
+        new EventMapCardDto(Guid.NewGuid().ToString("N"), "Evening Street Market", "Grand Central Market", "nightlife", 34.050000, -118.249000, null, "PUBLISHED", 0.92),
+        new EventMapCardDto(Guid.NewGuid().ToString("N"), "Indie Music Night", "The Echoplex", "culture", 34.057500, -118.260000, null, "PUBLISHED", 0.87),
+        new EventMapCardDto(Guid.NewGuid().ToString("N"), "Community Yoga", "Echo Park Lake", "wellness", 34.073000, -118.260000, null, "PUBLISHED", 0.75),
+        new EventMapCardDto(Guid.NewGuid().ToString("N"), "Tech Meetup", "Row DTLA", "tech", 34.036000, -118.235000, null, "PUBLISHED", 0.88),
+        new EventMapCardDto(Guid.NewGuid().ToString("N"), "Rooftop Cinema", "The Lot Studios", "culture", 34.063000, -118.370000, null, "PUBLISHED", 0.91),
     };
 
     private static readonly EventCalendarDto[] SampleCalendarItems = SampleMapCards.Select((m, i) => new EventCalendarDto(

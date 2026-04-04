@@ -284,8 +284,8 @@ export default function RadarMap({
   const [styleLoaded, setStyleLoaded] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
   const [viewState, setViewState] = useState({
-    longitude: -97.7431,
-    latitude: 30.2672,
+    longitude: -118.2437,
+    latitude: 34.0522,
     zoom: 12.5,
     pitch: 55,
     bearing: 0
