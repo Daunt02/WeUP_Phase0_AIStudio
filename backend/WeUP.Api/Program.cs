@@ -120,6 +120,11 @@ builder.Services.AddSingleton<IFlyerAssetStore, InMemoryFlyerAssetStore>();
 builder.Services.AddSingleton<IFlyerAssetValidator, FlyerAssetValidator>();
 builder.Services.AddSingleton<IFlyerUploadService, LocalFlyerUploadService>();
 
+// Flyer provenance and evidence services (P27) — intake pipeline with audit trail
+builder.Services.AddSingleton<IProvenanceRepository, InMemoryProvenanceRepository>();
+builder.Services.AddSingleton<IFlyerEvidenceRepository, InMemoryFlyerEvidenceRepository>();
+builder.Services.AddSingleton<IFlyerIntakeService, FlyerIntakeService>();
+
 // Observability setup (P22) — correlation IDs, structured logging
 builder.AddWeUPObservability();
 

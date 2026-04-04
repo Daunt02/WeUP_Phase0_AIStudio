@@ -30,6 +30,19 @@ public static class MediaEndpoints
         group.MapDelete("/flyers/{assetId}", DeleteFlyer)
             .WithName("DeleteFlyer")
             .WithDescription("Delete a flyer asset");
+
+        // P27: Unified intake with provenance + evidence
+        group.MapPost("/flyers/intake", IntakeFlyer)
+            .WithName("IntakeFlyer")
+            .WithDescription("P27: Unified flyer intake — validates, stores, records provenance, creates evidence stub");
+
+        group.MapPost("/flyers/{evidenceId}/link-event", LinkFlyerToEvent)
+            .WithName("LinkFlyerToEvent")
+            .WithDescription("P27: Link an evidence record to a published event ID");
+
+        group.MapGet("/flyers/evidence/pending", ListPendingEvidence)
+            .WithName("ListPendingEvidence")
+            .WithDescription("P27: List all pending (unlinked) flyer evidence records for moderation");
     }
 
     /// <summary>
@@ -135,7 +148,145 @@ public static class MediaEndpoints
         await flyerService.DeleteFlyerAsync(assetId, ct);
         return Results.NoContent();
     }
+
+    /// <summary>
+    /// POST /api/media/flyers/intake
+    /// P27: Unified flyer intake with provenance and evidence creation.
+    /// </summary>
+    private static async Task<IResult> IntakeFlyer(
+        HttpRequest request,
+        IFlyerIntakeService intakeService,
+        CancellationToken ct)
+    {
+        var submitterId = request.Query["submitterId"].ToString();
+        if (string.IsNullOrEmpty(submitterId))
+            return Results.BadRequest(new { error = "submitterId query parameter required" });
+
+        var sourceTierStr = request.Query["sourceTier"].ToString();
+        var sourceTier = sourceTierStr switch
+        {
+            "T1" => SourceTier.T1_Verified,
+            "T2" => SourceTier.T2_Approved,
+            _    => SourceTier.T3_Unverified,
+        };
+
+        var submissionId  = request.Query["submissionId"].ToString().NullIfEmpty();
+        var sourceUrl     = request.Query["sourceUrl"].ToString().NullIfEmpty();
+        var submitterNote = request.Query["note"].ToString().NullIfEmpty();
+
+        if (!request.HasFormContentType)
+            return Results.BadRequest(new { error = "Request must be multipart/form-data" });
+
+        var form = await request.ReadFormAsync(ct);
+        var file = form.Files.FirstOrDefault();
+        if (file == null)
+            return Results.BadRequest(new { error = "No file provided" });
+
+        try
+        {
+            using var stream = file.OpenReadStream();
+            var result = await intakeService.IntakeAsync(
+                stream, file.FileName, file.ContentType,
+                submitterId, sourceTier, submissionId, sourceUrl, submitterNote, ct);
+
+            return Results.Created($"/api/media/flyers/{result.AssetId}",
+                new FlyerIntakeResponse(
+                    AssetId:           result.AssetId,
+                    ProvenanceId:      result.ProvenanceId,
+                    EvidenceId:        result.EvidenceId,
+                    BaselineAuthority: result.BaselineAuthority,
+                    AssetStatus:       result.AssetStatus.ToString()));
+        }
+        catch (FlyerUploadException ex) when (ex.ErrorCode == FlyerUploadErrorCode.Duplicate)
+        {
+            return Results.Conflict(new { error = ex.Message, duplicateAssetId = ex.DuplicateAssetId, code = "DUPLICATE" });
+        }
+        catch (FlyerUploadException ex)
+        {
+            return Results.UnprocessableEntity(new { error = ex.Message, code = "VALIDATION_FAILED" });
+        }
+    }
+
+    /// <summary>
+    /// POST /api/media/flyers/{evidenceId}/link-event
+    /// P27: Link an evidence record to a published event.
+    /// </summary>
+    private static async Task<IResult> LinkFlyerToEvent(
+        string evidenceId,
+        HttpRequest request,
+        IFlyerIntakeService intakeService,
+        CancellationToken ct)
+    {
+        var eventId = request.Query["eventId"].ToString();
+        if (string.IsNullOrEmpty(eventId))
+            return Results.BadRequest(new { error = "eventId query parameter required" });
+
+        try
+        {
+            await intakeService.LinkToEventAsync(evidenceId, eventId, ct);
+            return Results.Ok(new { evidenceId, eventId, status = "Linked" });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.NotFound(new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// GET /api/media/flyers/evidence/pending
+    /// P27: List pending evidence records for moderation.
+    /// </summary>
+    private static async Task<IResult> ListPendingEvidence(
+        IFlyerEvidenceRepository evidenceRepo,
+        CancellationToken ct)
+    {
+        var records = await evidenceRepo.ListPendingAsync(ct);
+        return Results.Ok(new PendingEvidenceResponse(
+            Records: records.Select(r => new FlyerEvidenceDto(
+                r.EvidenceId, r.AssetId, r.ProvenanceId,
+                r.FlyerType.ToString(), r.Status.ToString(),
+                r.OcrText, r.ConfidenceScore, r.CreatedAt,
+                r.EventId, r.SubmissionId)).ToArray(),
+            Count: records.Length));
+    }
 }
+
+// ── P27 DTOs ─────────────────────────────────────────────────────────────────
+
+file static class StringExtensions
+{
+    public static string? NullIfEmpty(this string s) => string.IsNullOrEmpty(s) ? null : s;
+}
+
+/// <summary>
+/// Response after unified flyer intake.
+/// </summary>
+public record FlyerIntakeResponse(
+    string AssetId,
+    string ProvenanceId,
+    string EvidenceId,
+    double BaselineAuthority,
+    string AssetStatus);
+
+/// <summary>
+/// Flyer evidence data transfer object.
+/// </summary>
+public record FlyerEvidenceDto(
+    string EvidenceId,
+    string AssetId,
+    string ProvenanceId,
+    string FlyerType,
+    string Status,
+    string? OcrText,
+    double? ConfidenceScore,
+    DateTimeOffset CreatedAt,
+    string? EventId,
+    string? SubmissionId);
+
+/// <summary>
+/// Response listing pending evidence records.
+/// </summary>
+public record PendingEvidenceResponse(FlyerEvidenceDto[] Records, int Count);
 
 /// <summary>
 /// Response after uploading a flyer.
