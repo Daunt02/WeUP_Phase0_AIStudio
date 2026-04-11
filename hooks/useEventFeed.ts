@@ -31,7 +31,10 @@ export function useEventFeed(
     if (!mapBounds) return;
 
     let cancelled = false;
-    setLoading(true);
+    // Defer loading state update to avoid setting state synchronously in effect
+    requestAnimationFrame(() => {
+      if (!cancelled) setLoading(true);
+    });
 
     eventService
       .fetchEventsInBounds(mapBounds)
@@ -42,7 +45,10 @@ export function useEventFeed(
         console.error("[useEventFeed] fetch error:", err);
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        // Defer clearing loading state to avoid sync state updates in effect
+        requestAnimationFrame(() => {
+          if (!cancelled) setLoading(false);
+        });
       });
 
     return () => {

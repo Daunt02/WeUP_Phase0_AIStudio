@@ -29,7 +29,10 @@ export function useTemporalQuery(preset: string): TemporalQueryResult {
     let cancelled = false;
     const controller = new AbortController();
 
-    setLoading(true);
+    // Defer loading state update to avoid setting state synchronously in effect
+    requestAnimationFrame(() => {
+      if (!cancelled) setLoading(true);
+    });
 
     temporalService
       .getEventsAtTime(
@@ -51,7 +54,10 @@ export function useTemporalQuery(preset: string): TemporalQueryResult {
         if (!cancelled) console.error("[useTemporalQuery] query failed:", err);
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        // Defer clearing loading state to avoid sync state updates in effect
+        requestAnimationFrame(() => {
+          if (!cancelled) setLoading(false);
+        });
       });
 
     return () => {

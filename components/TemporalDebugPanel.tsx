@@ -4,7 +4,8 @@
  * Only visible in development mode
  */
 
-import React from 'react';
+import React from "react";
+import { IS_DEVELOPMENT } from "../lib/env/public";
 
 interface TemporalDebugPanelProps {
   preset?: string;
@@ -26,7 +27,7 @@ export default function TemporalDebugPanel({
   loading,
 }: TemporalDebugPanelProps) {
   // Only render in development
-  if (process.env.NODE_ENV !== 'development') {
+  if (!IS_DEVELOPMENT) {
     return null;
   }
 
@@ -40,7 +41,8 @@ export default function TemporalDebugPanel({
 
       <div className="space-y-1">
         <div>
-          <span className="text-gray-400">Preset:</span> <span className="font-mono">{presetLabel || preset}</span>
+          <span className="text-gray-400">Preset:</span>{" "}
+          <span className="font-mono">{presetLabel || preset}</span>
         </div>
 
         {timeWindowStart && (
@@ -65,19 +67,19 @@ export default function TemporalDebugPanel({
 
         {timezone && (
           <div>
-            <span className="text-gray-400">Timezone:</span> <span className="font-mono">{timezone}</span>
+            <span className="text-gray-400">Timezone:</span>{" "}
+            <span className="font-mono">{timezone}</span>
           </div>
         )}
 
         {eventCount !== undefined && (
           <div>
-            <span className="text-gray-400">Events:</span> <span className="font-mono text-yellow-300">{eventCount}</span>
+            <span className="text-gray-400">Events:</span>{" "}
+            <span className="font-mono text-yellow-300">{eventCount}</span>
           </div>
         )}
 
-        {loading && (
-          <div className="text-yellow-300">⏳ Loading...</div>
-        )}
+        {loading && <div className="text-yellow-300">⏳ Loading...</div>}
       </div>
     </div>
   );
