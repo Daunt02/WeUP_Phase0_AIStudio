@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Upload,
@@ -25,6 +25,7 @@ import {
   getDeterministicDraft,
   PHASE0_FIXED_NOW,
 } from "@/lib/testing/phase0Seed";
+import { uploadFlyer } from "@/services/mediaService";
 
 interface AddEventModalProps {
   isVisible: boolean;
@@ -65,6 +66,10 @@ export default function AddEventModal({
   const [manualAddress, setManualAddress] = useState("");
   const [linkInput, setLinkInput] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [uploadedFlyerAssetId, setUploadedFlyerAssetId] = useState<
+    string | null
+  >(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const buildDraftId = (title: string) => {
     const slug = title
@@ -111,6 +116,7 @@ export default function AddEventModal({
       setExtractedData(null);
       setLinkInput("");
       setErrorMessage("");
+      setUploadedFlyerAssetId(null);
     } else if (!isVisible && prevVisible) {
       setPrevVisible(false);
     }
@@ -118,8 +124,7 @@ export default function AddEventModal({
 
   const handleChoice = (choice: "UPLOAD" | "LINK" | "MANUAL" | "CENTER") => {
     if (choice === "UPLOAD") {
-      setStep("UPLOADING");
-      simulateUpload();
+      fileInputRef.current?.click();
     } else if (choice === "LINK") {
       setStep("PASTE_LINK");
     } else if (choice === "MANUAL") {
@@ -132,6 +137,48 @@ export default function AddEventModal({
       setExtractedData(initialData);
       onGhostUpdate(initialData);
       setStep("CONFIRM_LOCATION");
+    }
+  };
+
+  const handleFlyerSelected = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setErrorMessage("Only image files are supported for flyer upload.");
+      setStep("ERROR");
+      return;
+    }
+
+    setStep("UPLOADING");
+    setUploadProgress(15);
+
+    let progress = 15;
+    const progressInterval = setInterval(() => {
+      progress = Math.min(progress + 12, 90);
+      setUploadProgress(progress);
+    }, 160);
+
+    try {
+      const localUploaderId =
+        typeof window !== "undefined"
+          ? localStorage.getItem("weup_dev_user_id") || "phase0-ui-uploader"
+          : "phase0-ui-uploader";
+
+      const assetId = await uploadFlyer(file, localUploaderId);
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      setUploadedFlyerAssetId(assetId);
+      setStep("EXTRACTING");
+      const localPreviewUrl = URL.createObjectURL(file);
+      simulateExtraction("UPLOAD", localPreviewUrl);
+    } catch (err) {
+      clearInterval(progressInterval);
+      setErrorMessage((err as Error)?.message || "Flyer upload failed.");
+      setStep("ERROR");
     }
   };
 
@@ -162,20 +209,10 @@ export default function AddEventModal({
     return null;
   };
 
-  const simulateUpload = () => {
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 10;
-      setUploadProgress(progress);
-      if (progress >= 100) {
-        clearInterval(interval);
-        setStep("EXTRACTING");
-        simulateExtraction("UPLOAD");
-      }
-    }, 200);
-  };
-
-  const simulateExtraction = async (source: "UPLOAD" | "LINK") => {
+  const simulateExtraction = async (
+    source: "UPLOAD" | "LINK",
+    uploadedPreviewUrl?: string,
+  ) => {
     setTimeout(async () => {
       // Logic for different link types to show different states
       if (source === "LINK") {
@@ -198,6 +235,10 @@ export default function AddEventModal({
 
       const mockExtracted: Partial<NightlifeItem> = {
         ...seededDraft,
+        image_url:
+          source === "UPLOAD"
+            ? uploadedPreviewUrl || seededDraft.image_url
+            : seededDraft.image_url,
         address:
           geocodeResult?.full_address || seededDraft.address || rawAddress,
         latitude:
@@ -251,9 +292,16 @@ export default function AddEventModal({
       confidence: extractedData.confidence || 1,
     };
 
+    const submissionPayload: NightlifeItem & { flyerAssetIds?: string[] } = {
+      ...finalEvent,
+      ...(uploadedFlyerAssetId
+        ? { flyerAssetIds: [uploadedFlyerAssetId] }
+        : {}),
+    };
+
     try {
       setIsPublishing(true);
-      const res = await onPublish(finalEvent);
+      const res = await onPublish(submissionPayload);
       setIsPublishing(false);
       setStep("SUCCESS");
       setTimeout(() => onClose(), 1500);
@@ -841,6 +889,13 @@ export default function AddEventModal({
           </div>
         </motion.div>
       </div>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        onChange={handleFlyerSelected}
+        className="hidden"
+      />
     </AnimatePresence>
   );
 }

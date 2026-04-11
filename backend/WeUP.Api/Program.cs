@@ -33,6 +33,7 @@ var builder = WebApplication.CreateBuilder(args);
 // ---------------------------------------------------------------------------
 
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.Configure<MediaIntakeOptions>(builder.Configuration.GetSection(MediaIntakeOptions.SectionName));
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new() { Title = "WeUP API", Version = "v1 (Phase 0 stub)" });
@@ -145,6 +146,19 @@ builder.Services.AddSingleton<IAnalyticsService, ConsoleAnalyticsService>();
 builder.Services.AddSingleton<IFlyerAssetStore, InMemoryFlyerAssetStore>();
 builder.Services.AddSingleton<IFlyerAssetValidator, FlyerAssetValidator>();
 builder.Services.AddSingleton<IFlyerUploadService, LocalFlyerUploadService>();
+builder.Services.AddSingleton<IMediaStorageService, LocalMediaStorageService>();
+builder.Services.AddSingleton<MediaIntakeValidation>();
+
+if (!preferSeededInMemoryIngestion && !string.IsNullOrWhiteSpace(connStr))
+{
+    builder.Services.AddScoped<IMediaIntakeRepository, EfMediaIntakeRepository>();
+    builder.Services.AddScoped<IMediaIntakeService, MediaIntakeService>();
+}
+else
+{
+    builder.Services.AddSingleton<IMediaIntakeRepository, InMemoryMediaIntakeRepository>();
+    builder.Services.AddSingleton<IMediaIntakeService, MediaIntakeService>();
+}
 
 // Flyer provenance and evidence services (P27) — intake pipeline with audit trail
 builder.Services.AddSingleton<IProvenanceRepository, InMemoryProvenanceRepository>();

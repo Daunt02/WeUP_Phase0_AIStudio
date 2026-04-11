@@ -20,6 +20,8 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
     public DbSet<IngestionEvidenceEntity> IngestionEvidence => Set<IngestionEvidenceEntity>();
     public DbSet<IngestionCandidateEntity> IngestionCandidates => Set<IngestionCandidateEntity>();
     public DbSet<IngestionAuditEntity> IngestionAudits => Set<IngestionAuditEntity>();
+    public DbSet<MediaAssetEntity> MediaAssets => Set<MediaAssetEntity>();
+    public DbSet<MediaUploadEntity> MediaUploads => Set<MediaUploadEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -118,6 +120,48 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
             b.Property(e => e.Stage).HasMaxLength(64).IsRequired();
             b.Property(e => e.Detail).HasMaxLength(2000);
             b.Property(e => e.Timestamp).IsRequired();
+        });
+
+        modelBuilder.Entity<MediaAssetEntity>(b =>
+        {
+            b.ToTable("media_assets");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.AssetId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.AssetType).HasMaxLength(64).IsRequired();
+            b.Property(e => e.Status).HasMaxLength(64).IsRequired();
+            b.Property(e => e.ContentType).HasMaxLength(128).IsRequired();
+            b.Property(e => e.ChecksumSha256).HasMaxLength(128).IsRequired();
+            b.Property(e => e.OriginalFilename).HasMaxLength(512).IsRequired();
+            b.Property(e => e.UploaderUserId).HasMaxLength(128);
+            b.Property(e => e.OwnerType).HasMaxLength(64).IsRequired();
+            b.Property(e => e.OwnerId).HasMaxLength(128);
+            b.Property(e => e.VenueId).HasMaxLength(128);
+            b.Property(e => e.IngestionWorkflowSource).HasMaxLength(256);
+            b.Property(e => e.StorageProvider).HasMaxLength(64).IsRequired();
+            b.Property(e => e.StorageContainer).HasMaxLength(256).IsRequired();
+            b.Property(e => e.StorageObjectKey).HasMaxLength(1024).IsRequired();
+            b.Property(e => e.StorageUri).HasMaxLength(2048);
+            b.Property(e => e.StorageETag).HasMaxLength(256);
+            b.Property(e => e.StorageVersionId).HasMaxLength(256);
+            b.Property(e => e.SubmissionId).HasMaxLength(128);
+            b.Property(e => e.MetadataJson).HasColumnType("jsonb");
+            b.HasIndex(e => e.AssetId).IsUnique();
+            b.HasIndex(e => new { e.OwnerType, e.OwnerId });
+            b.HasIndex(e => e.Status);
+        });
+
+        modelBuilder.Entity<MediaUploadEntity>(b =>
+        {
+            b.ToTable("media_uploads");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.UploadId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.AssetId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.Status).HasMaxLength(64).IsRequired();
+            b.Property(e => e.RequestedByUserId).HasMaxLength(128);
+            b.Property(e => e.FailureReason).HasMaxLength(2000);
+            b.HasIndex(e => e.UploadId).IsUnique();
+            b.HasIndex(e => e.AssetId);
+            b.HasIndex(e => e.Status);
         });
     }
 }

@@ -1,5 +1,6 @@
 using WeUP.Domain.Media;
 using WeUP.Infrastructure.Media;
+using WeUP.Domain.Users;
 
 namespace WeUP.Api.Endpoints;
 
@@ -14,6 +15,22 @@ public static class MediaEndpoints
         var group = app.MapGroup("/api/media")
             .WithOpenApi()
             .WithName("Media");
+
+        group.MapPost("/uploads", InitializeUpload)
+            .WithName("CreateMediaUpload")
+            .WithDescription("Create a durable media asset/upload record and stream file content.");
+
+        group.MapPost("/uploads/{uploadId}/complete", CompleteUpload)
+            .WithName("CompleteMediaUpload")
+            .WithDescription("Finalize upload processing lifecycle and queue review when required.");
+
+        group.MapGet("/uploads/{uploadId}", GetUpload)
+            .WithName("GetMediaUpload")
+            .WithDescription("Get media upload lifecycle record.");
+
+        group.MapGet("/assets/{assetId}", GetAsset)
+            .WithName("GetMediaAsset")
+            .WithDescription("Get durable media asset record with owner and storage refs.");
 
         group.MapPost("/flyers", UploadFlyer)
             .WithName("UploadFlyer")
@@ -43,6 +60,156 @@ public static class MediaEndpoints
         group.MapGet("/flyers/evidence/pending", ListPendingEvidence)
             .WithName("ListPendingEvidence")
             .WithDescription("P27: List all pending (unlinked) flyer evidence records for moderation");
+    }
+
+    private static async Task<IResult> InitializeUpload(
+        HttpRequest request,
+        HttpContext httpContext,
+        IMediaIntakeService mediaService,
+        ITokenService tokens,
+        CancellationToken ct)
+    {
+        if (!request.HasFormContentType)
+        {
+            return Results.Problem(
+                title: "Invalid request",
+                detail: "Request must be multipart/form-data.",
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        var form = await request.ReadFormAsync(ct);
+        var file = form.Files.GetFile("file") ?? form.Files.FirstOrDefault();
+        if (file is null)
+        {
+            return Results.Problem(
+                title: "Missing file",
+                detail: "Expected multipart field 'file'.",
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        var uploaderUserId = AuthEndpoints.ResolveUserId(httpContext, tokens) ?? form["uploaderUserId"].ToString().NullIfEmpty();
+        var ownerTypeRaw = form["ownerType"].ToString().NullIfEmpty() ?? MediaOwnerType.User.ToString();
+        if (!Enum.TryParse<MediaOwnerType>(ownerTypeRaw, true, out var ownerType))
+        {
+            return Results.Problem(
+                title: "Invalid ownerType",
+                detail: $"ownerType '{ownerTypeRaw}' is not supported.",
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        var ingestionWorkflowSource = form["ingestionWorkflowSource"].ToString().NullIfEmpty();
+        var requiresAuth = ownerType != MediaOwnerType.SystemWorkflow;
+        if (requiresAuth && string.IsNullOrWhiteSpace(uploaderUserId))
+        {
+            return Results.Problem(
+                title: "Unauthorized",
+                detail: "Authenticated uploader is required for this media owner type.",
+                statusCode: StatusCodes.Status401Unauthorized);
+        }
+
+        if (!Enum.TryParse<MediaAssetType>(form["assetType"].ToString().NullIfEmpty() ?? string.Empty, true, out var assetType))
+        {
+            return Results.Problem(
+                title: "Invalid assetType",
+                detail: "assetType is required and must be one of FlyerImage, VenueImage, PromotionalPoster, EventMedia.",
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        var owner = new MediaOwnerRef(
+            ownerType,
+            form["ownerId"].ToString().NullIfEmpty() ?? uploaderUserId,
+            form["venueId"].ToString().NullIfEmpty(),
+            ingestionWorkflowSource);
+
+        try
+        {
+            await using var stream = file.OpenReadStream();
+            var upload = await mediaService.CreateUploadAsync(
+                new CreateMediaUploadCommand(
+                    assetType,
+                    file.ContentType,
+                    file.FileName,
+                    file.Length,
+                    uploaderUserId,
+                    owner,
+                    form["submissionId"].ToString().NullIfEmpty(),
+                    form["metadataJson"].ToString().NullIfEmpty()),
+                stream,
+                ct);
+
+            return Results.Created($"/api/media/uploads/{upload.UploadId}", new CreateMediaUploadResponse(upload.UploadId, upload.AssetId, upload.Status.ToString()));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Problem(
+                title: "Upload validation failed",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status422UnprocessableEntity);
+        }
+    }
+
+    private static async Task<IResult> CompleteUpload(
+        string uploadId,
+        CompleteMediaUploadRequest request,
+        IMediaIntakeService mediaService,
+        CancellationToken ct)
+    {
+        var upload = await mediaService.CompleteUploadAsync(
+            uploadId,
+            new CompleteMediaUploadCommand(
+                request.ProcessingSucceeded,
+                request.QueueForReview,
+                request.FailureReason,
+                request.MetadataJson),
+            ct);
+
+        if (upload is null)
+        {
+            return Results.NotFound(new { error = $"Upload {uploadId} not found" });
+        }
+
+        return Results.Ok(new MediaUploadDto(upload.UploadId, upload.AssetId, upload.Status.ToString(), upload.InitializedAt, upload.CompletedAt, upload.RequestedByUserId, upload.FailureReason));
+    }
+
+    private static async Task<IResult> GetUpload(
+        string uploadId,
+        IMediaIntakeService mediaService,
+        CancellationToken ct)
+    {
+        var upload = await mediaService.GetUploadAsync(uploadId, ct);
+        if (upload is null)
+        {
+            return Results.NotFound(new { error = $"Upload {uploadId} not found" });
+        }
+
+        return Results.Ok(new MediaUploadDto(upload.UploadId, upload.AssetId, upload.Status.ToString(), upload.InitializedAt, upload.CompletedAt, upload.RequestedByUserId, upload.FailureReason));
+    }
+
+    private static async Task<IResult> GetAsset(
+        string assetId,
+        IMediaIntakeService mediaService,
+        CancellationToken ct)
+    {
+        var asset = await mediaService.GetAssetAsync(assetId, ct);
+        if (asset is null)
+        {
+            return Results.NotFound(new { error = $"Asset {assetId} not found" });
+        }
+
+        return Results.Ok(new MediaAssetDto(
+            asset.AssetId,
+            asset.AssetType.ToString(),
+            asset.Status.ToString(),
+            asset.ContentType,
+            asset.FileSizeBytes,
+            asset.ChecksumSha256,
+            asset.OriginalFilename,
+            asset.UploadedAt,
+            asset.UploaderUserId,
+            new MediaOwnerRefDto(asset.Owner.OwnerType.ToString(), asset.Owner.OwnerId, asset.Owner.VenueId, asset.Owner.IngestionWorkflowSource),
+            new MediaStorageRefDto(asset.Storage.Provider.ToString(), asset.Storage.Container, asset.Storage.ObjectKey, asset.Storage.Uri, asset.Storage.ETag, asset.Storage.VersionId),
+            asset.SubmissionId,
+            asset.MetadataJson));
     }
 
     /// <summary>
@@ -310,3 +477,52 @@ public record FlyerAssetDto(
 /// Response listing user's flyers.
 /// </summary>
 public record ListUserFlyersResponse(FlyerAssetDto[] Flyers);
+
+public record CreateMediaUploadResponse(
+    string UploadId,
+    string AssetId,
+    string Status);
+
+public record CompleteMediaUploadRequest(
+    bool ProcessingSucceeded = true,
+    bool QueueForReview = true,
+    string? FailureReason = null,
+    string? MetadataJson = null);
+
+public record MediaUploadDto(
+    string UploadId,
+    string AssetId,
+    string Status,
+    DateTimeOffset InitializedAt,
+    DateTimeOffset? CompletedAt,
+    string? RequestedByUserId,
+    string? FailureReason);
+
+public record MediaOwnerRefDto(
+    string OwnerType,
+    string? OwnerId,
+    string? VenueId,
+    string? IngestionWorkflowSource);
+
+public record MediaStorageRefDto(
+    string Provider,
+    string Container,
+    string ObjectKey,
+    string? Uri,
+    string? ETag,
+    string? VersionId);
+
+public record MediaAssetDto(
+    string AssetId,
+    string AssetType,
+    string Status,
+    string ContentType,
+    long FileSizeBytes,
+    string ChecksumSha256,
+    string OriginalFilename,
+    DateTimeOffset UploadedAt,
+    string? UploaderUserId,
+    MediaOwnerRefDto Owner,
+    MediaStorageRefDto Storage,
+    string? SubmissionId,
+    string? MetadataJson);
