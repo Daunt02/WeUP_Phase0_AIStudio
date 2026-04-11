@@ -16,6 +16,10 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
     public DbSet<UserProfileEntity> UserProfiles => Set<UserProfileEntity>();
     public DbSet<SavedEventEntity> SavedEvents => Set<SavedEventEntity>();
     public DbSet<EventReviewEntity> EventReviews => Set<EventReviewEntity>();
+    public DbSet<IngestionJobEntity> IngestionJobs => Set<IngestionJobEntity>();
+    public DbSet<IngestionEvidenceEntity> IngestionEvidence => Set<IngestionEvidenceEntity>();
+    public DbSet<IngestionCandidateEntity> IngestionCandidates => Set<IngestionCandidateEntity>();
+    public DbSet<IngestionAuditEntity> IngestionAudits => Set<IngestionAuditEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -71,6 +75,49 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
             b.Property(e => e.PublishDecision).HasMaxLength(32);
             b.HasIndex(e => new { e.EventId, e.ReviewStatus });
             b.HasIndex(e => e.ReviewedAt);
+        });
+
+        // Ingestion job entities
+        modelBuilder.Entity<IngestionJobEntity>(b =>
+        {
+            b.ToTable("ingestion_jobs");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.JobId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.SourceKind).HasMaxLength(64).IsRequired();
+            b.Property(e => e.SourceRef).HasMaxLength(1024).IsRequired();
+            b.Property(e => e.Status).HasMaxLength(32).IsRequired();
+            b.Property(e => e.FailureReason).HasMaxLength(2000);
+            b.Property(e => e.CandidateEventId).HasMaxLength(64);
+            b.HasIndex(e => e.JobId).IsUnique();
+            b.HasIndex(e => e.SourceRef);
+        });
+
+        modelBuilder.Entity<IngestionEvidenceEntity>(b =>
+        {
+            b.ToTable("ingestion_evidence");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.JobId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.Kind).HasMaxLength(64).IsRequired();
+            b.Property(e => e.Reference).HasMaxLength(1024).IsRequired();
+            b.Property(e => e.Payload).HasMaxLength(4000);
+        });
+
+        modelBuilder.Entity<IngestionCandidateEntity>(b =>
+        {
+            b.ToTable("ingestion_candidates");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.JobId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.CandidateJson).HasColumnType("jsonb").IsRequired();
+        });
+
+        modelBuilder.Entity<IngestionAuditEntity>(b =>
+        {
+            b.ToTable("ingestion_audit");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.JobId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.Stage).HasMaxLength(64).IsRequired();
+            b.Property(e => e.Detail).HasMaxLength(2000);
+            b.Property(e => e.Timestamp).IsRequired();
         });
     }
 }

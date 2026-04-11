@@ -73,56 +73,110 @@ public static class TemporalPresetMapper
         DateTimeOffset? referenceTime = null,
         string? marketTimezone = null)
     {
-        marketTimezone ??= "America/Los_Angeles"; // Default to SF
-        var refTime = referenceTime ?? DateTimeOffset.UtcNow;
+        marketTimezone ??= "America/Los_Angeles"; // default market id (IANA)
+        var refUtc = (referenceTime ?? DateTimeOffset.UtcNow).ToUniversalTime();
 
-        // For this MVP, use a simplified approach:
-        // Real implementation would:
-        // 1. Convert refTime to market-local time
-        // 2. Compute window boundaries in market-local time
-        // 3. Convert back to UTC
+        // Resolve a TimeZoneInfo for the market. Accept both common IANA ids and Windows ids.
+        var tz = ResolveTimeZone(marketTimezone);
 
-        var now = refTime;
-        return preset switch
+        // Convert reference to market-local time for canonical window computation.
+        var localRef = TimeZoneInfo.ConvertTime(refUtc, TimeZoneInfo.Utc, tz);
+
+        DateTime localStart;
+        DateTime localEnd;
+
+        switch (preset)
         {
-            TemporalPreset.NOW =>
-                new TimeWindow(now, now.AddHours(1), marketTimezone),
+            case TemporalPreset.NOW:
+                localStart = localRef.Date.Add(localRef.TimeOfDay);
+                localEnd = localStart.AddHours(1);
+                break;
 
-            TemporalPreset.Evening6PM =>
-                new TimeWindow(now.Date.AddHours(18), now.Date.AddHours(19), marketTimezone),
+            case TemporalPreset.Evening6PM:
+                localStart = localRef.Date.AddHours(18);
+                localEnd = localStart.AddHours(1);
+                break;
 
-            TemporalPreset.Evening9PM =>
-                new TimeWindow(now.Date.AddHours(21), now.Date.AddHours(22), marketTimezone),
+            case TemporalPreset.Evening9PM:
+                localStart = localRef.Date.AddHours(21);
+                localEnd = localStart.AddHours(1);
+                break;
 
-            TemporalPreset.Midnight =>
-                // Cross-midnight: 11 PM to 2 AM
-                new TimeWindow(now.Date.AddHours(23), now.Date.AddDays(1).AddHours(2), marketTimezone),
+            case TemporalPreset.Midnight:
+                // Cross-midnight nightlife window: 23:00 -> 02:00 (next day)
+                localStart = localRef.Date.AddHours(23);
+                localEnd = localStart.AddHours(3);
+                break;
 
-            TemporalPreset.EarlyMorning3AM =>
-                new TimeWindow(now.Date.AddHours(3), now.Date.AddHours(4), marketTimezone),
+            case TemporalPreset.EarlyMorning3AM:
+                localStart = localRef.Date.AddHours(3);
+                localEnd = localStart.AddHours(1);
+                break;
 
-            TemporalPreset.Friday =>
-                GetDayWindow(DayOfWeek.Friday, now, marketTimezone),
+            case TemporalPreset.Friday:
+                (localStart, localEnd) = GetNextDayRange(localRef, DayOfWeek.Friday);
+                break;
 
-            TemporalPreset.Saturday =>
-                GetDayWindow(DayOfWeek.Saturday, now, marketTimezone),
+            case TemporalPreset.Saturday:
+                (localStart, localEnd) = GetNextDayRange(localRef, DayOfWeek.Saturday);
+                break;
 
-            TemporalPreset.Sunday =>
-                GetDayWindow(DayOfWeek.Sunday, now, marketTimezone),
+            case TemporalPreset.Sunday:
+                (localStart, localEnd) = GetNextDayRange(localRef, DayOfWeek.Sunday);
+                break;
 
-            _ => throw new ArgumentException($"Unknown preset: {preset}"),
-        };
+            default:
+                throw new ArgumentException($"Unknown preset: {preset}");
+        }
+
+        // Convert local start/end back to UTC offsets
+        var startOffset = new DateTimeOffset(localStart, tz.GetUtcOffset(localStart)).ToUniversalTime();
+        var endOffset = new DateTimeOffset(localEnd, tz.GetUtcOffset(localEnd)).ToUniversalTime();
+
+        return new TimeWindow(startOffset, endOffset, tz.Id);
     }
 
     /// <summary>
     /// Helper to compute next occurrence of a day of week (midnight to midnight).
     /// </summary>
-    private static TimeWindow GetDayWindow(DayOfWeek targetDay, DateTimeOffset now, string timezone)
+    private static (DateTime startLocal, DateTime endLocal) GetNextDayRange(DateTimeOffset localRef, DayOfWeek targetDay)
     {
-        var daysUntil = ((int)targetDay - (int)now.DayOfWeek + 7) % 7;
-        if (daysUntil == 0) daysUntil = 7; // If today is the target day, get next week's
-        var dayStart = now.Date.AddDays(daysUntil);
-        return new TimeWindow(dayStart, dayStart.AddDays(1), timezone);
+        var daysUntil = ((int)targetDay - (int)localRef.DayOfWeek + 7) % 7;
+        if (daysUntil == 0) daysUntil = 7; // prefer next week's instance if same-day
+        var dayStart = localRef.Date.AddDays(daysUntil);
+        return (dayStart, dayStart.AddDays(1));
+    }
+
+    /// <summary>
+    /// Resolve a TimeZoneInfo from a market identifier. Accept a few common IANA ids
+    /// and map them to Windows ids when necessary. Extend this mapping as markets are added.
+    /// </summary>
+    private static TimeZoneInfo ResolveTimeZone(string marketTimezone)
+    {
+        try
+        {
+            // Try as provided (works for Windows timezone ids on Windows)
+            return TimeZoneInfo.FindSystemTimeZoneById(marketTimezone);
+        }
+        catch
+        {
+            // Try a tiny IANA -> Windows mapping for common markets (expand as needed)
+            var iana = marketTimezone;
+            var mapping = iana.ToLowerInvariant() switch
+            {
+                "america/los_angeles" => "Pacific Standard Time",
+                "america/new_york" => "Eastern Standard Time",
+                "america/chicago" => "Central Standard Time",
+                "europe/london" => "GMT Standard Time",
+                _ => null
+            };
+
+            if (mapping != null)
+                return TimeZoneInfo.FindSystemTimeZoneById(mapping);
+
+            // Fall back to UTC
+            return TimeZoneInfo.Utc;
+        }
     }
 
     /// <summary>

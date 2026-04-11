@@ -1,5 +1,6 @@
 using WeUP.Api.Endpoints;
 using WeUP.Api.Observability;
+using Microsoft.EntityFrameworkCore;
 using WeUP.Application.Ingestion;
 using WeUP.Application.Moderation;
 using WeUP.Application.Users;
@@ -64,8 +65,18 @@ builder.Services.AddSingleton<ISaveRepository, StubSaveRepository>();
 
 // Ingestion services
 builder.Services.AddHttpClient("ingestion");
-builder.Services.AddSingleton<IIngestionJobRepository, InMemoryIngestionJobRepository>();
-builder.Services.AddSingleton<IIngestionAuditWriter, ConsoleIngestionAuditWriter>();
+var connStr = builder.Configuration.GetConnectionString("WeUpDb");
+if (!string.IsNullOrWhiteSpace(connStr))
+{
+    builder.Services.AddDbContext<WeUpDbContext>(opts => opts.UseNpgsql(connStr));
+    builder.Services.AddScoped<IIngestionJobRepository, EfIngestionJobRepository>();
+    builder.Services.AddScoped<IIngestionAuditWriter, ConsoleIngestionAuditWriter>();
+}
+else
+{
+    builder.Services.AddSingleton<IIngestionJobRepository, InMemoryIngestionJobRepository>();
+    builder.Services.AddSingleton<IIngestionAuditWriter, ConsoleIngestionAuditWriter>();
+}
 
 // Adapters — each registered as IIngestionAdapter so IngestionDispatcher receives all via IEnumerable<IIngestionAdapter>
 builder.Services.AddSingleton<IIngestionAdapter, ManualSubmissionAdapter>();
