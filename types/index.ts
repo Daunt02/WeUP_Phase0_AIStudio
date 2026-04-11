@@ -1,4 +1,6 @@
-export type ViewMode = 'RADAR' | 'CALENDAR' | 'DETAIL' | 'UPLOAD' | 'NORMALIZE' | 'SAVED' | 'PROFILE';
+// ViewMode is owned by types/ui.ts (world-surface coordinator) — re-exported here
+// for backward-compatible component imports.
+export type { ViewMode } from '@/types/ui';
 
 export interface NightlifeItem {
   id: string;
@@ -52,14 +54,12 @@ export interface SocialInviteTier {
   invite_type: string;
 }
 
-export type ModalState = 'FULL' | 'ADD_EVENT' | null;
+/**
+ * EventSignalState — display state prop for EventSignalModal.
+ * This is a presentational signal, NOT the coordinator's modal stack.
+ * The coordinator's ModalState lives in types/ui.ts.
+ */
+export type EventSignalState = 'FULL' | 'ADD_EVENT' | null;
 
-export interface UIState {
-  activeMode: ViewMode;
-  selectedItemId: string | null;
-  modalState: ModalState;
-  interestedEventId: string | null;
-  socialPanelOpen: boolean;
-  unlockedTiers: number[];
-  ghostEvent?: Partial<NightlifeItem> | null;
-}
+/** @deprecated Use EventSignalState. */
+export type ModalState = EventSignalState;
