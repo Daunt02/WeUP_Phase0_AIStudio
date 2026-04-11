@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import TopBar from "@/components/TopBar";
 import RadarMap from "@/components/RadarMap";
 import BottomNav from "@/components/BottomNav";
@@ -32,7 +32,37 @@ export default function WorldCoordinator() {
     updateDraft,
     publishDraft,
     toggleSave,
+    persistedSnapshot,
+    restorePersistedState,
   } = useWorldSurfaceState();
+
+  // Persisted UI snapshot key
+  const PERSIST_KEY = 'weup.ui.persisted.v1';
+
+  // Hydrate persisted UI slice on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(PERSIST_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          restorePersistedState(parsed);
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to restore persisted UI state', err);
+    }
+  }, [restorePersistedState]);
+
+  // Save persisted slice when it changes
+  useEffect(() => {
+    try {
+      const snap = persistedSnapshot();
+      localStorage.setItem(PERSIST_KEY, JSON.stringify(snap));
+    } catch (err) {
+      console.warn('Failed to persist UI snapshot', err);
+    }
+  }, [state.savedEventIds, state.lastKnownMapCenter, persistedSnapshot]);
 
   // ── Data layers ────────────────────────────────────────────────────────────
   const { events, prependEvent } = useEventFeed(state.mapBounds);
