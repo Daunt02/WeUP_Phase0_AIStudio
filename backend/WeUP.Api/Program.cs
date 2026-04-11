@@ -64,7 +64,7 @@ builder.Services.AddSingleton<IEventSubmissionRepository, StubEventRepository>()
 builder.Services.AddSingleton<ISaveRepository, StubSaveRepository>();
 
 // Ingestion services
-builder.Services.AddHttpClient("ingestion");
+builder.Services.AddHttpClient("ingestion").AddHttpMessageHandler<WeUP.Api.Observability.CorrelationIdDelegatingHandler>();
 var connStr = builder.Configuration.GetConnectionString("WeUpDb");
 if (!string.IsNullOrWhiteSpace(connStr))
 {
