@@ -34,30 +34,30 @@ export type VenueId = string;
  * See transitions.ts for legal transition table.
  */
 export type EventStatus =
-  | 'DRAFT'
-  | 'INGESTED'
-  | 'NEEDS_REVIEW'
-  | 'APPROVED'
-  | 'PUBLISHED'
-  | 'REJECTED'
-  | 'ARCHIVED';
+  | "DRAFT"
+  | "INGESTED"
+  | "NEEDS_REVIEW"
+  | "APPROVED"
+  | "PUBLISHED"
+  | "REJECTED"
+  | "ARCHIVED";
 
 // ---------------------------------------------------------------------------
 // Category
 // ---------------------------------------------------------------------------
 
 export type EventCategory =
-  | 'nightlife'
-  | 'lounge'
-  | 'concert'
-  | 'private'
-  | 'restaurant'
-  | 'rooftop'
-  | 'startup'
-  | 'tech'
-  | 'creator'
-  | 'career'
-  | 'other';
+  | "nightlife"
+  | "lounge"
+  | "concert"
+  | "private"
+  | "restaurant"
+  | "rooftop"
+  | "startup"
+  | "tech"
+  | "creator"
+  | "career"
+  | "other";
 
 // ---------------------------------------------------------------------------
 // Geospatial
@@ -94,11 +94,11 @@ export interface EventTimeRange {
 // ---------------------------------------------------------------------------
 
 export type SourceKind =
-  | 'manual_submission'
-  | 'flyer_upload'
-  | 'pasted_url'
-  | 'scraped_venue_page'
-  | 'external_feed';
+  | "manual_submission"
+  | "flyer_upload"
+  | "pasted_url"
+  | "scraped_venue_page"
+  | "external_feed";
 
 export interface SourceRef {
   kind: SourceKind;
@@ -114,7 +114,7 @@ export interface SourceRef {
 export interface MediaRef {
   assetId: string;
   url: string;
-  kind: 'image' | 'video' | 'poster';
+  kind: "image" | "video" | "poster";
   /** Width in px, if known. */
   width?: number;
   /** Height in px, if known. */
@@ -126,8 +126,8 @@ export interface MediaRef {
 // ---------------------------------------------------------------------------
 
 export interface AuditMetadata {
-  createdAt: string;  // ISO 8601 UTC
-  updatedAt: string;  // ISO 8601 UTC
+  createdAt: string; // ISO 8601 UTC
+  updatedAt: string; // ISO 8601 UTC
   createdBy?: string; // user id or system
 }
 
@@ -142,7 +142,7 @@ export interface ReviewMetadata {
   notes?: string;
   rejectionReason?: string;
   /** Whether this event was auto-approved or required manual review. */
-  publishDecision?: 'auto_approved' | 'manually_approved' | 'rejected';
+  publishDecision?: "auto_approved" | "manually_approved" | "rejected";
 }
 
 // ---------------------------------------------------------------------------
@@ -216,12 +216,113 @@ export interface EventAggregate {
  * Which fields must be non-null / non-empty at each lifecycle stage.
  * Used by transition guards in transitions.ts.
  */
-export const REQUIRED_FIELDS_BY_STATUS: Record<EventStatus, (keyof EventAggregate)[]> = {
-  DRAFT: ['id', 'status', 'audit'],
-  INGESTED: ['id', 'status', 'canonicalTitle', 'sourceRefs', 'audit'],
-  NEEDS_REVIEW: ['id', 'status', 'canonicalTitle', 'sourceRefs', 'confidence', 'audit'],
-  APPROVED: ['id', 'status', 'canonicalTitle', 'venue', 'address', 'geo', 'timeRange', 'timezone', 'sourceRefs', 'confidence', 'audit'],
-  PUBLISHED: ['id', 'status', 'canonicalTitle', 'venue', 'address', 'geo', 'timeRange', 'timezone', 'sourceRefs', 'confidence', 'audit'],
-  REJECTED: ['id', 'status', 'audit'],
-  ARCHIVED: ['id', 'status', 'audit'],
+export const REQUIRED_FIELDS_BY_STATUS: Record<
+  EventStatus,
+  (keyof EventAggregate)[]
+> = {
+  DRAFT: ["id", "status", "audit"],
+  INGESTED: ["id", "status", "canonicalTitle", "sourceRefs", "audit"],
+  NEEDS_REVIEW: [
+    "id",
+    "status",
+    "canonicalTitle",
+    "sourceRefs",
+    "confidence",
+    "audit",
+  ],
+  APPROVED: [
+    "id",
+    "status",
+    "canonicalTitle",
+    "venue",
+    "address",
+    "geo",
+    "timeRange",
+    "timezone",
+    "sourceRefs",
+    "confidence",
+    "audit",
+  ],
+  PUBLISHED: [
+    "id",
+    "status",
+    "canonicalTitle",
+    "venue",
+    "address",
+    "geo",
+    "timeRange",
+    "timezone",
+    "sourceRefs",
+    "confidence",
+    "audit",
+  ],
+  REJECTED: ["id", "status", "audit"],
+  ARCHIVED: ["id", "status", "audit"],
 };
+
+// ---------------------------------------------------------------------------
+// Source / Normalized / Derived separations
+// ---------------------------------------------------------------------------
+
+/**
+ * Raw source payload as received from an ingestion pipeline or client.
+ * Keep raw fields permissive — parsing/normalization produces the canonical aggregate.
+ */
+export interface EventSourcePayload {
+  // Raw identifiers from source(s)
+  sourceId?: string;
+  sourceKind?: SourceKind;
+
+  // Raw textual fields (may be messy / OCRed)
+  rawTitle?: string | null;
+  rawDescription?: string | null;
+  rawVenueName?: string | null;
+  rawAddress?: string | null; // free-form address string
+
+  // Raw temporal strings as provided by source (may be ambiguous)
+  rawStart?: string | null;
+  rawEnd?: string | null;
+
+  // Raw geolocation (strings/numbers depending on source)
+  rawLat?: number | string | null;
+  rawLng?: number | string | null;
+
+  // Raw media / asset refs
+  rawMediaUrls?: string[];
+
+  // Any additional source payload preserved for audit
+  payload?: Record<string, unknown> | null;
+}
+
+/**
+ * Normalized event fields — the inputs used to construct `EventAggregate`.
+ * These fields are validated, normalized, and type-safe.
+ */
+export interface EventNormalized {
+  id: EventId;
+  canonicalTitle: string;
+  canonicalDescription?: string | null;
+  category?: EventCategory;
+  venue?: VenueSnapshot | null;
+  address?: AddressSnapshot | null;
+  geo?: GeoPoint | null;
+  timeRange?: EventTimeRange | null;
+  timezone?: string | null;
+  mediaRefs?: MediaRef[];
+  tags?: string[];
+}
+
+/**
+ * Derived / display-only fields used by UI projections. These MUST NOT be
+ * persisted back to canonical store as authoritative data.
+ */
+export interface EventDisplayFields {
+  // Human-friendly renderable strings
+  displayTitle?: string;
+  displaySubtitle?: string; // e.g., venue + neighborhood
+  displayDate?: string; // locale-aware
+  displayTime?: string; // locale-aware
+  imageUrl?: string | null;
+  // Short summary computed from description
+  teaser?: string | null;
+}

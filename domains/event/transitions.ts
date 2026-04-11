@@ -5,20 +5,24 @@
  * Illegal transitions throw or return an error result — never silently succeed.
  */
 
-import { EventStatus, EventAggregate, REQUIRED_FIELDS_BY_STATUS } from './types';
+import {
+  EventStatus,
+  EventAggregate,
+  REQUIRED_FIELDS_BY_STATUS,
+} from "./types";
 
 // ---------------------------------------------------------------------------
 // Legal transition table
 // ---------------------------------------------------------------------------
 
-const LEGAL_TRANSITIONS: Record<EventStatus, EventStatus[]> = {
-  DRAFT:        ['INGESTED', 'REJECTED'],
-  INGESTED:     ['NEEDS_REVIEW', 'APPROVED', 'REJECTED'],
-  NEEDS_REVIEW: ['APPROVED', 'REJECTED'],
-  APPROVED:     ['PUBLISHED', 'NEEDS_REVIEW', 'REJECTED'],
-  PUBLISHED:    ['ARCHIVED', 'NEEDS_REVIEW'],
-  REJECTED:     ['DRAFT'],               // allow re-submission via reset to DRAFT
-  ARCHIVED:     [],                      // terminal — no automatic egress
+export const LEGAL_TRANSITIONS: Record<EventStatus, EventStatus[]> = {
+  DRAFT: ["INGESTED", "REJECTED"],
+  INGESTED: ["NEEDS_REVIEW", "APPROVED", "REJECTED"],
+  NEEDS_REVIEW: ["APPROVED", "REJECTED"],
+  APPROVED: ["PUBLISHED", "NEEDS_REVIEW", "REJECTED"],
+  PUBLISHED: ["ARCHIVED", "NEEDS_REVIEW"],
+  REJECTED: ["DRAFT"], // allow re-submission via reset to DRAFT
+  ARCHIVED: [], // terminal — no automatic egress
 };
 
 // ---------------------------------------------------------------------------
@@ -31,22 +35,68 @@ export interface TransitionResult {
 }
 
 /** Returns whether the transition from → to is legal. */
-export function canTransitionEventStatus(from: EventStatus, to: EventStatus): TransitionResult {
+export function canTransitionEventStatus(
+  from: EventStatus,
+  to: EventStatus,
+): TransitionResult {
   const allowed = LEGAL_TRANSITIONS[from];
   if (!allowed.includes(to)) {
     return {
       ok: false,
-      reason: `Illegal transition: ${from} → ${to}. Allowed from ${from}: [${allowed.join(', ') || 'none'}]`,
+      reason: `Illegal transition: ${from} → ${to}. Allowed from ${from}: [${allowed.join(", ") || "none"}]`,
     };
   }
   return { ok: true };
 }
 
 /** Applies a status transition, throwing on illegal moves. */
-export function transitionEventStatus(event: EventAggregate, to: EventStatus): EventAggregate {
+export function transitionEventStatus(
+  event: EventAggregate,
+  to: EventStatus,
+): EventAggregate {
   const result = canTransitionEventStatus(event.status, to);
   if (!result.ok) throw new Error(result.reason);
-  return { ...event, status: to, audit: { ...event.audit, updatedAt: new Date().toISOString() } };
+  return {
+    ...event,
+    status: to,
+    audit: { ...event.audit, updatedAt: new Date().toISOString() },
+  };
+}
+
+/**
+ * Try to apply a transition and return a structured result.
+ * Does not throw — callers can handle `ok === false`.
+ */
+export function tryTransitionEventStatus(
+  event: Partial<EventAggregate>,
+  to: EventStatus,
+): { ok: boolean; event?: EventAggregate; reason?: string } {
+  const from = event.status as EventStatus | undefined;
+  if (!from) return { ok: false, reason: "Event has no current status" };
+
+  const can = canTransitionEventStatus(from, to);
+  if (!can.ok) return { ok: false, reason: can.reason };
+
+  // Check required fields for target status
+  const missing = getMissingFieldsForStatus(event, to);
+  if (missing.length > 0) {
+    return {
+      ok: false,
+      reason: `Missing required fields for ${to}: ${missing.join(", ")}`,
+    };
+  }
+
+  // Safe to apply — cast is ok because we validated required keys
+  const applied: EventAggregate = {
+    ...(event as EventAggregate),
+    status: to,
+    audit: {
+      ...(event as EventAggregate).audit,
+      updatedAt: new Date().toISOString(),
+    },
+  };
+
+  return { ok: true, event: applied };
 }
 
 // ---------------------------------------------------------------------------
@@ -59,11 +109,12 @@ export function getMissingFieldsForStatus(
   status: EventStatus,
 ): string[] {
   const required = REQUIRED_FIELDS_BY_STATUS[status];
-  return required.filter(field => {
+  return required.filter((field) => {
     const val = (event as Record<string, unknown>)[field];
     if (val === null || val === undefined) return true;
-    if (typeof val === 'string' && val.trim() === '') return true;
-    if (Array.isArray(val) && val.length === 0 && field === 'sourceRefs') return true;
+    if (typeof val === "string" && val.trim() === "") return true;
+    if (Array.isArray(val) && val.length === 0 && field === "sourceRefs")
+      return true;
     return false;
   });
 }
@@ -84,7 +135,7 @@ export function hasRequiredMetadataForStatus(
 export const AUTO_APPROVE_CONFIDENCE_THRESHOLD = 0.85;
 
 export function isPublishableEvent(event: Partial<EventAggregate>): boolean {
-  if (!hasRequiredMetadataForStatus(event, 'PUBLISHED')) return false;
+  if (!hasRequiredMetadataForStatus(event, "PUBLISHED")) return false;
   if ((event.confidence ?? 0) < AUTO_APPROVE_CONFIDENCE_THRESHOLD) return false;
   return true;
 }
