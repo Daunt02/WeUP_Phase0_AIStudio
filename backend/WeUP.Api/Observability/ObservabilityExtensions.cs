@@ -6,6 +6,9 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Formatting.Json;
 using OpenTelemetry.Resources;
+using Microsoft.Extensions.Configuration;
+using WeUP.Api.FeatureFlags;
+using WeUP.Api.Observability;
 
 namespace WeUP.Api.Observability;
 
@@ -24,10 +27,15 @@ public static class ObservabilityExtensions
 
         builder.Host.UseSerilog();
 
-        builder.Services.AddHttpContextAccessor();
-        builder.Services.AddSingleton(new ActivitySource("WeUP.Ingestion"));
-        builder.Services.AddSingleton(new ActivitySource("WeUP.Moderation"));
-        builder.Services.AddSingleton<CorrelationIdDelegatingHandler>();
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.AddSingleton(new ActivitySource("WeUP.Ingestion"));
+    builder.Services.AddSingleton(new ActivitySource("WeUP.Moderation"));
+    builder.Services.AddSingleton<CorrelationIdDelegatingHandler>();
+
+    // Register telemetry and feature flag seams
+    builder.Services.AddSingleton<IOperationalTelemetry, OperationalTelemetry>();
+    builder.Services.Configure<FeatureFlagsOptions>(configuration.GetSection("FeatureFlags"));
+    builder.Services.AddSingleton<IFeatureFlagService, FeatureFlagService>();
 
         builder.Services.AddOpenTelemetryTracing(tp =>
         {
