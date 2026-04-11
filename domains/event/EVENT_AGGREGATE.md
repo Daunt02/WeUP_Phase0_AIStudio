@@ -106,3 +106,31 @@ Use `canTransitionEventStatus(from,to)` to check legality.
 - Wire ingestion pipelines to populate `IngestionMetadata` and compute `confidence` using `computeAggregateConfidence()`.
 - Add backend-side persistence mapping for `EventAggregate` and indexes for `geo` and `timeRange`.
 - Implement review UI that consumes `ReviewMetadataFull` from `provenance.ts` and calls server endpoints that use `tryTransitionEventStatus`.
+
+## Provenance & Review Metadata (formal)
+
+This project formalizes provenance and review metadata in `domains/event/provenance.ts`.
+
+- Every event should include or reference an `EventProvenanceBundle` with three first-class parts:
+  - `provenance` — who/what produced the source and pointers to immutable evidence
+  - `confidences` — numeric confidence vector (0..1) per meaningful extraction category
+  - `review` — structured review metadata (state, reviewer, notes, flags, evidence references)
+
+Design principles:
+
+- Traceability: `provenance.id` must be retained for any derived or merged event so the original source and evidence are auditable.
+- Explicit confidences: use numeric 0..1 semantics; do not rely on ad-hoc text like "low"/"medium".
+- Review-as-data: review information is structured and stored (not freeform); reviewers add `notes[]` with timestamps and severity.
+
+Storage / DB mapping suggestions:
+
+- Keep `provenance` (lightweight) embedded or referenced from the main event; store large `rawEvidence` assets in a separate `evidence` collection and reference by id.
+- Store `review` records in a `reviews` table/collection to preserve history (allow multiple review rounds). Each review entry should reference `provenanceId` and `evidenceRefs`.
+
+Automation helpers (see code):
+
+- `computeReviewReadiness(bundle)` — returns 0..1 readiness.
+- `canAutoPublish(bundle)` — default safe threshold 0.85.
+- `requiresManualReview(bundle)` — checks flags, critical notes, and readiness threshold.
+
+Canonical example payloads (see the code examples in this repo for JSON samples). These show how different sources map into `provenance` and the ways confidences + review metadata evolve during ingestion and moderation.
