@@ -18,7 +18,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:e2e": "playwright test",
-    "test:smoke": "node scripts/run-smoke.mjs",
+    "test:smoke": "node scripts/run-smoke-local.mjs",
     "test:smoke:deployed": "node scripts/run-smoke.mjs --deployed",
     "seed-data": "node scripts/reset-seed.mjs",
     "release:check": "npm run typecheck && npm run lint && npm run test:frontend && npm run test:backend && npm run test:e2e && npm run test:smoke"
