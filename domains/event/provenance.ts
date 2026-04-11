@@ -155,12 +155,14 @@ export function requiresManualReview(
   return false;
 }
 
-export default {
+const provenanceUtils = {
   SourceType,
   computeReviewReadiness,
   canAutoPublish,
   requiresManualReview,
 };
+
+export default provenanceUtils;
 /**
  * WeUP Phase 0 — Event Source Provenance, Confidence, and Review Metadata
  *
@@ -376,7 +378,7 @@ export function getReviewBlockers(
 /**
  * Returns true if the event can be auto-published without human review.
  */
-export function canAutoPublish(
+export function canAutoPublishByConfidence(
   confidence: ConfidenceVector,
   reviewMetadata: ReviewMetadataFull,
 ): boolean {
@@ -386,11 +388,11 @@ export function canAutoPublish(
 /**
  * Returns true if manual review is required before publication.
  */
-export function requiresManualReview(
+export function requiresManualReviewByConfidence(
   confidence: ConfidenceVector,
   reviewMetadata: ReviewMetadataFull,
 ): boolean {
-  return !canAutoPublish(confidence, reviewMetadata);
+  return !canAutoPublishByConfidence(confidence, reviewMetadata);
 }
 
 // ---------------------------------------------------------------------------

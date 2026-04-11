@@ -1,0 +1,286 @@
+{
+  "meta": {
+    "seedVersion": "phase0-p24",
+    "fixedNow": "2026-04-11T18:00:00Z",
+    "launchMarketCode": "sf",
+    "description": "Deterministic Phase 0 release-validation dataset for local, dev, and test environments."
+  },
+  "markets": [
+    {
+      "code": "sf",
+      "displayName": "San Francisco",
+      "timezone": "America/Los_Angeles",
+      "status": "Active",
+      "isAcceptingSubmissions": true,
+      "description": "Phase 0 launch market",
+      "launchedAt": "2026-03-01T08:00:00Z",
+      "centerLat": 37.7749,
+      "centerLng": -122.4194,
+      "boundingBox": {
+        "minLat": 37.7,
+        "maxLat": 37.85,
+        "minLng": -122.52,
+        "maxLng": -122.37
+      },
+      "districts": ["mission", "soma", "north-beach"]
+    },
+    {
+      "code": "oak",
+      "displayName": "Oakland",
+      "timezone": "America/Los_Angeles",
+      "status": "ComingSoon",
+      "isAcceptingSubmissions": false,
+      "description": "Seeded secondary market used for taxonomy validation only",
+      "launchedAt": null,
+      "centerLat": 37.8044,
+      "centerLng": -122.2712,
+      "boundingBox": {
+        "minLat": 37.74,
+        "maxLat": 37.89,
+        "minLng": -122.35,
+        "maxLng": -122.17
+      },
+      "districts": ["uptown", "jack-london", "temescal"]
+    }
+  ],
+  "venues": [
+    {
+      "venueId": "venue-sf-public-works",
+      "marketCode": "sf",
+      "districtCode": "mission",
+      "name": "Public Works",
+      "address": "161 Erie St, San Francisco, CA 94103",
+      "latitude": 37.76809,
+      "longitude": -122.42112
+    },
+    {
+      "venueId": "venue-sf-charmaine",
+      "marketCode": "sf",
+      "districtCode": "soma",
+      "name": "Charmaine's Rooftop",
+      "address": "45 McAllister St, San Francisco, CA 94102",
+      "latitude": 37.78115,
+      "longitude": -122.41134
+    },
+    {
+      "venueId": "venue-sf-brix",
+      "marketCode": "sf",
+      "districtCode": "north-beach",
+      "name": "Brix 581",
+      "address": "581 Broadway, San Francisco, CA 94133",
+      "latitude": 37.79851,
+      "longitude": -122.40782
+    }
+  ],
+  "events": [
+    {
+      "eventId": "evt-sf-midnight-groove",
+      "venueId": "venue-sf-public-works",
+      "title": "Midnight Groove Assembly",
+      "description": "Warehouse-scale house set with a deterministic release-validation timeline.",
+      "category": "nightlife",
+      "priceTier": "$$",
+      "sourceKind": "manual_submission",
+      "status": "PUBLISHED",
+      "confidence": 0.96,
+      "startsAtUtc": "2026-04-12T04:00:00Z",
+      "endsAtUtc": "2026-04-12T08:00:00Z",
+      "imageUrl": "https://picsum.photos/seed/weup-midnight-groove/800/1200",
+      "tags": ["House", "Late Night", "Mission"],
+      "energyLevel": 8,
+      "neighborhood": "MISSION"
+    },
+    {
+      "eventId": "evt-sf-rooftop-signals",
+      "venueId": "venue-sf-charmaine",
+      "title": "Rooftop Signals",
+      "description": "Sunset cocktail session with skyline visuals and seeded save-state coverage.",
+      "category": "rooftop",
+      "priceTier": "$$$",
+      "sourceKind": "pasted_url",
+      "status": "PUBLISHED",
+      "confidence": 0.91,
+      "startsAtUtc": "2026-04-11T23:30:00Z",
+      "endsAtUtc": "2026-04-12T03:00:00Z",
+      "imageUrl": "https://picsum.photos/seed/weup-rooftop-signals/800/1200",
+      "tags": ["Rooftop", "Cocktails", "Sunset"],
+      "energyLevel": 5,
+      "neighborhood": "SOMA"
+    },
+    {
+      "eventId": "evt-sf-waterfront-jazz",
+      "venueId": "venue-sf-brix",
+      "title": "Waterfront Jazz Circuit",
+      "description": "North Beach jazz session used to verify feed sorting and detail rendering.",
+      "category": "concert",
+      "priceTier": "$$",
+      "sourceKind": "scraped_venue_page",
+      "status": "PUBLISHED",
+      "confidence": 0.88,
+      "startsAtUtc": "2026-04-12T02:00:00Z",
+      "endsAtUtc": "2026-04-12T05:00:00Z",
+      "imageUrl": "https://picsum.photos/seed/weup-waterfront-jazz/800/1200",
+      "tags": ["Jazz", "Live", "North Beach"],
+      "energyLevel": 4,
+      "neighborhood": "NORTH BEACH"
+    }
+  ],
+  "users": [
+    {
+      "userId": "user-sf-camille",
+      "email": "camille+phase0@weup.test",
+      "displayName": "Camille Phase0",
+      "homeMarket": "sf",
+      "onboardingState": "COMPLETE",
+      "createdAt": "2026-04-01T18:00:00Z"
+    },
+    {
+      "userId": "user-sf-moderator",
+      "email": "moderator+phase0@weup.test",
+      "displayName": "Moderator Phase0",
+      "homeMarket": "sf",
+      "onboardingState": "COMPLETE",
+      "createdAt": "2026-04-02T18:00:00Z"
+    }
+  ],
+  "saves": [
+    {
+      "userId": "user-sf-camille",
+      "eventId": "evt-sf-rooftop-signals",
+      "savedAt": "2026-04-10T22:15:00Z"
+    }
+  ],
+  "moderationItems": [
+    {
+      "itemId": "mod-sf-neon-market",
+      "kind": "CandidateReview",
+      "status": "Open",
+      "candidate": {
+        "title": "Neon Market After Hours",
+        "venueName": "Public Works",
+        "address": "161 Erie St, San Francisco, CA 94103",
+        "startUtc": "2026-04-13T03:30:00Z",
+        "endUtc": "2026-04-13T07:00:00Z",
+        "timezone": "America/Los_Angeles",
+        "category": "nightlife",
+        "description": "Seeded candidate event waiting for human review.",
+        "tags": ["After Hours", "House"],
+        "sourceKind": "pasted_url",
+        "sourceRef": "https://example.test/neon-market"
+      },
+      "provenance": {
+        "sourceKind": "pasted_url",
+        "sourceRef": "https://example.test/neon-market",
+        "ingestionJobId": "job-sf-link-1",
+        "evidenceRefs": ["evidence-sf-neon-market"],
+        "submittedAt": "2026-04-11T17:00:00Z"
+      },
+      "confidence": {
+        "extraction": 0.92,
+        "geocode": 0.94,
+        "temporal": 0.89,
+        "venueMatch": 0.97,
+        "dupeRisk": 0.18,
+        "aggregate": 0.91,
+        "bucket": "High",
+        "reviewBlockers": []
+      },
+      "dedupeMatch": null,
+      "ingestionJob": {
+        "jobId": "job-sf-link-1",
+        "status": "ReviewPending",
+        "failureReason": null,
+        "createdAt": "2026-04-11T16:55:00Z",
+        "completedAt": null
+      },
+      "reviewReasons": ["Candidate created from pasted URL"],
+      "assignedReviewerId": "user-sf-moderator",
+      "linkedEventId": null,
+      "createdAt": "2026-04-11T17:00:00Z",
+      "updatedAt": "2026-04-11T17:00:00Z",
+      "history": []
+    },
+    {
+      "itemId": "mod-sf-duplicate-waterfront-jazz",
+      "kind": "DedupeReview",
+      "status": "InReview",
+      "candidate": {
+        "title": "Waterfront Jazz Circuit",
+        "venueName": "Brix 581",
+        "address": "581 Broadway, San Francisco, CA 94133",
+        "startUtc": "2026-04-12T02:00:00Z",
+        "endUtc": "2026-04-12T05:00:00Z",
+        "timezone": "America/Los_Angeles",
+        "category": "concert",
+        "description": "Potential duplicate candidate seeded for moderation resolve coverage.",
+        "tags": ["Jazz", "Duplicate"],
+        "sourceKind": "venue_page",
+        "sourceRef": "https://venue.example.test/jazz-circuit"
+      },
+      "provenance": {
+        "sourceKind": "venue_page",
+        "sourceRef": "https://venue.example.test/jazz-circuit",
+        "ingestionJobId": "job-sf-venue-1",
+        "evidenceRefs": ["evidence-sf-waterfront-jazz"],
+        "submittedAt": "2026-04-11T15:30:00Z"
+      },
+      "confidence": {
+        "extraction": 0.84,
+        "geocode": 0.91,
+        "temporal": 0.88,
+        "venueMatch": 0.99,
+        "dupeRisk": 0.82,
+        "aggregate": 0.86,
+        "bucket": "High",
+        "reviewBlockers": ["Possible duplicate of existing event"]
+      },
+      "dedupeMatch": {
+        "existingEventId": "evt-sf-waterfront-jazz",
+        "existingEventTitle": "Waterfront Jazz Circuit",
+        "matchScore": 0.82,
+        "severity": "Definite",
+        "matchReasons": ["Same venue", "Same start time", "Same title"]
+      },
+      "ingestionJob": {
+        "jobId": "job-sf-venue-1",
+        "status": "Failed",
+        "failureReason": "Duplicate candidate routed to moderation",
+        "createdAt": "2026-04-11T15:00:00Z",
+        "completedAt": "2026-04-11T15:20:00Z"
+      },
+      "reviewReasons": ["Existing event match score above release threshold"],
+      "assignedReviewerId": "user-sf-moderator",
+      "linkedEventId": "evt-sf-waterfront-jazz",
+      "createdAt": "2026-04-11T15:20:00Z",
+      "updatedAt": "2026-04-11T15:45:00Z",
+      "history": [
+        {
+          "action": "request-changes",
+          "actorId": "user-sf-moderator",
+          "note": "Reviewing duplicate metadata",
+          "previousStatus": "Open",
+          "nextStatus": "InReview",
+          "timestamp": "2026-04-11T15:45:00Z"
+        }
+      ]
+    }
+  ],
+  "ingestionJobs": [
+    {
+      "jobId": "job-sf-link-1",
+      "status": "ReviewPending",
+      "candidateEventId": "cand-sf-neon-market",
+      "sourceKind": "PastedUrl",
+      "sourceRef": "https://example.test/neon-market",
+      "failureReason": null
+    },
+    {
+      "jobId": "job-sf-venue-1",
+      "status": "Failed",
+      "candidateEventId": "cand-sf-waterfront-jazz",
+      "sourceKind": "VenuePage",
+      "sourceRef": "https://venue.example.test/jazz-circuit",
+      "failureReason": "Duplicate candidate routed to moderation"
+    }
+  ]
+}

@@ -4,13 +4,24 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:frontend": "cross-env NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=pk.test NEXT_PUBLIC_API_BASE_URL=/ WEUP_BACKEND_URL=http://127.0.0.1:5074 next dev --hostname 127.0.0.1 --port 3000",
+    "dev:frontend:test": "cross-env NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=pk.test NEXT_PUBLIC_API_BASE_URL=/ WEUP_BACKEND_URL=http://127.0.0.1:5074 next dev --hostname 127.0.0.1 --port 3000",
+    "dev:backend": "cross-env ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=http://127.0.0.1:5074 SeedData__EnableOnStartup=true SeedData__EnableResetEndpoint=true dotnet run --project backend/WeUP.Api/WeUP.Api.csproj",
+    "dev:backend:test": "cross-env ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=http://127.0.0.1:5074 SeedData__EnableOnStartup=true SeedData__EnableResetEndpoint=true dotnet run --project backend/WeUP.Api/WeUP.Api.csproj",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "test": "jest",
+    "lint": "eslint . --ext .js,.ts,.tsx --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "test": "jest --runInBand",
+    "test:frontend": "jest --runInBand",
+    "test:backend": "dotnet test backend/WeUP.Tests/WeUP.Tests.csproj --configuration Release",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "seed-data": "npx ts-node scripts/seed-data.ts"
+    "test:e2e": "playwright test",
+    "test:smoke": "node scripts/run-smoke.mjs",
+    "test:smoke:deployed": "node scripts/run-smoke.mjs --deployed",
+    "seed-data": "node scripts/reset-seed.mjs",
+    "release:check": "npm run typecheck && npm run lint && npm run test:frontend && npm run test:backend && npm run test:e2e && npm run test:smoke"
   },
   "dependencies": {
     "clsx": "latest",
@@ -26,6 +37,7 @@
     "use-supercluster": "^1.2.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.53.1",
     "@tailwindcss/postcss": "latest",
     "@testing-library/jest-dom": "^6.1.5",
     "@testing-library/react": "^14.1.2",
@@ -34,6 +46,7 @@
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "autoprefixer": "^10.4.27",
+    "cross-env": "^7.0.3",
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.1",
     "jest": "^29.7.0",

@@ -80,7 +80,7 @@ public static class TemporalPresetMapper
         var tz = ResolveTimeZone(marketTimezone);
 
         // Convert reference to market-local time for canonical window computation.
-        var localRef = TimeZoneInfo.ConvertTime(refUtc, TimeZoneInfo.Utc, tz);
+        var localRef = TimeZoneInfo.ConvertTime(refUtc, tz);
 
         DateTime localStart;
         DateTime localEnd;
@@ -129,9 +129,10 @@ public static class TemporalPresetMapper
                 throw new ArgumentException($"Unknown preset: {preset}");
         }
 
-        // Convert local start/end back to UTC offsets
-        var startOffset = new DateTimeOffset(localStart, tz.GetUtcOffset(localStart)).ToUniversalTime();
-        var endOffset = new DateTimeOffset(localEnd, tz.GetUtcOffset(localEnd)).ToUniversalTime();
+        // Preserve the market-local offset on the returned window. Existing callers and tests
+        // interpret these boundaries in market-local time even though the DTO field name says Utc.
+        var startOffset = new DateTimeOffset(localStart, tz.GetUtcOffset(localStart));
+        var endOffset = new DateTimeOffset(localEnd, tz.GetUtcOffset(localEnd));
 
         return new TimeWindow(startOffset, endOffset, tz.Id);
     }

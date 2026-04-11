@@ -1,5 +1,6 @@
 using WeUP.Domain.Markets;
 using WeUP.Domain.Spatial;
+using WeUP.Infrastructure.Seed;
 
 namespace WeUP.Infrastructure.Markets;
 
@@ -9,30 +10,32 @@ namespace WeUP.Infrastructure.Markets;
 /// </summary>
 public class MarketPolicyService : IMarketPolicyService
 {
-    // Phase 0 stub: in-memory market registry
-    private static readonly Dictionary<string, Market> _marketRegistry;
+    private readonly Dictionary<string, Market> _marketRegistry = new(StringComparer.OrdinalIgnoreCase);
+    private string _launchMarketCode = "sf";
 
-    // The launch market for Phase 0 (only one active)
-    private const string LaunchMarketCode = "sf";
-
-    static MarketPolicyService()
+    public void Reset(Phase0SeedDataset dataset)
     {
-        _marketRegistry = new(StringComparer.OrdinalIgnoreCase)
+        _marketRegistry.Clear();
+        _launchMarketCode = dataset.Meta.LaunchMarketCode;
+
+        foreach (var market in dataset.Markets)
         {
-            ["sf"] = new Market(
-                code: "sf",
-                displayName: "San Francisco",
-                timezone: "America/Los_Angeles",
-                centerLat: 37.7749,
-                centerLng: -122.4194,
-                boundingBox: new BoundingBox(37.70, 37.85, -122.52, -122.37),
-                description: "San Francisco - Phase 0 Launch Market")
+            var seeded = new Market(
+                code: market.Code,
+                displayName: market.DisplayName,
+                timezone: market.Timezone,
+                centerLat: market.CenterLat,
+                centerLng: market.CenterLng,
+                boundingBox: new BoundingBox(market.BoundingBox.MinLat, market.BoundingBox.MaxLat, market.BoundingBox.MinLng, market.BoundingBox.MaxLng),
+                description: market.Description)
             {
-                Status = MarketStatus.Active,
-                IsAcceptingSubmissions = true,
-                LaunchedAt = DateTimeOffset.UtcNow.AddMonths(-1),
-            },
-        };
+                Status = ParseStatus(market.Status),
+                IsAcceptingSubmissions = market.IsAcceptingSubmissions,
+                LaunchedAt = string.IsNullOrWhiteSpace(market.LaunchedAt) ? null : DateTimeOffset.Parse(market.LaunchedAt),
+            };
+
+            _marketRegistry[seeded.Code] = seeded;
+        }
     }
 
     public Task<Market?> GetMarketAsync(string marketCode, CancellationToken ct = default)
@@ -51,7 +54,7 @@ public class MarketPolicyService : IMarketPolicyService
 
     public async Task<Market?> GetLaunchMarketAsync(CancellationToken ct = default)
     {
-        return await GetMarketAsync(LaunchMarketCode, ct);
+        return await GetMarketAsync(_launchMarketCode, ct);
     }
 
     public async Task<string?> DetermineMarketAsync(double latitude, double longitude, CancellationToken ct = default)
@@ -115,4 +118,9 @@ public class MarketPolicyService : IMarketPolicyService
     {
         return await DetermineMarketAsync(latitude, longitude, ct);
     }
+
+        private static MarketStatus ParseStatus(string raw) =>
+            raw.Equals("ComingSoon", StringComparison.OrdinalIgnoreCase)
+                ? MarketStatus.Planned
+                : Enum.Parse<MarketStatus>(raw, true);
 }

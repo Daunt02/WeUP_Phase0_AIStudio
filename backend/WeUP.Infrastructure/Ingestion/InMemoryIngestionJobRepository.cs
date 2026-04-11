@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using WeUP.Contracts.Ingestion;
 using WeUP.Domain.Ingestion;
+using WeUP.Infrastructure.Seed;
 
 namespace WeUP.Infrastructure.Ingestion;
 
@@ -19,10 +20,28 @@ public sealed class InMemoryIngestionJobRepository : IIngestionJobRepository
     }
 
     private readonly ConcurrentDictionary<string, JobRecord> _jobs = new();
+    private int _sequence;
+
+    public void Reset(Phase0SeedDataset dataset)
+    {
+        _jobs.Clear();
+        foreach (var job in dataset.IngestionJobs)
+        {
+            _jobs[job.JobId] = new JobRecord
+            {
+                JobId = job.JobId,
+                Status = Enum.Parse<IngestionJobStatus>(job.Status, true),
+                CandidateEventId = job.CandidateEventId,
+                FailureReason = job.FailureReason,
+            };
+        }
+
+        _sequence = dataset.IngestionJobs.Length;
+    }
 
     public Task<string> CreateJobAsync(IngestionSourceKind kind, string sourceRef, CancellationToken ct = default)
     {
-        var jobId = Guid.NewGuid().ToString("N");
+        var jobId = $"job-runtime-{Interlocked.Increment(ref _sequence):000}";
         _jobs[jobId] = new JobRecord { JobId = jobId, Status = IngestionJobStatus.Queued };
         return Task.FromResult(jobId);
     }

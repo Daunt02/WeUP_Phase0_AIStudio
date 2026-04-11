@@ -1,13 +1,16 @@
-import { getAuthHeader } from './auth';
+import { getAuthHeader } from "./auth";
+import { toApiUrl } from "./apiBase";
 
-const BASE = '/api/events/submissions';
+const BASE = toApiUrl("/api/events/submissions");
 
 async function checkResponse(res: Response) {
   const text = await res.text();
   let json: any = null;
-  try { json = text ? JSON.parse(text) : null; } catch (e) { }
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch (e) {}
   if (!res.ok) {
-    const msg = json?.message || res.statusText || 'submission service error';
+    const msg = json?.message || res.statusText || "submission service error";
     throw new Error(msg);
   }
   return json;
@@ -15,8 +18,8 @@ async function checkResponse(res: Response) {
 
 export async function createDraft(draft: any) {
   const res = await fetch(BASE, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeader() },
     body: JSON.stringify(draft),
   });
   return checkResponse(res);
@@ -24,8 +27,8 @@ export async function createDraft(draft: any) {
 
 export async function updateDraft(id: string, patch: any) {
   const res = await fetch(`${BASE}/${encodeURIComponent(id)}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...getAuthHeader() },
     body: JSON.stringify(patch),
   });
   return checkResponse(res);
@@ -33,14 +36,16 @@ export async function updateDraft(id: string, patch: any) {
 
 export async function submitForReview(id: string) {
   const res = await fetch(`${BASE}/${encodeURIComponent(id)}/submit`, {
-    method: 'POST',
+    method: "POST",
     headers: { ...getAuthHeader() },
   });
   return checkResponse(res);
 }
 
 export async function getSubmission(id: string) {
-  const res = await fetch(`${BASE}/${encodeURIComponent(id)}`, { headers: { ...getAuthHeader() } });
+  const res = await fetch(`${BASE}/${encodeURIComponent(id)}`, {
+    headers: { ...getAuthHeader() },
+  });
   return checkResponse(res);
 }
 
@@ -49,10 +54,12 @@ export async function listSubmissions() {
   return checkResponse(res);
 }
 
-export default {
+const submissionService = {
   createDraft,
   updateDraft,
   submitForReview,
   getSubmission,
   listSubmissions,
 };
+
+export default submissionService;

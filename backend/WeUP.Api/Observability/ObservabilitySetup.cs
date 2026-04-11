@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using WeUP.Api.FeatureFlags;
 
 namespace WeUP.Api.Observability;
 
@@ -18,8 +19,13 @@ public static class ObservabilitySetup
         builder.Logging.AddConsole();
         builder.Logging.SetMinimumLevel(LogLevel.Information);
 
-        // Add correlation ID service
+        // Correlation, telemetry, and feature flag seams used by the Phase 0 API.
+        builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<CorrelationIdProvider>();
+        builder.Services.AddSingleton<CorrelationIdDelegatingHandler>();
+        builder.Services.AddSingleton<IOperationalTelemetry, OperationalTelemetry>();
+        builder.Services.Configure<FeatureFlagsOptions>(builder.Configuration.GetSection("FeatureFlags"));
+        builder.Services.AddSingleton<IFeatureFlagService, FeatureFlagService>();
     }
 
     public static void UseWeUPObservability(this WebApplication app)
@@ -31,7 +37,7 @@ public static class ObservabilitySetup
                 ?? Guid.NewGuid().ToString();
 
             context.Items["CorrelationId"] = correlationId;
-            context.Response.Headers.Add("X-Correlation-ID", correlationId);
+            context.Response.Headers["X-Correlation-ID"] = correlationId;
 
             await next();
         });

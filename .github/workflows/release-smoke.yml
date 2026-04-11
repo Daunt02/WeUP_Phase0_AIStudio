@@ -1,0 +1,27 @@
+name: Release Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      backend_url:
+        description: Backend base URL to smoke validate
+        required: true
+        type: string
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run deployed smoke validation
+        run: npm run test:smoke:deployed -- --baseUrl=${{ inputs.backend_url }}

@@ -20,7 +20,6 @@ export class AnalyticsService {
       });
     } catch (err) {
       // Best-effort; do not throw from UI on tracking failure
-      // eslint-disable-next-line no-console
       console.warn("Analytics track failed", err);
     }
   }

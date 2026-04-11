@@ -3,6 +3,7 @@ export type AnalyticsEventName =
   | "event_detail_opened"
   | "signal_saved"
   | "signal_unsaved"
+  | "frontend_exception"
   | "calendar_opened"
   | "temporal_preset_selected"
   | "submission_draft_created"

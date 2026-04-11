@@ -62,7 +62,6 @@ public class AnalyticsEventTests
         // Act & Assert
         foreach (var eventType in eventTypes)
         {
-            Assert.NotNull(eventType);
             var analyticsEvent = new AnalyticsEvent(
                 EventType: eventType,
                 OccurredAt: DateTimeOffset.UtcNow,

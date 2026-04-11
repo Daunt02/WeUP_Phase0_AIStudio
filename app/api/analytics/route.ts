@@ -13,13 +13,11 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify(body),
       });
     } else {
-      // eslint-disable-next-line no-console
       console.log("Analytics event (local):", body);
     }
 
     return NextResponse.json({ accepted: true }, { status: 202 });
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.warn("Analytics endpoint error", err);
     return NextResponse.json({ accepted: false }, { status: 500 });
   }

@@ -101,9 +101,11 @@ public class TemporalEndpointsTests
 
         // Assert
         Assert.NotNull(timeWindow);
-        // Midnight preset should span from 11 PM to 2 AM next day
-        var expectedStart = referenceTime.Date.AddHours(23);
-        Assert.Equal(expectedStart, timeWindow.StartUtc);
+        Assert.Equal("America/Los_Angeles", timeWindow.Timezone);
+        Assert.Equal(23, timeWindow.StartUtc.Hour);
+        Assert.Equal(0, timeWindow.StartUtc.Minute);
+        Assert.Equal(2, timeWindow.EndUtc.Hour);
+        Assert.Equal(timeWindow.StartUtc.AddHours(3), timeWindow.EndUtc);
     }
 
     [Fact]

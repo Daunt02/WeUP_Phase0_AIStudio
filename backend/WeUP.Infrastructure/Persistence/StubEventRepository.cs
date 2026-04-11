@@ -1,6 +1,7 @@
+using System.Globalization;
 using WeUP.Contracts.Events;
 using WeUP.Domain.Events;
-using System.Linq;
+using WeUP.Infrastructure.Seed;
 
 namespace WeUP.Infrastructure.Persistence;
 
@@ -11,135 +12,86 @@ namespace WeUP.Infrastructure.Persistence;
 /// </summary>
 public sealed class StubEventRepository : IEventRepository, IEventSubmissionRepository
 {
-    // OCR-extracted from real Houston flyers — see /flyers/ directory
-    private static readonly EventMapCardDto[] SampleMapCards =
-    [
-        // IMG_6661 — First Friday Alternative Night Market
-        new EventMapCardDto(Guid.NewGuid().ToString("N"),
-            "First Friday — Alternative Night Market",
-            "Downtown House of Spirits", "nightlife",
-            29.7604, -95.3698, null, "PUBLISHED", 0.91),
+    private readonly object _gate = new();
+    private EventMapCardDto[] _mapCards = [];
+    private EventCalendarDto[] _calendarItems = [];
+    private EventDetailDto[] _details = [];
+    private readonly Dictionary<string, string> _submissionStatuses = new(StringComparer.OrdinalIgnoreCase);
+    private int _submissionSequence;
 
-        // att.-WO...jpg — Patrick Squier (native flyer, full address extracted)
-        new EventMapCardDto(Guid.NewGuid().ToString("N"),
-            "Patrick Squier Live",
-            "Shoeshine Charley's Big Top Lounge", "culture",
-            29.7261, -95.3870, null, "PUBLISHED", 0.97),
-
-        // IMG_6667 — Effin This Weekend
-        new EventMapCardDto(Guid.NewGuid().ToString("N"),
-            "Effin: Dennett / Joli / Jilli",
-            "8PM Music Venue", "nightlife",
-            29.7495, -95.3794, null, "PUBLISHED", 0.85),
-
-        // IMG_6671 — Foundation Room After Dark
-        new EventMapCardDto(Guid.NewGuid().ToString("N"),
-            "Foundation Room After Dark — VIP Bay Experience",
-            "Foundation Room Houston", "nightlife",
-            29.7509, -95.3676, null, "PUBLISHED", 0.82),
-
-        // IMG_6678 — Noche de Selena
-        new EventMapCardDto(Guid.NewGuid().ToString("N"),
-            "Noche de Selena",
-            "Houston Venue", "culture",
-            29.7580, -95.3750, null, "PUBLISHED", 0.78),
-
-        // IMG_6679 — Freestyle Session + House Class
-        new EventMapCardDto(Guid.NewGuid().ToString("N"),
-            "Freestyle Session + House Class",
-            "Anayra Studio", "wellness",
-            29.7640, -95.3850, null, "PUBLISHED", 0.88),
-
-        // IMG_6681/6682 — Iistbahnhof: Ariel Zetina, Lauren Flax, Partok, S4M23
-        new EventMapCardDto(Guid.NewGuid().ToString("N"),
-            "Iistbahnhof: Ariel Zetina / Lauren Flax / Partok / S4M23",
-            "Iistbahnhof", "nightlife",
-            29.7385, -95.3733, null, "PUBLISHED", 0.93),
-
-        // IMG_6664 — Desert Hearts: Mikey Lion, Lee Reynolds, Marbs
-        new EventMapCardDto(Guid.NewGuid().ToString("N"),
-            "Desert Hearts — Mikey Lion / Lee Reynolds / Marbs",
-            "Wonder Lust", "nightlife",
-            29.7420, -95.4105, null, "PUBLISHED", 0.89),
-
-        // IMG_6662 — Mahmut Orhon (SOLD OUT)
-        new EventMapCardDto(Guid.NewGuid().ToString("N"),
-            "Mahmut Orhon",
-            "Houston Venue", "nightlife",
-            29.7530, -95.3660, null, "SOLD_OUT", 0.86),
-    ];
-
-    // April 2025 dates aligned to actual Houston flyer dates
-    private static readonly (int DayOffset, string TimeZone)[] EventSchedule = new[]
+    public void Reset(Phase0SeedDataset dataset)
     {
-        (0,  "America/Chicago"),  // First Friday — Apr 4
-        (28, "America/Chicago"),  // Patrick Squier — May 2
-        (0,  "America/Chicago"),  // Effin — Apr 4
-        (1,  "America/Chicago"),  // Foundation Room — Apr 5
-        (6,  "America/Chicago"),  // Noche de Selena — Apr 10
-        (21, "America/Chicago"),  // Freestyle Session — Apr 25
-        (60, "America/Chicago"),  // Iistbahnhof — June 2025
-        (5,  "America/Chicago"),  // Desert Hearts — Apr 9
-        (-1, "America/Chicago"),  // Mahmut Orhon — Apr 3 (SOLD OUT)
-    };
+        var venueById = dataset.Venues.ToDictionary(v => v.VenueId, StringComparer.OrdinalIgnoreCase);
 
-    private static readonly EventCalendarDto[] SampleCalendarItems = SampleMapCards
-        .Select((m, i) =>
+        lock (_gate)
         {
-            var (offset, tz) = EventSchedule[i];
-            var start = DateTimeOffset.UtcNow.Date.AddDays(offset).AddHours(21); // 9PM CST base
-            return new EventCalendarDto(m.Id, m.Title, m.VenueName, m.Category,
-                start, start.AddHours(4), tz, m.ThumbnailUrl, m.Status);
-        }).ToArray();
+            _mapCards = dataset.Events.Select(evt =>
+            {
+                var venue = venueById[evt.VenueId];
+                return new EventMapCardDto(
+                    evt.EventId,
+                    evt.Title,
+                    venue.Name,
+                    evt.Category,
+                    venue.Latitude,
+                    venue.Longitude,
+                    evt.ImageUrl,
+                    evt.Status,
+                    evt.Confidence);
+            }).ToArray();
 
-    private static readonly EventDetailDto[] SampleDetails = SampleMapCards
-        .Select((m, i) =>
-        {
-            var (offset, tz) = EventSchedule[i];
-            var start = DateTimeOffset.UtcNow.Date.AddDays(offset).AddHours(21);
-            var address = m.VenueName switch
+            _calendarItems = dataset.Events.Select(evt =>
             {
-                "Shoeshine Charley's Big Top Lounge" => "3700 Main St, Houston, TX 77002",
-                "8PM Music Venue"                    => "8PM Music Venue, Houston, TX",
-                "Iistbahnhof"                        => "Iistbahnhof, Houston, TX",
-                "Foundation Room Houston"            => "Foundation Room, Houston, TX",
-                "Downtown House of Spirits"          => "Downtown Houston, TX",
-                _                                    => "Houston, TX",
-            };
-            var description = m.Title switch
+                var venue = venueById[evt.VenueId];
+                var marketTimezone = dataset.Markets.First(m => m.Code.Equals(venue.MarketCode, StringComparison.OrdinalIgnoreCase)).Timezone;
+                return new EventCalendarDto(
+                    evt.EventId,
+                    evt.Title,
+                    venue.Name,
+                    evt.Category,
+                    ParseDate(evt.StartsAtUtc),
+                    ParseDate(evt.EndsAtUtc),
+                    marketTimezone,
+                    evt.ImageUrl,
+                    evt.Status);
+            }).OrderBy(item => item.StartUtc).ToArray();
+
+            _details = dataset.Events.Select(evt =>
             {
-                var t when t.Contains("Patrick Squier") =>
-                    "Patrick Squier live at Shoeshine Charley's Big Top Lounge. Extracted from native flyer: 3700 Main St, Houston TX. www.continentalclub.com",
-                var t when t.Contains("First Friday") =>
-                    "First Friday Alternative Night Market. 3PM–1AM. Downtown House of Spirits, Houston TX. OCR source: IMG_6661.",
-                var t when t.Contains("Effin") =>
-                    "Effin presents Dennett, Joli, and Jilli at 8PM Music Venue, Houston TX. OCR source: IMG_6667.",
-                var t when t.Contains("Foundation Room") =>
-                    "Foundation Room After Dark VIP Bay Experience featuring Overazy and Neoteric. OCR source: IMG_6671.",
-                var t when t.Contains("Desert Hearts") =>
-                    "Desert Hearts featuring Mikey Lion, Lee Reynolds, and Marbs at Wonder Lust. OCR source: IMG_6664.",
-                var t when t.Contains("Iistbahnhof") =>
-                    "Iistbahnhof presents Ariel Zetina, Lauren Flax, Partok, and S4M23. OCR source: IMG_6681/6682.",
-                var t when t.Contains("Noche de Selena") =>
-                    "Noche de Selena tribute night. April 10. Houston TX. OCR source: IMG_6678.",
-                var t when t.Contains("Freestyle") =>
-                    "Freestyle Session + House Class at Anayra Studio, Houston TX. April 25. OCR source: IMG_6679.",
-                var t when t.Contains("Mahmut Orhon") =>
-                    "Mahmut Orhon (SOLD OUT). Houston TX. OCR source: IMG_6662.",
-                _ => $"Houston event: {m.Title}"
-            };
-            return new EventDetailDto(m.Id, m.Title, description, m.VenueName, address,
-                m.Lat, m.Lng, m.Category, start, start.AddHours(4), tz,
-                Array.Empty<MediaRefDto>(), Array.Empty<string>(),
-                m.Status, m.Confidence, "flyer_ocr");
-        }).ToArray();
+                var venue = venueById[evt.VenueId];
+                var marketTimezone = dataset.Markets.First(m => m.Code.Equals(venue.MarketCode, StringComparison.OrdinalIgnoreCase)).Timezone;
+                return new EventDetailDto(
+                    evt.EventId,
+                    evt.Title,
+                    evt.Description,
+                    venue.Name,
+                    venue.Address,
+                    venue.Latitude,
+                    venue.Longitude,
+                    evt.Category,
+                    ParseDate(evt.StartsAtUtc),
+                    ParseDate(evt.EndsAtUtc),
+                    marketTimezone,
+                    [new MediaRefDto(evt.ImageUrl, "image")],
+                    evt.Tags,
+                    evt.Status,
+                    evt.Confidence,
+                    evt.SourceKind);
+            }).ToArray();
+
+            _submissionStatuses.Clear();
+            _submissionSequence = 0;
+        }
+    }
 
     public Task<MapFeedResponse> GetMapFeedAsync(MapFeedRequest request, CancellationToken ct = default)
     {
         var bb = request.Bounds;
-        var events = SampleMapCards
+        var events = _mapCards
             .Where(e => e.Lat >= bb.MinLat && e.Lat <= bb.MaxLat &&
                         e.Lng >= bb.MinLng && e.Lng <= bb.MaxLng)
+            .Where(e => request.Categories is null || request.Categories.Length == 0 || request.Categories.Contains(e.Category, StringComparer.OrdinalIgnoreCase))
+            .Where(e => e.Confidence >= request.MinConfidence)
             .ToArray();
         return Task.FromResult(new MapFeedResponse(events, events.Length));
     }
@@ -147,21 +99,38 @@ public sealed class StubEventRepository : IEventRepository, IEventSubmissionRepo
     public Task<CalendarFeedResponse> GetCalendarFeedAsync(CalendarFeedRequest request, CancellationToken ct = default)
     {
         var w = request.Window;
-        var items = SampleCalendarItems
+        var items = _calendarItems
             .Where(i => i.StartUtc >= w.StartUtc && i.StartUtc < w.EndUtc)
+            .Where(i => request.Categories is null || request.Categories.Length == 0 || request.Categories.Contains(i.Category, StringComparer.OrdinalIgnoreCase))
             .ToArray();
         return Task.FromResult(new CalendarFeedResponse(items, items.Length, request.Page, request.PageSize, false));
     }
 
     public Task<EventDetailResponse> GetEventDetailAsync(string eventId, CancellationToken ct = default)
     {
-        var detail = SampleDetails.FirstOrDefault(d => d.Id == eventId);
+        var detail = _details.FirstOrDefault(d => d.Id == eventId);
         return Task.FromResult(new EventDetailResponse(detail));
     }
 
     public Task<string> CreateSubmissionAsync(string userId, EventSubmissionRequest request, CancellationToken ct = default)
-        => Task.FromResult(Guid.NewGuid().ToString("N"));
+    {
+        var id = $"legacy-submission-{Interlocked.Increment(ref _submissionSequence):000}";
+        lock (_gate)
+        {
+            _submissionStatuses[id] = "DRAFT";
+        }
+
+        return Task.FromResult(id);
+    }
 
     public Task<string?> GetSubmissionStatusAsync(string submissionId, CancellationToken ct = default)
-        => Task.FromResult<string?>("DRAFT");
+    {
+        lock (_gate)
+        {
+            return Task.FromResult(_submissionStatuses.TryGetValue(submissionId, out var status) ? status : null);
+        }
+    }
+
+    private static DateTimeOffset ParseDate(string value) =>
+        DateTimeOffset.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
 }

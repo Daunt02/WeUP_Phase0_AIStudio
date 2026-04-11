@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using WeUP.Contracts.Moderation;
 using WeUP.Domain.Moderation;
+using WeUP.Infrastructure.Seed;
 
 namespace WeUP.Infrastructure.Moderation;
 
@@ -11,6 +12,84 @@ namespace WeUP.Infrastructure.Moderation;
 public sealed class InMemoryModerationQueue : IModerationQueueRepository
 {
     private readonly ConcurrentDictionary<string, ModerationQueueItem> _items = new();
+
+    public void Reset(Phase0SeedDataset dataset)
+    {
+        _items.Clear();
+
+        foreach (var item in dataset.ModerationItems)
+        {
+            var seeded = new ModerationQueueItem
+            {
+                ItemId = item.ItemId,
+                Kind = Enum.Parse<ModerationItemKind>(item.Kind, true),
+                Status = Enum.Parse<ModerationItemStatus>(item.Status, true),
+                Candidate = item.Candidate is null
+                    ? null
+                    : new CandidateSnapshotDto(
+                        item.Candidate.Title,
+                        item.Candidate.VenueName,
+                        item.Candidate.Address,
+                        item.Candidate.StartUtc,
+                        item.Candidate.EndUtc,
+                        item.Candidate.Timezone,
+                        item.Candidate.Category,
+                        item.Candidate.Description,
+                        item.Candidate.Tags,
+                        item.Candidate.SourceKind,
+                        item.Candidate.SourceRef),
+                Provenance = new ProvenanceSummaryDto(
+                    item.Provenance.SourceKind,
+                    item.Provenance.SourceRef,
+                    item.Provenance.IngestionJobId,
+                    item.Provenance.EvidenceRefs,
+                    item.Provenance.SubmittedAt),
+                Confidence = new ConfidenceSummaryDto(
+                    item.Confidence.Extraction,
+                    item.Confidence.Geocode,
+                    item.Confidence.Temporal,
+                    item.Confidence.VenueMatch,
+                    item.Confidence.DupeRisk,
+                    item.Confidence.Aggregate,
+                    Enum.Parse<ConfidenceBucket>(item.Confidence.Bucket, true),
+                    item.Confidence.ReviewBlockers),
+                DedupeMatch = item.DedupeMatch is null
+                    ? null
+                    : new DedupeSummaryDto(
+                        item.DedupeMatch.ExistingEventId,
+                        item.DedupeMatch.ExistingEventTitle,
+                        item.DedupeMatch.MatchScore,
+                        Enum.Parse<DuplicateSeverity>(item.DedupeMatch.Severity, true),
+                        item.DedupeMatch.MatchReasons),
+                IngestionJob = item.IngestionJob is null
+                    ? null
+                    : new IngestionJobSummaryDto(
+                        item.IngestionJob.JobId,
+                        item.IngestionJob.Status,
+                        item.IngestionJob.FailureReason,
+                        item.IngestionJob.CreatedAt,
+                        item.IngestionJob.CompletedAt),
+                ReviewReasons = item.ReviewReasons,
+                AssignedReviewerId = item.AssignedReviewerId,
+                CreatedAt = DateTimeOffset.Parse(item.CreatedAt),
+                UpdatedAt = DateTimeOffset.Parse(item.UpdatedAt),
+                LinkedEventId = item.LinkedEventId,
+            };
+
+            foreach (var history in item.History)
+            {
+                seeded.AppendHistory(new ReviewHistoryEntry(
+                    history.Action,
+                    history.ActorId,
+                    history.Note,
+                    Enum.Parse<ModerationItemStatus>(history.PreviousStatus, true),
+                    Enum.Parse<ModerationItemStatus>(history.NextStatus, true),
+                    DateTimeOffset.Parse(history.Timestamp)));
+            }
+
+            _items[seeded.ItemId] = seeded;
+        }
+    }
 
     public Task<string> AddItemAsync(ModerationQueueItem item, CancellationToken ct = default)
     {

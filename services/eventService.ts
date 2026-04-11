@@ -10,7 +10,7 @@
  */
 
 import { NightlifeItem } from "@/types";
-import { MOCK_EVENTS } from "@/constants/mockData";
+import { SEEDED_EVENTS } from "@/lib/testing/phase0Seed";
 import {
   MapFeedQuery,
   CalendarFeedQuery,
@@ -84,7 +84,7 @@ function nightlifeItemToAggregate(item: NightlifeItem): EventAggregate {
 // ---------------------------------------------------------------------------
 
 class EventService {
-  private readonly allEvents: NightlifeItem[] = [...MOCK_EVENTS];
+  private readonly allEvents: NightlifeItem[] = [...SEEDED_EVENTS];
 
   // ------------------------------------------------------------------
   // Map feed — uses MapFeedQuery contract

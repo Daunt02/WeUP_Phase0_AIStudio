@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using WeUP.Contracts.Events;
 using WeUP.Domain.Events;
+using WeUP.Infrastructure.Seed;
 
 namespace WeUP.Infrastructure.Submissions;
 
@@ -12,17 +13,28 @@ public sealed class InMemorySubmissionRepository : IEventSubmissionService
 {
     private readonly ConcurrentDictionary<string, SubmissionRecord> _byId   = new();
     private readonly ConcurrentDictionary<string, ConcurrentBag<string>> _byUser = new();
+    private int _sequence;
+    private DateTimeOffset _seedClock = DateTimeOffset.Parse("2026-04-11T18:00:00Z");
+
+    public void Reset(Phase0SeedDataset dataset)
+    {
+        _byId.Clear();
+        _byUser.Clear();
+        _sequence = 0;
+        _seedClock = DateTimeOffset.Parse(dataset.Meta.FixedNow);
+    }
 
     public Task<SubmissionDto> CreateDraftAsync(string userId, DraftSubmissionRequest request, CancellationToken ct = default)
     {
+        var timestamp = NextTimestamp();
         var rec = new SubmissionRecord(
-            SubmissionId:      Guid.NewGuid().ToString("N"),
+            SubmissionId:      $"submission-{Interlocked.Increment(ref _sequence):000}",
             SubmittedByUserId: userId,
             Status:            SubmissionStatus.Draft,
             Request:           request,
             ReviewNote:        null,
-            CreatedAt:         DateTimeOffset.UtcNow,
-            UpdatedAt:         DateTimeOffset.UtcNow);
+            CreatedAt:         timestamp,
+            UpdatedAt:         timestamp);
 
         _byId[rec.SubmissionId] = rec;
         _byUser.GetOrAdd(userId, _ => new ConcurrentBag<string>()).Add(rec.SubmissionId);
@@ -75,7 +87,7 @@ public sealed class InMemorySubmissionRepository : IEventSubmissionService
             Tags:          request.Tags          ?? rec.Request.Tags,
             FlyerAssetIds: request.FlyerAssetIds ?? rec.Request.FlyerAssetIds);
 
-        var updated = rec with { Status = SubmissionStatus.Draft, Request = merged, ReviewNote = null, UpdatedAt = DateTimeOffset.UtcNow };
+        var updated = rec with { Status = SubmissionStatus.Draft, Request = merged, ReviewNote = null, UpdatedAt = NextTimestamp() };
         _byId[submissionId] = updated;
         return Task.FromResult<SubmissionDto?>(updated.ToDto());
     }
@@ -97,7 +109,7 @@ public sealed class InMemorySubmissionRepository : IEventSubmissionService
             return Task.FromResult(new SubmitForReviewResponse(submissionId, rec.Status,
                 $"Validation failed: {string.Join("; ", errors.Select(e => $"{e.Field}: {e.Message}"))}"));
 
-        var updated = rec with { Status = SubmissionStatus.SubmittedForReview, UpdatedAt = DateTimeOffset.UtcNow };
+        var updated = rec with { Status = SubmissionStatus.SubmittedForReview, UpdatedAt = NextTimestamp() };
         _byId[submissionId] = updated;
 
         return Task.FromResult(new SubmitForReviewResponse(submissionId, SubmissionStatus.SubmittedForReview, "Submitted for review."));
@@ -108,10 +120,12 @@ public sealed class InMemorySubmissionRepository : IEventSubmissionService
     {
         if (!_byId.TryGetValue(submissionId, out var rec)) return Task.FromResult<SubmissionDto?>(null);
 
-        var updated = rec with { Status = newStatus, ReviewNote = reviewNote, UpdatedAt = DateTimeOffset.UtcNow };
+        var updated = rec with { Status = newStatus, ReviewNote = reviewNote, UpdatedAt = NextTimestamp() };
         _byId[submissionId] = updated;
         return Task.FromResult<SubmissionDto?>(updated.ToDto());
     }
+
+    private DateTimeOffset NextTimestamp() => _seedClock.AddMinutes(_sequence + 1);
 
     private static SubmissionValidationError[] ValidateForSubmission(DraftSubmissionRequest r)
     {

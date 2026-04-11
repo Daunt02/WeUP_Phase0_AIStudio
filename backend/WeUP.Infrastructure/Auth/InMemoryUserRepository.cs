@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using WeUP.Contracts.Auth;
 using WeUP.Domain.Users;
+using WeUP.Infrastructure.Seed;
 
 namespace WeUP.Infrastructure.Auth;
 
@@ -10,6 +11,26 @@ namespace WeUP.Infrastructure.Auth;
 /// </summary>
 public sealed class InMemoryUserRepository : IUserProfileRepository
 {
+        public void Reset(Phase0SeedDataset dataset)
+        {
+            _byId.Clear();
+            _emailToId.Clear();
+
+            foreach (var user in dataset.Users)
+            {
+                var rec = new UserRecord(
+                    user.UserId,
+                    user.Email,
+                    user.DisplayName,
+                    user.HomeMarket,
+                    user.OnboardingState,
+                    DateTimeOffset.Parse(user.CreatedAt));
+
+                _byId[rec.UserId] = rec;
+                _emailToId[rec.Email] = rec.UserId;
+            }
+        }
+
     private readonly ConcurrentDictionary<string, UserRecord> _byId      = new();
     private readonly ConcurrentDictionary<string, string>     _emailToId = new(StringComparer.OrdinalIgnoreCase);
 

@@ -24,6 +24,7 @@ using WeUP.Infrastructure.Spatial;
 using WeUP.Infrastructure.Markets;
 using WeUP.Infrastructure.Analytics;
 using WeUP.Infrastructure.Media;
+using WeUP.Infrastructure.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,7 +42,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddCors(opts =>
 {
     opts.AddPolicy("LocalDev", policy =>
-        policy.WithOrigins("http://localhost:3000")
+        policy.WithOrigins("http://localhost:3000", "http://127.0.0.1:3000")
               .AllowAnyHeader()
               .AllowAnyMethod());
 });
@@ -59,14 +60,24 @@ builder.Services.AddCors(opts =>
 // builder.Services.AddScoped<IEventSubmissionRepository, EfEventRepository>();
 // builder.Services.AddScoped<ISaveRepository, EfSaveRepository>();
 
-builder.Services.AddSingleton<IEventRepository, StubEventRepository>();
-builder.Services.AddSingleton<IEventSubmissionRepository, StubEventRepository>();
-builder.Services.AddSingleton<ISaveRepository, StubSaveRepository>();
+builder.Services.AddSingleton<StubEventRepository>();
+builder.Services.AddSingleton<IEventRepository>(sp => sp.GetRequiredService<StubEventRepository>());
+builder.Services.AddSingleton<IEventSubmissionRepository>(sp => sp.GetRequiredService<StubEventRepository>());
+builder.Services.AddSingleton<StubSaveRepository>();
+builder.Services.AddSingleton<ISaveRepository>(sp => sp.GetRequiredService<StubSaveRepository>());
 
 // Ingestion services
 builder.Services.AddHttpClient("ingestion").AddHttpMessageHandler<WeUP.Api.Observability.CorrelationIdDelegatingHandler>();
 var connStr = builder.Configuration.GetConnectionString("WeUpDb");
-if (!string.IsNullOrWhiteSpace(connStr))
+var preferSeededInMemoryIngestion =
+    builder.Environment.IsDevelopment() ||
+    builder.Environment.IsEnvironment("Testing") ||
+    builder.Configuration.GetValue<bool>("SeedData:EnableOnStartup") ||
+    builder.Configuration.GetValue<bool>("SeedData:EnableResetEndpoint");
+
+builder.Services.AddSingleton<InMemoryIngestionJobRepository>();
+
+if (!preferSeededInMemoryIngestion && !string.IsNullOrWhiteSpace(connStr))
 {
     builder.Services.AddDbContext<WeUpDbContext>(opts => opts.UseNpgsql(connStr));
     builder.Services.AddScoped<IIngestionJobRepository, EfIngestionJobRepository>();
@@ -74,7 +85,7 @@ if (!string.IsNullOrWhiteSpace(connStr))
 }
 else
 {
-    builder.Services.AddSingleton<IIngestionJobRepository, InMemoryIngestionJobRepository>();
+    builder.Services.AddSingleton<IIngestionJobRepository>(sp => sp.GetRequiredService<InMemoryIngestionJobRepository>());
     builder.Services.AddSingleton<IIngestionAuditWriter, ConsoleIngestionAuditWriter>();
 }
 
@@ -82,7 +93,7 @@ else
 builder.Services.AddSingleton<IIngestionAdapter, ManualSubmissionAdapter>();
 builder.Services.AddSingleton<IIngestionAdapter, LinkAdapter>();
 builder.Services.AddSingleton<IIngestionAdapter, VenuePageAdapter>();
-builder.Services.AddSingleton<IIngestionDispatcher, IngestionDispatcher>();
+builder.Services.AddScoped<IIngestionDispatcher, IngestionDispatcher>();
 
 // Flyer pipeline
 builder.Services.AddSingleton<IFlyerStorageService, LocalFileStorageService>();
@@ -91,10 +102,11 @@ builder.Services.AddSingleton<IFlyerTextPostProcessor, FlyerTextPostProcessor>()
 builder.Services.AddSingleton<ILlmEventNormalizer, HeuristicLlmNormalizer>();
 builder.Services.AddSingleton<IGeocodingService, StubGeocodingService>();
 builder.Services.AddSingleton<IFlyerConfidenceEvaluator, FlyerConfidenceEvaluator>();
-builder.Services.AddSingleton<IFlyerIngestionPipeline, FlyerIngestionPipeline>();
+builder.Services.AddScoped<IFlyerIngestionPipeline, FlyerIngestionPipeline>();
 
 // Moderation queue (P13), publish eligibility (P14), review actions (P15)
-builder.Services.AddSingleton<IModerationQueueRepository, InMemoryModerationQueue>();
+builder.Services.AddSingleton<InMemoryModerationQueue>();
+builder.Services.AddSingleton<IModerationQueueRepository>(sp => sp.GetRequiredService<InMemoryModerationQueue>());
 builder.Services.AddSingleton<IAuditTrailService, InMemoryAuditTrail>();
 builder.Services.AddSingleton<IModerationQueueService, ModerationQueueService>();
 builder.Services.AddSingleton<IConfidenceScoringService, ConfidenceScoringService>();
@@ -106,7 +118,8 @@ builder.Services.AddSingleton<IRollbackService>(sp => sp.GetRequiredService<Revi
 
 // Auth services (P16)
 // Phase 0: in-memory token store. Real JWT: add JwtBearer, set WeUp:Auth:JwtSecret in appsettings.
-builder.Services.AddSingleton<IUserProfileRepository, InMemoryUserRepository>();
+builder.Services.AddSingleton<InMemoryUserRepository>();
+builder.Services.AddSingleton<IUserProfileRepository>(sp => sp.GetRequiredService<InMemoryUserRepository>());
 builder.Services.AddSingleton<ITokenService, BearerTokenService>();
 builder.Services.AddSingleton<UserAuthService>();
 
@@ -115,13 +128,15 @@ builder.Services.AddSingleton<IItineraryRepository, InMemoryItineraryRepository>
 builder.Services.AddSingleton<IUserPreferencesRepository, InMemoryPreferencesRepository>();
 
 // Event submission workflow (P18)
-builder.Services.AddSingleton<IEventSubmissionService, InMemorySubmissionRepository>();
+builder.Services.AddSingleton<InMemorySubmissionRepository>();
+builder.Services.AddSingleton<IEventSubmissionService>(sp => sp.GetRequiredService<InMemorySubmissionRepository>());
 
 // Spatial query services (P19) — bounding box, district, viewport queries
 builder.Services.AddSingleton<IViewportQueryService, ViewportQueryService>();
 
 // Market policy services (P20) — market boundaries, freeze rules, assignment
-builder.Services.AddSingleton<IMarketPolicyService, MarketPolicyService>();
+builder.Services.AddSingleton<MarketPolicyService>();
+builder.Services.AddSingleton<IMarketPolicyService>(sp => sp.GetRequiredService<MarketPolicyService>());
 
 // Analytics services (P23) — event recording, privacy-compliant telemetry
 builder.Services.AddSingleton<IAnalyticsService, ConsoleAnalyticsService>();
@@ -135,6 +150,8 @@ builder.Services.AddSingleton<IFlyerUploadService, LocalFlyerUploadService>();
 builder.Services.AddSingleton<IProvenanceRepository, InMemoryProvenanceRepository>();
 builder.Services.AddSingleton<IFlyerEvidenceRepository, InMemoryFlyerEvidenceRepository>();
 builder.Services.AddSingleton<IFlyerIntakeService, FlyerIntakeService>();
+builder.Services.AddSingleton<Phase0SeedLoader>();
+builder.Services.AddSingleton<Phase0SeedService>();
 
 // Observability setup (P22) — correlation IDs, structured logging
 builder.AddWeUPObservability();
@@ -178,7 +195,10 @@ app.Use(async (context, next) =>
 });
 
 app.UseCors("LocalDev");
-app.UseHttpsRedirection();
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    app.UseHttpsRedirection();
+}
 
 // Auth middleware — Phase 0 uses BearerTokenService; JwtBearer added in P16.5+
 // app.UseAuthentication();
@@ -202,6 +222,20 @@ app.MapTemporalEndpoints(); // P21: Temporal preset queries
 app.MapAnalyticsEndpoints(); // P23: Analytics event recording
 app.MapMediaEndpoints(); // P25: Flyer media intake
 app.MapHealthChecks("/health");
+
+var enableSeedResetEndpoint = builder.Configuration.GetValue<bool>("SeedData:EnableResetEndpoint") || app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing");
+if (enableSeedResetEndpoint)
+{
+    app.MapSeedEndpoints();
+}
+
+var enableSeedOnStartup = builder.Configuration.GetValue<bool?>("SeedData:EnableOnStartup") ?? app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing");
+if (enableSeedOnStartup)
+{
+    var seeder = app.Services.GetRequiredService<Phase0SeedService>();
+    var snapshot = await seeder.ResetAsync();
+    app.Logger.LogInformation("Loaded Phase 0 seed dataset {Version} with {EventCount} events and {ModerationCount} moderation items.", snapshot.SeedVersion, snapshot.EventCount, snapshot.ModerationItemCount);
+}
 
 // Seed flyer assets from /seed/flyers/ directory (dev only)
 if (app.Environment.IsDevelopment())
