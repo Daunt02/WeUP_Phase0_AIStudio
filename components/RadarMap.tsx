@@ -23,6 +23,11 @@ import {
 } from "lucide-react";
 import useSupercluster from "use-supercluster";
 import { publicEnv } from "../lib/env/public";
+import type {
+  RuntimeEventProjection,
+  GhostEventDraft,
+} from "@/features/world/runtimeTypes";
+import type { ViewStateChangeEvent } from "react-map-gl";
 
 // Error Boundary for individual markers to prevent map crashes
 class MarkerErrorBoundary extends React.Component<
@@ -38,7 +43,7 @@ class MarkerErrorBoundary extends React.Component<
     return { hasError: true };
   }
 
-  componentDidCatch(error: any, errorInfo: any) {
+  componentDidCatch(error: unknown, errorInfo: unknown) {
     console.error("Marker Error:", error, errorInfo);
   }
 
@@ -49,8 +54,8 @@ class MarkerErrorBoundary extends React.Component<
 }
 
 interface RadarMapProps {
-  events: any[];
-  onEventSelect: (event: any) => void;
+  events: RuntimeEventProjection[];
+  onEventSelect: (event: RuntimeEventProjection) => void;
   onBoundsChange?: (bounds: {
     minLat: number;
     maxLat: number;
@@ -61,11 +66,24 @@ interface RadarMapProps {
   onAnchorChange?: (point: { x: number; y: number } | null) => void;
   selectedEventId?: string | null;
   interestedEventId?: string | null;
-  ghostEvent?: any | null;
+  ghostEvent?: GhostEventDraft | null;
   onGhostMove?: (lat: number, lng: number) => void;
   selectedDate: string;
   activeMode?: string;
 }
+
+type ClusterProperties =
+  | {
+      cluster: true;
+      point_count: number;
+      cluster_id: number;
+    }
+  | {
+      cluster: false;
+      eventId: string;
+      category: string;
+      event: RuntimeEventProjection;
+    };
 
 const CATEGORY_COLORS: Record<string, string> = {
   nightlife: "text-brand-primary",
@@ -92,15 +110,15 @@ const LightLanguageMarker = ({
   zoom,
   onClick,
 }: {
-  event: any;
+  event: RuntimeEventProjection;
   isSelected: boolean;
   isInterested: boolean;
   isRecessed: boolean;
   zoom: number;
   onClick: () => void;
 }) => {
-  const lat = event?.latitude || event?.coordinates?.lat;
-  const lng = event?.longitude || event?.coordinates?.lng;
+  const lat = event.latitude;
+  const lng = event.longitude;
 
   if (!lat || !lng) return null;
 
@@ -109,7 +127,7 @@ const LightLanguageMarker = ({
 
   // Calculate brightness based on time proximity AND zoom level
   const now = new Date().getTime();
-  const eventTime = new Date(event.start_time).getTime();
+  const eventTime = new Date(event.startTime).getTime();
   const hoursUntil = (eventTime - now) / (1000 * 60 * 60);
   const timeBrightness = Math.max(0.3, Math.min(1, 1 - hoursUntil / 48));
 
@@ -276,7 +294,7 @@ const GhostMarker = ({
   event,
   onDrag,
 }: {
-  event: any;
+  event: GhostEventDraft;
   onDrag: (lat: number, lng: number) => void;
 }) => {
   const lat = event?.latitude;
@@ -367,10 +385,7 @@ export default function RadarMap({
       const event = events.find((e) => e.id === selectedEventId);
       if (event) {
         const map = mapRef.current.getMap();
-        const point = map.project([
-          parseFloat(event.longitude),
-          parseFloat(event.latitude),
-        ]);
+        const point = map.project([event.longitude, event.latitude]);
 
         // Only update if the point has actually moved significantly
         const hasMoved =
@@ -397,7 +412,7 @@ export default function RadarMap({
       const event = events.find((e) => e.id === interestedEventId);
       if (event) {
         mapRef.current.flyTo({
-          center: [parseFloat(event.longitude), parseFloat(event.latitude)],
+          center: [event.longitude, event.latitude],
           zoom: 15,
           pitch: 65,
           bearing: 15,
@@ -427,8 +442,8 @@ export default function RadarMap({
     if (!mapBounds) return [];
     // Filter events in bounds and not selected
     const inBounds = events.filter((e) => {
-      const lat = parseFloat(e.latitude);
-      const lng = parseFloat(e.longitude);
+      const lat = e.latitude;
+      const lng = e.longitude;
       return (
         lat >= mapBounds[1] &&
         lat <= mapBounds[3] &&
@@ -454,10 +469,7 @@ export default function RadarMap({
         },
         geometry: {
           type: "Point" as const,
-          coordinates: [
-            parseFloat(event.longitude),
-            parseFloat(event.latitude),
-          ],
+          coordinates: [event.longitude, event.latitude],
         },
       })),
     [events],
@@ -476,7 +488,7 @@ export default function RadarMap({
   }, []);
 
   const handleMove = useCallback(
-    (evt: any) => {
+    (evt: ViewStateChangeEvent) => {
       setViewState(evt.viewState);
       if (onCenterChange) {
         onCenterChange({
@@ -519,11 +531,7 @@ export default function RadarMap({
           // Dim roads, buildings, and water - but keep them sharp
           if (["line", "fill", "fill-extrusion"].includes(layer.type)) {
             try {
-              map.setPaintProperty(
-                layer.id,
-                `${layer.type}-opacity` as any,
-                0.45,
-              ); // Increased opacity for readability
+              map.setPaintProperty(layer.id, `${layer.type}-opacity`, 0.45); // Increased opacity for readability
             } catch (e) {
               // Some layers might not support opacity
             }
@@ -561,10 +569,13 @@ export default function RadarMap({
     }
   }, [onBoundsChange]);
 
-  const handleError = useCallback((e: any) => {
-    console.error("Minimal Map Error:", e);
-    setMapError(e?.error?.message || e?.message || JSON.stringify(e));
-  }, []);
+  const handleError = useCallback(
+    (e: { error?: { message?: string }; message?: string }) => {
+      console.error("Minimal Map Error:", e);
+      setMapError(e?.error?.message || e?.message || JSON.stringify(e));
+    },
+    [],
+  );
 
   return (
     <div
@@ -625,8 +636,8 @@ export default function RadarMap({
           >
             {clusters.map((cluster) => {
               const [longitude, latitude] = cluster.geometry.coordinates;
-              const { cluster: isCluster, point_count: pointCount } =
-                cluster.properties as any;
+              const props = cluster.properties as ClusterProperties;
+              const isCluster = props.cluster;
 
               if (isCluster) {
                 return (
@@ -641,7 +652,7 @@ export default function RadarMap({
                         if (!supercluster || !mapRef.current) return;
                         const expansionZoom = Math.min(
                           supercluster.getClusterExpansionZoom(
-                            cluster.id as number,
+                            props.cluster_id,
                           ),
                           20,
                         );
@@ -655,27 +666,25 @@ export default function RadarMap({
                       }}
                     >
                       <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white font-black text-xs">
-                        {pointCount}
+                        {props.point_count}
                       </div>
                     </div>
                   </Marker>
                 );
               }
 
-              const event = cluster.properties.event;
-              const eventDate = new Date(event.start_time);
+              const event = props.event;
+              const eventDate = new Date(event.startTime);
               const eventDay = eventDate.getDate();
               const selectedDay = parseInt(selectedDate.split(" ")[1]);
               const isRecessed = eventDay !== selectedDay;
 
               return (
-                <MarkerErrorBoundary key={cluster.properties.eventId}>
+                <MarkerErrorBoundary key={props.eventId}>
                   <LightLanguageMarker
                     event={event}
-                    isSelected={selectedEventId === cluster.properties.eventId}
-                    isInterested={
-                      interestedEventId === cluster.properties.eventId
-                    }
+                    isSelected={selectedEventId === props.eventId}
+                    isInterested={interestedEventId === props.eventId}
                     isRecessed={isRecessed}
                     zoom={viewState.zoom}
                     onClick={() => onEventSelect(event)}

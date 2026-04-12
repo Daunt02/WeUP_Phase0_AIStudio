@@ -12,11 +12,20 @@ import EventSignalModal from "@/components/EventSignalModal";
 import GeoControls from "@/components/GeoControls";
 import AddEventModal from "@/components/AddEventModal";
 import TemporalDebugPanel from "@/components/TemporalDebugPanel";
-import { NightlifeItem } from "@/types";
 import { useWorldSurfaceState } from "@/hooks/useWorldSurfaceState";
 import { useEventFeed } from "@/hooks/useEventFeed";
 import { useTemporalQuery } from "@/hooks/useTemporalQuery";
 import { useEventSubmission } from "@/hooks/useEventSubmission";
+import {
+  RuntimeEventProjection,
+  TemporalPresetSelection,
+  SelectedEventId,
+  GhostDraftPatch,
+  toLegacyDraftPatch,
+  fromLegacyDraftPatch,
+  fromLegacyNightlifeItem,
+  toLegacyNightlifeItem,
+} from "@/features/world/runtimeTypes";
 
 export default function WorldCoordinator() {
   const {
@@ -28,6 +37,7 @@ export default function WorldCoordinator() {
     closeModal,
     setMapCenter,
     setMapBounds,
+    setSelectedDate,
     beginDraft,
     updateDraft,
     publishDraft,
@@ -37,7 +47,7 @@ export default function WorldCoordinator() {
   } = useWorldSurfaceState();
 
   // Persisted UI snapshot key
-  const PERSIST_KEY = 'weup.ui.persisted.v1';
+  const PERSIST_KEY = "weup.ui.persisted.v1";
 
   // Hydrate persisted UI slice on mount
   useEffect(() => {
@@ -45,12 +55,12 @@ export default function WorldCoordinator() {
       const raw = localStorage.getItem(PERSIST_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === 'object') {
+        if (parsed && typeof parsed === "object") {
           restorePersistedState(parsed);
         }
       }
     } catch (err) {
-      console.warn('Failed to restore persisted UI state', err);
+      console.warn("Failed to restore persisted UI state", err);
     }
   }, [restorePersistedState]);
 
@@ -60,7 +70,7 @@ export default function WorldCoordinator() {
       const snap = persistedSnapshot();
       localStorage.setItem(PERSIST_KEY, JSON.stringify(snap));
     } catch (err) {
-      console.warn('Failed to persist UI snapshot', err);
+      console.warn("Failed to persist UI snapshot", err);
     }
   }, [state.savedEventIds, state.lastKnownMapCenter, persistedSnapshot]);
 
@@ -68,7 +78,8 @@ export default function WorldCoordinator() {
   const { events, prependEvent } = useEventFeed(state.mapBounds);
 
   // Timeline scrubber value owns the temporal preset string.
-  const [currentTimePreset, setCurrentTimePreset] = useState("NOW");
+  const [currentTimePreset, setCurrentTimePreset] =
+    useState<TemporalPresetSelection>("NOW");
   const { temporalWindow, loading: temporalLoading } =
     useTemporalQuery(currentTimePreset);
 
@@ -77,7 +88,7 @@ export default function WorldCoordinator() {
   // ── Event handlers ─────────────────────────────────────────────────────────
 
   const handleEventSelect = useCallback(
-    (e: NightlifeItem) => {
+    (e: RuntimeEventProjection) => {
       selectEvent(e.id);
       openModal("EVENT_DETAIL");
     },
@@ -85,15 +96,19 @@ export default function WorldCoordinator() {
   );
 
   const handleGhostUpdate = useCallback(
-    (patch: Partial<NightlifeItem> | null) => {
-      if (patch) beginDraft(patch as any);
-      else updateDraft({} as any);
+    (patch: GhostDraftPatch | null) => {
+      if (patch) {
+        beginDraft(toLegacyDraftPatch(patch));
+        return;
+      }
+
+      updateDraft({});
     },
     [beginDraft, updateDraft],
   );
 
   const handleConfirmPublish = useCallback(
-    async (event: NightlifeItem) => {
+    async (event: RuntimeEventProjection) => {
       await handlePublish(event, (published, id) => {
         publishDraft(id);
         prependEvent(published);
@@ -134,6 +149,13 @@ export default function WorldCoordinator() {
   const savedEventItems = events.filter((e) =>
     state.savedEventIds.includes(e.id),
   );
+  const selectedEvent: RuntimeEventProjection | null = state.selectedEventId
+    ? (events.find((e) => e.id === state.selectedEventId) ?? null)
+    : null;
+  const selectedEventId: SelectedEventId | undefined =
+    state.selectedEventId ?? undefined;
+  const interestedEventId: SelectedEventId | undefined =
+    state.interestedEventId ?? undefined;
   const topModalKind =
     state.modal.kind === "STACK"
       ? state.modal.stack[state.modal.stack.length - 1]
@@ -148,11 +170,11 @@ export default function WorldCoordinator() {
         onBoundsChange={(bounds) => setMapBounds(bounds)}
         onCenterChange={(c) => setMapCenter({ lat: c.lat, lng: c.lng })}
         onAnchorChange={() => {}}
-        selectedEventId={state.selectedEventId || undefined}
-        interestedEventId={state.interestedEventId || undefined}
-        ghostEvent={state.ghostDraft as any}
+        selectedEventId={selectedEventId}
+        interestedEventId={interestedEventId}
+        ghostEvent={state.ghostDraft}
         onGhostMove={(lat, lng) =>
-          updateDraft({ latitude: lat, longitude: lng } as any)
+          updateDraft({ latitude: lat, longitude: lng })
         }
         selectedDate={state.selectedDate}
         activeMode={state.viewMode}
@@ -188,7 +210,7 @@ export default function WorldCoordinator() {
         onEventSelect={handleEventSelect}
         onClose={() => dispatch({ type: "SET_VIEW_MODE", mode: "RADAR" })}
         selectedDate={state.selectedDate}
-        onDateSelect={(date) => interestEvent(date as any)}
+        onDateSelect={(date) => setSelectedDate(date)}
       />
       <SavedEvents
         isVisible={state.viewMode === "SAVED"}
@@ -203,18 +225,18 @@ export default function WorldCoordinator() {
       <AddEventModal
         isVisible={topModalKind === "ADD_EVENT"}
         onClose={() => closeModal()}
-        onPublish={handleConfirmPublish}
-        onGhostUpdate={handleGhostUpdate}
-        ghostEvent={state.ghostDraft as any}
+        onPublish={async (event) =>
+          handleConfirmPublish(fromLegacyNightlifeItem(event))
+        }
+        onGhostUpdate={(patch) =>
+          handleGhostUpdate(patch ? fromLegacyDraftPatch(patch) : null)
+        }
+        ghostEvent={state.ghostDraft}
         mapCenter={state.mapCenter}
       />
 
       <EventSignalModal
-        event={
-          state.selectedEventId
-            ? (events.find((e) => e.id === state.selectedEventId) ?? null)
-            : null
-        }
+        event={selectedEvent ? toLegacyNightlifeItem(selectedEvent) : null}
         state={
           state.modal.kind === "STACK" &&
           state.modal.stack.includes("EVENT_DETAIL")

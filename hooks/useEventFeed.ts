@@ -10,21 +10,25 @@
  */
 
 import { useEffect, useState } from "react";
-import { NightlifeItem } from "@/types";
 import { eventService } from "@/services/eventService";
-import type { GeoBoundingBox } from "@/domains/query/contracts";
+import type { GeoBoundingBox, MapFeedQuery } from "@/domains/query/contracts";
+import {
+  RuntimeEventProjection,
+  fromLegacyNightlifeItem,
+  fromMapCardProjection,
+} from "@/features/world/runtimeTypes";
 
 export interface EventFeedResult {
-  events: NightlifeItem[];
+  events: RuntimeEventProjection[];
   loading: boolean;
   /** Imperative append used after a local publish succeeds. */
-  prependEvent: (event: NightlifeItem) => void;
+  prependEvent: (event: RuntimeEventProjection) => void;
 }
 
 export function useEventFeed(
   mapBounds: GeoBoundingBox | null,
 ): EventFeedResult {
-  const [events, setEvents] = useState<NightlifeItem[]>([]);
+  const [events, setEvents] = useState<RuntimeEventProjection[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -36,10 +40,44 @@ export function useEventFeed(
       if (!cancelled) setLoading(true);
     });
 
-    eventService
-      .fetchEventsInBounds(mapBounds)
-      .then((result) => {
-        if (!cancelled) setEvents(result);
+    const mapQuery: MapFeedQuery = {
+      bounds: mapBounds,
+      window: {
+        startUtc: "1970-01-01T00:00:00.000Z",
+        endUtc: "2100-01-01T00:00:00.000Z",
+        timezone: "UTC",
+      },
+      filters: {},
+    };
+
+    Promise.all([
+      eventService.fetchMapFeed(mapQuery),
+      eventService.fetchEventsInBounds(mapBounds),
+    ])
+      .then(([projectionFeed, legacyFeed]) => {
+        const canonicalById = new Map(
+          projectionFeed.events.map((e) => [e.id, fromMapCardProjection(e)]),
+        );
+
+        const merged = legacyFeed.map((legacyEvent) => {
+          const legacy = fromLegacyNightlifeItem(legacyEvent);
+          const canonical = canonicalById.get(legacy.id);
+          if (!canonical) return legacy;
+
+          return {
+            ...legacy,
+            title: canonical.title,
+            venueName: canonical.venueName,
+            latitude: canonical.latitude,
+            longitude: canonical.longitude,
+            category: canonical.category,
+            imageUrl: canonical.imageUrl || legacy.imageUrl,
+            status: canonical.status ?? legacy.status,
+            confidence: canonical.confidence ?? legacy.confidence,
+          };
+        });
+
+        if (!cancelled) setEvents(merged);
       })
       .catch((err) => {
         console.error("[useEventFeed] fetch error:", err);
@@ -56,7 +94,7 @@ export function useEventFeed(
     };
   }, [mapBounds]);
 
-  function prependEvent(event: NightlifeItem) {
+  function prependEvent(event: RuntimeEventProjection) {
     setEvents((prev) => [event, ...prev]);
   }
 

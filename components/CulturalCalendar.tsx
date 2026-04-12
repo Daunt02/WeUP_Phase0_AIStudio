@@ -1,36 +1,42 @@
-'use client';
+"use client";
 
-import React, { useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Zap, Clock } from 'lucide-react';
-import { NightlifeItem } from '@/types';
-import TimelineControl from './TimelineControl';
+import React, { useMemo, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import {
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  Zap,
+  Clock,
+} from "lucide-react";
+import type { RuntimeEventProjection } from "@/features/world/runtimeTypes";
+import TimelineControl from "./TimelineControl";
 
 interface CulturalCalendarProps {
   isVisible: boolean;
-  events: NightlifeItem[];
+  events: RuntimeEventProjection[];
   selectedDate: string;
   onDateSelect: (date: string) => void;
-  onEventSelect: (event: NightlifeItem) => void;
+  onEventSelect: (event: RuntimeEventProjection) => void;
   onClose: () => void;
 }
 
-export default function CulturalCalendar({ 
-  isVisible, 
-  events, 
-  selectedDate, 
-  onDateSelect, 
+export default function CulturalCalendar({
+  isVisible,
+  events,
+  selectedDate,
+  onDateSelect,
   onEventSelect,
-  onClose
+  onClose,
 }: CulturalCalendarProps) {
   const dates = [
-    { day: 'MON', date: 'MAR 23' },
-    { day: 'TUE', date: 'MAR 24' },
-    { day: 'WED', date: 'MAR 25' },
-    { day: 'THU', date: 'MAR 26' },
-    { day: 'FRI', date: 'MAR 27' },
-    { day: 'SAT', date: 'MAR 28' },
-    { day: 'SUN', date: 'MAR 29' },
+    { day: "MON", date: "MAR 23" },
+    { day: "TUE", date: "MAR 24" },
+    { day: "WED", date: "MAR 25" },
+    { day: "THU", date: "MAR 26" },
+    { day: "FRI", date: "MAR 27" },
+    { day: "SAT", date: "MAR 28" },
+    { day: "SUN", date: "MAR 29" },
   ];
 
   const [isClient, setIsClient] = useState(false);
@@ -40,8 +46,8 @@ export default function CulturalCalendar({
   }, []);
 
   const filteredItems = useMemo(() => {
-    const day = parseInt(selectedDate.split(' ')[1]);
-    return events.filter(e => new Date(e.start_time).getDate() === day);
+    const day = parseInt(selectedDate.split(" ")[1]);
+    return events.filter((e) => new Date(e.startTime).getDate() === day);
   }, [selectedDate, events]);
 
   return (
@@ -56,7 +62,7 @@ export default function CulturalCalendar({
             onClick={onClose}
             className="fixed inset-0 z-[250] bg-black/40 backdrop-blur-sm pointer-events-auto"
           />
-          
+
           <div className="fixed inset-x-0 bottom-36 z-[300] pointer-events-none flex flex-col items-center gap-6">
             {/* Temporal Modal Container */}
             <motion.div
@@ -71,11 +77,18 @@ export default function CulturalCalendar({
                     <Clock className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-black uppercase italic tracking-tighter text-white">Temporal Core</h3>
-                    <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Navigate Time & Space</p>
+                    <h3 className="text-lg font-black uppercase italic tracking-tighter text-white">
+                      Temporal Core
+                    </h3>
+                    <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest">
+                      Navigate Time & Space
+                    </p>
                   </div>
                 </div>
-                <button onClick={onClose} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 hover:bg-white/10 transition-colors">
+                <button
+                  onClick={onClose}
+                  className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 hover:bg-white/10 transition-colors"
+                >
                   <ChevronLeft className="w-5 h-5 text-white/60 rotate-180" />
                 </button>
               </div>
@@ -89,8 +102,10 @@ export default function CulturalCalendar({
               <div className="flex justify-between items-center mb-8 px-2">
                 {dates.map((d) => {
                   const isActive = selectedDate === d.date;
-                  const dayNum = parseInt(d.date.split(' ')[1]);
-                  const hasEvents = events.some(e => new Date(e.start_time).getDate() === dayNum);
+                  const dayNum = parseInt(d.date.split(" ")[1]);
+                  const hasEvents = events.some(
+                    (e) => new Date(e.startTime).getDate() === dayNum,
+                  );
 
                   return (
                     <button
@@ -98,14 +113,20 @@ export default function CulturalCalendar({
                       onClick={() => onDateSelect(d.date)}
                       className="flex flex-col items-center gap-3 group relative"
                     >
-                      <span className={`text-[8px] font-mono font-black tracking-widest transition-colors ${isActive ? 'text-white' : 'text-white/20 group-hover:text-white/40'}`}>
+                      <span
+                        className={`text-[8px] font-mono font-black tracking-widest transition-colors ${isActive ? "text-white" : "text-white/20 group-hover:text-white/40"}`}
+                      >
                         {d.day}
                       </span>
-                      <div className={`
+                      <div
+                        className={`
                         w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 border
-                        ${isActive ? 'bg-white text-black border-white scale-110' : 'bg-white/5 text-white/40 border-white/10 group-hover:bg-white/10'}
-                      `}>
-                        <span className="text-xs font-black">{d.date.split(' ')[1]}</span>
+                        ${isActive ? "bg-white text-black border-white scale-110" : "bg-white/5 text-white/40 border-white/10 group-hover:bg-white/10"}
+                      `}
+                      >
+                        <span className="text-xs font-black">
+                          {d.date.split(" ")[1]}
+                        </span>
                       </div>
                       {hasEvents && !isActive && (
                         <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white/20" />
@@ -128,13 +149,21 @@ export default function CulturalCalendar({
                       className="w-full p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl flex items-center justify-between group transition-all"
                     >
                       <div className="flex items-center gap-4">
-                        <div className={`w-2 h-2 rounded-full bg-white/40 group-hover:bg-white transition-colors`} />
+                        <div
+                          className={`w-2 h-2 rounded-full bg-white/40 group-hover:bg-white transition-colors`}
+                        />
                         <div className="text-left">
                           <div className="text-[10px] font-black uppercase italic tracking-tighter text-white/80 group-hover:text-white truncate max-w-[180px]">
                             {item.title}
                           </div>
                           <div className="text-[8px] font-mono text-white/20 uppercase tracking-widest">
-                            {isClient && new Date(item.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })} @ {item.venue_name}
+                            {isClient &&
+                              new Date(item.startTime).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: false,
+                              })}{" "}
+                            @ {item.venueName}
                           </div>
                         </div>
                       </div>
@@ -145,7 +174,9 @@ export default function CulturalCalendar({
                 {filteredItems.length === 0 && (
                   <div className="py-8 text-center opacity-20">
                     <Zap className="w-6 h-6 mx-auto mb-2" />
-                    <p className="text-[10px] font-mono uppercase tracking-widest">No Signals Detected</p>
+                    <p className="text-[10px] font-mono uppercase tracking-widest">
+                      No Signals Detected
+                    </p>
                   </div>
                 )}
               </div>

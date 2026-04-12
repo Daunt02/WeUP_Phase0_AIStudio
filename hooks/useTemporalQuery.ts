@@ -14,13 +14,16 @@ import { useEffect, useState } from "react";
 import * as temporalService from "@/services/temporalService";
 import * as analyticsService from "@/services/analyticsService";
 import type { TemporalQueryResponse } from "@/services/temporalService";
+import type { TemporalPresetSelection } from "@/features/world/runtimeTypes";
 
 export interface TemporalQueryResult {
   temporalWindow: TemporalQueryResponse | null;
   loading: boolean;
 }
 
-export function useTemporalQuery(preset: string): TemporalQueryResult {
+export function useTemporalQuery(
+  preset: TemporalPresetSelection,
+): TemporalQueryResult {
   const [temporalWindow, setTemporalWindow] =
     useState<TemporalQueryResponse | null>(null);
   const [loading, setLoading] = useState(false);

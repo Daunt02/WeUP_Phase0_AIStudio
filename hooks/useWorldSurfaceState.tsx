@@ -1,6 +1,13 @@
 "use client";
 import { useReducer, useCallback } from "react";
-import { WorldSurfaceState, WorldAction, PersistedUIState } from "@/types/ui";
+import {
+  WorldSurfaceState,
+  WorldAction,
+  PersistedUIState,
+  ModalKind,
+  GhostDraft,
+} from "@/types/ui";
+import type { GeoBoundingBox } from "@/domains/query/contracts";
 
 // Initial state is composed of transient (session) UI and persisted-ready fields.
 const initialState: WorldSurfaceState = {
@@ -102,7 +109,7 @@ export function useWorldSurfaceState() {
     [],
   );
   const openModal = useCallback(
-    (modal: any) => dispatch({ type: "OPEN_MODAL", modal }),
+    (modal: ModalKind) => dispatch({ type: "OPEN_MODAL", modal }),
     [],
   );
   const closeModal = useCallback(() => dispatch({ type: "CLOSE_MODAL" }), []);
@@ -112,7 +119,11 @@ export function useWorldSurfaceState() {
     [],
   );
   const setMapBounds = useCallback(
-    (bounds: any) => dispatch({ type: "SET_MAP_BOUNDS", bounds }),
+    (bounds: GeoBoundingBox) => dispatch({ type: "SET_MAP_BOUNDS", bounds }),
+    [],
+  );
+  const setSelectedDate = useCallback(
+    (date: string) => dispatch({ type: "SET_SELECTED_DATE", date }),
     [],
   );
   const toggleSave = useCallback(
@@ -120,11 +131,11 @@ export function useWorldSurfaceState() {
     [],
   );
   const beginDraft = useCallback(
-    (draft: any) => dispatch({ type: "BEGIN_DRAFT", draft }),
+    (draft: GhostDraft) => dispatch({ type: "BEGIN_DRAFT", draft }),
     [],
   );
   const updateDraft = useCallback(
-    (patch: any) => dispatch({ type: "UPDATE_DRAFT", patch }),
+    (patch: Partial<GhostDraft>) => dispatch({ type: "UPDATE_DRAFT", patch }),
     [],
   );
   const publishDraft = useCallback(
@@ -162,6 +173,7 @@ export function useWorldSurfaceState() {
     closeModal,
     setMapCenter,
     setMapBounds,
+    setSelectedDate,
     toggleSave,
     beginDraft,
     updateDraft,

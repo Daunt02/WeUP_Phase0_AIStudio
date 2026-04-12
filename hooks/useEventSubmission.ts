@@ -10,8 +10,11 @@
  */
 
 import { useCallback } from "react";
-import { NightlifeItem } from "@/types";
 import submissionService from "@/services/submissionService";
+import {
+  RuntimeEventProjection,
+  toLegacyNightlifeItem,
+} from "@/features/world/runtimeTypes";
 
 export interface EventSubmissionResult {
   /**
@@ -19,19 +22,20 @@ export interface EventSubmissionResult {
    * onSuccess with the published event and its assigned id.
    */
   handlePublish: (
-    event: NightlifeItem,
-    onSuccess: (event: NightlifeItem, id: string) => void,
+    event: RuntimeEventProjection,
+    onSuccess: (event: RuntimeEventProjection, id: string) => void,
   ) => Promise<void>;
 }
 
 export function useEventSubmission(): EventSubmissionResult {
   const handlePublish = useCallback(
     async (
-      event: NightlifeItem,
-      onSuccess: (event: NightlifeItem, id: string) => void,
+      event: RuntimeEventProjection,
+      onSuccess: (event: RuntimeEventProjection, id: string) => void,
     ) => {
       try {
-        const created = await submissionService.createDraft({ ...event });
+        const legacyDraft = toLegacyNightlifeItem(event);
+        const created = await submissionService.createDraft({ ...legacyDraft });
         try {
           await submissionService.submitForReview(created.id);
         } catch (submitErr) {
