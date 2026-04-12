@@ -20,5 +20,7 @@ public interface IFlyerAssetValidator
         string declaredContentType,
         string filename,
         string submitterId,
+        string? sourceReference = null,
+        bool allowSameSourceReupload = false,
         CancellationToken ct = default);
 }

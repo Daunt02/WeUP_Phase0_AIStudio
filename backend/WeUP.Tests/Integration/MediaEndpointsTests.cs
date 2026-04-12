@@ -1,6 +1,9 @@
 using Xunit;
 using WeUP.Domain.Media;
 using WeUP.Infrastructure.Media;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Formats.Png;
 
 namespace WeUP.Tests.Integration;
 
@@ -14,7 +17,21 @@ public class MediaEndpointsTests
     [Fact]
     public void FlyerAsset_Constructs_WithCorrectShape()
     {
-        var asset = new FlyerAsset("id1", "flyer.jpg", 12345, "image/jpeg", "user1", DateTimeOffset.UtcNow);
+        var asset = new FlyerAsset(
+            "id1",
+            "flyer.jpg",
+            12345,
+            "image/jpeg",
+            "user1",
+            DateTimeOffset.UtcNow,
+            "ProcessingPending",
+            "hash",
+            "flyers/202604/id1.jpg",
+            1,
+            null,
+            512,
+            512,
+            false);
         Assert.Equal("id1", asset.AssetId);
         Assert.Equal("flyer.jpg", asset.OriginalFilename);
     }
@@ -107,8 +124,8 @@ public class MediaEndpointsTests
     public async Task Validator_RejectsDisallowedMimeType()
     {
         var store = new InMemoryFlyerAssetStore();
-        var validator = new FlyerAssetValidator(store);
-        var stream = new MemoryStream(new byte[100]);
+        var validator = CreateValidator(store);
+        var stream = new MemoryStream(CreatePngBytes(256, 256));
 
         var result = await validator.ValidateAsync(stream, "application/pdf", "doc.pdf", "user1");
 
@@ -120,7 +137,7 @@ public class MediaEndpointsTests
     public async Task Validator_RejectsEmptyFile()
     {
         var store = new InMemoryFlyerAssetStore();
-        var validator = new FlyerAssetValidator(store);
+        var validator = CreateValidator(store);
         var stream = new MemoryStream(Array.Empty<byte>());
 
         var result = await validator.ValidateAsync(stream, "image/jpeg", "empty.jpg", "user1");
@@ -132,11 +149,12 @@ public class MediaEndpointsTests
     public async Task Validator_RejectsOversizedFile()
     {
         var store = new InMemoryFlyerAssetStore();
-        var validator = new FlyerAssetValidator(store);
-        // Over 10 MB
+        var validator = CreateValidator(store);
         var oversized = new byte[FlyerPolicy.MaxFileSizeBytes + 1];
-        // Put valid JPEG header so it passes signature check (won't reach size check first)
-        oversized[0] = 0xFF; oversized[1] = 0xD8; oversized[2] = 0xFF;
+        for (var i = 0; i < oversized.Length; i++)
+        {
+            oversized[i] = 0x1;
+        }
         var stream = new MemoryStream(oversized);
 
         var result = await validator.ValidateAsync(stream, "image/jpeg", "big.jpg", "user1");
@@ -149,23 +167,22 @@ public class MediaEndpointsTests
     public async Task Validator_RejectsCorruptedFile_WrongMagicBytes()
     {
         var store = new InMemoryFlyerAssetStore();
-        var validator = new FlyerAssetValidator(store);
-        // Claims JPEG but has PNG header
+        var validator = CreateValidator(store);
         var bytes = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x00, 0x00, 0x00, 0x00 };
         var stream = new MemoryStream(bytes);
 
         var result = await validator.ValidateAsync(stream, "image/jpeg", "fake.jpg", "user1");
 
         Assert.False(result.IsValid);
-        Assert.Contains("signature", result.FailureReason);
+        Assert.Contains("corrupted", result.FailureReason);
     }
 
     [Fact]
     public async Task Validator_RejectsExtensionMismatch()
     {
         var store = new InMemoryFlyerAssetStore();
-        var validator = new FlyerAssetValidator(store);
-        var stream = new MemoryStream(new byte[100]);
+        var validator = CreateValidator(store);
+        var stream = new MemoryStream(CreatePngBytes(256, 256));
 
         var result = await validator.ValidateAsync(stream, "image/png", "file.jpg", "user1");
 
@@ -177,31 +194,32 @@ public class MediaEndpointsTests
     public async Task Validator_DetectsDuplicate_SameHashSameSubmitter()
     {
         var store = new InMemoryFlyerAssetStore();
-        var validator = new FlyerAssetValidator(store);
+        var validator = CreateValidator(store);
 
-        // Create a valid JPEG (minimal magic bytes + padding)
-        var jpeg = new byte[500];
-        jpeg[0] = 0xFF; jpeg[1] = 0xD8; jpeg[2] = 0xFF;
+        var png = CreatePngBytes(256, 256);
 
         // First upload — store a record with the hash of this file
-        var hash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(jpeg)).ToLowerInvariant();
+        var hash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(png)).ToLowerInvariant();
         var existing = new FlyerAssetRecord
         {
             AssetId = "existing-asset",
-            OriginalFilename = "first.jpg",
-            FileSizeBytes = jpeg.Length,
-            ContentType = "image/jpeg",
+            OriginalFilename = "first.png",
+            FileSizeBytes = png.Length,
+            ContentType = "image/png",
             SubmitterId = "user1",
             UploadedAt = DateTimeOffset.UtcNow,
             Status = FlyerAssetStatus.ProcessingPending,
             ContentHash = hash,
             StorageKey = "existing-key",
+            CanonicalContentType = "image/png",
+            WidthPx = 256,
+            HeightPx = 256,
         };
         await store.SaveAsync(existing);
 
         // Second upload — same file, same submitter
-        var stream = new MemoryStream(jpeg);
-        var result = await validator.ValidateAsync(stream, "image/jpeg", "first.jpg", "user1");
+        var stream = new MemoryStream(png);
+        var result = await validator.ValidateAsync(stream, "image/png", "first.png", "user1");
 
         Assert.True(result.IsDuplicate);
         Assert.Equal("existing-asset", result.DuplicateAssetId);
@@ -211,16 +229,31 @@ public class MediaEndpointsTests
     public async Task Validator_AcceptsValidJpeg()
     {
         var store = new InMemoryFlyerAssetStore();
-        var validator = new FlyerAssetValidator(store);
-        var jpeg = new byte[500];
-        jpeg[0] = 0xFF; jpeg[1] = 0xD8; jpeg[2] = 0xFF;
-        var stream = new MemoryStream(jpeg);
+        var validator = CreateValidator(store);
+        var png = CreatePngBytes(256, 256);
+        var stream = new MemoryStream(png);
 
-        var result = await validator.ValidateAsync(stream, "image/jpeg", "valid.jpg", "user1");
+        var result = await validator.ValidateAsync(stream, "image/png", "valid.png", "user1");
 
         Assert.True(result.IsValid);
         Assert.NotNull(result.ContentHash);
         Assert.False(result.IsDuplicate);
+        Assert.Equal(256, result.WidthPx);
+        Assert.Equal(256, result.HeightPx);
+    }
+
+    [Fact]
+    public async Task Validator_RejectsTooSmallImage()
+    {
+        var store = new InMemoryFlyerAssetStore();
+        var validator = CreateValidator(store);
+        var png = CreatePngBytes(64, 64);
+        var stream = new MemoryStream(png);
+
+        var result = await validator.ValidateAsync(stream, "image/png", "tiny.png", "user1");
+
+        Assert.False(result.IsValid);
+        Assert.Contains("at least", result.FailureReason);
     }
 
     // ── P26 in-memory store tests ────────────────────────────────────────────
@@ -301,5 +334,19 @@ public class MediaEndpointsTests
         Status = status,
         ContentHash = contentHash,
         StorageKey = $"{assetId}_test.jpg",
+        CanonicalContentType = "image/jpeg",
+        WidthPx = 512,
+        HeightPx = 512,
     };
+
+    private static FlyerAssetValidator CreateValidator(IFlyerAssetStore store) =>
+        new(new ImageSharpFileSignatureInspector(), new Sha256ChecksumService(), new FlyerDuplicateDetector(store));
+
+    private static byte[] CreatePngBytes(int width, int height)
+    {
+        using var image = new Image<Rgba32>(width, height);
+        using var stream = new MemoryStream();
+        image.Save(stream, new PngEncoder());
+        return stream.ToArray();
+    }
 }

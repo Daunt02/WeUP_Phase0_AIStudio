@@ -11,17 +11,20 @@ public sealed class FlyerIntakeService : IFlyerIntakeService
 {
     private readonly IFlyerAssetStore _assetStore;
     private readonly IFlyerAssetValidator _validator;
+    private readonly IFlyerAssetLifecyclePolicy _lifecyclePolicy;
     private readonly IProvenanceRepository _provenanceRepo;
     private readonly IFlyerEvidenceRepository _evidenceRepo;
 
     public FlyerIntakeService(
         IFlyerAssetStore assetStore,
         IFlyerAssetValidator validator,
+        IFlyerAssetLifecyclePolicy lifecyclePolicy,
         IProvenanceRepository provenanceRepo,
         IFlyerEvidenceRepository evidenceRepo)
     {
         _assetStore = assetStore;
         _validator = validator;
+        _lifecyclePolicy = lifecyclePolicy;
         _provenanceRepo = provenanceRepo;
         _evidenceRepo = evidenceRepo;
     }
@@ -38,7 +41,14 @@ public sealed class FlyerIntakeService : IFlyerIntakeService
         CancellationToken ct = default)
     {
         // ── Step 1: Validate ─────────────────────────────────────────────────
-        var validation = await _validator.ValidateAsync(fileStream, contentType, filename, submitterId, ct);
+        var validation = await _validator.ValidateAsync(
+            fileStream,
+            contentType,
+            filename,
+            submitterId,
+            sourceUrl,
+            allowSameSourceReupload: true,
+            ct);
 
         if (validation.IsDuplicate)
             throw new FlyerUploadException(
@@ -65,12 +75,25 @@ public sealed class FlyerIntakeService : IFlyerIntakeService
             ContentType      = contentType,
             SubmitterId      = submitterId,
             UploadedAt       = DateTimeOffset.UtcNow,
-            Status           = FlyerAssetStatus.ProcessingPending,
+            Status           = FlyerAssetStatus.Initialized,
             ContentHash      = validation.ContentHash!,
             StorageKey       = storageKey,
+            SourceReference  = sourceUrl,
+            CanonicalContentType = validation.CanonicalContentType,
+            WidthPx          = validation.WidthPx,
+            HeightPx         = validation.HeightPx,
+            IsAnimated       = validation.IsAnimated,
         };
 
-        await _assetStore.SaveAsync(assetRecord, ct);
+        assetRecord = await _assetStore.SaveAsync(assetRecord, ct);
+        assetRecord = await _assetStore.UpdateStatusAsync(
+            assetRecord.AssetId,
+            _lifecyclePolicy.Transition(assetRecord.Status, FlyerAssetStatus.Uploaded),
+            ct);
+        assetRecord = await _assetStore.UpdateStatusAsync(
+            assetRecord.AssetId,
+            _lifecyclePolicy.Transition(assetRecord.Status, FlyerAssetStatus.ProcessingPending),
+            ct);
 
         // ── Step 3: Record provenance ────────────────────────────────────────
         var provenance = new ProvenanceRecord

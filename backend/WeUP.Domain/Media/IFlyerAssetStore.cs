@@ -15,6 +15,12 @@ public sealed record FlyerAssetRecord
     public required FlyerAssetStatus Status { get; init; }
     public required string ContentHash { get; init; }
     public required string StorageKey { get; init; }
+    public int Revision { get; init; } = 1;
+    public string? SourceReference { get; init; }
+    public string? CanonicalContentType { get; init; }
+    public int? WidthPx { get; init; }
+    public int? HeightPx { get; init; }
+    public bool IsAnimated { get; init; }
     public string? LocalPath { get; init; }
     public string? S3Url { get; init; }
     public string? ValidationFailureReason { get; init; }
@@ -33,6 +39,8 @@ public interface IFlyerAssetStore
     Task<FlyerAssetRecord?> GetAsync(string assetId, CancellationToken ct = default);
     Task<FlyerAssetRecord[]> ListBySubmitterAsync(string submitterId, CancellationToken ct = default);
     Task<FlyerAssetRecord?> FindByHashAsync(string contentHash, string submitterId, CancellationToken ct = default);
+    Task<FlyerAssetRecord?> FindRecentByHashAsync(string contentHash, string submitterId, DateTimeOffset sinceUtc, CancellationToken ct = default);
     Task<FlyerAssetRecord> UpdateStatusAsync(string assetId, FlyerAssetStatus next, CancellationToken ct = default);
+    Task<FlyerAssetRecord> UpdateValidationFailureAsync(string assetId, string failureReason, CancellationToken ct = default);
     Task DeleteAsync(string assetId, CancellationToken ct = default);
 }

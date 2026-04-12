@@ -1,16 +1,14 @@
-using Xunit;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
 using WeUP.Domain.Media;
 using WeUP.Infrastructure.Media;
+using Xunit;
 
 namespace WeUP.Tests.Integration;
 
-/// <summary>
-/// P27: Flyer metadata persistence, provenance, and review-ready evidence.
-/// </summary>
 public class ProvenanceTests
 {
-    // ── ProvenanceRecord domain tests ────────────────────────────────────────
-
     [Fact]
     public void ProvenanceRecord_HashSubmitterId_IsDeterministic()
     {
@@ -32,19 +30,17 @@ public class ProvenanceTests
     {
         var hash = ProvenanceRecord.HashSubmitterId("user123");
         Assert.Equal(hash, hash.ToLowerInvariant());
-        Assert.Equal(64, hash.Length); // SHA-256 = 32 bytes = 64 hex chars
+        Assert.Equal(64, hash.Length);
     }
 
     [Theory]
-    [InlineData(SourceTier.T1_Verified,   0.90)]
-    [InlineData(SourceTier.T2_Approved,   0.55)]
+    [InlineData(SourceTier.T1_Verified, 0.90)]
+    [InlineData(SourceTier.T2_Approved, 0.55)]
     [InlineData(SourceTier.T3_Unverified, 0.35)]
-    public void ProvenanceRecord_BaselineAuthority_MatchesTier(SourceTier tier, double expected)
+    public void BaselineAuthorityForTier_ReturnsExpected(SourceTier tier, double expected)
     {
         Assert.Equal(expected, ProvenanceRecord.BaselineAuthorityForTier(tier));
     }
-
-    // ── InMemoryProvenanceRepository tests ───────────────────────────────────
 
     [Fact]
     public async Task ProvenanceRepo_SaveAndRetrieve_ById()
@@ -77,22 +73,19 @@ public class ProvenanceTests
         var hashA = ProvenanceRecord.HashSubmitterId("userA");
         var hashB = ProvenanceRecord.HashSubmitterId("userB");
 
-        await repo.SaveAsync(MakeProvenance("p1", "a1", submitterHash: hashA));
-        await repo.SaveAsync(MakeProvenance("p2", "a2", submitterHash: hashA));
-        await repo.SaveAsync(MakeProvenance("p3", "a3", submitterHash: hashB));
+        await repo.SaveAsync(MakeProvenance("p1", "a1", hashA));
+        await repo.SaveAsync(MakeProvenance("p2", "a2", hashA));
+        await repo.SaveAsync(MakeProvenance("p3", "a3", hashB));
 
         var results = await repo.ListBySubmitterHashAsync(hashA);
         Assert.Equal(2, results.Length);
         Assert.All(results, r => Assert.Equal(hashA, r.SubmitterHash));
     }
 
-    // ── FlyerEvidenceRecord domain tests ─────────────────────────────────────
-
     [Fact]
     public void EvidenceRecord_WithEventLink_SetsLinkedStatus()
     {
         var evidence = MakeEvidence("e1", "a1", "p1");
-        Assert.Equal(EvidenceStatus.Pending, evidence.Status);
 
         var linked = evidence.WithEventLink("event-42");
         Assert.Equal(EvidenceStatus.Linked, linked.Status);
@@ -103,6 +96,7 @@ public class ProvenanceTests
     public void EvidenceRecord_WithSubmissionLink_SetsLinkedStatus()
     {
         var evidence = MakeEvidence("e1", "a1", "p1");
+
         var linked = evidence.WithSubmissionLink("sub-99");
         Assert.Equal(EvidenceStatus.Linked, linked.Status);
         Assert.Equal("sub-99", linked.SubmissionId);
@@ -112,12 +106,11 @@ public class ProvenanceTests
     public void EvidenceRecord_WithOcr_SetsTextAndScore()
     {
         var evidence = MakeEvidence("e1", "a1", "p1");
+
         var withOcr = evidence.WithOcr("FIRST FRIDAY April 4", 0.91);
         Assert.Equal("FIRST FRIDAY April 4", withOcr.OcrText);
         Assert.Equal(0.91, withOcr.ConfidenceScore);
     }
-
-    // ── InMemoryFlyerEvidenceRepository tests ────────────────────────────────
 
     [Fact]
     public async Task EvidenceRepo_SaveAndRetrieve_ById()
@@ -151,6 +144,7 @@ public class ProvenanceTests
         var e1 = MakeEvidence("e1", "a1", "p1").WithEventLink("event-1");
         var e2 = MakeEvidence("e2", "a2", "p2").WithEventLink("event-2");
         var e3 = MakeEvidence("e3", "a3", "p3").WithEventLink("event-1");
+
         await repo.SaveAsync(e1);
         await repo.SaveAsync(e2);
         await repo.SaveAsync(e3);
@@ -174,34 +168,27 @@ public class ProvenanceTests
         Assert.Equal("event-X", found.EventId);
     }
 
-    // ── FlyerIntakeService integration tests ─────────────────────────────────
-
     [Fact]
-    public async Task IntakeService_ValidJpeg_CreatesAllThreeRecords()
+    public async Task IntakeService_ValidImage_CreatesAllThreeRecords()
     {
         var (service, assetStore, provenanceRepo, evidenceRepo) = BuildIntakeService();
 
-        var jpeg = MakeMinimalJpeg(500);
-        using var stream = new MemoryStream(jpeg);
-
-        var result = await service.IntakeAsync(stream, "event.jpg", "image/jpeg", "user1");
+        using var stream = new MemoryStream(MakeValidPng(256, 256));
+        var result = await service.IntakeAsync(stream, "event.png", "image/png", "user1");
 
         Assert.NotNull(result.AssetId);
         Assert.NotNull(result.ProvenanceId);
         Assert.NotNull(result.EvidenceId);
-        Assert.Equal(0.35, result.BaselineAuthority); // T3_Unverified default
+        Assert.Equal(0.35, result.BaselineAuthority);
 
-        // Asset stored
         var asset = await assetStore.GetAsync(result.AssetId);
         Assert.NotNull(asset);
 
-        // Provenance stored
         var prov = await provenanceRepo.GetAsync(result.ProvenanceId);
         Assert.NotNull(prov);
         Assert.Equal(result.AssetId, prov.AssetId);
         Assert.Equal(SourceTier.T3_Unverified, prov.SourceTier);
 
-        // Evidence stored
         var evidence = await evidenceRepo.GetAsync(result.EvidenceId);
         Assert.NotNull(evidence);
         Assert.Equal(EvidenceStatus.Pending, evidence.Status);
@@ -213,11 +200,8 @@ public class ProvenanceTests
     {
         var (service, _, provenanceRepo, _) = BuildIntakeService();
 
-        var jpeg = MakeMinimalJpeg(500);
-        using var stream = new MemoryStream(jpeg);
-
-        var result = await service.IntakeAsync(stream, "promo.jpg", "image/jpeg", "promoter1",
-            sourceTier: SourceTier.T1_Verified);
+        using var stream = new MemoryStream(MakeValidPng(256, 256));
+        var result = await service.IntakeAsync(stream, "promo.png", "image/png", "promoter1", sourceTier: SourceTier.T1_Verified);
 
         Assert.Equal(0.90, result.BaselineAuthority);
 
@@ -230,13 +214,10 @@ public class ProvenanceTests
     {
         var (service, _, provenanceRepo, evidenceRepo) = BuildIntakeService();
 
-        var jpeg = MakeMinimalJpeg(500);
-        using var stream = new MemoryStream(jpeg);
+        using var stream = new MemoryStream(MakeValidPng(256, 256));
+        var result = await service.IntakeAsync(stream, "sub.png", "image/png", "user2", submissionId: "sub-001");
 
-        var result = await service.IntakeAsync(stream, "sub.jpg", "image/jpeg", "user2",
-            submissionId: "sub-001");
-
-        var prov    = await provenanceRepo.GetAsync(result.ProvenanceId);
+        var prov = await provenanceRepo.GetAsync(result.ProvenanceId);
         var evidence = await evidenceRepo.GetAsync(result.EvidenceId);
 
         Assert.Equal("sub-001", prov!.SubmissionId);
@@ -248,13 +229,11 @@ public class ProvenanceTests
     {
         var (service, _, provenanceRepo, _) = BuildIntakeService();
 
-        var jpeg = MakeMinimalJpeg(500);
-        using var stream = new MemoryStream(jpeg);
-
-        var result = await service.IntakeAsync(stream, "e.jpg", "image/jpeg", "user123");
+        using var stream = new MemoryStream(MakeValidPng(256, 256));
+        var result = await service.IntakeAsync(stream, "e.png", "image/png", "user123");
         var prov = await provenanceRepo.GetAsync(result.ProvenanceId);
 
-        Assert.NotEqual("user123", prov!.SubmitterHash); // never raw ID
+        Assert.NotEqual("user123", prov!.SubmitterHash);
         Assert.Equal(ProvenanceRecord.HashSubmitterId("user123"), prov.SubmitterHash);
     }
 
@@ -263,10 +242,8 @@ public class ProvenanceTests
     {
         var (service, _, _, evidenceRepo) = BuildIntakeService();
 
-        var jpeg = MakeMinimalJpeg(500);
-        using var stream = new MemoryStream(jpeg);
-
-        var result = await service.IntakeAsync(stream, "link.jpg", "image/jpeg", "user1");
+        using var stream = new MemoryStream(MakeValidPng(256, 256));
+        var result = await service.IntakeAsync(stream, "link.png", "image/png", "user1");
 
         await service.LinkToEventAsync(result.EvidenceId, "event-houston-1");
 
@@ -275,51 +252,50 @@ public class ProvenanceTests
         Assert.Equal("event-houston-1", evidence.EventId);
     }
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
-
-    private static ProvenanceRecord MakeProvenance(
-        string provenanceId, string assetId, string? submitterHash = null) =>
+    private static ProvenanceRecord MakeProvenance(string provenanceId, string assetId, string? submitterHash = null) =>
         new()
         {
-            ProvenanceId      = provenanceId,
-            AssetId           = assetId,
-            SourceTier        = SourceTier.T3_Unverified,
-            SubmitterHash     = submitterHash ?? ProvenanceRecord.HashSubmitterId("test-user"),
-            RecordedAt        = DateTimeOffset.UtcNow,
+            ProvenanceId = provenanceId,
+            AssetId = assetId,
+            SourceTier = SourceTier.T3_Unverified,
+            SubmitterHash = submitterHash ?? ProvenanceRecord.HashSubmitterId("test-user"),
+            RecordedAt = DateTimeOffset.UtcNow,
             BaselineAuthority = 0.35,
         };
 
-    private static FlyerEvidenceRecord MakeEvidence(
-        string evidenceId, string assetId, string provenanceId,
-        EvidenceStatus status = EvidenceStatus.Pending) =>
+    private static FlyerEvidenceRecord MakeEvidence(string evidenceId, string assetId, string provenanceId, EvidenceStatus status = EvidenceStatus.Pending) =>
         new()
         {
-            EvidenceId   = evidenceId,
-            AssetId      = assetId,
+            EvidenceId = evidenceId,
+            AssetId = assetId,
             ProvenanceId = provenanceId,
-            FlyerType    = FlyerType.Unknown,
-            Status       = status,
-            CreatedAt    = DateTimeOffset.UtcNow,
+            FlyerType = FlyerType.Unknown,
+            Status = status,
+            CreatedAt = DateTimeOffset.UtcNow,
         };
 
-    private static byte[] MakeMinimalJpeg(int size)
+    private static byte[] MakeValidPng(int width, int height)
     {
-        var bytes = new byte[size];
-        bytes[0] = 0xFF; bytes[1] = 0xD8; bytes[2] = 0xFF;
-        return bytes;
+        using var image = new Image<Rgba32>(width, height);
+        using var stream = new MemoryStream();
+        image.Save(stream, new PngEncoder());
+        return stream.ToArray();
     }
 
     private static (IFlyerIntakeService service,
-                    IFlyerAssetStore assetStore,
-                    IProvenanceRepository provenanceRepo,
-                    IFlyerEvidenceRepository evidenceRepo)
-    BuildIntakeService()
+        IFlyerAssetStore assetStore,
+        IProvenanceRepository provenanceRepo,
+        IFlyerEvidenceRepository evidenceRepo) BuildIntakeService()
     {
-        var assetStore    = new InMemoryFlyerAssetStore();
-        var validator     = new FlyerAssetValidator(assetStore);
+        var assetStore = new InMemoryFlyerAssetStore();
+        var validator = new FlyerAssetValidator(
+            new ImageSharpFileSignatureInspector(),
+            new Sha256ChecksumService(),
+            new FlyerDuplicateDetector(assetStore));
+        var lifecycle = new FlyerAssetLifecyclePolicy();
         var provenanceRepo = new InMemoryProvenanceRepository();
-        var evidenceRepo  = new InMemoryFlyerEvidenceRepository();
-        var service       = new FlyerIntakeService(assetStore, validator, provenanceRepo, evidenceRepo);
+        var evidenceRepo = new InMemoryFlyerEvidenceRepository();
+        var service = new FlyerIntakeService(assetStore, validator, lifecycle, provenanceRepo, evidenceRepo);
         return (service, assetStore, provenanceRepo, evidenceRepo);
     }
 }

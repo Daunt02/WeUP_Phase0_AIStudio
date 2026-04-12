@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using WeUP.Domain.Media;
 
 namespace WeUP.Infrastructure.Media;
@@ -9,11 +8,26 @@ namespace WeUP.Infrastructure.Media;
 /// </summary>
 public sealed class FlyerAssetValidator : IFlyerAssetValidator
 {
-    private readonly IFlyerAssetStore _store;
+    private static readonly IReadOnlyDictionary<string, string[]> ExtensionMap =
+        new Dictionary<string, string[]>
+        {
+            ["image/jpeg"] = [".jpg", ".jpeg"],
+            ["image/png"] = [".png"],
+            ["image/webp"] = [".webp"],
+        };
 
-    public FlyerAssetValidator(IFlyerAssetStore store)
+    private readonly IFileSignatureInspector _signatureInspector;
+    private readonly IMediaChecksumService _checksumService;
+    private readonly IFlyerDuplicateDetector _duplicateDetector;
+
+    public FlyerAssetValidator(
+        IFileSignatureInspector signatureInspector,
+        IMediaChecksumService checksumService,
+        IFlyerDuplicateDetector duplicateDetector)
     {
-        _store = store;
+        _signatureInspector = signatureInspector;
+        _checksumService = checksumService;
+        _duplicateDetector = duplicateDetector;
     }
 
     public async Task<FlyerValidationResult> ValidateAsync(
@@ -21,62 +35,91 @@ public sealed class FlyerAssetValidator : IFlyerAssetValidator
         string declaredContentType,
         string filename,
         string submitterId,
+        string? sourceReference = null,
+        bool allowSameSourceReupload = false,
         CancellationToken ct = default)
     {
-        // Normalize MIME type (strip charset etc.)
-        var mime = declaredContentType.Split(';')[0].Trim().ToLowerInvariant();
+        var declaredMime = declaredContentType.Split(';')[0].Trim().ToLowerInvariant();
 
-        // 1. MIME type allowlist
-        if (!FlyerPolicy.AllowedMimeTypes.Contains(mime))
-            return FlyerValidationResult.Fail($"Content type '{mime}' is not allowed. Accepted: {string.Join(", ", FlyerPolicy.AllowedMimeTypes)}");
-
-        // 2. Extension mismatch
-        var ext = Path.GetExtension(filename).ToLowerInvariant();
-        var expectedExt = mime switch
+        if (!FlyerPolicy.AllowedMimeTypes.Contains(declaredMime))
         {
-            "image/jpeg" => new[] { ".jpg", ".jpeg" },
-            "image/png"  => new[] { ".png" },
-            "image/webp" => new[] { ".webp" },
-            _ => Array.Empty<string>()
-        };
-        if (expectedExt.Length > 0 && !expectedExt.Contains(ext))
-            return FlyerValidationResult.Fail($"Extension '{ext}' does not match declared content type '{mime}'");
+            return FlyerValidationResult.Fail($"Content type '{declaredMime}' is not allowed. Accepted: {string.Join(", ", FlyerPolicy.AllowedMimeTypes)}");
+        }
 
-        // 3. Read file into memory for signature check, size check, and hashing
+        var ext = Path.GetExtension(filename).ToLowerInvariant();
+        if (ExtensionMap.TryGetValue(declaredMime, out var expectedExt) && !expectedExt.Contains(ext))
+        {
+            return FlyerValidationResult.Fail($"Extension '{ext}' does not match declared content type '{declaredMime}'");
+        }
+
         stream.Position = 0;
         using var ms = new MemoryStream();
         await stream.CopyToAsync(ms, ct);
         var bytes = ms.ToArray();
 
-        // 4. File size
-        if (bytes.Length > FlyerPolicy.MaxFileSizeBytes)
-            return FlyerValidationResult.Fail($"File size {bytes.Length:N0} bytes exceeds the {FlyerPolicy.MaxFileSizeBytes / 1024 / 1024} MB limit");
-
         if (bytes.Length == 0)
+        {
             return FlyerValidationResult.Fail("File is empty");
+        }
 
-        // 5. Magic byte / file signature check
-        if (!FlyerPolicy.MagicBytes.TryGetValue(mime, out var magic))
-            return FlyerValidationResult.Fail($"No signature definition for MIME type '{mime}'");
+        if (bytes.Length > FlyerPolicy.MaxFileSizeBytes)
+        {
+            return FlyerValidationResult.Fail($"File size {bytes.Length:N0} bytes exceeds the {FlyerPolicy.MaxFileSizeBytes / 1024 / 1024} MB limit");
+        }
 
-        if (bytes.Length < magic.Length || !bytes.Take(magic.Length).SequenceEqual(magic))
-            return FlyerValidationResult.Fail("File signature does not match declared content type — file may be corrupted or misidentified");
+        var signature = _signatureInspector.Inspect(bytes);
+        if (signature.IsCorrupted || string.IsNullOrWhiteSpace(signature.DetectedContentType))
+        {
+            return FlyerValidationResult.Fail("File is corrupted or unreadable as an image.");
+        }
 
-        // 6. WebP sub-format check (bytes 8-11 must be "WEBP")
-        if (mime == "image/webp" && (bytes.Length < 12 || System.Text.Encoding.ASCII.GetString(bytes, 8, 4) != "WEBP"))
-            return FlyerValidationResult.Fail("File claims to be WebP but does not contain a valid WEBP marker");
+        var detectedMime = signature.DetectedContentType.Trim().ToLowerInvariant();
+        if (!FlyerPolicy.AllowedMimeTypes.Contains(detectedMime))
+        {
+            return FlyerValidationResult.Fail($"Detected content type '{detectedMime}' is not allowed.");
+        }
 
-        // 7. Content hash (SHA-256)
-        var hash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+        if (!string.Equals(declaredMime, detectedMime, StringComparison.OrdinalIgnoreCase))
+        {
+            return FlyerValidationResult.Fail($"Declared content type '{declaredMime}' does not match detected '{detectedMime}'.");
+        }
 
-        // 8. Duplicate detection — same hash + same submitter
-        var existing = await _store.FindByHashAsync(hash, submitterId, ct);
-        if (existing != null)
-            return FlyerValidationResult.Duplicate(hash, existing.AssetId);
+        if (!signature.WidthPx.HasValue || !signature.HeightPx.HasValue)
+        {
+            return FlyerValidationResult.Fail("Unable to determine image dimensions.");
+        }
 
-        // Reset stream position so caller can still read the bytes
+        if (signature.WidthPx.Value < FlyerPolicy.MinWidthPx || signature.HeightPx.Value < FlyerPolicy.MinHeightPx)
+        {
+            return FlyerValidationResult.Fail($"Image dimensions must be at least {FlyerPolicy.MinWidthPx}x{FlyerPolicy.MinHeightPx} pixels.");
+        }
+
+        if (!FlyerPolicy.AllowAnimatedImages && signature.IsAnimated)
+        {
+            return FlyerValidationResult.Fail("Animated image formats are not allowed for flyers.");
+        }
+
+        var hash = _checksumService.ComputeSha256Hex(bytes);
+        var duplicate = await _duplicateDetector.FindDuplicateAsync(
+            hash,
+            submitterId,
+            DateTimeOffset.UtcNow,
+            sourceReference,
+            allowSameSourceReupload,
+            ct);
+
+        if (duplicate is not null)
+        {
+            return FlyerValidationResult.Duplicate(hash, duplicate.ExistingAssetId);
+        }
+
         stream.Position = 0;
 
-        return FlyerValidationResult.Ok(hash);
+        return FlyerValidationResult.Ok(
+            hash,
+            detectedMime,
+            signature.WidthPx.Value,
+            signature.HeightPx.Value,
+            signature.IsAnimated);
     }
 }

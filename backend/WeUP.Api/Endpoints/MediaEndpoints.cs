@@ -221,6 +221,11 @@ public static class MediaEndpoints
         IFlyerUploadService flyerService,
         CancellationToken ct)
     {
+                var sourceReference = request.Query["sourceReference"].ToString().NullIfEmpty();
+                var allowSameSourceReupload = bool.TryParse(request.Query["allowSameSourceReupload"], out var allowSameSource)
+                    ? allowSameSource
+                    : false;
+
         // Extract submitter ID from query param or header
         var submitterId = request.Query["submitterId"].ToString();
         if (string.IsNullOrEmpty(submitterId))
@@ -235,15 +240,22 @@ public static class MediaEndpoints
         if (file == null)
             return Results.BadRequest(new { error = "No file provided" });
 
-        // Validate content type
-        if (!file.ContentType.StartsWith("image/jpeg") && !file.ContentType.StartsWith("image/png"))
-            return Results.BadRequest(new { error = "Only JPEG and PNG images allowed" });
+        var normalizedMime = file.ContentType.Split(';')[0].Trim().ToLowerInvariant();
+        if (!FlyerPolicy.AllowedMimeTypes.Contains(normalizedMime))
+            return Results.BadRequest(new { error = $"Only {string.Join(", ", FlyerPolicy.AllowedMimeTypes)} images allowed" });
 
         // Upload flyer — validation and lifecycle managed inside the service
         try
         {
             using var stream = file.OpenReadStream();
-            var assetId = await flyerService.UploadFlyerAsync(stream, file.FileName, file.ContentType, submitterId, ct);
+            var assetId = await flyerService.UploadFlyerAsync(
+                stream,
+                file.FileName,
+                file.ContentType,
+                submitterId,
+                sourceReference,
+                allowSameSourceReupload,
+                ct);
             return Results.Created($"/api/media/flyers/{assetId}", new UploadFlyerResponse(AssetId: assetId));
         }
         catch (FlyerUploadException ex) when (ex.ErrorCode == FlyerUploadErrorCode.Duplicate)
@@ -276,8 +288,15 @@ public static class MediaEndpoints
             ContentType: asset.ContentType,
             SubmitterId: asset.SubmitterId,
             UploadedAt: asset.UploadedAt,
-            S3Url: asset.S3Url,
-            LocalPath: asset.LocalPath));
+            Status: asset.Status,
+            ContentHash: asset.ContentHash,
+            StorageKey: asset.StorageKey,
+            Revision: asset.Revision,
+            ValidationFailureReason: asset.ValidationFailureReason,
+            WidthPx: asset.WidthPx,
+            HeightPx: asset.HeightPx,
+            IsAnimated: asset.IsAnimated,
+            S3Url: asset.S3Url));
     }
 
     /// <summary>
@@ -297,8 +316,15 @@ public static class MediaEndpoints
             ContentType: a.ContentType,
             SubmitterId: a.SubmitterId,
             UploadedAt: a.UploadedAt,
-            S3Url: a.S3Url,
-            LocalPath: a.LocalPath)).ToArray();
+            Status: a.Status,
+            ContentHash: a.ContentHash,
+            StorageKey: a.StorageKey,
+            Revision: a.Revision,
+            ValidationFailureReason: a.ValidationFailureReason,
+            WidthPx: a.WidthPx,
+            HeightPx: a.HeightPx,
+            IsAnimated: a.IsAnimated,
+            S3Url: a.S3Url)).ToArray();
 
         return Results.Ok(new ListUserFlyersResponse(Flyers: dtos));
     }
@@ -470,8 +496,15 @@ public record FlyerAssetDto(
     string ContentType,
     string SubmitterId,
     DateTimeOffset UploadedAt,
-    string? S3Url,
-    string? LocalPath);
+    string Status,
+    string ContentHash,
+    string StorageKey,
+    int Revision,
+    string? ValidationFailureReason,
+    int? WidthPx,
+    int? HeightPx,
+    bool IsAnimated,
+    string? S3Url);
 
 /// <summary>
 /// Response listing user's flyers.

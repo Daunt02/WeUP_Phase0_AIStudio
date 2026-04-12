@@ -15,5 +15,6 @@
     <!-- IHttpClientFactory for ingestion adapters (P10) -->
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.*" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.*" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.*" />
   </ItemGroup>
 </Project>

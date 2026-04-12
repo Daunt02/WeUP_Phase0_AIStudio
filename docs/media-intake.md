@@ -188,3 +188,24 @@ Uploader context resolution:
 - passes `flyerAssetIds` into publish payload when available
 
 No simulated success path remains for flyer uploads.
+
+## Flyer Validation and OCR Readiness (P26)
+
+Flyer uploads are validated server-side before they are marked ready for OCR:
+
+1. The backend receives bytes and creates a backend-generated storage key.
+2. Lifecycle moves `Initialized -> Uploaded` once intake receives the asset.
+3. `IFlyerAssetValidator` runs strict checks:
+   - MIME allowlist
+   - extension vs detected type mismatch
+   - max file size
+   - minimum dimensions
+   - corruption/readability via image decode
+   - animated format rejection when disabled
+   - SHA-256 checksum generation
+   - duplicate detection seam by hash + uploader within recency window
+4. On failure, lifecycle moves `Uploaded -> ValidationFailed` and stores a deterministic reason.
+5. On success, lifecycle moves `Uploaded -> ProcessingPending`.
+6. `ProcessingPending` is the handoff state for OCR and downstream moderation workflows.
+
+Operationally, OCR workers should only pick assets in `ProcessingPending` and should never process `ValidationFailed` assets.

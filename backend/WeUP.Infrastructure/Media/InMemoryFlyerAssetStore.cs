@@ -43,6 +43,20 @@ public sealed class InMemoryFlyerAssetStore : IFlyerAssetStore
         return Task.FromResult<FlyerAssetRecord?>(match);
     }
 
+    public Task<FlyerAssetRecord?> FindRecentByHashAsync(string contentHash, string submitterId, DateTimeOffset sinceUtc, CancellationToken ct = default)
+    {
+        var match = _assets.Values
+            .Where(a =>
+                a.ContentHash == contentHash &&
+                a.SubmitterId == submitterId &&
+                a.UploadedAt >= sinceUtc &&
+                a.Status != FlyerAssetStatus.Archived)
+            .OrderByDescending(a => a.UploadedAt)
+            .FirstOrDefault();
+
+        return Task.FromResult<FlyerAssetRecord?>(match);
+    }
+
     public Task<FlyerAssetRecord> UpdateStatusAsync(string assetId, FlyerAssetStatus next, CancellationToken ct = default)
     {
         if (!_assets.TryGetValue(assetId, out var current))
@@ -51,6 +65,14 @@ public sealed class InMemoryFlyerAssetStore : IFlyerAssetStore
         var updated = current.WithStatus(next);
         _assets[assetId] = updated;
         return Task.FromResult(updated);
+    }
+
+    public async Task<FlyerAssetRecord> UpdateValidationFailureAsync(string assetId, string failureReason, CancellationToken ct = default)
+    {
+        var updated = await UpdateStatusAsync(assetId, FlyerAssetStatus.ValidationFailed, ct);
+        updated = updated with { ValidationFailureReason = failureReason };
+        _assets[assetId] = updated;
+        return updated;
     }
 
     public Task DeleteAsync(string assetId, CancellationToken ct = default)

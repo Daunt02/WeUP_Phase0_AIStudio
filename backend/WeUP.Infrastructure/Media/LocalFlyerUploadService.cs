@@ -11,12 +11,17 @@ public sealed class LocalFlyerUploadService : IFlyerUploadService
 {
     private readonly IFlyerAssetStore _store;
     private readonly IFlyerAssetValidator _validator;
+    private readonly IFlyerAssetLifecyclePolicy _lifecyclePolicy;
     private readonly string _uploadDir;
 
-    public LocalFlyerUploadService(IFlyerAssetStore store, IFlyerAssetValidator validator)
+    public LocalFlyerUploadService(
+        IFlyerAssetStore store,
+        IFlyerAssetValidator validator,
+        IFlyerAssetLifecyclePolicy lifecyclePolicy)
     {
         _store = store;
         _validator = validator;
+        _lifecyclePolicy = lifecyclePolicy;
         _uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "uploads", "flyers");
         Directory.CreateDirectory(_uploadDir);
     }
@@ -26,34 +31,28 @@ public sealed class LocalFlyerUploadService : IFlyerUploadService
         string filename,
         string contentType,
         string submitterId,
+        string? sourceReference = null,
+        bool allowSameSourceReupload = false,
         CancellationToken ct = default)
     {
-        // Validate before any storage write
-        var validation = await _validator.ValidateAsync(fileStream, contentType, filename, submitterId, ct);
-
-        if (validation.IsDuplicate)
-            throw new FlyerUploadException(
-                $"This file has already been uploaded (asset: {validation.DuplicateAssetId})",
-                FlyerUploadErrorCode.Duplicate,
-                validation.DuplicateAssetId);
-
-        if (!validation.IsValid)
-            throw new FlyerUploadException(
-                validation.FailureReason ?? "Validation failed",
-                FlyerUploadErrorCode.ValidationFailed);
-
         var assetId = Guid.NewGuid().ToString("N");
-        var storageKey = $"{assetId}_{SanitizeFilename(filename)}";
+        var extension = Path.GetExtension(filename);
+        var safeExtension = string.IsNullOrWhiteSpace(extension) ? ".bin" : extension.ToLowerInvariant();
+        var storageKey = $"flyers/{DateTimeOffset.UtcNow:yyyyMM}/{assetId}{safeExtension}";
         var localPath = Path.Combine(_uploadDir, storageKey);
+        var localDir = Path.GetDirectoryName(localPath);
+        if (!string.IsNullOrWhiteSpace(localDir))
+        {
+            Directory.CreateDirectory(localDir);
+        }
 
-        // Write to local storage
+        // Persist upload first so all validation outcomes map to explicit lifecycle states.
         fileStream.Position = 0;
         await using var dest = File.OpenWrite(localPath);
         await fileStream.CopyToAsync(dest, ct);
         var fileSizeBytes = new FileInfo(localPath).Length;
 
-        // Create record: Initialized → Uploaded → ProcessingPending (auto-advance on local dev path)
-        var record = new FlyerAssetRecord
+        var record = await _store.SaveAsync(new FlyerAssetRecord
         {
             AssetId          = assetId,
             OriginalFilename = filename,
@@ -62,12 +61,50 @@ public sealed class LocalFlyerUploadService : IFlyerUploadService
             SubmitterId      = submitterId,
             UploadedAt       = DateTimeOffset.UtcNow,
             Status           = FlyerAssetStatus.Initialized,
-            ContentHash      = validation.ContentHash!,
+            ContentHash      = string.Empty,
             StorageKey       = storageKey,
             LocalPath        = localPath,
+            SourceReference  = sourceReference,
+        }, ct);
+
+        record = await _store.UpdateStatusAsync(record.AssetId, _lifecyclePolicy.Transition(record.Status, FlyerAssetStatus.Uploaded), ct);
+
+        await using var validationStream = File.OpenRead(localPath);
+        var validation = await _validator.ValidateAsync(
+            validationStream,
+            contentType,
+            filename,
+            submitterId,
+            sourceReference,
+            allowSameSourceReupload,
+            ct);
+
+        if (validation.IsDuplicate)
+        {
+            await _store.UpdateValidationFailureAsync(record.AssetId, "Duplicate upload detected", ct);
+            throw new FlyerUploadException(
+                $"This file has already been uploaded (asset: {validation.DuplicateAssetId})",
+                FlyerUploadErrorCode.Duplicate,
+                validation.DuplicateAssetId);
+        }
+
+        if (!validation.IsValid)
+        {
+            await _store.UpdateValidationFailureAsync(record.AssetId, validation.FailureReason ?? "Validation failed", ct);
+            throw new FlyerUploadException(
+                validation.FailureReason ?? "Validation failed",
+                FlyerUploadErrorCode.ValidationFailed);
+        }
+
+        record = record with
+        {
+            ContentHash = validation.ContentHash ?? string.Empty,
+            CanonicalContentType = validation.CanonicalContentType ?? contentType,
+            WidthPx = validation.WidthPx,
+            HeightPx = validation.HeightPx,
+            IsAnimated = validation.IsAnimated,
         };
 
-        record = record.WithStatus(FlyerAssetStatus.Uploaded);
         record = record.WithStatus(FlyerAssetStatus.ProcessingPending);
 
         await _store.SaveAsync(record, ct);
@@ -104,14 +141,23 @@ public sealed class LocalFlyerUploadService : IFlyerUploadService
     }
 
     private static FlyerAsset ToFlyerAsset(FlyerAssetRecord r) =>
-        new(r.AssetId, r.OriginalFilename, r.FileSizeBytes, r.ContentType, r.SubmitterId, r.UploadedAt, r.S3Url, r.LocalPath);
-
-    private static string SanitizeFilename(string filename)
-    {
-        var name = Path.GetFileNameWithoutExtension(filename);
-        var ext = Path.GetExtension(filename);
-        return (name.Length > 40 ? name[..40] : name) + ext;
-    }
+        new(
+            r.AssetId,
+            r.OriginalFilename,
+            r.FileSizeBytes,
+            r.ContentType,
+            r.SubmitterId,
+            r.UploadedAt,
+            r.Status.ToString(),
+            r.ContentHash,
+            r.StorageKey,
+            r.Revision,
+            r.ValidationFailureReason,
+            r.WidthPx,
+            r.HeightPx,
+            r.IsAnimated,
+            r.S3Url,
+            r.LocalPath);
 }
 
 /// <summary>Error codes for structured flyer upload failures.</summary>

@@ -144,6 +144,10 @@ builder.Services.AddSingleton<IAnalyticsService, ConsoleAnalyticsService>();
 
 // Media upload services (P25/P26) — flyer asset management with lifecycle and validation
 builder.Services.AddSingleton<IFlyerAssetStore, InMemoryFlyerAssetStore>();
+builder.Services.AddSingleton<IFileSignatureInspector, ImageSharpFileSignatureInspector>();
+builder.Services.AddSingleton<IMediaChecksumService, Sha256ChecksumService>();
+builder.Services.AddSingleton<IFlyerDuplicateDetector, FlyerDuplicateDetector>();
+builder.Services.AddSingleton<IFlyerAssetLifecyclePolicy, FlyerAssetLifecyclePolicy>();
 builder.Services.AddSingleton<IFlyerAssetValidator, FlyerAssetValidator>();
 builder.Services.AddSingleton<IFlyerUploadService, LocalFlyerUploadService>();
 builder.Services.AddSingleton<IMediaStorageService, LocalMediaStorageService>();

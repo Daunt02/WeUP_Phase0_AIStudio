@@ -15,6 +15,8 @@ public interface IFlyerUploadService
         string filename,
         string contentType,
         string submitterId,
+        string? sourceReference = null,
+        bool allowSameSourceReupload = false,
         CancellationToken ct = default);
 
     /// <summary>
@@ -43,5 +45,13 @@ public record FlyerAsset(
     string ContentType,
     string SubmitterId,
     DateTimeOffset UploadedAt,
+    string Status,
+    string ContentHash,
+    string StorageKey,
+    int Revision,
+    string? ValidationFailureReason,
+    int? WidthPx,
+    int? HeightPx,
+    bool IsAnimated,
     string? S3Url = null,
     string? LocalPath = null);
