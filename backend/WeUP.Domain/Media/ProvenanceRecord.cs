@@ -15,6 +15,30 @@ public enum SourceTier
 }
 
 /// <summary>
+/// P27: Actor-origin classification for uploaded flyer media.
+/// </summary>
+public enum FlyerUploadOrigin
+{
+    ManualUploader,
+    VenueOwner,
+    SystemImported,
+    PartnerProvided,
+    Scraped,
+}
+
+/// <summary>
+/// P27: Source context for where the media payload came from.
+/// </summary>
+public enum FlyerSourceType
+{
+    DirectUpload,
+    SubmissionAttachment,
+    IngestionJobImport,
+    PartnerFeed,
+    ScrapedMedia,
+}
+
+/// <summary>
 /// P27: Provenance record for a submitted flyer.
 /// Captures who submitted, what source tier, and a hashed identity reference.
 /// Raw submitter PII is never stored here — only a one-way hash.
@@ -27,6 +51,21 @@ public sealed record ProvenanceRecord
     public required string AssetId { get; init; }
 
     public required SourceTier SourceTier { get; init; }
+
+    /// <summary>
+    /// User id of the uploader when available.
+    /// </summary>
+    public string? UploaderUserId { get; init; }
+
+    /// <summary>
+    /// High-level provenance origin classification.
+    /// </summary>
+    public required FlyerUploadOrigin UploadOrigin { get; init; }
+
+    /// <summary>
+    /// Detailed source context classification.
+    /// </summary>
+    public required FlyerSourceType SourceType { get; init; }
 
     /// <summary>
     /// SHA-256 hash of the submitter's user ID — not the raw ID.
@@ -44,6 +83,12 @@ public sealed record ProvenanceRecord
 
     /// <summary>EventSubmission ID if this flyer was submitted as part of an event submission.</summary>
     public string? SubmissionId { get; init; }
+
+    /// <summary>Ingestion job id when asset originated from ingestion workflows.</summary>
+    public string? IngestionJobId { get; init; }
+
+    /// <summary>Partner provider name for partner-fed media.</summary>
+    public string? PartnerProvider { get; init; }
 
     /// <summary>Notes left by the submitter at intake time (optional).</summary>
     public string? SubmitterNote { get; init; }

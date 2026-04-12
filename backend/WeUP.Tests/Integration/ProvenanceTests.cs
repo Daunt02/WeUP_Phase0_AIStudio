@@ -188,6 +188,8 @@ public class ProvenanceTests
         Assert.NotNull(prov);
         Assert.Equal(result.AssetId, prov.AssetId);
         Assert.Equal(SourceTier.T3_Unverified, prov.SourceTier);
+        Assert.Equal(FlyerUploadOrigin.ManualUploader, prov.UploadOrigin);
+        Assert.Equal(FlyerSourceType.DirectUpload, prov.SourceType);
 
         var evidence = await evidenceRepo.GetAsync(result.EvidenceId);
         Assert.NotNull(evidence);
@@ -222,6 +224,58 @@ public class ProvenanceTests
 
         Assert.Equal("sub-001", prov!.SubmissionId);
         Assert.Equal("sub-001", evidence!.SubmissionId);
+        Assert.Contains("sub-001", evidence.LinkedWorkflowIds);
+    }
+
+    [Fact]
+    public async Task QueryService_GeneratesEvidenceGradeProjection()
+    {
+        var (service, assetStore, provenanceRepo, evidenceRepo) = BuildIntakeService();
+
+        using var stream = new MemoryStream(MakeValidPng(256, 256));
+        var result = await service.IntakeAsync(
+            stream,
+            "projection.png",
+            "image/png",
+            "uploader-a",
+            sourceTier: SourceTier.T2_Approved,
+            uploadOrigin: FlyerUploadOrigin.PartnerProvided,
+            sourceType: FlyerSourceType.PartnerFeed,
+            submissionId: "sub-proj",
+            ingestionJobId: "ing-42",
+            moderationItemId: "mod-17",
+            partnerProvider: "PartnerX");
+
+        var queryService = new FlyerEvidenceQueryService(assetStore, provenanceRepo, evidenceRepo);
+        var detail = await queryService.GetAssetDetailAsync(result.AssetId);
+
+        Assert.NotNull(detail);
+        Assert.Equal("uploader-a", detail!.Provenance.UploaderUserId);
+        Assert.Equal(FlyerUploadOrigin.PartnerProvided, detail.Provenance.UploadOrigin);
+        Assert.Equal(FlyerSourceType.PartnerFeed, detail.Provenance.SourceType);
+        Assert.Equal("sub-proj", detail.Evidence.SubmissionId);
+        Assert.Equal("ing-42", detail.Evidence.IngestionJobId);
+        Assert.Equal("mod-17", detail.Evidence.ModerationItemId);
+        Assert.True(detail.Evidence.OcrReady);
+        Assert.NotEmpty(detail.Evidence.ProcessingHistory);
+    }
+
+    [Fact]
+    public async Task QueryService_ListBySubmissionId_ReturnsLinkedSubmissionMedia()
+    {
+        var (service, assetStore, provenanceRepo, evidenceRepo) = BuildIntakeService();
+
+        using var streamA = new MemoryStream(MakeValidPng(200, 200));
+        using var streamB = new MemoryStream(MakeValidPng(220, 220));
+
+        await service.IntakeAsync(streamA, "a.png", "image/png", "user-sub", submissionId: "sub-link-1");
+        await service.IntakeAsync(streamB, "b.png", "image/png", "user-sub", submissionId: "sub-link-1");
+
+        var queryService = new FlyerEvidenceQueryService(assetStore, provenanceRepo, evidenceRepo);
+        var linked = await queryService.ListBySubmissionIdAsync("sub-link-1");
+
+        Assert.Equal(2, linked.Length);
+        Assert.All(linked, item => Assert.Equal("sub-link-1", item.Evidence.SubmissionId));
     }
 
     [Fact]
@@ -258,6 +312,8 @@ public class ProvenanceTests
             ProvenanceId = provenanceId,
             AssetId = assetId,
             SourceTier = SourceTier.T3_Unverified,
+            UploadOrigin = FlyerUploadOrigin.ManualUploader,
+            SourceType = FlyerSourceType.DirectUpload,
             SubmitterHash = submitterHash ?? ProvenanceRecord.HashSubmitterId("test-user"),
             RecordedAt = DateTimeOffset.UtcNow,
             BaselineAuthority = 0.35,
@@ -268,6 +324,7 @@ public class ProvenanceTests
         {
             EvidenceId = evidenceId,
             AssetId = assetId,
+            OriginalAssetId = assetId,
             ProvenanceId = provenanceId,
             FlyerType = FlyerType.Unknown,
             Status = status,

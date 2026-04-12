@@ -9,9 +9,16 @@ public sealed class MediaAssetEntity
     public string ContentType { get; set; } = string.Empty;
     public long FileSizeBytes { get; set; }
     public string ChecksumSha256 { get; set; } = string.Empty;
+    public string? ContentHash { get; set; }
     public string OriginalFilename { get; set; } = string.Empty;
+    public string? CanonicalContentType { get; set; }
+    public int? WidthPx { get; set; }
+    public int? HeightPx { get; set; }
+    public bool IsAnimated { get; set; }
     public DateTimeOffset UploadedAt { get; set; }
     public string? UploaderUserId { get; set; }
+    public string? UploadOrigin { get; set; }
+    public string? SourceType { get; set; }
     public string OwnerType { get; set; } = string.Empty;
     public string? OwnerId { get; set; }
     public string? VenueId { get; set; }

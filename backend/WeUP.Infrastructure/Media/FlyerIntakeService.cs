@@ -35,8 +35,13 @@ public sealed class FlyerIntakeService : IFlyerIntakeService
         string contentType,
         string submitterId,
         SourceTier sourceTier = SourceTier.T3_Unverified,
+        FlyerUploadOrigin uploadOrigin = FlyerUploadOrigin.ManualUploader,
+        FlyerSourceType sourceType = FlyerSourceType.DirectUpload,
         string? submissionId = null,
+        string? ingestionJobId = null,
+        string? moderationItemId = null,
         string? sourceUrl = null,
+        string? partnerProvider = null,
         string? submitterNote = null,
         CancellationToken ct = default)
     {
@@ -101,11 +106,16 @@ public sealed class FlyerIntakeService : IFlyerIntakeService
             ProvenanceId       = Guid.NewGuid().ToString("N"),
             AssetId            = assetRecord.AssetId,
             SourceTier         = sourceTier,
+            UploaderUserId     = submitterId,
+            UploadOrigin       = uploadOrigin,
+            SourceType         = sourceType,
             SubmitterHash      = ProvenanceRecord.HashSubmitterId(submitterId),
             RecordedAt         = DateTimeOffset.UtcNow,
             BaselineAuthority  = ProvenanceRecord.BaselineAuthorityForTier(sourceTier),
             SubmissionId       = submissionId,
+            IngestionJobId     = ingestionJobId,
             SourceUrl          = sourceUrl,
+            PartnerProvider    = partnerProvider,
             SubmitterNote      = submitterNote,
         };
 
@@ -116,10 +126,27 @@ public sealed class FlyerIntakeService : IFlyerIntakeService
         {
             EvidenceId    = Guid.NewGuid().ToString("N"),
             AssetId       = assetRecord.AssetId,
+            OriginalAssetId = assetRecord.AssetId,
             ProvenanceId  = provenance.ProvenanceId,
             SubmissionId  = submissionId,
+            IngestionJobId = ingestionJobId,
+            ModerationItemId = moderationItemId,
             FlyerType     = FlyerType.Unknown,   // classified by OCR pipeline later
             Status        = EvidenceStatus.Pending,
+            OcrReady      = true,
+            ProcessingHistory =
+            [
+                "intake:received",
+                "asset:stored",
+                "provenance:recorded",
+                "evidence:created",
+            ],
+            LinkedWorkflowIds =
+            [
+                ..(string.IsNullOrWhiteSpace(submissionId) ? [] : new[] { submissionId }),
+                ..(string.IsNullOrWhiteSpace(ingestionJobId) ? [] : new[] { ingestionJobId }),
+                ..(string.IsNullOrWhiteSpace(moderationItemId) ? [] : new[] { moderationItemId }),
+            ],
             CreatedAt     = DateTimeOffset.UtcNow,
         };
 

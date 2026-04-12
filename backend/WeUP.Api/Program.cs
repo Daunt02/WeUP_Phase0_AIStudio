@@ -143,31 +143,40 @@ builder.Services.AddSingleton<IMarketPolicyService>(sp => sp.GetRequiredService<
 builder.Services.AddSingleton<IAnalyticsService, ConsoleAnalyticsService>();
 
 // Media upload services (P25/P26) — flyer asset management with lifecycle and validation
-builder.Services.AddSingleton<IFlyerAssetStore, InMemoryFlyerAssetStore>();
 builder.Services.AddSingleton<IFileSignatureInspector, ImageSharpFileSignatureInspector>();
 builder.Services.AddSingleton<IMediaChecksumService, Sha256ChecksumService>();
-builder.Services.AddSingleton<IFlyerDuplicateDetector, FlyerDuplicateDetector>();
 builder.Services.AddSingleton<IFlyerAssetLifecyclePolicy, FlyerAssetLifecyclePolicy>();
-builder.Services.AddSingleton<IFlyerAssetValidator, FlyerAssetValidator>();
-builder.Services.AddSingleton<IFlyerUploadService, LocalFlyerUploadService>();
+builder.Services.AddScoped<IFlyerAssetValidator, FlyerAssetValidator>();
+builder.Services.AddScoped<IFlyerUploadService, LocalFlyerUploadService>();
 builder.Services.AddSingleton<IMediaStorageService, LocalMediaStorageService>();
 builder.Services.AddSingleton<MediaIntakeValidation>();
 
 if (!preferSeededInMemoryIngestion && !string.IsNullOrWhiteSpace(connStr))
 {
+    builder.Services.AddScoped<IFlyerAssetStore, EfFlyerAssetStore>();
+    builder.Services.AddScoped<IFlyerDuplicateDetector, FlyerDuplicateDetector>();
     builder.Services.AddScoped<IMediaIntakeRepository, EfMediaIntakeRepository>();
     builder.Services.AddScoped<IMediaIntakeService, MediaIntakeService>();
+
+    // Flyer provenance and evidence services (P27) — durable EF/Postgres path
+    builder.Services.AddScoped<IProvenanceRepository, EfProvenanceRepository>();
+    builder.Services.AddScoped<IFlyerEvidenceRepository, EfFlyerEvidenceRepository>();
+    builder.Services.AddScoped<IFlyerIntakeService, FlyerIntakeService>();
+    builder.Services.AddScoped<IFlyerEvidenceQueryService, FlyerEvidenceQueryService>();
 }
 else
 {
+    builder.Services.AddSingleton<IFlyerAssetStore, InMemoryFlyerAssetStore>();
+    builder.Services.AddSingleton<IFlyerDuplicateDetector, FlyerDuplicateDetector>();
     builder.Services.AddSingleton<IMediaIntakeRepository, InMemoryMediaIntakeRepository>();
     builder.Services.AddSingleton<IMediaIntakeService, MediaIntakeService>();
-}
 
-// Flyer provenance and evidence services (P27) — intake pipeline with audit trail
-builder.Services.AddSingleton<IProvenanceRepository, InMemoryProvenanceRepository>();
-builder.Services.AddSingleton<IFlyerEvidenceRepository, InMemoryFlyerEvidenceRepository>();
-builder.Services.AddSingleton<IFlyerIntakeService, FlyerIntakeService>();
+    // Flyer provenance and evidence services (P27) — dev/test in-memory path
+    builder.Services.AddSingleton<IProvenanceRepository, InMemoryProvenanceRepository>();
+    builder.Services.AddSingleton<IFlyerEvidenceRepository, InMemoryFlyerEvidenceRepository>();
+    builder.Services.AddSingleton<IFlyerIntakeService, FlyerIntakeService>();
+    builder.Services.AddSingleton<IFlyerEvidenceQueryService, FlyerEvidenceQueryService>();
+}
 builder.Services.AddSingleton<Phase0SeedLoader>();
 builder.Services.AddSingleton<Phase0SeedService>();
 

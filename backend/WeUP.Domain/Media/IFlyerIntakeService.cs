@@ -26,8 +26,13 @@ public interface IFlyerIntakeService
         string contentType,
         string submitterId,
         SourceTier sourceTier = SourceTier.T3_Unverified,
+        FlyerUploadOrigin uploadOrigin = FlyerUploadOrigin.ManualUploader,
+        FlyerSourceType sourceType = FlyerSourceType.DirectUpload,
         string? submissionId = null,
+        string? ingestionJobId = null,
+        string? moderationItemId = null,
         string? sourceUrl = null,
+        string? partnerProvider = null,
         string? submitterNote = null,
         CancellationToken ct = default);
 

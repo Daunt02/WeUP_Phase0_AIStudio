@@ -34,6 +34,9 @@ public sealed record FlyerEvidenceRecord
     /// <summary>FK to FlyerAssetRecord.AssetId</summary>
     public required string AssetId { get; init; }
 
+    /// <summary>Original uploaded asset id that all derivative artifacts trace back to.</summary>
+    public required string OriginalAssetId { get; init; }
+
     /// <summary>FK to ProvenanceRecord.ProvenanceId</summary>
     public required string ProvenanceId { get; init; }
 
@@ -51,11 +54,43 @@ public sealed record FlyerEvidenceRecord
     public string? OcrText { get; init; }
 
     /// <summary>
+    /// Indicates if this asset should be consumed by OCR pipelines.
+    /// </summary>
+    public bool OcrReady { get; init; } = true;
+
+    /// <summary>
     /// Confidence score 0.0–1.0 for the extracted event data.
     /// Incorporates OCR legibility, field completeness, and source authority.
     /// Null until scoring pipeline runs.
     /// </summary>
     public double? ConfidenceScore { get; init; }
+
+    /// <summary>
+    /// List of derivative asset ids (for thumbnails/crops/OCR staging) generated from OriginalAssetId.
+    /// </summary>
+    public string[] DerivativeAssetIds { get; init; } = [];
+
+    /// <summary>
+    /// Audit-friendly processing history entries across intake, OCR, moderation, and enrichment.
+    /// </summary>
+    public string[] ProcessingHistory { get; init; } = [];
+
+    /// <summary>
+    /// Captured validation failures that should remain visible to reviewers.
+    /// </summary>
+    public string[] ValidationFailures { get; init; } = [];
+
+    /// <summary>Linked ingestion job id when present.</summary>
+    public string? IngestionJobId { get; init; }
+
+    /// <summary>Linked moderation queue item id when present.</summary>
+    public string? ModerationItemId { get; init; }
+
+    /// <summary>Canonical event id after reviewer linkage/approval.</summary>
+    public string? CanonicalEventId { get; init; }
+
+    /// <summary>Workflow ids connected to this evidence record (submission/ingestion/moderation/OCR).</summary>
+    public string[] LinkedWorkflowIds { get; init; } = [];
 
     public required DateTimeOffset CreatedAt { get; init; }
 
@@ -65,7 +100,12 @@ public sealed record FlyerEvidenceRecord
     // ── Helpers ─────────────────────────────────────────────────────────────
 
     public FlyerEvidenceRecord WithEventLink(string eventId) =>
-        this with { EventId = eventId, Status = EvidenceStatus.Linked };
+        this with
+        {
+            EventId = eventId,
+            CanonicalEventId = eventId,
+            Status = EvidenceStatus.Linked,
+        };
 
     public FlyerEvidenceRecord WithSubmissionLink(string submissionId) =>
         this with { SubmissionId = submissionId, Status = EvidenceStatus.Linked };

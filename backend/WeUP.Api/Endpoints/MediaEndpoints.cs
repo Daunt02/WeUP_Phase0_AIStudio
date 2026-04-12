@@ -60,6 +60,22 @@ public static class MediaEndpoints
         group.MapGet("/flyers/evidence/pending", ListPendingEvidence)
             .WithName("ListPendingEvidence")
             .WithDescription("P27: List all pending (unlinked) flyer evidence records for moderation");
+
+        group.MapGet("/flyers/assets/{assetId}/detail", GetFlyerAssetDetail)
+            .WithName("GetFlyerAssetDetail")
+            .WithDescription("P27: Evidence-grade flyer asset detail projection for review surfaces.");
+
+        group.MapGet("/flyers/uploader/{uploaderUserId}/assets", ListUploaderFlyerAssets)
+            .WithName("ListUploaderFlyerAssets")
+            .WithDescription("P27: List evidence-grade flyer assets for a specific uploader.");
+
+        group.MapGet("/flyers/review/summaries", ListReviewFlyerSummaries)
+            .WithName("ListReviewFlyerSummaries")
+            .WithDescription("P27: Moderation-facing flyer evidence summaries.");
+
+        group.MapGet("/flyers/submission/{submissionId}", ListFlyersBySubmission)
+            .WithName("ListFlyersBySubmission")
+            .WithDescription("P27: Linked submission/media lookup for flyer evidence records.");
     }
 
     private static async Task<IResult> InitializeUpload(
@@ -363,8 +379,29 @@ public static class MediaEndpoints
             _    => SourceTier.T3_Unverified,
         };
 
+        var uploadOrigin = request.Query["uploadOrigin"].ToString().ToLowerInvariant() switch
+        {
+            "venueowner" => FlyerUploadOrigin.VenueOwner,
+            "systemimported" => FlyerUploadOrigin.SystemImported,
+            "partnerprovided" => FlyerUploadOrigin.PartnerProvided,
+            "scraped" => FlyerUploadOrigin.Scraped,
+            _ => FlyerUploadOrigin.ManualUploader,
+        };
+
+        var sourceType = request.Query["sourceType"].ToString().ToLowerInvariant() switch
+        {
+            "submissionattachment" => FlyerSourceType.SubmissionAttachment,
+            "ingestionjobimport" => FlyerSourceType.IngestionJobImport,
+            "partnerfeed" => FlyerSourceType.PartnerFeed,
+            "scrapedmedia" => FlyerSourceType.ScrapedMedia,
+            _ => FlyerSourceType.DirectUpload,
+        };
+
         var submissionId  = request.Query["submissionId"].ToString().NullIfEmpty();
+        var ingestionJobId = request.Query["ingestionJobId"].ToString().NullIfEmpty();
+        var moderationItemId = request.Query["moderationItemId"].ToString().NullIfEmpty();
         var sourceUrl     = request.Query["sourceUrl"].ToString().NullIfEmpty();
+        var partnerProvider = request.Query["partnerProvider"].ToString().NullIfEmpty();
         var submitterNote = request.Query["note"].ToString().NullIfEmpty();
 
         if (!request.HasFormContentType)
@@ -380,7 +417,17 @@ public static class MediaEndpoints
             using var stream = file.OpenReadStream();
             var result = await intakeService.IntakeAsync(
                 stream, file.FileName, file.ContentType,
-                submitterId, sourceTier, submissionId, sourceUrl, submitterNote, ct);
+                submitterId,
+                sourceTier,
+                uploadOrigin,
+                sourceType,
+                submissionId,
+                ingestionJobId,
+                moderationItemId,
+                sourceUrl,
+                partnerProvider,
+                submitterNote,
+                ct);
 
             return Results.Created($"/api/media/flyers/{result.AssetId}",
                 new FlyerIntakeResponse(
@@ -441,6 +488,43 @@ public static class MediaEndpoints
                 r.OcrText, r.ConfidenceScore, r.CreatedAt,
                 r.EventId, r.SubmissionId)).ToArray(),
             Count: records.Length));
+    }
+
+    private static async Task<IResult> GetFlyerAssetDetail(
+        string assetId,
+        IFlyerEvidenceQueryService queryService,
+        CancellationToken ct)
+    {
+        var detail = await queryService.GetAssetDetailAsync(assetId, ct);
+        return detail is null ? Results.NotFound(new { error = $"Flyer asset {assetId} not found" }) : Results.Ok(detail);
+    }
+
+    private static async Task<IResult> ListUploaderFlyerAssets(
+        string uploaderUserId,
+        IFlyerEvidenceQueryService queryService,
+        CancellationToken ct)
+    {
+        var assets = await queryService.ListUploaderAssetsAsync(uploaderUserId, ct);
+        return Results.Ok(new { uploaderUserId, count = assets.Length, assets });
+    }
+
+    private static async Task<IResult> ListReviewFlyerSummaries(
+        HttpRequest request,
+        IFlyerEvidenceQueryService queryService,
+        CancellationToken ct)
+    {
+        var limit = int.TryParse(request.Query["limit"], out var parsed) && parsed > 0 ? parsed : 100;
+        var items = await queryService.ListReviewSummariesAsync(limit, ct);
+        return Results.Ok(new { count = items.Length, items });
+    }
+
+    private static async Task<IResult> ListFlyersBySubmission(
+        string submissionId,
+        IFlyerEvidenceQueryService queryService,
+        CancellationToken ct)
+    {
+        var items = await queryService.ListBySubmissionIdAsync(submissionId, ct);
+        return Results.Ok(new { submissionId, count = items.Length, items });
     }
 }
 

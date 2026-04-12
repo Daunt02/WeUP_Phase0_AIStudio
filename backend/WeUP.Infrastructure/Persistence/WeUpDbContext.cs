@@ -22,6 +22,8 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
     public DbSet<IngestionAuditEntity> IngestionAudits => Set<IngestionAuditEntity>();
     public DbSet<MediaAssetEntity> MediaAssets => Set<MediaAssetEntity>();
     public DbSet<MediaUploadEntity> MediaUploads => Set<MediaUploadEntity>();
+    public DbSet<FlyerProvenanceEntity> FlyerProvenances => Set<FlyerProvenanceEntity>();
+    public DbSet<FlyerEvidenceEntity> FlyerEvidence => Set<FlyerEvidenceEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -131,8 +133,15 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
             b.Property(e => e.Status).HasMaxLength(64).IsRequired();
             b.Property(e => e.ContentType).HasMaxLength(128).IsRequired();
             b.Property(e => e.ChecksumSha256).HasMaxLength(128).IsRequired();
+            b.Property(e => e.ContentHash).HasMaxLength(128);
             b.Property(e => e.OriginalFilename).HasMaxLength(512).IsRequired();
+            b.Property(e => e.CanonicalContentType).HasMaxLength(128);
+            b.Property(e => e.WidthPx);
+            b.Property(e => e.HeightPx);
+            b.Property(e => e.IsAnimated);
             b.Property(e => e.UploaderUserId).HasMaxLength(128);
+            b.Property(e => e.UploadOrigin).HasMaxLength(64);
+            b.Property(e => e.SourceType).HasMaxLength(64);
             b.Property(e => e.OwnerType).HasMaxLength(64).IsRequired();
             b.Property(e => e.OwnerId).HasMaxLength(128);
             b.Property(e => e.VenueId).HasMaxLength(128);
@@ -148,6 +157,9 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
             b.HasIndex(e => e.AssetId).IsUnique();
             b.HasIndex(e => new { e.OwnerType, e.OwnerId });
             b.HasIndex(e => e.Status);
+            b.HasIndex(e => e.UploaderUserId);
+            b.HasIndex(e => e.SubmissionId);
+            b.HasIndex(e => e.ContentHash);
         });
 
         modelBuilder.Entity<MediaUploadEntity>(b =>
@@ -162,6 +174,62 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
             b.HasIndex(e => e.UploadId).IsUnique();
             b.HasIndex(e => e.AssetId);
             b.HasIndex(e => e.Status);
+        });
+
+        modelBuilder.Entity<FlyerProvenanceEntity>(b =>
+        {
+            b.ToTable("flyer_provenance");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.ProvenanceId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.AssetId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.SourceTier).HasMaxLength(32).IsRequired();
+            b.Property(e => e.UploaderUserId).HasMaxLength(128);
+            b.Property(e => e.UploadOrigin).HasMaxLength(64).IsRequired();
+            b.Property(e => e.SourceType).HasMaxLength(64).IsRequired();
+            b.Property(e => e.SubmitterHash).HasMaxLength(128).IsRequired();
+            b.Property(e => e.SourceUrl).HasMaxLength(2048);
+            b.Property(e => e.SubmissionId).HasMaxLength(128);
+            b.Property(e => e.IngestionJobId).HasMaxLength(128);
+            b.Property(e => e.PartnerProvider).HasMaxLength(256);
+            b.Property(e => e.SubmitterNote).HasMaxLength(4000);
+            b.HasIndex(e => e.ProvenanceId).IsUnique();
+            b.HasIndex(e => e.AssetId);
+            b.HasIndex(e => e.UploaderUserId);
+            b.HasIndex(e => e.SubmitterHash);
+            b.HasIndex(e => e.SubmissionId);
+            b.HasIndex(e => e.IngestionJobId);
+        });
+
+        modelBuilder.Entity<FlyerEvidenceEntity>(b =>
+        {
+            b.ToTable("flyer_evidence");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.EvidenceId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.AssetId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.OriginalAssetId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.ProvenanceId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.EventId).HasMaxLength(128);
+            b.Property(e => e.SubmissionId).HasMaxLength(128);
+            b.Property(e => e.FlyerType).HasMaxLength(64).IsRequired();
+            b.Property(e => e.Status).HasMaxLength(64).IsRequired();
+            b.Property(e => e.OcrReady).IsRequired();
+            b.Property(e => e.OcrText).HasColumnType("text");
+            b.Property(e => e.DerivativeAssetIdsJson).HasColumnType("jsonb");
+            b.Property(e => e.ProcessingHistoryJson).HasColumnType("jsonb");
+            b.Property(e => e.ValidationFailuresJson).HasColumnType("jsonb");
+            b.Property(e => e.IngestionJobId).HasMaxLength(128);
+            b.Property(e => e.ModerationItemId).HasMaxLength(128);
+            b.Property(e => e.CanonicalEventId).HasMaxLength(128);
+            b.Property(e => e.LinkedWorkflowIdsJson).HasColumnType("jsonb");
+            b.Property(e => e.ReviewNotes).HasMaxLength(4000);
+            b.HasIndex(e => e.EvidenceId).IsUnique();
+            b.HasIndex(e => e.AssetId);
+            b.HasIndex(e => e.ProvenanceId);
+            b.HasIndex(e => e.Status);
+            b.HasIndex(e => e.SubmissionId);
+            b.HasIndex(e => e.IngestionJobId);
+            b.HasIndex(e => e.ModerationItemId);
+            b.HasIndex(e => e.CanonicalEventId);
         });
     }
 }
