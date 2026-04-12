@@ -155,9 +155,13 @@ builder.Services.AddSingleton<MediaIntakeValidation>();
 // Video flyer intake services (P28)
 builder.Services.AddSingleton<VideoIntakeValidation>();
 builder.Services.AddSingleton<IVideoStorageService, LocalVideoStorageService>();
-builder.Services.AddSingleton<InMemoryVideoFlyerRepository>();
-builder.Services.AddSingleton<IVideoFlyerRepository>(sp => sp.GetRequiredService<InMemoryVideoFlyerRepository>());
-builder.Services.AddSingleton<IVideoFlyerUploadService, VideoFlyerUploadService>();
+builder.Services.AddSingleton<IVideoMetadataReader, DeterministicVideoMetadataReader>();
+builder.Services.AddSingleton<IVideoFrameExtractor, DeterministicVideoFrameExtractor>();
+builder.Services.AddSingleton<IPosterSelectionService, HeuristicPosterSelectionService>();
+builder.Services.AddScoped<IVideoDerivedAssetRegistrar, VideoDerivedAssetRegistrar>();
+builder.Services.AddScoped<IVideoProcessingOrchestrator, VideoProcessingOrchestrator>();
+builder.Services.AddScoped<IVideoFlyerUploadService, VideoFlyerUploadService>();
+builder.Services.AddScoped<IVideoDerivedAssetQueryService, VideoDerivedAssetQueryService>();
 
 if (!preferSeededInMemoryIngestion && !string.IsNullOrWhiteSpace(connStr))
 {
@@ -171,6 +175,10 @@ if (!preferSeededInMemoryIngestion && !string.IsNullOrWhiteSpace(connStr))
     builder.Services.AddScoped<IFlyerEvidenceRepository, EfFlyerEvidenceRepository>();
     builder.Services.AddScoped<IFlyerIntakeService, FlyerIntakeService>();
     builder.Services.AddScoped<IFlyerEvidenceQueryService, FlyerEvidenceQueryService>();
+
+    // Video flyer persistence (P29) — durable EF/Postgres path
+    builder.Services.AddScoped<IVideoFlyerRepository, EfVideoFlyerRepository>();
+    builder.Services.AddScoped<IVideoDerivedAssetRepository, EfVideoDerivedAssetRepository>();
 }
 else
 {
@@ -184,6 +192,12 @@ else
     builder.Services.AddSingleton<IFlyerEvidenceRepository, InMemoryFlyerEvidenceRepository>();
     builder.Services.AddSingleton<IFlyerIntakeService, FlyerIntakeService>();
     builder.Services.AddSingleton<IFlyerEvidenceQueryService, FlyerEvidenceQueryService>();
+
+    // Video flyer persistence (P29) — dev/test in-memory path
+    builder.Services.AddSingleton<InMemoryVideoFlyerRepository>();
+    builder.Services.AddSingleton<IVideoFlyerRepository>(sp => sp.GetRequiredService<InMemoryVideoFlyerRepository>());
+    builder.Services.AddSingleton<InMemoryVideoDerivedAssetRepository>();
+    builder.Services.AddSingleton<IVideoDerivedAssetRepository>(sp => sp.GetRequiredService<InMemoryVideoDerivedAssetRepository>());
 }
 builder.Services.AddSingleton<Phase0SeedLoader>();
 builder.Services.AddSingleton<Phase0SeedService>();

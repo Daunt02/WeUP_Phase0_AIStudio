@@ -17,8 +17,7 @@ namespace WeUP.Tests.Integration;
 ///  - Unsupported content type returns 422
 ///  - Oversized file returns 422
 ///  - Unauthenticated request returns 401
-///  - Completion signal creates a processing job
-///  - Job lookup returns Queued status
+///  - Completion signal runs deterministic processing and creates derived assets
 ///  - Failure signal rejects asset; no job created
 /// </summary>
 public sealed class VideoFlyerUploadApiTests : IClassFixture<VideoFlyerUploadApiTests.VideoTestApiFactory>
@@ -158,26 +157,49 @@ public sealed class VideoFlyerUploadApiTests : IClassFixture<VideoFlyerUploadApi
 
         Assert.Equal(HttpStatusCode.OK, completeResponse.StatusCode);
         var completion = await completeResponse.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.Equal("ProcessingPending", completion.GetProperty("status").GetString());
+        Assert.Equal("ProcessingComplete", completion.GetProperty("status").GetString());
         var jobId = completion.GetProperty("jobId").GetString();
         Assert.False(string.IsNullOrWhiteSpace(jobId));
 
-        // Asset must be in ProcessingPending
+        // Asset must be in ProcessingComplete with derived poster
         var assetResponse = await _client.GetAsync($"/api/media/video-assets/{assetId}");
         Assert.Equal(HttpStatusCode.OK, assetResponse.StatusCode);
         var asset = await assetResponse.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.Equal("ProcessingPending", asset.GetProperty("status").GetString());
+        Assert.Equal("ProcessingComplete", asset.GetProperty("status").GetString());
         Assert.Equal(jobId, asset.GetProperty("processingJobId").GetString());
         Assert.Equal("h264", asset.GetProperty("detectedCodec").GetString());
         Assert.Equal(30, asset.GetProperty("durationSeconds").GetInt32());
+        var posterAssetId = asset.GetProperty("posterAssetId").GetString();
+        Assert.False(string.IsNullOrWhiteSpace(posterAssetId));
 
-        // Job must be Queued
+        // Job must be Succeeded with derived frame ids
         var jobResponse = await _client.GetAsync($"/api/media/video-jobs/{jobId}");
         Assert.Equal(HttpStatusCode.OK, jobResponse.StatusCode);
         var job = await jobResponse.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.Equal("Queued", job.GetProperty("status").GetString());
+        Assert.Equal("Succeeded", job.GetProperty("status").GetString());
         Assert.Equal(assetId, job.GetProperty("assetId").GetString());
-        Assert.Equal(0, job.GetProperty("stageHistory").GetArrayLength());
+        Assert.True(job.GetProperty("stageHistory").GetArrayLength() >= 4);
+        Assert.True(job.GetProperty("result").GetProperty("frameAssetIds").GetArrayLength() >= 3);
+
+        // New retrieval seams
+        var posterResponse = await _client.GetAsync($"/api/media/video-assets/{assetId}/poster");
+        Assert.Equal(HttpStatusCode.OK, posterResponse.StatusCode);
+        var poster = await posterResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(assetId, poster.GetProperty("sourceVideoAssetId").GetString());
+        Assert.Equal("PosterSelected", poster.GetProperty("frameType").GetString());
+        Assert.True(poster.GetProperty("isPosterSelected").GetBoolean());
+
+        var framesResponse = await _client.GetAsync($"/api/media/video-assets/{assetId}/frames");
+        Assert.Equal(HttpStatusCode.OK, framesResponse.StatusCode);
+        var frames = await framesResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(frames.ValueKind == JsonValueKind.Array);
+        Assert.True(frames.GetArrayLength() >= 3);
+
+        var summaryResponse = await _client.GetAsync($"/api/media/video-assets/{assetId}/processing-summary");
+        Assert.Equal(HttpStatusCode.OK, summaryResponse.StatusCode);
+        var summary = await summaryResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("Succeeded", summary.GetProperty("jobStatus").GetString());
+        Assert.True(summary.GetProperty("derivedFrameCount").GetInt32() >= 3);
     }
 
     [Fact]
@@ -265,6 +287,92 @@ public sealed class VideoFlyerUploadApiTests : IClassFixture<VideoFlyerUploadApi
         var provenance = asset.GetProperty("provenance");
         Assert.Equal("sub-abc123", provenance.GetProperty("submissionId").GetString());
         Assert.Equal("venue-xyz", provenance.GetProperty("venueId").GetString());
+    }
+
+    [Fact]
+    public async Task CompleteUpload_LowResolutionVideo_PersistsDimensionsInDerivedFrames()
+    {
+        await AuthenticateAsync();
+
+        var createResponse = await PostVideoAsync("lowres.mp4", "video/mp4", 2048);
+        createResponse.EnsureSuccessStatusCode();
+        var created = await createResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var uploadId = created.GetProperty("uploadId").GetString()!;
+        var assetId = created.GetProperty("assetId").GetString()!;
+
+        var completeResponse = await _client.PostAsJsonAsync(
+            $"/api/media/video-uploads/{uploadId}/complete",
+            new { success = true, clientDurationSeconds = 8, clientWidthPx = 320, clientHeightPx = 240 });
+        completeResponse.EnsureSuccessStatusCode();
+
+        var framesResponse = await _client.GetAsync($"/api/media/video-assets/{assetId}/frames");
+        framesResponse.EnsureSuccessStatusCode();
+        var frames = await framesResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(frames.GetArrayLength() >= 2);
+
+        foreach (var frame in frames.EnumerateArray())
+        {
+            Assert.Equal(320, frame.GetProperty("widthPx").GetInt32());
+            Assert.Equal(240, frame.GetProperty("heightPx").GetInt32());
+        }
+    }
+
+    [Fact]
+    public async Task CompleteUpload_VeryShortClip_ProducesAtLeastOneDerivedFrame()
+    {
+        await AuthenticateAsync();
+
+        var createResponse = await PostVideoAsync("veryshort.mp4", "video/mp4", 1024);
+        createResponse.EnsureSuccessStatusCode();
+        var created = await createResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var uploadId = created.GetProperty("uploadId").GetString()!;
+        var assetId = created.GetProperty("assetId").GetString()!;
+
+        var completeResponse = await _client.PostAsJsonAsync(
+            $"/api/media/video-uploads/{uploadId}/complete",
+            new { success = true, clientDurationSeconds = 1, clientWidthPx = 640, clientHeightPx = 360 });
+        completeResponse.EnsureSuccessStatusCode();
+
+        var framesResponse = await _client.GetAsync($"/api/media/video-assets/{assetId}/frames");
+        framesResponse.EnsureSuccessStatusCode();
+        var frames = await framesResponse.Content.ReadFromJsonAsync<JsonElement>();
+
+        Assert.True(frames.GetArrayLength() >= 1);
+        var first = frames.EnumerateArray().First();
+        Assert.Equal(0, first.GetProperty("timestampOffsetMs").GetInt64());
+    }
+
+    [Fact]
+    public async Task CompleteUpload_ExtractionFailure_IsDiagnosable()
+    {
+        await AuthenticateAsync();
+
+        var createResponse = await PostVideoAsync("force-fail-extract.mp4", "video/mp4", 2048);
+        createResponse.EnsureSuccessStatusCode();
+        var created = await createResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var uploadId = created.GetProperty("uploadId").GetString()!;
+        var assetId = created.GetProperty("assetId").GetString()!;
+
+        var completeResponse = await _client.PostAsJsonAsync(
+            $"/api/media/video-uploads/{uploadId}/complete",
+            new { success = true, clientDurationSeconds = 12 });
+        completeResponse.EnsureSuccessStatusCode();
+
+        var completion = await completeResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var jobId = completion.GetProperty("jobId").GetString()!;
+        Assert.Equal("Rejected", completion.GetProperty("status").GetString());
+
+        var jobResponse = await _client.GetAsync($"/api/media/video-jobs/{jobId}");
+        jobResponse.EnsureSuccessStatusCode();
+        var job = await jobResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("Failed", job.GetProperty("status").GetString());
+        Assert.Contains("metadata extraction failed", job.GetProperty("failureReason").GetString());
+
+        var summaryResponse = await _client.GetAsync($"/api/media/video-assets/{assetId}/processing-summary");
+        summaryResponse.EnsureSuccessStatusCode();
+        var summary = await summaryResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("Failed", summary.GetProperty("jobStatus").GetString());
+        Assert.Equal(0, summary.GetProperty("derivedFrameCount").GetInt32());
     }
 
     // =========================================================================

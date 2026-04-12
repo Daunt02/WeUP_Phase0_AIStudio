@@ -46,6 +46,18 @@ public static class VideoFlyerEndpoints
             .WithName("GetVideoJob")
             .WithDescription(
                 "P28: Retrieve a VideoProcessingJob record including stage history and result artifacts.");
+
+        group.MapGet("/video-assets/{assetId}/poster", GetDerivedPoster)
+            .WithName("GetDerivedPoster")
+            .WithDescription("P29: Retrieve the selected poster derived asset metadata for a source video asset.");
+
+        group.MapGet("/video-assets/{assetId}/frames", GetDerivedFrames)
+            .WithName("ListDerivedFrames")
+            .WithDescription("P29: Retrieve extracted frame metadata for a source video asset.");
+
+        group.MapGet("/video-assets/{assetId}/processing-summary", GetProcessingSummary)
+            .WithName("GetVideoProcessingSummary")
+            .WithDescription("P29: Retrieve processing summary with derived frame count and failure diagnostics.");
     }
 
     // -------------------------------------------------------------------------
@@ -254,8 +266,68 @@ public static class VideoFlyerEndpoints
                 job.Result.HeightPx,
                 job.Result.DetectedCodec,
                 job.Result.BitrateKbps,
-                job.Result.PosterAssetId)));
+                job.Result.PosterAssetId,
+                job.Result.FrameAssetIds)));
     }
+
+    private static async Task<IResult> GetDerivedPoster(
+        string assetId,
+        IVideoDerivedAssetQueryService queryService,
+        CancellationToken ct)
+    {
+        var poster = await queryService.GetPosterAsync(assetId, ct);
+        if (poster is null)
+        {
+            return Results.NotFound(new { error = $"No poster found for source video asset '{assetId}'." });
+        }
+
+        return Results.Ok(ToDto(poster));
+    }
+
+    private static async Task<IResult> GetDerivedFrames(
+        string assetId,
+        IVideoDerivedAssetQueryService queryService,
+        CancellationToken ct)
+    {
+        var frames = await queryService.ListFramesAsync(assetId, ct);
+        return Results.Ok(frames.Select(ToDto));
+    }
+
+    private static async Task<IResult> GetProcessingSummary(
+        string assetId,
+        IVideoDerivedAssetQueryService queryService,
+        CancellationToken ct)
+    {
+        var summary = await queryService.GetProcessingSummaryAsync(assetId, ct);
+        if (summary is null)
+        {
+            return Results.NotFound(new { error = $"Video asset '{assetId}' not found." });
+        }
+
+        return Results.Ok(summary);
+    }
+
+    private static VideoDerivedFrameDto ToDto(VideoDerivedFrameAsset frame) => new(
+        frame.SourceVideoAssetId,
+        frame.DerivedAssetId,
+        frame.ProcessingJobId,
+        frame.UploaderUserId,
+        frame.SubmissionId,
+        frame.VenueId,
+        frame.ModerationItemId,
+        frame.TimestampOffsetMs,
+        frame.FrameType.ToString(),
+        frame.WidthPx,
+        frame.HeightPx,
+        frame.Storage.Provider.ToString(),
+        frame.Storage.Container,
+        frame.Storage.ObjectKey,
+        frame.Storage.Uri,
+        frame.ExtractionStage,
+        frame.ExtractionVersion,
+        frame.IsPosterSelected,
+        frame.PosterSelectionReason,
+        frame.CreatedAt);
 
     // =========================================================================
     // Request / Response contracts (internal to this file)
@@ -339,7 +411,30 @@ public static class VideoFlyerEndpoints
         int? HeightPx,
         string? DetectedCodec,
         int? BitrateKbps,
-        string? PosterAssetId);
+        string? PosterAssetId,
+        string[]? FrameAssetIds);
+
+    private sealed record VideoDerivedFrameDto(
+        string SourceVideoAssetId,
+        string DerivedAssetId,
+        string ProcessingJobId,
+        string? UploaderUserId,
+        string? SubmissionId,
+        string? VenueId,
+        string? ModerationItemId,
+        long TimestampOffsetMs,
+        string FrameType,
+        int WidthPx,
+        int HeightPx,
+        string StorageProvider,
+        string StorageContainer,
+        string StorageObjectKey,
+        string? StorageUri,
+        string ExtractionStage,
+        string ExtractionVersion,
+        bool IsPosterSelected,
+        string? PosterSelectionReason,
+        DateTimeOffset CreatedAt);
 }
 
 // File-scoped extension — mirrors the one in MediaEndpoints.cs

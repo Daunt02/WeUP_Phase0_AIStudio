@@ -27,6 +27,7 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
     public DbSet<VideoFlyerAssetEntity> VideoFlyerAssets => Set<VideoFlyerAssetEntity>();
     public DbSet<VideoFlyerUploadEntity> VideoFlyerUploads => Set<VideoFlyerUploadEntity>();
     public DbSet<VideoProcessingJobEntity> VideoProcessingJobs => Set<VideoProcessingJobEntity>();
+    public DbSet<VideoDerivedFrameEntity> VideoDerivedFrames => Set<VideoDerivedFrameEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -294,6 +295,31 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
             b.HasIndex(e => e.JobId).IsUnique();
             b.HasIndex(e => e.AssetId);
             b.HasIndex(e => e.Status);
+        });
+
+        modelBuilder.Entity<VideoDerivedFrameEntity>(b =>
+        {
+            b.ToTable("video_derived_frames");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.SourceVideoAssetId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.DerivedAssetId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.ProcessingJobId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.UploaderUserId).HasMaxLength(128);
+            b.Property(e => e.SubmissionId).HasMaxLength(128);
+            b.Property(e => e.VenueId).HasMaxLength(128);
+            b.Property(e => e.ModerationItemId).HasMaxLength(128);
+            b.Property(e => e.FrameType).HasMaxLength(64).IsRequired();
+            b.Property(e => e.StorageProvider).HasMaxLength(64).IsRequired();
+            b.Property(e => e.StorageContainer).HasMaxLength(256).IsRequired();
+            b.Property(e => e.StorageObjectKey).HasMaxLength(1024).IsRequired();
+            b.Property(e => e.StorageUri).HasMaxLength(2048);
+            b.Property(e => e.ExtractionStage).HasMaxLength(64).IsRequired();
+            b.Property(e => e.ExtractionVersion).HasMaxLength(64).IsRequired();
+            b.Property(e => e.PosterSelectionReason).HasMaxLength(2000);
+            b.HasIndex(e => e.SourceVideoAssetId);
+            b.HasIndex(e => e.ProcessingJobId);
+            b.HasIndex(e => new { e.SourceVideoAssetId, e.IsPosterSelected });
+            b.HasIndex(e => e.DerivedAssetId).IsUnique();
         });
     }
 }

@@ -21,15 +21,18 @@ public sealed class VideoFlyerUploadService : IVideoFlyerUploadService
     private readonly IVideoFlyerRepository _repository;
     private readonly IVideoStorageService _storage;
     private readonly VideoIntakeValidation _validation;
+    private readonly IVideoProcessingOrchestrator _orchestrator;
 
     public VideoFlyerUploadService(
         IVideoFlyerRepository repository,
         IVideoStorageService storage,
-        VideoIntakeValidation validation)
+        VideoIntakeValidation validation,
+        IVideoProcessingOrchestrator orchestrator)
     {
         _repository = repository;
         _storage = storage;
         _validation = validation;
+        _orchestrator = orchestrator;
     }
 
     public async Task<VideoFlyerUpload> InitiateUploadAsync(
@@ -181,7 +184,18 @@ public sealed class VideoFlyerUploadService : IVideoFlyerUploadService
         };
         await _repository.UpdateUploadAsync(completedUpload, ct);
 
-        return new VideoUploadCompletionResult(completedUpload, pendingAsset, job);
+        var finalizedJob = await _orchestrator.ProcessAsync(pendingAsset, job, ct);
+        var finalizedAsset = await _repository.GetAssetAsync(asset.AssetId, ct) ?? pendingAsset;
+        var finalizedUpload = completedUpload with
+        {
+            Status = finalizedJob.Status == VideoProcessingJobStatus.Succeeded
+                ? VideoFlyerAssetStatus.ProcessingComplete
+                : VideoFlyerAssetStatus.Rejected,
+            FailureReason = finalizedJob.FailureReason,
+        };
+        await _repository.UpdateUploadAsync(finalizedUpload, ct);
+
+        return new VideoUploadCompletionResult(finalizedUpload, finalizedAsset, finalizedJob);
     }
 
     public Task<VideoProcessingJob?> GetJobAsync(string jobId, CancellationToken ct = default) =>
