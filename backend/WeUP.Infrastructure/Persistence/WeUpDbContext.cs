@@ -24,6 +24,9 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
     public DbSet<MediaUploadEntity> MediaUploads => Set<MediaUploadEntity>();
     public DbSet<FlyerProvenanceEntity> FlyerProvenances => Set<FlyerProvenanceEntity>();
     public DbSet<FlyerEvidenceEntity> FlyerEvidence => Set<FlyerEvidenceEntity>();
+    public DbSet<VideoFlyerAssetEntity> VideoFlyerAssets => Set<VideoFlyerAssetEntity>();
+    public DbSet<VideoFlyerUploadEntity> VideoFlyerUploads => Set<VideoFlyerUploadEntity>();
+    public DbSet<VideoProcessingJobEntity> VideoProcessingJobs => Set<VideoProcessingJobEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -230,6 +233,67 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
             b.HasIndex(e => e.IngestionJobId);
             b.HasIndex(e => e.ModerationItemId);
             b.HasIndex(e => e.CanonicalEventId);
+        });
+
+        // P28: Video flyer intake entities
+        modelBuilder.Entity<VideoFlyerAssetEntity>(b =>
+        {
+            b.ToTable("video_flyer_assets");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.AssetId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.Status).HasMaxLength(64).IsRequired();
+            b.Property(e => e.ContentType).HasMaxLength(128).IsRequired();
+            b.Property(e => e.ChecksumSha256).HasMaxLength(128).IsRequired();
+            b.Property(e => e.OriginalFilename).HasMaxLength(512).IsRequired();
+            b.Property(e => e.UploaderUserId).HasMaxLength(128);
+            b.Property(e => e.SubmissionId).HasMaxLength(128);
+            b.Property(e => e.VenueId).HasMaxLength(128);
+            b.Property(e => e.ModerationItemId).HasMaxLength(128);
+            b.Property(e => e.IngestionJobId).HasMaxLength(128);
+            b.Property(e => e.StorageProvider).HasMaxLength(64).IsRequired();
+            b.Property(e => e.StorageContainer).HasMaxLength(256).IsRequired();
+            b.Property(e => e.StorageObjectKey).HasMaxLength(1024).IsRequired();
+            b.Property(e => e.StorageUri).HasMaxLength(2048);
+            b.Property(e => e.DetectedCodec).HasMaxLength(64);
+            b.Property(e => e.ProcessingJobId).HasMaxLength(64);
+            b.Property(e => e.PosterAssetId).HasMaxLength(64);
+            b.HasIndex(e => e.AssetId).IsUnique();
+            b.HasIndex(e => e.Status);
+            b.HasIndex(e => e.UploaderUserId);
+            b.HasIndex(e => e.SubmissionId);
+            b.HasIndex(e => e.VenueId);
+            b.HasIndex(e => e.ModerationItemId);
+            b.HasIndex(e => e.IngestionJobId);
+        });
+
+        modelBuilder.Entity<VideoFlyerUploadEntity>(b =>
+        {
+            b.ToTable("video_flyer_uploads");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.UploadId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.AssetId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.Status).HasMaxLength(64).IsRequired();
+            b.Property(e => e.RequestedByUserId).HasMaxLength(128);
+            b.Property(e => e.FailureReason).HasMaxLength(2000);
+            b.HasIndex(e => e.UploadId).IsUnique();
+            b.HasIndex(e => e.AssetId);
+            b.HasIndex(e => e.Status);
+        });
+
+        modelBuilder.Entity<VideoProcessingJobEntity>(b =>
+        {
+            b.ToTable("video_processing_jobs");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.JobId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.AssetId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.Status).HasMaxLength(64).IsRequired();
+            b.Property(e => e.FailureReason).HasMaxLength(2000);
+            b.Property(e => e.CurrentStage).HasMaxLength(64);
+            b.Property(e => e.StageHistoryJson).HasColumnType("jsonb");
+            b.Property(e => e.ResultJson).HasColumnType("jsonb");
+            b.HasIndex(e => e.JobId).IsUnique();
+            b.HasIndex(e => e.AssetId);
+            b.HasIndex(e => e.Status);
         });
     }
 }

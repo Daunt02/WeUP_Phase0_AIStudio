@@ -34,6 +34,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.Configure<MediaIntakeOptions>(builder.Configuration.GetSection(MediaIntakeOptions.SectionName));
+builder.Services.Configure<VideoIntakeOptions>(builder.Configuration.GetSection(VideoIntakeOptions.SectionName));
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new() { Title = "WeUP API", Version = "v1 (Phase 0 stub)" });
@@ -151,6 +152,13 @@ builder.Services.AddScoped<IFlyerUploadService, LocalFlyerUploadService>();
 builder.Services.AddSingleton<IMediaStorageService, LocalMediaStorageService>();
 builder.Services.AddSingleton<MediaIntakeValidation>();
 
+// Video flyer intake services (P28)
+builder.Services.AddSingleton<VideoIntakeValidation>();
+builder.Services.AddSingleton<IVideoStorageService, LocalVideoStorageService>();
+builder.Services.AddSingleton<InMemoryVideoFlyerRepository>();
+builder.Services.AddSingleton<IVideoFlyerRepository>(sp => sp.GetRequiredService<InMemoryVideoFlyerRepository>());
+builder.Services.AddSingleton<IVideoFlyerUploadService, VideoFlyerUploadService>();
+
 if (!preferSeededInMemoryIngestion && !string.IsNullOrWhiteSpace(connStr))
 {
     builder.Services.AddScoped<IFlyerAssetStore, EfFlyerAssetStore>();
@@ -248,6 +256,7 @@ app.MapMarketEndpoints(); // P20: Market/taxonomy queries
 app.MapTemporalEndpoints(); // P21: Temporal preset queries
 app.MapAnalyticsEndpoints(); // P23: Analytics event recording
 app.MapMediaEndpoints(); // P25: Flyer media intake
+app.MapVideoFlyerEndpoints(); // P28: Video flyer intake
 app.MapHealthChecks("/health");
 
 var enableSeedResetEndpoint = builder.Configuration.GetValue<bool>("SeedData:EnableResetEndpoint") || app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing");
