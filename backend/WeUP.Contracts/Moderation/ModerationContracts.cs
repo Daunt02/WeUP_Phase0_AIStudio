@@ -20,6 +20,22 @@ public enum ModerationItemStatus
     Closed,
 }
 
+public enum ModerationReviewStatus
+{
+    NEEDS_REVIEW,
+    APPROVED,
+    REJECTED,
+    CHANGES_REQUESTED,
+}
+
+public enum ModerationReviewUrgency
+{
+    Low,
+    Normal,
+    High,
+    Critical,
+}
+
 public enum ConfidenceBucket
 {
     High,    // >= 0.85
@@ -83,9 +99,41 @@ public record IngestionJobSummaryDto(
     string CreatedAt,
     string? CompletedAt);
 
+public record ConfidenceVector(
+    double Extraction,
+    double Geocode,
+    double Temporal,
+    double VenueMatch,
+    double DupeRisk,
+    double Aggregate,
+    double ReviewConfidence,
+    ConfidenceBucket Bucket);
+
 // ---------------------------------------------------------------------------
 // Core moderation queue item DTO
 // ---------------------------------------------------------------------------
+
+public record ModerationQueueItem(
+    string ItemId,
+    ModerationItemKind Kind,
+    ModerationItemStatus Status,
+    ModerationReviewStatus ReviewStatus,
+    string? EventId,
+    string? CandidateId,
+    string SourceKind,
+    double Confidence,
+    string[] BlockerReasons,
+    bool EvidenceAvailable,
+    ModerationReviewUrgency Urgency,
+    string CreatedAt,
+    string UpdatedAt,
+    CandidateSnapshotDto? Candidate,
+    ProvenanceSummaryDto Provenance,
+    ConfidenceSummaryDto ConfidenceSummary,
+    DedupeSummaryDto? DedupeMatch,
+    IngestionJobSummaryDto? IngestionJob,
+    string[] ReviewReasons,
+    string? AssignedReviewerId);
 
 public record ModerationQueueItemDto(
     string ItemId,
@@ -105,6 +153,23 @@ public record ModerationQueueItemDto(
 // Query / filter contracts
 // ---------------------------------------------------------------------------
 
+public record ModerationQueueFilter(
+    ModerationItemStatus? Status = null,
+    ModerationReviewStatus? ReviewStatus = null,
+    ModerationItemKind? Kind = null,
+    string? SourceKind = null,
+    double? MinConfidence = null,
+    double? MaxConfidence = null,
+    string? ReviewReason = null,
+    ConfidenceBucket? ConfidenceBucket = null,
+    DuplicateSeverity? MinDuplicateSeverity = null,
+    string? AssignedReviewerId = null,
+    string? IngestionJobId = null,
+    string? AfterUtc = null,
+    string? BeforeUtc = null,
+    int PageSize = 25,
+    string? Cursor = null);
+
 public record ModerationQueueQuery(
     ModerationItemStatus? Status = null,
     ModerationItemKind? Kind = null,
@@ -120,6 +185,12 @@ public record ModerationQueueQuery(
     string? Cursor = null);
 
 public record ModerationQueueResponse(
+    ModerationQueueItem[] Items,
+    int TotalCount,
+    string? NextCursor,
+    string? PreviousCursor);
+
+public record ModerationQueueItemLegacyResponse(
     ModerationQueueItemDto[] Items,
     int TotalCount,
     string? NextCursor,
@@ -160,3 +231,32 @@ public record ReviewHistoryResponse(
     ReviewHistoryItemDto[] Items,
     int TotalCount,
     string? NextCursor);
+
+public record ReviewAuditRecord(
+    string RecordId,
+    string QueueItemId,
+    string Decision,
+    string ActorId,
+    ModerationReviewStatus PreviousReviewStatus,
+    ModerationReviewStatus NewReviewStatus,
+    string? Comment,
+    string[] Reasons,
+    string TimestampUtc,
+    string? CorrelationId,
+    string? LifecycleFrom,
+    string? LifecycleTo);
+
+public record ModerationEvidenceBundle(
+    string QueueItemId,
+    string? EventId,
+    string? CandidateId,
+    string SourceKind,
+    string SourceRef,
+    string[] EvidenceRefs,
+    ConfidenceVector Confidence,
+    string[] BlockerReasons,
+    string[] SourceRefs,
+    string? OcrText,
+    string? RawExtractionText,
+    string? ResolutionExplanation,
+    string RetrievedAtUtc);

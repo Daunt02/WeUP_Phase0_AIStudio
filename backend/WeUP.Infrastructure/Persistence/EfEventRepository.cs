@@ -9,7 +9,7 @@ namespace WeUP.Infrastructure.Persistence;
 /// EF Core + Postgres implementation of IEventRepository.
 /// Replaces StubEventRepository once the database is provisioned.
 /// </summary>
-public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEventSubmissionRepository
+public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEventSubmissionRepository, IEventLifecycleRepository
 {
     // ---------------------------------------------------------------------------
     // Map feed
@@ -165,6 +165,39 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
             .Where(e => e.Id == guid)
             .Select(e => (string?)e.Status)
             .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<string?> GetLifecycleStatusAsync(string eventId, CancellationToken ct = default)
+    {
+        if (!Guid.TryParse(eventId, out var guid))
+        {
+            return null;
+        }
+
+        return await db.Events
+            .AsNoTracking()
+            .Where(e => e.Id == guid)
+            .Select(e => (string?)e.Status)
+            .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<bool> TransitionLifecycleStatusAsync(string eventId, string newStatus, CancellationToken ct = default)
+    {
+        if (!Guid.TryParse(eventId, out var guid))
+        {
+            return false;
+        }
+
+        var entity = await db.Events.FirstOrDefaultAsync(e => e.Id == guid, ct);
+        if (entity is null)
+        {
+            return false;
+        }
+
+        entity.Status = newStatus;
+        entity.UpdatedAt = DateTimeOffset.UtcNow;
+        await db.SaveChangesAsync(ct);
+        return true;
     }
 
     // ---------------------------------------------------------------------------

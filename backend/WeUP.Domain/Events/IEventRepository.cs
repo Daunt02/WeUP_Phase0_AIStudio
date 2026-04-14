@@ -20,3 +20,12 @@ public interface IEventSubmissionRepository
     Task<string> CreateSubmissionAsync(string userId, EventSubmissionRequest request, CancellationToken ct = default);
     Task<string?> GetSubmissionStatusAsync(string submissionId, CancellationToken ct = default);
 }
+
+/// <summary>
+/// Lifecycle mutation seam used by moderation decision workflows.
+/// </summary>
+public interface IEventLifecycleRepository
+{
+    Task<string?> GetLifecycleStatusAsync(string eventId, CancellationToken ct = default);
+    Task<bool> TransitionLifecycleStatusAsync(string eventId, string newStatus, CancellationToken ct = default);
+}

@@ -53,7 +53,7 @@ public sealed class ReviewActionService(
         }
 
         // No linked item — create a new PublishBlocked item representing the rollback
-        var rollbackItem = new ModerationQueueItem
+        var rollbackItem = new WeUP.Domain.Moderation.ModerationQueueItem
         {
             Kind = ModerationItemKind.PublishBlocked,
             Status = ModerationItemStatus.Open,
@@ -96,7 +96,14 @@ public sealed class ReviewActionService(
 
         var prevStatus = item.Status;
         item.Status = nextStatus;
-        item.AppendHistory(new ReviewHistoryEntry(action, actorId, note, prevStatus, nextStatus, DateTimeOffset.UtcNow));
+        item.AppendHistory(new ReviewHistoryEntry(
+            RecordId: Guid.NewGuid().ToString("N"),
+            Action: action,
+            ActorId: actorId,
+            Note: note,
+            PreviousStatus: prevStatus,
+            NextStatus: nextStatus,
+            Timestamp: DateTimeOffset.UtcNow));
         await queue.UpdateItemAsync(item, ct);
 
         var auditEntry = BuildAuditEntry(itemId, item.Kind, action, actorId,

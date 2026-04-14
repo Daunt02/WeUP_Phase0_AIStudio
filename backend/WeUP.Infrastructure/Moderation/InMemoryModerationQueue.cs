@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using WeUP.Contracts.Moderation;
 using WeUP.Domain.Moderation;
 using WeUP.Infrastructure.Seed;
+using DomainQueueItem = WeUP.Domain.Moderation.ModerationQueueItem;
 
 namespace WeUP.Infrastructure.Moderation;
 
@@ -11,7 +12,7 @@ namespace WeUP.Infrastructure.Moderation;
 /// </summary>
 public sealed class InMemoryModerationQueue : IModerationQueueRepository
 {
-    private readonly ConcurrentDictionary<string, ModerationQueueItem> _items = new();
+    private readonly ConcurrentDictionary<string, DomainQueueItem> _items = new();
 
     public void Reset(Phase0SeedDataset dataset)
     {
@@ -19,7 +20,7 @@ public sealed class InMemoryModerationQueue : IModerationQueueRepository
 
         foreach (var item in dataset.ModerationItems)
         {
-            var seeded = new ModerationQueueItem
+            var seeded = new DomainQueueItem
             {
                 ItemId = item.ItemId,
                 Kind = Enum.Parse<ModerationItemKind>(item.Kind, true),
@@ -79,6 +80,7 @@ public sealed class InMemoryModerationQueue : IModerationQueueRepository
             foreach (var history in item.History)
             {
                 seeded.AppendHistory(new ReviewHistoryEntry(
+                    Guid.NewGuid().ToString("N"),
                     history.Action,
                     history.ActorId,
                     history.Note,
@@ -91,19 +93,19 @@ public sealed class InMemoryModerationQueue : IModerationQueueRepository
         }
     }
 
-    public Task<string> AddItemAsync(ModerationQueueItem item, CancellationToken ct = default)
+    public Task<string> AddItemAsync(DomainQueueItem item, CancellationToken ct = default)
     {
         _items[item.ItemId] = item;
         return Task.FromResult(item.ItemId);
     }
 
-    public Task<ModerationQueueItem?> GetItemAsync(string itemId, CancellationToken ct = default)
+    public Task<DomainQueueItem?> GetItemAsync(string itemId, CancellationToken ct = default)
     {
         _items.TryGetValue(itemId, out var item);
         return Task.FromResult(item);
     }
 
-    public Task<(IReadOnlyList<ModerationQueueItem> Items, int Total)> QueryAsync(
+    public Task<(IReadOnlyList<DomainQueueItem> Items, int Total)> QueryAsync(
         ModerationQueueQuery query, CancellationToken ct = default)
     {
         var filtered = _items.Values.AsEnumerable();
@@ -138,7 +140,7 @@ public sealed class InMemoryModerationQueue : IModerationQueueRepository
         var total = sorted.Count;
 
         // Cursor: encode as base64 of the last-seen CreatedAt ticks
-        IEnumerable<ModerationQueueItem> paged = sorted;
+        IEnumerable<DomainQueueItem> paged = sorted;
         if (query.Cursor is not null)
         {
             var ticks = DecodeCursor(query.Cursor);
@@ -146,14 +148,39 @@ public sealed class InMemoryModerationQueue : IModerationQueueRepository
         }
 
         var page = paged.Take(query.PageSize).ToList();
-        return Task.FromResult<(IReadOnlyList<ModerationQueueItem>, int)>((page, total));
+        return Task.FromResult<(IReadOnlyList<DomainQueueItem>, int)>((page, total));
     }
 
-    public Task UpdateItemAsync(ModerationQueueItem item, CancellationToken ct = default)
+    public Task UpdateItemAsync(DomainQueueItem item, CancellationToken ct = default)
     {
         _items[item.ItemId] = item;
         item.UpdatedAt = DateTimeOffset.UtcNow;
         return Task.CompletedTask;
+    }
+
+    public Task<IReadOnlyList<ReviewHistoryEntry>> GetHistoryAsync(
+        string itemId,
+        int pageSize,
+        string? cursor,
+        CancellationToken ct = default)
+    {
+        if (!_items.TryGetValue(itemId, out var item))
+        {
+            return Task.FromResult<IReadOnlyList<ReviewHistoryEntry>>([]);
+        }
+
+        var all = item.History
+            .OrderByDescending(h => h.Timestamp)
+            .AsEnumerable();
+
+        if (cursor is not null)
+        {
+            var ticks = DecodeCursor(cursor);
+            all = all.Where(h => h.Timestamp.UtcTicks < ticks);
+        }
+
+        IReadOnlyList<ReviewHistoryEntry> result = all.Take(pageSize).ToList();
+        return Task.FromResult(result);
     }
 
     public Task<IReadOnlyList<ReviewHistoryEntry>> GetAllHistoryAsync(

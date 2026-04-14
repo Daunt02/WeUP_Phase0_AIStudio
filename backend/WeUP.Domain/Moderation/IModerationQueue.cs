@@ -33,6 +33,7 @@ public sealed class ModerationQueueItem
 }
 
 public sealed record ReviewHistoryEntry(
+    string RecordId,
     string Action,
     string ActorId,
     string? Note,
@@ -51,6 +52,11 @@ public interface IModerationQueueRepository
     Task<(IReadOnlyList<ModerationQueueItem> Items, int Total)> QueryAsync(
         ModerationQueueQuery query, CancellationToken ct = default);
     Task UpdateItemAsync(ModerationQueueItem item, CancellationToken ct = default);
+    Task<IReadOnlyList<ReviewHistoryEntry>> GetHistoryAsync(
+        string itemId,
+        int pageSize,
+        string? cursor,
+        CancellationToken ct = default);
     Task<IReadOnlyList<ReviewHistoryEntry>> GetAllHistoryAsync(
         int pageSize, string? cursor, CancellationToken ct = default);
     Task<int> CountTotalHistoryAsync(CancellationToken ct = default);

@@ -1,30 +1,24 @@
 using Microsoft.AspNetCore.Mvc;
 using WeUP.Application.Moderation;
 using WeUP.Contracts.Moderation;
-using WeUP.Domain.Moderation;
 
 namespace WeUP.Api.Endpoints;
 
-/// <summary>
-/// Moderation queue and review dashboard API.
-/// All routes are under /api/moderation. Authorization seam added — full RBAC in P16.
-/// </summary>
 public static class ModerationEndpoints
 {
     public static void MapModerationEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/moderation").WithTags("Moderation");
-        // Auth seam: .RequireAuthorization("ModerationPolicy") enabled after P16
+        var group = app.MapGroup("/api/moderation")
+            .WithTags("Moderation")
+            .AddEndpointFilter<ModeratorAuthorizationFilter>();
 
-        // -----------------------------------------------------------------
-        // P13 — Queue and dashboard read endpoints
-        // -----------------------------------------------------------------
-
-        // GET /api/moderation/queue
         group.MapGet("/queue", async (
             [FromQuery] ModerationItemStatus? status,
+            [FromQuery] ModerationReviewStatus? reviewStatus,
             [FromQuery] ModerationItemKind? kind,
             [FromQuery] string? sourceKind,
+            [FromQuery] double? minConfidence,
+            [FromQuery] double? maxConfidence,
             [FromQuery] ConfidenceBucket? confidenceBucket,
             [FromQuery] DuplicateSeverity? minDuplicateSeverity,
             [FromQuery] string? assignedReviewerId,
@@ -33,187 +27,167 @@ public static class ModerationEndpoints
             [FromQuery] string? beforeUtc,
             [FromQuery] int pageSize,
             [FromQuery] string? cursor,
-            IModerationQueueService service,
+            IModerationQueueService queue,
             CancellationToken ct) =>
         {
-            pageSize = Math.Clamp(pageSize == 0 ? 25 : pageSize, 1, 100);
-            var query = new ModerationQueueQuery(
-                status, kind, sourceKind, null, confidenceBucket,
-                minDuplicateSeverity, assignedReviewerId, ingestionJobId,
-                afterUtc, beforeUtc, pageSize, cursor);
+            var filter = new ModerationQueueFilter(
+                Status: status,
+                ReviewStatus: reviewStatus,
+                Kind: kind,
+                SourceKind: sourceKind,
+                MinConfidence: minConfidence,
+                MaxConfidence: maxConfidence,
+                ReviewReason: null,
+                ConfidenceBucket: confidenceBucket,
+                MinDuplicateSeverity: minDuplicateSeverity,
+                AssignedReviewerId: assignedReviewerId,
+                IngestionJobId: ingestionJobId,
+                AfterUtc: afterUtc,
+                BeforeUtc: beforeUtc,
+                PageSize: Math.Clamp(pageSize == 0 ? 25 : pageSize, 1, 100),
+                Cursor: cursor);
 
-            var result = await service.GetQueueAsync(query, ct);
-            return Results.Ok(result);
+            return Results.Ok(await queue.GetQueueAsync(filter, ct));
         })
         .WithName("GetModerationQueue")
         .Produces<ModerationQueueResponse>();
 
-        // GET /api/moderation/queue/{itemId}
-        group.MapGet("/queue/{itemId}", async (
-            string itemId,
-            IModerationQueueService service,
+        group.MapGet("/queue/{id}", async (
+            string id,
+            IModerationQueueService queue,
             CancellationToken ct) =>
         {
-            var item = await service.GetItemAsync(itemId, ct);
+            var item = await queue.GetItemAsync(id, ct);
             return item is null
-                ? Results.NotFound(new ProblemDetails { Title = "Moderation item not found", Status = 404 })
+                ? Results.NotFound(new ProblemDetails { Title = "Moderation item not found", Status = StatusCodes.Status404NotFound })
                 : Results.Ok(item);
         })
-        .WithName("GetModerationItem")
-        .Produces<ModerationQueueItemDto>()
-        .ProducesProblem(404);
+        .WithName("GetModerationQueueItem")
+        .Produces<ModerationQueueItem>()
+        .ProducesProblem(StatusCodes.Status404NotFound);
 
-        // GET /api/moderation/stats
-        group.MapGet("/stats", async (
-            IModerationQueueService service,
+        group.MapGet("/queue/{id}/evidence", async (
+            string id,
+            IModerationEvidenceService evidence,
             CancellationToken ct) =>
         {
-            var stats = await service.GetStatsAsync(ct);
-            return Results.Ok(stats);
+            var bundle = await evidence.GetEvidenceBundleAsync(id, ct);
+            return bundle is null
+                ? Results.NotFound(new ProblemDetails { Title = "Moderation evidence not found", Status = StatusCodes.Status404NotFound })
+                : Results.Ok(bundle);
         })
-        .WithName("GetModerationStats")
-        .Produces<ModerationStatsDto>();
+        .WithName("GetModerationEvidence")
+        .Produces<ModerationEvidenceBundle>()
+        .ProducesProblem(StatusCodes.Status404NotFound);
 
-        // GET /api/moderation/review-history
-        group.MapGet("/review-history", async (
+        group.MapPost("/reviews/{id}/approve", async (
+            string id,
+            [FromBody] ReviewDecisionRequest request,
+            IReviewDecisionService reviews,
+            CancellationToken ct) =>
+            await SubmitDecisionAsync(id, request with { Decision = ReviewDecisionKind.Approve }, reviews, ct))
+        .WithName("ApproveModerationReview")
+        .Produces<ReviewDecisionResponse>()
+        .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+
+        group.MapPost("/reviews/{id}/reject", async (
+            string id,
+            [FromBody] ReviewDecisionRequest request,
+            IReviewDecisionService reviews,
+            CancellationToken ct) =>
+            await SubmitDecisionAsync(id, request with { Decision = ReviewDecisionKind.Reject }, reviews, ct))
+        .WithName("RejectModerationReview")
+        .Produces<ReviewDecisionResponse>()
+        .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+
+        group.MapPost("/reviews/{id}/request-changes", async (
+            string id,
+            [FromBody] ReviewDecisionRequest request,
+            IReviewDecisionService reviews,
+            CancellationToken ct) =>
+            await SubmitDecisionAsync(id, request with { Decision = ReviewDecisionKind.RequestChanges }, reviews, ct))
+        .WithName("RequestChangesModerationReview")
+        .Produces<ReviewDecisionResponse>()
+        .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+
+        group.MapGet("/reviews/{id}/history", async (
+            string id,
             [FromQuery] int pageSize,
             [FromQuery] string? cursor,
-            IModerationQueueService service,
+            IReviewDecisionService reviews,
             CancellationToken ct) =>
         {
-            pageSize = Math.Clamp(pageSize == 0 ? 50 : pageSize, 1, 200);
-            var result = await service.GetReviewHistoryAsync(pageSize, cursor, ct);
-            return Results.Ok(result);
+            var size = Math.Clamp(pageSize == 0 ? 50 : pageSize, 1, 200);
+            var history = await reviews.GetReviewHistoryAsync(id, size, cursor, ct);
+            return Results.Ok(history);
         })
-        .WithName("GetReviewHistory")
-        .Produces<ReviewHistoryResponse>();
+        .WithName("GetModerationReviewHistory")
+        .Produces<IReadOnlyList<ReviewAuditRecord>>();
 
-        // -----------------------------------------------------------------
-        // P15 — Review action endpoints
-        // -----------------------------------------------------------------
-
-        // POST /api/moderation/queue/{itemId}/approve
-        group.MapPost("/queue/{itemId}/approve", async (
-            string itemId,
-            [FromBody] ApproveRequest request,
-            IReviewActionService actions,
-            CancellationToken ct) =>
-        {
-            var result = await actions.ApproveAsync(itemId, request, ct);
-            return result.Success ? Results.Ok(result)
-                : Results.UnprocessableEntity(ProblemFrom(result));
-        })
-        .WithName("ApproveQueueItem")
-        .Produces<ReviewActionResponse>()
-        .ProducesValidationProblem(422);
-
-        // POST /api/moderation/queue/{itemId}/reject
-        group.MapPost("/queue/{itemId}/reject", async (
-            string itemId,
-            [FromBody] RejectRequest request,
-            IReviewActionService actions,
-            CancellationToken ct) =>
-        {
-            var result = await actions.RejectAsync(itemId, request, ct);
-            return result.Success ? Results.Ok(result)
-                : Results.UnprocessableEntity(ProblemFrom(result));
-        })
-        .WithName("RejectQueueItem")
-        .Produces<ReviewActionResponse>();
-
-        // POST /api/moderation/queue/{itemId}/request-changes
-        group.MapPost("/queue/{itemId}/request-changes", async (
-            string itemId,
-            [FromBody] RequestChangesRequest request,
-            IReviewActionService actions,
-            CancellationToken ct) =>
-        {
-            var result = await actions.RequestChangesAsync(itemId, request, ct);
-            return result.Success ? Results.Ok(result)
-                : Results.UnprocessableEntity(ProblemFrom(result));
-        })
-        .WithName("RequestChangesOnQueueItem")
-        .Produces<ReviewActionResponse>();
-
-        // POST /api/moderation/queue/{itemId}/mark-duplicate
-        group.MapPost("/queue/{itemId}/mark-duplicate", async (
-            string itemId,
-            [FromBody] MarkDuplicateRequest request,
-            IReviewActionService actions,
-            CancellationToken ct) =>
-        {
-            var result = await actions.MarkDuplicateAsync(itemId, request, ct);
-            return result.Success ? Results.Ok(result)
-                : Results.UnprocessableEntity(ProblemFrom(result));
-        })
-        .WithName("MarkDuplicate")
-        .Produces<ReviewActionResponse>();
-
-        // POST /api/moderation/queue/{itemId}/merge
-        group.MapPost("/queue/{itemId}/merge", async (
-            string itemId,
-            [FromBody] MergeRequest request,
-            IReviewActionService actions,
-            CancellationToken ct) =>
-        {
-            if (string.IsNullOrWhiteSpace(request.TargetEventId))
-                return Results.ValidationProblem(new Dictionary<string, string[]>
-                    { ["targetEventId"] = ["Target event ID is required for merge."] });
-
-            var result = await actions.MergeAsync(itemId, request, ct);
-            return result.Success ? Results.Ok(result)
-                : Results.UnprocessableEntity(ProblemFrom(result));
-        })
-        .WithName("MergeQueueItem")
-        .Produces<ReviewActionResponse>();
-
-        // POST /api/moderation/queue/{itemId}/archive
-        group.MapPost("/queue/{itemId}/archive", async (
-            string itemId,
-            [FromBody] ArchiveRequest request,
-            IReviewActionService actions,
-            CancellationToken ct) =>
-        {
-            var result = await actions.ArchiveAsync(itemId, request, ct);
-            return result.Success ? Results.Ok(result)
-                : Results.UnprocessableEntity(ProblemFrom(result));
-        })
-        .WithName("ArchiveQueueItem")
-        .Produces<ReviewActionResponse>();
-
-        // POST /api/moderation/queue/{itemId}/reopen
-        group.MapPost("/queue/{itemId}/reopen", async (
-            string itemId,
-            [FromBody] ReopenRequest request,
-            IReviewActionService actions,
-            CancellationToken ct) =>
-        {
-            var result = await actions.ReopenAsync(itemId, request, ct);
-            return result.Success ? Results.Ok(result)
-                : Results.UnprocessableEntity(ProblemFrom(result));
-        })
-        .WithName("ReopenQueueItem")
-        .Produces<ReviewActionResponse>();
-
-        // POST /api/moderation/events/{eventId}/rollback
         group.MapPost("/events/{eventId}/rollback", async (
             string eventId,
             [FromBody] RollbackRequest request,
-            IRollbackService rollback,
+            WeUP.Domain.Moderation.IRollbackService rollback,
             CancellationToken ct) =>
         {
             if (string.IsNullOrWhiteSpace(request.RollbackReason))
+            {
                 return Results.ValidationProblem(new Dictionary<string, string[]>
-                    { ["rollbackReason"] = ["A rollback reason is required."] });
+                {
+                    ["rollbackReason"] = ["rollbackReason is required."],
+                });
+            }
 
             var result = await rollback.RollbackEventAsync(eventId, request, ct);
-            return result.Success ? Results.Ok(result)
-                : Results.UnprocessableEntity(ProblemFrom(result));
+            return result.Success
+                ? Results.Ok(result)
+                : Results.UnprocessableEntity(new ProblemDetails
+                {
+                    Title = "Rollback could not be applied",
+                    Detail = result.ErrorMessage,
+                    Status = StatusCodes.Status422UnprocessableEntity,
+                });
         })
-        .WithName("RollbackEvent")
-        .Produces<ReviewActionResponse>();
+        .WithName("RollbackModeratedEvent")
+        .Produces<ReviewActionResponse>()
+        .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+
+        // Backward compatible route aliases
+        group.MapPost("/queue/{id}/approve", async (string id, [FromBody] ApproveRequest req, IReviewDecisionService reviews, CancellationToken ct) =>
+            await SubmitDecisionAsync(id, new ReviewDecisionRequest(req.ActorId, ReviewDecisionKind.Approve, req.Note), reviews, ct));
+
+        group.MapPost("/queue/{id}/reject", async (string id, [FromBody] RejectRequest req, IReviewDecisionService reviews, CancellationToken ct) =>
+            await SubmitDecisionAsync(id, new ReviewDecisionRequest(req.ActorId, ReviewDecisionKind.Reject, req.Note, [req.RejectionReason]), reviews, ct));
+
+        group.MapPost("/queue/{id}/request-changes", async (string id, [FromBody] RequestChangesRequest req, IReviewDecisionService reviews, CancellationToken ct) =>
+            await SubmitDecisionAsync(id, new ReviewDecisionRequest(req.ActorId, ReviewDecisionKind.RequestChanges, req.Note, [req.CorrectionInstructions]), reviews, ct));
     }
 
-    private static ProblemDetails ProblemFrom(ReviewActionResponse r) =>
-        new() { Title = "Action not permitted", Detail = r.ErrorMessage, Status = 422 };
+    private static async Task<IResult> SubmitDecisionAsync(
+        string id,
+        ReviewDecisionRequest request,
+        IReviewDecisionService reviews,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.ActorId))
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["actorId"] = ["actorId is required."],
+            });
+        }
+
+        var result = await reviews.SubmitDecisionAsync(id, request, ct);
+        if (!result.Accepted)
+        {
+            return Results.UnprocessableEntity(new ProblemDetails
+            {
+                Title = "Decision could not be applied",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+
+        return Results.Ok(result);
+    }
 }

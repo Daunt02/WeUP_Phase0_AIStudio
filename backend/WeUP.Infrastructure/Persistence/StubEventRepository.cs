@@ -10,13 +10,14 @@ namespace WeUP.Infrastructure.Persistence;
 /// Events OCR-extracted from real Houston flyers in /flyers/ (April 2025).
 /// Venues geocoded from addresses on flyers; city center: 29.7604, -95.3698.
 /// </summary>
-public sealed class StubEventRepository : IEventRepository, IEventSubmissionRepository
+public sealed class StubEventRepository : IEventRepository, IEventSubmissionRepository, IEventLifecycleRepository
 {
     private readonly object _gate = new();
     private EventMapCardDto[] _mapCards = [];
     private EventCalendarDto[] _calendarItems = [];
     private EventDetailDto[] _details = [];
     private readonly Dictionary<string, string> _submissionStatuses = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, string> _eventStatuses = new(StringComparer.OrdinalIgnoreCase);
     private int _submissionSequence;
 
     public void Reset(Phase0SeedDataset dataset)
@@ -79,6 +80,12 @@ public sealed class StubEventRepository : IEventRepository, IEventSubmissionRepo
                     evt.SourceKind);
             }).ToArray();
 
+            _eventStatuses.Clear();
+            foreach (var evt in dataset.Events)
+            {
+                _eventStatuses[evt.EventId] = evt.Status;
+            }
+
             _submissionStatuses.Clear();
             _submissionSequence = 0;
         }
@@ -136,6 +143,39 @@ public sealed class StubEventRepository : IEventRepository, IEventSubmissionRepo
         lock (_gate)
         {
             return _details.ToArray();
+        }
+    }
+
+    public Task<string?> GetLifecycleStatusAsync(string eventId, CancellationToken ct = default)
+    {
+        lock (_gate)
+        {
+            return Task.FromResult(_eventStatuses.TryGetValue(eventId, out var status) ? status : null);
+        }
+    }
+
+    public Task<bool> TransitionLifecycleStatusAsync(string eventId, string newStatus, CancellationToken ct = default)
+    {
+        lock (_gate)
+        {
+            if (!_eventStatuses.ContainsKey(eventId))
+            {
+                return Task.FromResult(false);
+            }
+
+            _eventStatuses[eventId] = newStatus;
+
+            _mapCards = _mapCards
+                .Select(e => e.Id.Equals(eventId, StringComparison.OrdinalIgnoreCase) ? e with { Status = newStatus } : e)
+                .ToArray();
+            _calendarItems = _calendarItems
+                .Select(e => e.Id.Equals(eventId, StringComparison.OrdinalIgnoreCase) ? e with { Status = newStatus } : e)
+                .ToArray();
+            _details = _details
+                .Select(e => e.Id.Equals(eventId, StringComparison.OrdinalIgnoreCase) ? e with { Status = newStatus } : e)
+                .ToArray();
+
+            return Task.FromResult(true);
         }
     }
 

@@ -68,6 +68,7 @@ builder.Services.AddCors(opts =>
 builder.Services.AddSingleton<StubEventRepository>();
 builder.Services.AddSingleton<IEventRepository>(sp => sp.GetRequiredService<StubEventRepository>());
 builder.Services.AddSingleton<IEventSubmissionRepository>(sp => sp.GetRequiredService<StubEventRepository>());
+builder.Services.AddSingleton<IEventLifecycleRepository>(sp => sp.GetRequiredService<StubEventRepository>());
 builder.Services.AddSingleton<StubSaveRepository>();
 builder.Services.AddSingleton<ISaveRepository>(sp => sp.GetRequiredService<StubSaveRepository>());
 
@@ -112,12 +113,16 @@ builder.Services.AddSingleton<InMemoryModerationQueue>();
 builder.Services.AddSingleton<IModerationQueueRepository>(sp => sp.GetRequiredService<InMemoryModerationQueue>());
 builder.Services.AddSingleton<IAuditTrailService, InMemoryAuditTrail>();
 builder.Services.AddSingleton<IModerationQueueService, ModerationQueueService>();
+builder.Services.AddScoped<IModerationEvidenceService, ModerationEvidenceService>();
 builder.Services.AddSingleton<IConfidenceScoringService, ConfidenceScoringService>();
 builder.Services.AddSingleton<IEligibilityRuleSet, PublishEligibilityRuleSet>();
 builder.Services.AddSingleton<IPublishEligibilityService, PublishEligibilityService>();
 builder.Services.AddSingleton<ReviewActionService>();
 builder.Services.AddSingleton<IReviewActionService>(sp => sp.GetRequiredService<ReviewActionService>());
+builder.Services.AddScoped<IReviewDecisionService, ReviewDecisionService>();
 builder.Services.AddSingleton<IRollbackService>(sp => sp.GetRequiredService<ReviewActionService>());
+builder.Services.AddSingleton<IModerationAuthorizationService, AllowAllModerationAuthorizationService>();
+builder.Services.AddScoped<ModeratorAuthorizationFilter>();
 
 // Auth services (P16)
 // Phase 0: in-memory token store. Real JWT: add JwtBearer, set WeUp:Auth:JwtSecret in appsettings.

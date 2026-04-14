@@ -1,6 +1,34 @@
 namespace WeUP.Contracts.Moderation;
 
 // ---------------------------------------------------------------------------
+// P13 review decision contracts
+// ---------------------------------------------------------------------------
+
+public enum ReviewDecisionKind
+{
+    Approve,
+    Reject,
+    RequestChanges,
+}
+
+public record ReviewDecisionRequest(
+    string ActorId,
+    ReviewDecisionKind Decision,
+    string? Comment,
+    string[]? Reasons = null,
+    string? CorrelationId = null);
+
+public record ReviewDecisionResponse(
+    string QueueItemId,
+    bool Accepted,
+    ModerationReviewStatus PreviousReviewStatus,
+    ModerationReviewStatus NewReviewStatus,
+    string LifecycleFrom,
+    string LifecycleTo,
+    ReviewAuditRecord AuditRecord,
+    string? ErrorMessage = null);
+
+// ---------------------------------------------------------------------------
 // Review action request payloads
 // ---------------------------------------------------------------------------
 
