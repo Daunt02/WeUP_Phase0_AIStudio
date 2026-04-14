@@ -9,8 +9,7 @@
  * The service must return deterministic results from the mock dataset only.
  */
 
-import { NightlifeItem } from "@/types";
-import { SEEDED_EVENTS } from "@/lib/testing/phase0Seed";
+import phase0Seed from "@/seed/phase0-dataset.json";
 import {
   MapFeedQuery,
   CalendarFeedQuery,
@@ -27,55 +26,64 @@ import {
 } from "@/domains/event/projections";
 import { EventAggregate, EventStatus, SourceKind } from "@/domains/event/types";
 
-// ---------------------------------------------------------------------------
-// Legacy adapter — converts NightlifeItem to EventAggregate for projection use
-// ---------------------------------------------------------------------------
+type SeedVenue = (typeof phase0Seed.venues)[number];
+type SeedEvent = (typeof phase0Seed.events)[number];
 
-/** Maps old NightlifeItem.source values to canonical SourceKind. */
-function legacySourceToKind(src: string): SourceKind {
+const venueById = new Map<string, SeedVenue>(
+  phase0Seed.venues.map((venue) => [venue.venueId, venue]),
+);
+
+function seedSourceToKind(src: string): SourceKind {
   switch (src) {
-    case "manual":
-      return "manual_submission";
-    case "scraped":
-      return "scraped_venue_page";
-    case "api":
-      return "external_feed";
+    case "manual_submission":
+    case "flyer_upload":
+    case "pasted_url":
+    case "scraped_venue_page":
+    case "external_feed":
+      return src;
     default:
       return "manual_submission";
   }
 }
 
-function nightlifeItemToAggregate(item: NightlifeItem): EventAggregate {
+function seedEventToAggregate(event: SeedEvent): EventAggregate {
+  const venue = venueById.get(event.venueId);
+  if (!venue) {
+    throw new Error(
+      `[eventService] Missing venue '${event.venueId}' for event '${event.eventId}'.`,
+    );
+  }
+
   return {
-    id: item.id,
-    status: (item.status as EventStatus) ?? "PUBLISHED",
-    canonicalTitle: item.title,
-    canonicalDescription: item.description ?? null,
-    category: item.category as EventAggregate["category"],
-    venue: { venueId: null, name: item.venue_name },
+    id: event.eventId,
+    status: (event.status as EventStatus) ?? "PUBLISHED",
+    canonicalTitle: event.title,
+    canonicalDescription: event.description ?? null,
+    category: event.category as EventAggregate["category"],
+    venue: { venueId: venue.venueId, name: venue.name },
     address: {
-      line1: item.address,
-      city: "",
+      line1: venue.address,
+      city: venue.districtCode,
       country: "US",
-      raw: item.address,
+      raw: venue.address,
     },
-    geo: { lat: item.latitude, lng: item.longitude },
-    timeRange: { startUtc: item.start_time, endUtc: item.end_time ?? null },
-    timezone: "America/Chicago",
+    geo: { lat: venue.latitude, lng: venue.longitude },
+    timeRange: { startUtc: event.startsAtUtc, endUtc: event.endsAtUtc ?? null },
+    timezone: "America/Los_Angeles",
     sourceRefs: [
       {
-        kind: legacySourceToKind(item.source),
-        ref: item.id,
-        ingestedAt: item.start_time,
+        kind: seedSourceToKind(event.sourceKind),
+        ref: event.eventId,
+        ingestedAt: event.startsAtUtc,
       },
     ],
-    mediaRefs: item.image_url
-      ? [{ assetId: item.id, url: item.image_url, kind: "image" }]
+    mediaRefs: event.imageUrl
+      ? [{ assetId: event.eventId, url: event.imageUrl, kind: "image" }]
       : [],
-    tags: item.tags ?? [],
-    confidence: item.confidence ?? 0.9,
+    tags: event.tags ?? [],
+    confidence: event.confidence ?? 0.9,
     review: {},
-    audit: { createdAt: item.start_time, updatedAt: item.start_time },
+    audit: { createdAt: event.startsAtUtc, updatedAt: event.startsAtUtc },
   };
 }
 
@@ -84,7 +92,8 @@ function nightlifeItemToAggregate(item: NightlifeItem): EventAggregate {
 // ---------------------------------------------------------------------------
 
 class EventService {
-  private readonly allEvents: NightlifeItem[] = [...SEEDED_EVENTS];
+  private readonly allEvents: EventAggregate[] =
+    phase0Seed.events.map(seedEventToAggregate);
 
   // ------------------------------------------------------------------
   // Map feed — uses MapFeedQuery contract
@@ -95,18 +104,20 @@ class EventService {
     const { bounds, window, filters } = query;
 
     const filtered = this.allEvents
-      .filter((e) => this._inBounds(e.latitude, e.longitude, bounds))
+      .filter((e) => this._inBounds(e.geo.lat, e.geo.lng, bounds))
       .filter((e) =>
-        this._inTimeWindow(e.start_time, window.startUtc, window.endUtc),
+        this._inTimeWindow(
+          e.timeRange.startUtc,
+          window.startUtc,
+          window.endUtc,
+        ),
       )
       .filter(
-        (e) =>
-          !filters?.categories ||
-          filters.categories.includes(e.category as any),
+        (e) => !filters?.categories || filters.categories.includes(e.category),
       )
-      .filter((e) => (e.confidence ?? 0.9) >= (filters?.minConfidence ?? 0));
+      .filter((e) => e.confidence >= (filters?.minConfidence ?? 0));
 
-    const events = filtered.map((e) => toMapCard(nightlifeItemToAggregate(e)));
+    const events = filtered.map(toMapCard);
     return { events, totalCount: events.length };
   }
 
@@ -165,23 +176,26 @@ class EventService {
 
     const filtered = this.allEvents
       .filter((e) =>
-        this._inTimeWindow(e.start_time, window.startUtc, window.endUtc),
+        this._inTimeWindow(
+          e.timeRange.startUtc,
+          window.startUtc,
+          window.endUtc,
+        ),
       )
       .filter(
-        (e) =>
-          !filters?.categories ||
-          filters.categories.includes(e.category as any),
+        (e) => !filters?.categories || filters.categories.includes(e.category),
       )
       .sort(
         (a, b) =>
-          new Date(a.start_time).getTime() - new Date(b.start_time).getTime(),
+          new Date(a.timeRange.startUtc).getTime() -
+          new Date(b.timeRange.startUtc).getTime(),
       );
 
     const totalCount = filtered.length;
     const start = (page - 1) * pageSize;
     const items = filtered
       .slice(start, start + pageSize)
-      .map((e) => toCalendarProjection(nightlifeItemToAggregate(e)));
+      .map(toCalendarProjection);
 
     return {
       items,
@@ -202,19 +216,7 @@ class EventService {
     await this._simulateLatency();
     const item = this.allEvents.find((e) => e.id === query.eventId);
     if (!item) return { event: null };
-    return { event: toDetailProjection(nightlifeItemToAggregate(item)) };
-  }
-
-  // ------------------------------------------------------------------
-  // Legacy compat — used by existing components during migration
-  // ------------------------------------------------------------------
-
-  /** @deprecated Use fetchMapFeed() with a MapFeedQuery instead. */
-  async fetchEventsInBounds(bounds: GeoBoundingBox): Promise<NightlifeItem[]> {
-    const filtered = this.allEvents.filter((e) =>
-      this._inBounds(e.latitude, e.longitude, bounds),
-    );
-    return filtered;
+    return { event: toDetailProjection(item) };
   }
 
   // ------------------------------------------------------------------

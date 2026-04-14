@@ -18,14 +18,17 @@ import { useTemporalQuery } from "@/hooks/useTemporalQuery";
 import { useEventSubmission } from "@/hooks/useEventSubmission";
 import {
   RuntimeEventProjection,
+  SubmissionDraftProjection,
   TemporalPresetSelection,
   SelectedEventId,
   GhostDraftPatch,
-  toLegacyDraftPatch,
+} from "@/features/world/runtimeTypes";
+import {
   fromLegacyDraftPatch,
   fromLegacyNightlifeItem,
+  toLegacyDraftPatch,
   toLegacyNightlifeItem,
-} from "@/features/world/runtimeTypes";
+} from "@/features/world/legacyBoundary";
 
 export default function WorldCoordinator() {
   const {
@@ -108,7 +111,7 @@ export default function WorldCoordinator() {
   );
 
   const handleConfirmPublish = useCallback(
-    async (event: RuntimeEventProjection) => {
+    async (event: SubmissionDraftProjection) => {
       await handlePublish(event, (published, id) => {
         publishDraft(id);
         prependEvent(published);

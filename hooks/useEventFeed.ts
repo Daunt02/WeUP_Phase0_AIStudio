@@ -14,7 +14,6 @@ import { eventService } from "@/services/eventService";
 import type { GeoBoundingBox, MapFeedQuery } from "@/domains/query/contracts";
 import {
   RuntimeEventProjection,
-  fromLegacyNightlifeItem,
   fromMapCardProjection,
 } from "@/features/world/runtimeTypes";
 
@@ -50,34 +49,11 @@ export function useEventFeed(
       filters: {},
     };
 
-    Promise.all([
-      eventService.fetchMapFeed(mapQuery),
-      eventService.fetchEventsInBounds(mapBounds),
-    ])
-      .then(([projectionFeed, legacyFeed]) => {
-        const canonicalById = new Map(
-          projectionFeed.events.map((e) => [e.id, fromMapCardProjection(e)]),
-        );
-
-        const merged = legacyFeed.map((legacyEvent) => {
-          const legacy = fromLegacyNightlifeItem(legacyEvent);
-          const canonical = canonicalById.get(legacy.id);
-          if (!canonical) return legacy;
-
-          return {
-            ...legacy,
-            title: canonical.title,
-            venueName: canonical.venueName,
-            latitude: canonical.latitude,
-            longitude: canonical.longitude,
-            category: canonical.category,
-            imageUrl: canonical.imageUrl || legacy.imageUrl,
-            status: canonical.status ?? legacy.status,
-            confidence: canonical.confidence ?? legacy.confidence,
-          };
-        });
-
-        if (!cancelled) setEvents(merged);
+    eventService
+      .fetchMapFeed(mapQuery)
+      .then((projectionFeed) => {
+        if (cancelled) return;
+        setEvents(projectionFeed.events.map(fromMapCardProjection));
       })
       .catch((err) => {
         console.error("[useEventFeed] fetch error:", err);

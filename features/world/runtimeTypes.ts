@@ -1,7 +1,6 @@
 import { EventCategory, EventStatus } from "@/domains/event/types";
 import type { GeoBoundingBox } from "@/domains/query/contracts";
 import type { EventMapCardProjection } from "@/domains/event/projections";
-import type { NightlifeItem } from "@/types";
 
 export type SelectedEventId = string;
 export type SaveToggleEventId = SelectedEventId;
@@ -43,6 +42,10 @@ export interface RuntimeEventProjection {
   neighborhood?: string;
 }
 
+export interface SubmissionDraftProjection extends RuntimeEventProjection {
+  flyerAssetIds?: string[];
+}
+
 export interface GhostEventDraft {
   id?: string;
   latitude?: number;
@@ -62,30 +65,6 @@ export interface GhostEventDraft {
 }
 
 export type GhostDraftPatch = Partial<GhostEventDraft>;
-
-export function fromLegacyNightlifeItem(
-  event: NightlifeItem,
-): RuntimeEventProjection {
-  return {
-    id: event.id,
-    title: event.title,
-    description: event.description,
-    venueName: event.venue_name,
-    address: event.address,
-    latitude: event.latitude,
-    longitude: event.longitude,
-    startTime: event.start_time,
-    endTime: event.end_time,
-    category: event.category,
-    priceTier: event.price_tier,
-    source: event.source,
-    imageUrl: event.image_url,
-    status: event.status,
-    confidence: event.confidence,
-    tags: event.tags,
-    neighborhood: event.neighborhood,
-  };
-}
 
 export function fromMapCardProjection(
   event: EventMapCardProjection,
@@ -110,70 +89,32 @@ export function fromMapCardProjection(
   };
 }
 
-export function toLegacyNightlifeItem(
-  event: RuntimeEventProjection,
-): NightlifeItem {
+export interface DraftSubmissionRequest {
+  title?: string;
+  venueName?: string;
+  address?: string;
+  startUtc?: string;
+  endUtc?: string;
+  timezone?: string;
+  category?: string;
+  description?: string;
+  tags?: string[];
+  flyerAssetIds?: string[];
+}
+
+export function toDraftSubmissionRequest(
+  event: SubmissionDraftProjection,
+): DraftSubmissionRequest {
   return {
-    id: event.id,
     title: event.title,
-    description: event.description,
-    venue_name: event.venueName,
+    venueName: event.venueName,
     address: event.address,
-    latitude: event.latitude,
-    longitude: event.longitude,
-    start_time: event.startTime,
-    end_time: event.endTime,
+    startUtc: event.startTime,
+    endUtc: event.endTime,
+    timezone: "America/Chicago",
     category: event.category,
-    price_tier: event.priceTier,
-    source: event.source,
-    image_url: event.imageUrl,
-    status: event.status,
-    confidence: event.confidence,
+    description: event.description,
     tags: event.tags,
-    neighborhood: event.neighborhood,
-  };
-}
-
-export function toLegacyDraftPatch(
-  patch: GhostDraftPatch,
-): Partial<NightlifeItem> {
-  return {
-    id: patch.id,
-    title: patch.title,
-    description: patch.description,
-    venue_name: patch.venueName,
-    address: patch.address,
-    latitude: patch.latitude,
-    longitude: patch.longitude,
-    start_time: patch.startTime,
-    end_time: patch.endTime,
-    category: patch.category,
-    price_tier: patch.priceTier,
-    image_url: patch.imageUrl,
-    status: patch.status,
-    confidence: patch.confidence,
-    tags: patch.tags,
-  };
-}
-
-export function fromLegacyDraftPatch(
-  patch: Partial<NightlifeItem>,
-): GhostDraftPatch {
-  return {
-    id: patch.id,
-    title: patch.title,
-    description: patch.description,
-    venueName: patch.venue_name,
-    address: patch.address,
-    latitude: patch.latitude,
-    longitude: patch.longitude,
-    startTime: patch.start_time,
-    endTime: patch.end_time,
-    category: patch.category,
-    priceTier: patch.price_tier,
-    imageUrl: patch.image_url,
-    status: patch.status,
-    confidence: patch.confidence,
-    tags: patch.tags,
+    flyerAssetIds: event.flyerAssetIds,
   };
 }

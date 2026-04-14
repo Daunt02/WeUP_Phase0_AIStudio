@@ -1,5 +1,6 @@
 import { getAuthHeader } from "./auth";
 import { toApiUrl } from "./apiBase";
+import type { DraftSubmissionRequest } from "@/features/world/runtimeTypes";
 
 const BASE = toApiUrl("/api/events/submissions");
 
@@ -16,7 +17,15 @@ async function checkResponse(res: Response) {
   return json;
 }
 
-export async function createDraft(draft: any) {
+export interface SubmissionResponse {
+  submissionId: string;
+  status: string;
+  message?: string;
+}
+
+export async function createDraft(
+  draft: DraftSubmissionRequest,
+): Promise<SubmissionResponse> {
   const res = await fetch(BASE, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...getAuthHeader() },

@@ -12,8 +12,8 @@
 import { useCallback } from "react";
 import submissionService from "@/services/submissionService";
 import {
-  RuntimeEventProjection,
-  toLegacyNightlifeItem,
+  SubmissionDraftProjection,
+  toDraftSubmissionRequest,
 } from "@/features/world/runtimeTypes";
 
 export interface EventSubmissionResult {
@@ -22,22 +22,22 @@ export interface EventSubmissionResult {
    * onSuccess with the published event and its assigned id.
    */
   handlePublish: (
-    event: RuntimeEventProjection,
-    onSuccess: (event: RuntimeEventProjection, id: string) => void,
+    event: SubmissionDraftProjection,
+    onSuccess: (event: SubmissionDraftProjection, id: string) => void,
   ) => Promise<void>;
 }
 
 export function useEventSubmission(): EventSubmissionResult {
   const handlePublish = useCallback(
     async (
-      event: RuntimeEventProjection,
-      onSuccess: (event: RuntimeEventProjection, id: string) => void,
+      event: SubmissionDraftProjection,
+      onSuccess: (event: SubmissionDraftProjection, id: string) => void,
     ) => {
       try {
-        const legacyDraft = toLegacyNightlifeItem(event);
-        const created = await submissionService.createDraft({ ...legacyDraft });
+        const draftRequest = toDraftSubmissionRequest(event);
+        const created = await submissionService.createDraft(draftRequest);
         try {
-          await submissionService.submitForReview(created.id);
+          await submissionService.submitForReview(created.submissionId);
         } catch (submitErr) {
           // Review submission is best-effort; draft creation succeeded.
           console.warn(
@@ -45,7 +45,7 @@ export function useEventSubmission(): EventSubmissionResult {
             submitErr,
           );
         }
-        onSuccess(event, created.id || event.id);
+        onSuccess(event, created.submissionId || event.id);
       } catch (err) {
         console.error("[useEventSubmission] createDraft failed:", err);
         // Fallback — keep UX responsive when backend is unavailable (Phase 0)
