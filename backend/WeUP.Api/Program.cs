@@ -3,6 +3,7 @@ using WeUP.Api.Observability;
 using Microsoft.EntityFrameworkCore;
 using WeUP.Application.Ingestion;
 using WeUP.Application.Moderation;
+using WeUP.Application.Resolution;
 using WeUP.Application.Users;
 using WeUP.Domain.Events;
 using WeUP.Domain.Flyer;
@@ -13,6 +14,7 @@ using WeUP.Domain.Spatial;
 using WeUP.Domain.Markets;
 using WeUP.Domain.Analytics;
 using WeUP.Domain.Media;
+using WeUP.Domain.Resolution;
 using WeUP.Infrastructure.Auth;
 using WeUP.Infrastructure.Flyer;
 using WeUP.Infrastructure.Submissions;
@@ -24,6 +26,7 @@ using WeUP.Infrastructure.Spatial;
 using WeUP.Infrastructure.Markets;
 using WeUP.Infrastructure.Analytics;
 using WeUP.Infrastructure.Media;
+using WeUP.Infrastructure.Resolution;
 using WeUP.Infrastructure.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -177,6 +180,9 @@ if (!preferSeededInMemoryIngestion && !string.IsNullOrWhiteSpace(connStr))
     // Video flyer persistence (P29) — durable EF/Postgres path
     builder.Services.AddScoped<IVideoFlyerRepository, EfVideoFlyerRepository>();
     builder.Services.AddScoped<IVideoDerivedAssetRepository, EfVideoDerivedAssetRepository>();
+
+    // Entity resolution (P12) — durable EF/Postgres path
+    builder.Services.AddScoped<IEntityResolutionRepository, EfEntityResolutionRepository>();
 }
 else
 {
@@ -196,7 +202,14 @@ else
     builder.Services.AddSingleton<IVideoFlyerRepository>(sp => sp.GetRequiredService<InMemoryVideoFlyerRepository>());
     builder.Services.AddSingleton<InMemoryVideoDerivedAssetRepository>();
     builder.Services.AddSingleton<IVideoDerivedAssetRepository>(sp => sp.GetRequiredService<InMemoryVideoDerivedAssetRepository>());
+
+    // Entity resolution (P12) — dev/test in-memory path
+    builder.Services.AddSingleton<IEntityResolutionRepository, InMemoryEntityResolutionRepository>();
 }
+
+builder.Services.AddScoped<IEventDuplicateDetector, DeterministicEventDuplicateDetector>();
+builder.Services.AddScoped<IMergePlanner, DeterministicMergePlanner>();
+builder.Services.AddScoped<IEntityResolutionService, EntityResolutionService>();
 builder.Services.AddSingleton<Phase0SeedLoader>();
 builder.Services.AddSingleton<Phase0SeedService>();
 
@@ -269,6 +282,7 @@ app.MapTemporalEndpoints(); // P21: Temporal preset queries
 app.MapAnalyticsEndpoints(); // P23: Analytics event recording
 app.MapMediaEndpoints(); // P25: Flyer media intake
 app.MapVideoFlyerEndpoints(); // P28: Video flyer intake
+app.MapResolutionEndpoints(); // P12: Deterministic entity resolution and merge
 app.MapHealthChecks("/health");
 
 var enableSeedResetEndpoint = builder.Configuration.GetValue<bool>("SeedData:EnableResetEndpoint") || app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing");

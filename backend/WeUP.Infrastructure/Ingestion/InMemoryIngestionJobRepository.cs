@@ -97,6 +97,9 @@ public sealed class InMemoryIngestionJobRepository : IIngestionJobRepository
         return Task.FromResult(result);
     }
 
+    public IReadOnlyList<IngestionResult> SnapshotJobs()
+        => _jobs.Values.OrderBy(v => v.CreatedAtUtc).ToArray();
+
     private static IngestionJobStatus MapSeedStatus(string status)
         => status switch
         {

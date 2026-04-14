@@ -131,6 +131,14 @@ public sealed class StubEventRepository : IEventRepository, IEventSubmissionRepo
         }
     }
 
+    public IReadOnlyList<EventDetailDto> SnapshotDetails()
+    {
+        lock (_gate)
+        {
+            return _details.ToArray();
+        }
+    }
+
     private static DateTimeOffset ParseDate(string value) =>
         DateTimeOffset.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
 }

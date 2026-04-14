@@ -20,6 +20,7 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
     public DbSet<IngestionEvidenceEntity> IngestionEvidence => Set<IngestionEvidenceEntity>();
     public DbSet<IngestionCandidateEntity> IngestionCandidates => Set<IngestionCandidateEntity>();
     public DbSet<IngestionAuditEntity> IngestionAudits => Set<IngestionAuditEntity>();
+    public DbSet<EntityResolutionRecordEntity> EntityResolutionRecords => Set<EntityResolutionRecordEntity>();
     public DbSet<MediaAssetEntity> MediaAssets => Set<MediaAssetEntity>();
     public DbSet<MediaUploadEntity> MediaUploads => Set<MediaUploadEntity>();
     public DbSet<FlyerProvenanceEntity> FlyerProvenances => Set<FlyerProvenanceEntity>();
@@ -142,6 +143,20 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
             b.Property(e => e.Stage).HasMaxLength(64).IsRequired();
             b.Property(e => e.Detail).HasMaxLength(2000);
             b.Property(e => e.Timestamp).IsRequired();
+        });
+
+        modelBuilder.Entity<EntityResolutionRecordEntity>(b =>
+        {
+            b.ToTable("entity_resolution_records");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.ResolutionId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.CandidateSourceRef).HasMaxLength(1024).IsRequired();
+            b.Property(e => e.Status).HasMaxLength(64).IsRequired();
+            b.Property(e => e.ResultJson).HasColumnType("jsonb").IsRequired();
+            b.Property(e => e.CanonicalEventId).HasMaxLength(128);
+            b.HasIndex(e => e.ResolutionId).IsUnique();
+            b.HasIndex(e => e.Status);
+            b.HasIndex(e => e.CandidateSourceRef);
         });
 
         modelBuilder.Entity<MediaAssetEntity>(b =>
