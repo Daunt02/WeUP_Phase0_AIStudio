@@ -91,11 +91,11 @@ else
     builder.Services.AddSingleton<IIngestionAuditWriter, ConsoleIngestionAuditWriter>();
 }
 
-// Adapters — each registered as IIngestionAdapter so IngestionDispatcher receives all via IEnumerable<IIngestionAdapter>
-builder.Services.AddSingleton<IIngestionAdapter, ManualSubmissionAdapter>();
-builder.Services.AddSingleton<IIngestionAdapter, LinkAdapter>();
-builder.Services.AddSingleton<IIngestionAdapter, VenuePageAdapter>();
-builder.Services.AddScoped<IIngestionDispatcher, IngestionDispatcher>();
+builder.Services.AddSingleton<IEventSourceAdapter, ManualSubmissionAdapter>();
+builder.Services.AddSingleton<IEventSourceAdapter, LinkAdapter>();
+builder.Services.AddSingleton<IEventSourceAdapter, VenuePageAdapter>();
+builder.Services.AddSingleton<IEventSourceAdapterResolver, EventSourceAdapterResolver>();
+builder.Services.AddScoped<IIngestionCoordinator, IngestionCoordinator>();
 
 // Flyer pipeline
 builder.Services.AddSingleton<IFlyerStorageService, LocalFileStorageService>();

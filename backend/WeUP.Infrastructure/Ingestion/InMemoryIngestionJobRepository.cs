@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Text.Json;
 using WeUP.Contracts.Ingestion;
 using WeUP.Domain.Ingestion;
 using WeUP.Infrastructure.Seed;
@@ -11,15 +12,8 @@ namespace WeUP.Infrastructure.Ingestion;
 /// </summary>
 public sealed class InMemoryIngestionJobRepository : IIngestionJobRepository
 {
-    private sealed class JobRecord
-    {
-        public string JobId { get; init; } = string.Empty;
-        public IngestionJobStatus Status { get; set; }
-        public string? CandidateEventId { get; set; }
-        public string? FailureReason { get; set; }
-    }
-
-    private readonly ConcurrentDictionary<string, JobRecord> _jobs = new();
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private readonly ConcurrentDictionary<string, IngestionResult> _jobs = new();
     private int _sequence;
 
     public void Reset(Phase0SeedDataset dataset)
@@ -27,48 +21,92 @@ public sealed class InMemoryIngestionJobRepository : IIngestionJobRepository
         _jobs.Clear();
         foreach (var job in dataset.IngestionJobs)
         {
-            _jobs[job.JobId] = new JobRecord
-            {
-                JobId = job.JobId,
-                Status = Enum.Parse<IngestionJobStatus>(job.Status, true),
-                CandidateEventId = job.CandidateEventId,
-                FailureReason = job.FailureReason,
-            };
+            var createdAt = DateTimeOffset.UtcNow;
+            var status = MapSeedStatus(job.Status);
+            var request = new IngestionRequestEnvelope(
+                RequestId: $"seed-{job.JobId}",
+                SourceKind: Enum.TryParse<IngestionSourceKind>(job.SourceKind, true, out var kind) ? kind : IngestionSourceKind.ExternalFeed,
+                SourceReference: job.SourceRef,
+                SubmittedBy: "seed",
+                RawPayloadJson: JsonSerializer.Serialize(new { job.SourceKind, job.SourceRef }, JsonOptions),
+                IdempotencyKey: $"seed-{job.JobId}",
+                ReceivedAtUtc: createdAt,
+                Metadata: new Dictionary<string, string?>
+                {
+                    ["seeded"] = "true",
+                });
+
+            var issues = string.IsNullOrWhiteSpace(job.FailureReason)
+                ? Array.Empty<CanonicalIngestionIssue>()
+                :
+                [
+                    new CanonicalIngestionIssue(
+                        "seed_failure",
+                        job.FailureReason,
+                        IngestionIssueSeverity.Error,
+                        false,
+                        null,
+                        new Dictionary<string, string?>())
+                ];
+
+            _jobs[job.JobId] = new IngestionResult(
+                job.JobId,
+                request,
+                status,
+                null,
+                Array.Empty<CanonicalSourceEvidence>(),
+                issues,
+                null,
+                [new IngestionStatusRecord(status, createdAt, job.FailureReason)],
+                createdAt,
+                createdAt);
         }
 
         _sequence = dataset.IngestionJobs.Length;
     }
 
-    public Task<string> CreateJobAsync(IngestionSourceKind kind, string sourceRef, CancellationToken ct = default)
+    public Task<IngestionResult> CreateAsync(IngestionRequestEnvelope request, CancellationToken ct = default)
     {
-        var jobId = $"job-runtime-{Interlocked.Increment(ref _sequence):000}";
-        _jobs[jobId] = new JobRecord { JobId = jobId, Status = IngestionJobStatus.Queued };
-        return Task.FromResult(jobId);
+        var now = DateTimeOffset.UtcNow;
+        var jobId = $"ing-runtime-{Interlocked.Increment(ref _sequence):000}";
+        var result = new IngestionResult(
+            jobId,
+            request,
+            IngestionJobStatus.RECEIVED,
+            null,
+            Array.Empty<CanonicalSourceEvidence>(),
+            Array.Empty<CanonicalIngestionIssue>(),
+            null,
+            [new IngestionStatusRecord(IngestionJobStatus.RECEIVED, now, "Ingestion request accepted.")],
+            now,
+            now);
+
+        _jobs[jobId] = result;
+        return Task.FromResult(result);
     }
 
-    public Task UpdateStatusAsync(string jobId, IngestionJobStatus status, string? failureReason = null, CancellationToken ct = default)
+    public Task SaveAsync(IngestionResult result, CancellationToken ct = default)
     {
-        if (_jobs.TryGetValue(jobId, out var record))
+        _jobs[result.JobId] = result;
+        return Task.CompletedTask;
+    }
+
+    public Task<IngestionResult?> GetAsync(string jobId, CancellationToken ct = default)
+    {
+        _jobs.TryGetValue(jobId, out var result);
+        return Task.FromResult(result);
+    }
+
+    private static IngestionJobStatus MapSeedStatus(string status)
+        => status switch
         {
-            record.Status = status;
-            if (failureReason is not null) record.FailureReason = failureReason;
-        }
-        return Task.CompletedTask;
-    }
-
-    public Task SetCandidateAsync(string jobId, string candidateEventId, CancellationToken ct = default)
-    {
-        if (_jobs.TryGetValue(jobId, out var record))
-            record.CandidateEventId = candidateEventId;
-        return Task.CompletedTask;
-    }
-
-    public Task<IngestionJobResponse?> GetJobAsync(string jobId, CancellationToken ct = default)
-    {
-        _jobs.TryGetValue(jobId, out var record);
-        return Task.FromResult(record is null ? null : new IngestionJobResponse(
-            record.JobId, record.Status, record.CandidateEventId, record.FailureReason));
-    }
+            "ReviewPending" => IngestionJobStatus.REQUIRES_REVIEW,
+            "Failed" => IngestionJobStatus.FAILED,
+            "Queued" => IngestionJobStatus.RECEIVED,
+            "Normalizing" => IngestionJobStatus.NORMALIZING,
+            _ when Enum.TryParse<IngestionJobStatus>(status, true, out var parsed) => parsed,
+            _ => IngestionJobStatus.REQUIRES_REVIEW,
+        };
 }
 
 /// <summary>Console-logging audit writer for development.</summary>

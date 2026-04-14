@@ -26,43 +26,65 @@ public sealed class FlyerIngestionPipeline(
 {
     public async Task<FlyerIngestionResult> ProcessAsync(FlyerUploadRequest request, CancellationToken ct = default)
     {
-        var jobId = await jobs.CreateJobAsync(IngestionSourceKind.ManualSubmission, request.FileName, ct);
+        var envelope = new IngestionRequestEnvelope(
+            Guid.NewGuid().ToString("N"),
+            IngestionSourceKind.ManualSubmission,
+            request.FileName,
+            request.UploadedByUserId,
+            System.Text.Json.JsonSerializer.Serialize(new { request.FileName, request.ContentType, request.UploadedByUserId }),
+            Guid.NewGuid().ToString("N"),
+            DateTimeOffset.UtcNow,
+            new Dictionary<string, string?>
+            {
+                ["pipeline"] = "flyer",
+                ["contentType"] = request.ContentType,
+            });
+        var job = await jobs.CreateAsync(envelope, ct);
+        var jobId = job.JobId;
 
         try
         {
-            // Stage 1: Store asset
-            await jobs.UpdateStatusAsync(jobId, IngestionJobStatus.Fetching, ct: ct);
+            job = Transition(job, IngestionJobStatus.VALIDATING, "Flyer asset validation and storage started.");
+            await jobs.SaveAsync(job, ct);
             var stored = await storage.StoreAsync(request, ct);
             await audit.WriteAsync(jobId, "Stored", $"assetId={stored.AssetId}", ct);
 
-            // Stage 2: OCR
-            await jobs.UpdateStatusAsync(jobId, IngestionJobStatus.Extracting, ct: ct);
+            job = Transition(job, IngestionJobStatus.NORMALIZING, "Flyer OCR and normalization started.");
+            await jobs.SaveAsync(job, ct);
             var ocrResult = await ocr.ExtractTextAsync(stored.AssetId, stored.StorageKey, ct);
             await audit.WriteAsync(jobId, "OCR", $"confidence={ocrResult.Confidence:F2} success={ocrResult.Success}", ct);
 
             if (!ocrResult.Success)
             {
-                await jobs.UpdateStatusAsync(jobId, IngestionJobStatus.Failed, ocrResult.ErrorMessage, ct);
+                job = Transition(
+                    job,
+                    IngestionJobStatus.FAILED,
+                    ocrResult.ErrorMessage,
+                    issues:
+                    [
+                        new CanonicalIngestionIssue(
+                            "flyer_ocr_failed",
+                            ocrResult.ErrorMessage ?? "OCR failed.",
+                            IngestionIssueSeverity.Error,
+                            false,
+                            null,
+                            new Dictionary<string, string?>())
+                    ]);
+                await jobs.SaveAsync(job, ct);
                 return new FlyerIngestionResult(stored.AssetId, jobId, null, null, true,
                     [$"OCR failed: {ocrResult.ErrorMessage}"], false, ocrResult.ErrorMessage);
             }
 
-            // Stage 3: Post-process OCR text
-            await jobs.UpdateStatusAsync(jobId, IngestionJobStatus.Normalizing, ct: ct);
             var cleanedText = postProcessor.Clean(ocrResult.RawText);
 
-            // Stage 4: LLM normalization
             var normalized = await normalizer.NormalizeAsync(cleanedText, stored.AssetId, ct);
             await audit.WriteAsync(jobId, "Normalized", $"confidence={normalized.ExtractionConfidence:F2}", ct);
 
-            // Stage 5: Geocoding
             var geocodeResult = await geocoding.GeocodeAsync(normalized.Address ?? string.Empty, "austin-tx", ct);
             await audit.WriteAsync(jobId, "Geocoded", $"confidence={geocodeResult.Confidence:F2}", ct);
 
-            // Stage 6: Confidence evaluation
             var confidence = confidenceEvaluator.Evaluate(ocrResult, normalized, geocodeResult.Confidence);
 
-            // Build candidate
             var candidate = new NormalizedEventCandidate(
                 Title: normalized.Title,
                 VenueName: normalized.VenueName,
@@ -80,7 +102,27 @@ public sealed class FlyerIngestionPipeline(
                 TemporalConfidence: confidence.TemporalConfidence,
                 EvidenceRefs: [stored.AssetId, jobId]);
 
-            await jobs.UpdateStatusAsync(jobId, IngestionJobStatus.ReviewPending, ct: ct);
+            job = Transition(
+                job,
+                IngestionJobStatus.REQUIRES_REVIEW,
+                "Flyer candidate requires review before aggregate promotion.",
+                candidate,
+                [
+                    new CanonicalSourceEvidence(
+                        $"flyer-asset-{jobId}",
+                        "flyer-asset",
+                        stored.AssetId,
+                        stored.ContentType,
+                        stored.StorageKey,
+                        DateTimeOffset.UtcNow,
+                        0.9,
+                        new Dictionary<string, string?>
+                        {
+                            ["checksum"] = stored.ChecksumSha256,
+                        })
+                ],
+                Array.Empty<CanonicalIngestionIssue>());
+            await jobs.SaveAsync(job, ct);
             await audit.WriteAsync(jobId, "ReviewPending", $"requiresReview={confidence.RequiresManualReview}", ct);
 
             return new FlyerIngestionResult(
@@ -89,11 +131,45 @@ public sealed class FlyerIngestionPipeline(
         }
         catch (Exception ex)
         {
-            await jobs.UpdateStatusAsync(jobId, IngestionJobStatus.Failed, ex.Message, ct);
+            job = Transition(
+                job,
+                IngestionJobStatus.FAILED,
+                ex.Message,
+                issues:
+                [
+                    new CanonicalIngestionIssue(
+                        "flyer_pipeline_failed",
+                        ex.Message,
+                        IngestionIssueSeverity.Error,
+                        false,
+                        null,
+                        new Dictionary<string, string?>())
+                ]);
+            await jobs.SaveAsync(job, ct);
             await audit.WriteAsync(jobId, "Failed", ex.Message, ct);
             return new FlyerIngestionResult(string.Empty, jobId, null, null, true,
                 [$"Pipeline error: {ex.Message}"], false, ex.Message);
         }
+    }
+
+    private static IngestionResult Transition(
+        IngestionResult current,
+        IngestionJobStatus status,
+        string? detail,
+        CanonicalEventCandidate? candidate = null,
+        CanonicalSourceEvidence[]? evidence = null,
+        CanonicalIngestionIssue[]? issues = null)
+    {
+        var now = DateTimeOffset.UtcNow;
+        return current with
+        {
+            Status = status,
+            Candidate = candidate ?? current.Candidate,
+            Evidence = evidence ?? current.Evidence,
+            Issues = issues ?? current.Issues,
+            Lifecycle = [.. current.Lifecycle, new IngestionStatusRecord(status, now, detail)],
+            UpdatedAtUtc = now,
+        };
     }
 }
 

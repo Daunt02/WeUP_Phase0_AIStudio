@@ -91,13 +91,23 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
             b.ToTable("ingestion_jobs");
             b.HasKey(e => e.Id);
             b.Property(e => e.JobId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.RequestId).HasMaxLength(64).IsRequired();
             b.Property(e => e.SourceKind).HasMaxLength(64).IsRequired();
             b.Property(e => e.SourceRef).HasMaxLength(1024).IsRequired();
+            b.Property(e => e.SubmittedBy).HasMaxLength(256).IsRequired();
+            b.Property(e => e.IdempotencyKey).HasMaxLength(128).IsRequired();
+            b.Property(e => e.RawPayloadJson).HasColumnType("jsonb").IsRequired();
+            b.Property(e => e.MetadataJson).HasColumnType("jsonb").IsRequired();
             b.Property(e => e.Status).HasMaxLength(32).IsRequired();
             b.Property(e => e.FailureReason).HasMaxLength(2000);
+            b.Property(e => e.IssuesJson).HasColumnType("jsonb").IsRequired();
+            b.Property(e => e.AdapterKey).HasMaxLength(128);
+            b.Property(e => e.AdapterVersion).HasMaxLength(64);
             b.Property(e => e.CandidateEventId).HasMaxLength(64);
             b.HasIndex(e => e.JobId).IsUnique();
+            b.HasIndex(e => e.RequestId).IsUnique();
             b.HasIndex(e => e.SourceRef);
+            b.HasIndex(e => e.IdempotencyKey);
         });
 
         modelBuilder.Entity<IngestionEvidenceEntity>(b =>
@@ -105,9 +115,13 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
             b.ToTable("ingestion_evidence");
             b.HasKey(e => e.Id);
             b.Property(e => e.JobId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.EvidenceId).HasMaxLength(128).IsRequired();
             b.Property(e => e.Kind).HasMaxLength(64).IsRequired();
             b.Property(e => e.Reference).HasMaxLength(1024).IsRequired();
+            b.Property(e => e.MimeType).HasMaxLength(256);
             b.Property(e => e.Payload).HasMaxLength(4000);
+            b.Property(e => e.MetadataJson).HasColumnType("jsonb").IsRequired();
+            b.HasIndex(e => e.EvidenceId);
         });
 
         modelBuilder.Entity<IngestionCandidateEntity>(b =>
@@ -115,7 +129,9 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
             b.ToTable("ingestion_candidates");
             b.HasKey(e => e.Id);
             b.Property(e => e.JobId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.CandidateSourceRef).HasMaxLength(1024).IsRequired();
             b.Property(e => e.CandidateJson).HasColumnType("jsonb").IsRequired();
+            b.HasIndex(e => e.JobId).IsUnique();
         });
 
         modelBuilder.Entity<IngestionAuditEntity>(b =>

@@ -10,59 +10,77 @@ public static class IngestionEndpoints
     {
         var group = app.MapGroup("/api/ingestion").WithTags("Ingestion");
 
-        // POST /api/ingestion/manual
         group.MapPost("/manual", async (
             [FromBody] ManualIngestionRequest request,
-            IIngestionDispatcher dispatcher,
+            IIngestionCoordinator coordinator,
             CancellationToken ct) =>
         {
-            var jobId = await dispatcher.DispatchManualAsync(request, ct);
-            return Results.Accepted($"/api/ingestion/jobs/{jobId}", new { jobId });
+            var result = await coordinator.SubmitManualAsync(request, ct);
+            return Results.Accepted(
+                $"/api/ingestion/jobs/{result.JobId}",
+                new IngestionAcceptedResponse(result.JobId, result.Status, $"/api/ingestion/jobs/{result.JobId}"));
         })
         .WithName("IngestManual")
-        .Produces(202);
+        .Produces<IngestionAcceptedResponse>(202);
 
-        // POST /api/ingestion/link
-        group.MapPost("/link", async (
-            [FromBody] LinkIngestionRequest request,
-            IIngestionDispatcher dispatcher,
+        group.MapPost("/url", async (
+            [FromBody] UrlIngestionRequest request,
+            IIngestionCoordinator coordinator,
             CancellationToken ct) =>
         {
-            if (string.IsNullOrEmpty(request.Url) || !Uri.TryCreate(request.Url, UriKind.Absolute, out _))
+            if (string.IsNullOrWhiteSpace(request.Url) || !Uri.TryCreate(request.Url, UriKind.Absolute, out _))
+            {
                 return Results.ValidationProblem(new Dictionary<string, string[]>
                     { ["url"] = ["A valid absolute URL is required."] });
+            }
 
-            var jobId = await dispatcher.DispatchLinkAsync(request, ct);
-            return Results.Accepted($"/api/ingestion/jobs/{jobId}", new { jobId });
+            var result = await coordinator.SubmitUrlAsync(request, ct);
+            return Results.Accepted(
+                $"/api/ingestion/jobs/{result.JobId}",
+                new IngestionAcceptedResponse(result.JobId, result.Status, $"/api/ingestion/jobs/{result.JobId}"));
         })
-        .WithName("IngestLink")
-        .Produces(202);
+        .WithName("IngestUrl")
+        .Produces<IngestionAcceptedResponse>(202)
+        .ProducesValidationProblem();
 
-        // POST /api/ingestion/venue-page
+        group.MapPost("/link", async (
+            [FromBody] LinkIngestionRequest request,
+            IIngestionCoordinator coordinator,
+            CancellationToken ct) =>
+        {
+            var result = await coordinator.SubmitUrlAsync(new UrlIngestionRequest(request.Url, request.SubmitterId), ct);
+            return Results.Accepted(
+                $"/api/ingestion/jobs/{result.JobId}",
+                new IngestionAcceptedResponse(result.JobId, result.Status, $"/api/ingestion/jobs/{result.JobId}"));
+        })
+        .WithName("IngestLinkCompat")
+        .ExcludeFromDescription();
+
         group.MapPost("/venue-page", async (
             [FromBody] VenuePageIngestionRequest request,
-            IIngestionDispatcher dispatcher,
+            IIngestionCoordinator coordinator,
             CancellationToken ct) =>
         {
-            var jobId = await dispatcher.DispatchVenuePageAsync(request, ct);
-            return Results.Accepted($"/api/ingestion/jobs/{jobId}", new { jobId });
+            var result = await coordinator.SubmitVenuePageAsync(request, ct);
+            return Results.Accepted(
+                $"/api/ingestion/jobs/{result.JobId}",
+                new IngestionAcceptedResponse(result.JobId, result.Status, $"/api/ingestion/jobs/{result.JobId}"));
         })
         .WithName("IngestVenuePage")
-        .Produces(202);
+        .Produces<IngestionAcceptedResponse>(202);
 
-        // GET /api/ingestion/jobs/{id}
         group.MapGet("/jobs/{id}", async (
             string id,
-            IIngestionJobRepository jobs,
+            IIngestionCoordinator coordinator,
             CancellationToken ct) =>
         {
-            var job = await jobs.GetJobAsync(id, ct);
+            var job = await coordinator.GetJobAsync(id, ct);
             return job is null
                 ? Results.NotFound(new ProblemDetails { Title = "Ingestion job not found", Status = 404 })
                 : Results.Ok(job);
         })
         .WithName("GetIngestionJob")
-        .Produces<IngestionJobResponse>()
+        .Produces<IngestionResult>()
         .ProducesProblem(404);
     }
 }
