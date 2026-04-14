@@ -60,6 +60,8 @@ function reducer(
       return { ...state, temporalMode: action.mode };
     case "SET_SELECTED_DATE":
       return { ...state, selectedDate: action.date };
+    case "SET_SAVED_EVENT_IDS":
+      return { ...state, savedEventIds: action.ids };
     case "TOGGLE_SAVE_EVENT": {
       const exists = state.savedEventIds.includes(action.id);
       return {
@@ -79,10 +81,9 @@ function reducer(
     case "PUBLISH_DRAFT":
       return { ...state, ghostDraft: null };
     case "RESTORE_PERSISTED": {
-      // Explicit restore action to hydrate persisted slice without touching transient orchestration fields.
+      // Restore only local UI persistence fields; save IDs are migrated by the save authority layer.
       return {
         ...state,
-        savedEventIds: action.persisted.savedEventIds || [],
         lastKnownMapCenter:
           action.persisted.lastKnownMapCenter || state.lastKnownMapCenter,
       };
@@ -126,6 +127,10 @@ export function useWorldSurfaceState() {
     (date: string) => dispatch({ type: "SET_SELECTED_DATE", date }),
     [],
   );
+  const setSavedEventIds = useCallback(
+    (ids: string[]) => dispatch({ type: "SET_SAVED_EVENT_IDS", ids }),
+    [],
+  );
   const toggleSave = useCallback(
     (id: string) => dispatch({ type: "TOGGLE_SAVE_EVENT", id }),
     [],
@@ -148,10 +153,9 @@ export function useWorldSurfaceState() {
    */
   const persistedSnapshot = useCallback(
     (): PersistedUIState => ({
-      savedEventIds: state.savedEventIds || [],
       lastKnownMapCenter: state.lastKnownMapCenter || null,
     }),
-    [state.savedEventIds, state.lastKnownMapCenter],
+    [state.lastKnownMapCenter],
   );
 
   /**
@@ -174,6 +178,7 @@ export function useWorldSurfaceState() {
     setMapCenter,
     setMapBounds,
     setSelectedDate,
+    setSavedEventIds,
     toggleSave,
     beginDraft,
     updateDraft,

@@ -13,6 +13,7 @@ import GeoControls from "@/components/GeoControls";
 import AddEventModal from "@/components/AddEventModal";
 import TemporalDebugPanel from "@/components/TemporalDebugPanel";
 import { useWorldSurfaceState } from "@/hooks/useWorldSurfaceState";
+import { useSavedEventsAuthority } from "@/hooks/useSavedEventsAuthority";
 import { useEventFeed } from "@/hooks/useEventFeed";
 import { useTemporalQuery } from "@/hooks/useTemporalQuery";
 import { useEventSubmission } from "@/hooks/useEventSubmission";
@@ -44,10 +45,13 @@ export default function WorldCoordinator() {
     beginDraft,
     updateDraft,
     publishDraft,
-    toggleSave,
+    setSavedEventIds,
     persistedSnapshot,
     restorePersistedState,
   } = useWorldSurfaceState();
+
+  const { savedEventIds, toggleSavedEvent, ingestLegacyLocalSaves } =
+    useSavedEventsAuthority();
 
   // Persisted UI snapshot key
   const PERSIST_KEY = "weup.ui.persisted.v1";
@@ -60,12 +64,19 @@ export default function WorldCoordinator() {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === "object") {
           restorePersistedState(parsed);
+          if (Array.isArray(parsed.savedEventIds)) {
+            ingestLegacyLocalSaves(parsed.savedEventIds);
+          }
         }
       }
     } catch (err) {
       console.warn("Failed to restore persisted UI state", err);
     }
-  }, [restorePersistedState]);
+  }, [restorePersistedState, ingestLegacyLocalSaves]);
+
+  useEffect(() => {
+    setSavedEventIds(savedEventIds);
+  }, [savedEventIds, setSavedEventIds]);
 
   // Save persisted slice when it changes
   useEffect(() => {
@@ -75,7 +86,7 @@ export default function WorldCoordinator() {
     } catch (err) {
       console.warn("Failed to persist UI snapshot", err);
     }
-  }, [state.savedEventIds, state.lastKnownMapCenter, persistedSnapshot]);
+  }, [state.lastKnownMapCenter, persistedSnapshot]);
 
   // ── Data layers ────────────────────────────────────────────────────────────
   const { events, prependEvent } = useEventFeed(state.mapBounds);
@@ -149,9 +160,7 @@ export default function WorldCoordinator() {
   );
 
   // ── Derived ────────────────────────────────────────────────────────────────
-  const savedEventItems = events.filter((e) =>
-    state.savedEventIds.includes(e.id),
-  );
+  const savedEventItems = events.filter((e) => savedEventIds.includes(e.id));
   const selectedEvent: RuntimeEventProjection | null = state.selectedEventId
     ? (events.find((e) => e.id === state.selectedEventId) ?? null)
     : null;
@@ -247,10 +256,10 @@ export default function WorldCoordinator() {
             : null
         }
         onClose={() => closeModal()}
-        onSave={(id) => toggleSave(id)}
+        onSave={(id) => void toggleSavedEvent(id)}
         isSaved={
           state.selectedEventId
-            ? state.savedEventIds.includes(state.selectedEventId)
+            ? savedEventIds.includes(state.selectedEventId)
             : false
         }
       />

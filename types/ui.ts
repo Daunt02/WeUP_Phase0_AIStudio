@@ -3,7 +3,7 @@
 // Ownership rules (convention):
 // - Page / Coordinator (`useWorldSurfaceState`) owns orchestration and cross-cutting UI state.
 // - Presentation components (maps, panels, modals) own purely local ephemeral UI (hover, focused input) only.
-// - Persisted-ready slices (savedEventIds, lastKnownMapCenter) are exposed for storage sync.
+// - Persisted-ready slices (lastKnownMapCenter) are exposed for storage sync.
 
 export type ViewMode = "RADAR" | "CALENDAR" | "PROFILE" | "SAVED";
 
@@ -37,10 +37,11 @@ export interface GhostDraft {
   tags?: string[];
 }
 
-// Persisted slice: what we consider safe to persist to localStorage or backend.
+// Persisted slice: what we consider safe to persist to localStorage.
 export interface PersistedUIState {
-  savedEventIds: string[]; // user preference
   lastKnownMapCenter: { lat: number; lng: number } | null;
+  // Backward-compat only for legacy local save migration.
+  savedEventIds?: string[];
 }
 
 // Transient UI: ephemeral during a session and not persisted automatically.
@@ -61,8 +62,11 @@ export interface TransientUIState {
   ghostDraft: GhostDraft | null;
 }
 
-// Full coordinator state is the combination of both slices.
-export type WorldSurfaceState = TransientUIState & PersistedUIState;
+// Full coordinator state keeps save IDs as an always-present synchronized field.
+export type WorldSurfaceState = TransientUIState &
+  Omit<PersistedUIState, "savedEventIds"> & {
+    savedEventIds: string[];
+  };
 
 // Actions are discriminated union of typed events used to transition state.
 export type WorldAction =
@@ -83,6 +87,7 @@ export type WorldAction =
     }
   | { type: "SET_TEMPORAL_MODE"; mode: TemporalMode }
   | { type: "SET_SELECTED_DATE"; date: string }
+  | { type: "SET_SAVED_EVENT_IDS"; ids: string[] }
   | { type: "TOGGLE_SAVE_EVENT"; id: string }
   | { type: "BEGIN_DRAFT"; draft: GhostDraft }
   | { type: "UPDATE_DRAFT"; patch: Partial<GhostDraft> }
