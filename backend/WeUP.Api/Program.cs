@@ -31,6 +31,23 @@ using WeUP.Infrastructure.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var useStubRepositories = builder.Configuration.GetValue<bool>("WeUP:UseStubRepositories");
+var isTestingEnvironment = builder.Environment.IsEnvironment("Testing");
+var connStr = builder.Configuration.GetConnectionString("WeUpDb");
+var hasConnectionString = !string.IsNullOrWhiteSpace(connStr);
+var useEfRepositories = !useStubRepositories && !isTestingEnvironment;
+
+if (useEfRepositories && !hasConnectionString)
+{
+    throw new InvalidOperationException(
+        "Runtime mode is EF-backed by default. Configure ConnectionStrings:WeUpDb or set WeUP:UseStubRepositories=true to run isolated stub mode.");
+}
+
+if (useEfRepositories)
+{
+    builder.Services.AddDbContext<WeUpDbContext>(opts => opts.UseNpgsql(connStr!));
+}
+
 // ---------------------------------------------------------------------------
 // Services
 // ---------------------------------------------------------------------------
@@ -40,7 +57,8 @@ builder.Services.Configure<MediaIntakeOptions>(builder.Configuration.GetSection(
 builder.Services.Configure<VideoIntakeOptions>(builder.Configuration.GetSection(VideoIntakeOptions.SectionName));
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new() { Title = "WeUP API", Version = "v1 (Phase 0 stub)" });
+    var runtimeLabel = useEfRepositories ? "v1 (EF runtime)" : "v1 (stub runtime)";
+    c.SwaggerDoc("v1", new() { Title = "WeUP API", Version = runtimeLabel });
 });
 
 // CORS — allow the Next.js frontend during local development
@@ -53,44 +71,33 @@ builder.Services.AddCors(opts =>
 });
 
 // Domain / Application services
-// To switch from stubs to EF Core:
-//   1. Add EF + Npgsql packages (see backend/WeUP.Infrastructure/Persistence/Migrations/README.md)
-//   2. Set WeUpDb connection string in appsettings / environment
-//   3. Replace the three lines below with the EF registrations (uncommented):
-//
-// var connStr = builder.Configuration.GetConnectionString("WeUpDb")
-//     ?? throw new InvalidOperationException("WeUpDb connection string is required.");
-// builder.Services.AddDbContext<WeUpDbContext>(opts => opts.UseNpgsql(connStr));
-// builder.Services.AddScoped<IEventRepository, EfEventRepository>();
-// builder.Services.AddScoped<IEventSubmissionRepository, EfEventRepository>();
-// builder.Services.AddScoped<ISaveRepository, EfSaveRepository>();
-
-builder.Services.AddSingleton<StubEventRepository>();
-builder.Services.AddSingleton<IEventRepository>(sp => sp.GetRequiredService<StubEventRepository>());
-builder.Services.AddSingleton<IEventSubmissionRepository>(sp => sp.GetRequiredService<StubEventRepository>());
-builder.Services.AddSingleton<IEventLifecycleRepository>(sp => sp.GetRequiredService<StubEventRepository>());
-builder.Services.AddSingleton<StubSaveRepository>();
-builder.Services.AddSingleton<ISaveRepository>(sp => sp.GetRequiredService<StubSaveRepository>());
+if (useEfRepositories)
+{
+    builder.Services.AddScoped<IEventRepository, EfEventRepository>();
+    builder.Services.AddScoped<IEventSubmissionRepository, EfEventRepository>();
+    builder.Services.AddScoped<IEventLifecycleRepository, EfEventRepository>();
+    builder.Services.AddScoped<ISaveRepository, EfSaveRepository>();
+}
+else
+{
+    builder.Services.AddSingleton<StubEventRepository>();
+    builder.Services.AddSingleton<IEventRepository>(sp => sp.GetRequiredService<StubEventRepository>());
+    builder.Services.AddSingleton<IEventSubmissionRepository>(sp => sp.GetRequiredService<StubEventRepository>());
+    builder.Services.AddSingleton<IEventLifecycleRepository>(sp => sp.GetRequiredService<StubEventRepository>());
+    builder.Services.AddSingleton<StubSaveRepository>();
+    builder.Services.AddSingleton<ISaveRepository>(sp => sp.GetRequiredService<StubSaveRepository>());
+}
 
 // Ingestion services
 builder.Services.AddHttpClient("ingestion").AddHttpMessageHandler<WeUP.Api.Observability.CorrelationIdDelegatingHandler>();
-var connStr = builder.Configuration.GetConnectionString("WeUpDb");
-var preferSeededInMemoryIngestion =
-    builder.Environment.IsDevelopment() ||
-    builder.Environment.IsEnvironment("Testing") ||
-    builder.Configuration.GetValue<bool>("SeedData:EnableOnStartup") ||
-    builder.Configuration.GetValue<bool>("SeedData:EnableResetEndpoint");
-
-builder.Services.AddSingleton<InMemoryIngestionJobRepository>();
-
-if (!preferSeededInMemoryIngestion && !string.IsNullOrWhiteSpace(connStr))
+if (useEfRepositories)
 {
-    builder.Services.AddDbContext<WeUpDbContext>(opts => opts.UseNpgsql(connStr));
     builder.Services.AddScoped<IIngestionJobRepository, EfIngestionJobRepository>();
     builder.Services.AddScoped<IIngestionAuditWriter, ConsoleIngestionAuditWriter>();
 }
 else
 {
+    builder.Services.AddSingleton<InMemoryIngestionJobRepository>();
     builder.Services.AddSingleton<IIngestionJobRepository>(sp => sp.GetRequiredService<InMemoryIngestionJobRepository>());
     builder.Services.AddSingleton<IIngestionAuditWriter, ConsoleIngestionAuditWriter>();
 }
@@ -168,7 +175,7 @@ builder.Services.AddScoped<IVideoProcessingOrchestrator, VideoProcessingOrchestr
 builder.Services.AddScoped<IVideoFlyerUploadService, VideoFlyerUploadService>();
 builder.Services.AddScoped<IVideoDerivedAssetQueryService, VideoDerivedAssetQueryService>();
 
-if (!preferSeededInMemoryIngestion && !string.IsNullOrWhiteSpace(connStr))
+if (useEfRepositories)
 {
     builder.Services.AddScoped<IFlyerAssetStore, EfFlyerAssetStore>();
     builder.Services.AddScoped<IFlyerDuplicateDetector, FlyerDuplicateDetector>();
