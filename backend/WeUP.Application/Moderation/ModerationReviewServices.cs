@@ -1,4 +1,5 @@
 using WeUP.Contracts.Moderation;
+using WeUP.Contracts.Ingestion;
 using WeUP.Domain.Events;
 using WeUP.Domain.Media;
 using WeUP.Domain.Moderation;
@@ -112,7 +113,8 @@ public sealed class ReviewDecisionService(
     IModerationQueueRepository queue,
     IModerationQueueService moderationQueueService,
     IReviewActionService reviewActionService,
-    IEventLifecycleRepository eventLifecycleRepository) : IReviewDecisionService
+    IEventLifecycleRepository eventLifecycleRepository,
+    IPublishEligibilityService publishEligibilityService) : IReviewDecisionService
 {
     public async Task<ReviewDecisionResponse> SubmitDecisionAsync(
         string queueItemId,
@@ -144,6 +146,33 @@ public sealed class ReviewDecisionService(
 
         var previousReviewStatus = ResolveCurrentReviewStatus(before);
         var lifecycleFrom = await ResolveLifecycleStatusAsync(before.LinkedEventId, previousReviewStatus, ct);
+
+        if (request.Decision == ReviewDecisionKind.Approve)
+        {
+            var gateResult = EvaluatePublishEligibility(before, lifecycleFrom);
+            if (!gateResult.Eligible)
+            {
+                var blockedAudit = BuildAuditRecord(
+                    queueItemId,
+                    request,
+                    previousReviewStatus,
+                    previousReviewStatus,
+                    null,
+                    lifecycleFrom,
+                    lifecycleFrom);
+
+                var blockerSummary = string.Join("; ", gateResult.Blockers.Select(b => b.Message));
+                return new ReviewDecisionResponse(
+                    QueueItemId: queueItemId,
+                    Accepted: false,
+                    PreviousReviewStatus: previousReviewStatus,
+                    NewReviewStatus: previousReviewStatus,
+                    LifecycleFrom: lifecycleFrom,
+                    LifecycleTo: lifecycleFrom,
+                    AuditRecord: blockedAudit,
+                    ErrorMessage: $"Publish eligibility gate blocked approval. {blockerSummary}");
+            }
+        }
 
         var legacyActionResponse = await DispatchLegacyActionAsync(queueItemId, request, ct);
         if (!legacyActionResponse.Success)
@@ -238,6 +267,75 @@ public sealed class ReviewDecisionService(
         var current = await eventLifecycleRepository.GetLifecycleStatusAsync(eventId!, ct);
         return string.IsNullOrWhiteSpace(current) ? ModerationQueueService.LifecycleFromReviewStatus(fallback) : current;
     }
+
+    private PublishEligibilityResult EvaluatePublishEligibility(
+        WeUP.Domain.Moderation.ModerationQueueItem item,
+        string lifecycleStatus)
+    {
+        var candidate = ToNormalizedCandidate(item);
+        var confidence = new PublishConfidenceVector(
+            Extraction: item.Confidence.Extraction,
+            Geocode: item.Confidence.Geocode,
+            Temporal: item.Confidence.Temporal,
+            VenueMatch: item.Confidence.VenueMatch,
+            DupeRisk: item.Confidence.DupeRisk,
+            SourceTrust: InferSourceTrust(item.Provenance.SourceKind),
+            ReviewConfidence: 1.0,
+            WeightsOverride: publishEligibilityService.GetPolicy().DimensionWeights);
+
+        var dedupeUnresolved = item.DedupeMatch is not null
+            && item.DedupeMatch.Severity >= DuplicateSeverity.Probable;
+
+        var sourceIntegrityValid = !string.IsNullOrWhiteSpace(item.Provenance.SourceKind)
+            && !string.IsNullOrWhiteSpace(item.Provenance.SourceRef);
+
+        var context = new PublishEligibilityContext(
+            Candidate: candidate,
+            ReviewState: PublishReviewState.Approved,
+            LifecycleStatus: lifecycleStatus,
+            HasUnresolvedDedupeConflict: dedupeUnresolved,
+            SourceIntegrityValid: sourceIntegrityValid,
+            EvidenceChainComplete: item.Provenance.EvidenceRefs.Length > 0,
+            VenueResolved: !string.IsNullOrWhiteSpace(candidate.VenueName) && item.Confidence.VenueMatch >= publishEligibilityService.GetPolicy().MinimumDimensionThreshold,
+            GeoValidated: !string.IsNullOrWhiteSpace(candidate.Address) && item.Confidence.Geocode >= publishEligibilityService.GetPolicy().MinimumDimensionThreshold,
+            DedupeMatchScore: item.DedupeMatch?.MatchScore ?? Math.Max(0.0, 1.0 - item.Confidence.DupeRisk),
+            ReviewConfidence: 1.0,
+            ConfidenceOverride: confidence);
+
+        return publishEligibilityService.Evaluate(context);
+    }
+
+    private static NormalizedEventCandidate ToNormalizedCandidate(WeUP.Domain.Moderation.ModerationQueueItem item)
+    {
+        var candidate = item.Candidate;
+        return new NormalizedEventCandidate(
+            Title: candidate?.Title,
+            VenueName: candidate?.VenueName,
+            Address: candidate?.Address,
+            StartUtc: candidate?.StartUtc,
+            EndUtc: candidate?.EndUtc,
+            Timezone: candidate?.Timezone,
+            Category: candidate?.Category,
+            Description: candidate?.Description,
+            Tags: candidate?.Tags,
+            SourceKind: candidate?.SourceKind ?? item.Provenance.SourceKind,
+            SourceRef: candidate?.SourceRef ?? item.Provenance.SourceRef,
+            ExtractionConfidence: item.Confidence.Extraction,
+            GeocodeConfidence: item.Confidence.Geocode,
+            TemporalConfidence: item.Confidence.Temporal,
+            EvidenceRefs: item.Provenance.EvidenceRefs,
+            ExternalSourceId: null,
+            Attributes: null);
+    }
+
+    private static double InferSourceTrust(string sourceKind) => sourceKind switch
+    {
+        "manual_submission" or "ManualSubmission" => PublishEligibilityPolicies.Phase0.SourceTrustManual,
+        "flyer_upload" or "FlyerUpload" => PublishEligibilityPolicies.Phase0.SourceTrustFlyer,
+        "pasted_url" or "PastedUrl" => PublishEligibilityPolicies.Phase0.SourceTrustLink,
+        "venue_page" or "VenuePage" => PublishEligibilityPolicies.Phase0.SourceTrustVenue,
+        _ => PublishEligibilityPolicies.Phase0.SourceTrustDefault,
+    };
 
     private static ModerationReviewStatus ResolveCurrentReviewStatus(WeUP.Domain.Moderation.ModerationQueueItem item)
     {

@@ -115,7 +115,6 @@ builder.Services.AddSingleton<IAuditTrailService, InMemoryAuditTrail>();
 builder.Services.AddSingleton<IModerationQueueService, ModerationQueueService>();
 builder.Services.AddScoped<IModerationEvidenceService, ModerationEvidenceService>();
 builder.Services.AddSingleton<IConfidenceScoringService, ConfidenceScoringService>();
-builder.Services.AddSingleton<IEligibilityRuleSet, PublishEligibilityRuleSet>();
 builder.Services.AddSingleton<IPublishEligibilityService, PublishEligibilityService>();
 builder.Services.AddSingleton<ReviewActionService>();
 builder.Services.AddSingleton<IReviewActionService>(sp => sp.GetRequiredService<ReviewActionService>());

@@ -2,82 +2,160 @@ using WeUP.Contracts.Ingestion;
 
 namespace WeUP.Domain.Moderation;
 
-// ---------------------------------------------------------------------------
-// Publish eligibility outcomes — explicit enum, not a boolean
-// ---------------------------------------------------------------------------
-
-public enum EligibilityOutcome
+public enum PublishReviewState
 {
-    AutoApproveEligible,
-    ManualReviewRequired,
-    BlockedMissingRequiredFields,
-    BlockedDuplicateConflict,
-    BlockedLowConfidence,
-    BlockedPolicyViolation,
+    NeedsReview,
+    Approved,
+    Rejected,
+    ChangesRequested,
 }
 
-// ---------------------------------------------------------------------------
-// Full confidence vector — all scoring dimensions explicit
-// ---------------------------------------------------------------------------
+public enum PublishEligibilityBand
+{
+    AutoPublishable,
+    ManualReviewRequired,
+    Blocked,
+}
+
+public enum PublishRecommendedAction
+{
+    AutoPublish,
+    RouteToManualReview,
+    BlockPublish,
+}
+
+public enum PublishBlockerCode
+{
+    MissingTitle,
+    MissingVenue,
+    MissingAddress,
+    MissingGeo,
+    MissingStartTime,
+    MissingTimezone,
+    MissingProvenance,
+    MissingConfidence,
+    LowExtractionConfidence,
+    LowTemporalConfidence,
+    LowGeocodeConfidence,
+    LowVenueMatchConfidence,
+    LowAggregateConfidence,
+    UnresolvedVenue,
+    GeoNotValidated,
+    DuplicateConflictUnresolved,
+    ManualReviewPending,
+    RejectedReviewState,
+    LifecycleRejected,
+    LifecycleArchived,
+    IncompleteEvidenceChain,
+    SourceIntegrityFailed,
+}
+
+public record PublishBlocker(
+    PublishBlockerCode Code,
+    string Message,
+    bool IsHardBlock,
+    string? Field = null,
+    string? Metadata = null);
+
+public record AutoPublishPolicy(
+    string PolicyId,
+    string Description,
+    double AutoPublishThreshold,
+    double ManualReviewThreshold,
+    double BlockPublishThreshold,
+    double MinimumDimensionThreshold,
+    IReadOnlyDictionary<string, double> DimensionMinimums,
+    IReadOnlyDictionary<string, double> DimensionWeights);
 
 public record PublishConfidenceVector(
-    double Extraction,        // OCR / field extraction quality (0–1)
-    double Geocode,           // address → lat/lng resolution quality (0–1)
-    double Temporal,          // start/end time parse confidence (0–1)
-    double VenueMatch,        // venue name resolution against known entities (0–1)
-    double DupeRisk,          // inverse of dedupe match score (0 = high risk, 1 = clean)
-    double SourceTrust,       // trust factor of the originating source (0–1)
-    double ReviewConfidence)  // post-review signal if a reviewer has handled this (0–1)
+    double Extraction,
+    double Geocode,
+    double Temporal,
+    double VenueMatch,
+    double DupeRisk,
+    double SourceTrust,
+    double ReviewConfidence,
+    IReadOnlyDictionary<string, double>? WeightsOverride = null)
 {
-    /// <summary>
-    /// Weighted aggregate. Weights are centralized here — change once, applies everywhere.
-    /// extraction=0.25, geocode=0.20, temporal=0.15, venue=0.10, dupe=0.15, source=0.10, review=0.05
-    /// </summary>
-    public double Aggregate =>
-        Extraction    * 0.25 +
-        Geocode       * 0.20 +
-        Temporal      * 0.15 +
-        VenueMatch    * 0.10 +
-        DupeRisk      * 0.15 +
-        SourceTrust   * 0.10 +
-        ReviewConfidence * 0.05;
+    public double Aggregate
+    {
+        get
+        {
+            var weights = WeightsOverride ?? DefaultWeights;
+
+            return Extraction * weights["extraction"]
+                + Geocode * weights["geocode"]
+                + Temporal * weights["temporal"]
+                + VenueMatch * weights["venueMatch"]
+                + DupeRisk * weights["dupeRisk"]
+                + SourceTrust * weights["sourceTrust"]
+                + ReviewConfidence * weights["reviewConfidence"];
+        }
+    }
+
+    private static readonly IReadOnlyDictionary<string, double> DefaultWeights = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["extraction"] = 0.25,
+        ["geocode"] = 0.20,
+        ["temporal"] = 0.15,
+        ["venueMatch"] = 0.10,
+        ["dupeRisk"] = 0.15,
+        ["sourceTrust"] = 0.10,
+        ["reviewConfidence"] = 0.05,
+    };
 }
 
-// ---------------------------------------------------------------------------
-// Eligibility result
-// ---------------------------------------------------------------------------
+public record FieldCompletenessResult(
+    bool IsComplete,
+    string[] MissingRequiredFields,
+    string[] InvalidRequiredFields,
+    double CompletenessRatio,
+    int RequiredCount,
+    int SatisfiedCount);
+
+public record ConfidenceGateDecision(
+    PublishEligibilityBand Band,
+    double Aggregate,
+    bool MeetsAutoPublishThreshold,
+    bool RequiresManualReview,
+    bool IsBlocked,
+    IReadOnlyDictionary<string, double> DimensionScores,
+    string[] Explanations);
+
+public record PublishEligibilityContext(
+    NormalizedEventCandidate Candidate,
+    PublishReviewState ReviewState,
+    string LifecycleStatus,
+    bool HasUnresolvedDedupeConflict,
+    bool SourceIntegrityValid,
+    bool EvidenceChainComplete,
+    bool VenueResolved,
+    bool GeoValidated,
+    double DedupeMatchScore = 0.0,
+    double ReviewConfidence = 0.0,
+    PublishConfidenceVector? ConfidenceOverride = null);
 
 public record PublishEligibilityResult(
-    EligibilityOutcome Outcome,
-    PublishConfidenceVector ConfidenceVector,
-    string[] Blockers,
-    string[] Recommendations,
-    string[] TriggeredRules,
-    bool RequiresManualReview)
-{
-    public bool IsEligible => Outcome == EligibilityOutcome.AutoApproveEligible;
-}
-
-// ---------------------------------------------------------------------------
-// Service interfaces
-// ---------------------------------------------------------------------------
+    bool Eligible,
+    PublishEligibilityBand EligibilityBand,
+    PublishRecommendedAction RecommendedNextAction,
+    PublishBlocker[] Blockers,
+    ConfidenceGateDecision ConfidenceSummary,
+    FieldCompletenessResult FieldCompletenessSummary,
+    AutoPublishPolicy Policy,
+    string[] Notes);
 
 public interface IConfidenceScoringService
 {
-    PublishConfidenceVector Score(NormalizedEventCandidate candidate, double dedupeMatchScore = 0.0);
+    PublishConfidenceVector Score(
+        NormalizedEventCandidate candidate,
+        double dedupeMatchScore = 0.0,
+        double reviewConfidence = 0.0);
 }
 
 public interface IPublishEligibilityService
 {
+    AutoPublishPolicy GetPolicy();
+    PublishEligibilityResult Evaluate(PublishEligibilityContext context);
     PublishEligibilityResult Evaluate(NormalizedEventCandidate candidate, double dedupeMatchScore = 0.0);
-}
-
-public interface IEligibilityRuleSet
-{
-    void Apply(
-        NormalizedEventCandidate candidate,
-        PublishConfidenceVector vector,
-        List<string> blockers,
-        List<string> recommendations,
-        List<string> triggeredRules);
 }
