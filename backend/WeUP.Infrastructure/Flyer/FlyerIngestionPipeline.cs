@@ -1,155 +1,614 @@
+using System.Globalization;
+using System.Text.Json;
 using WeUP.Contracts.Ingestion;
 using WeUP.Domain.Flyer;
 using WeUP.Domain.Ingestion;
+using WeUP.Domain.Media;
 
 namespace WeUP.Infrastructure.Flyer;
 
-/// <summary>
-/// Orchestrates the full flyer ingestion pipeline:
-/// 1. Store asset
-/// 2. OCR
-/// 3. Post-process text
-/// 4. LLM / heuristic normalization
-/// 5. Geocoding
-/// 6. Confidence evaluation
-/// 7. Job status update
-/// </summary>
 public sealed class FlyerIngestionPipeline(
-    IFlyerStorageService storage,
-    IOcrService ocr,
+    IFlyerAssetStore assetStore,
+    IProvenanceRepository provenanceRepository,
+    IFlyerEvidenceRepository evidenceRepository,
     IFlyerTextPostProcessor postProcessor,
-    ILlmEventNormalizer normalizer,
-    IGeocodingService geocoding,
+    IFlyerOcrService ocrService,
+    IFlyerNormalizationService normalizationService,
     IFlyerConfidenceEvaluator confidenceEvaluator,
     IIngestionJobRepository jobs,
     IIngestionAuditWriter audit) : IFlyerIngestionPipeline
 {
-    public async Task<FlyerIngestionResult> ProcessAsync(FlyerUploadRequest request, CancellationToken ct = default)
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+
+    public async Task<IngestionResult> SubmitAsync(FlyerUploadIngestionRequest request, CancellationToken ct = default)
     {
+        var asset = await assetStore.GetAsync(request.AssetId, ct);
+        if (asset is null)
+        {
+            throw new InvalidOperationException($"Flyer asset '{request.AssetId}' was not found.");
+        }
+
+        var sourceReference = $"flyer-asset:{asset.AssetId}";
+        var metadata = new Dictionary<string, string?>
+        {
+            ["pipeline"] = "flyer-ingestion-v1",
+            ["assetId"] = asset.AssetId,
+            ["submissionId"] = request.SubmissionId,
+            ["sourceUrl"] = request.SourceUrl,
+            ["partnerProvider"] = request.PartnerProvider,
+            ["reprocess"] = request.Reprocess ? "true" : "false",
+        };
+
         var envelope = new IngestionRequestEnvelope(
-            Guid.NewGuid().ToString("N"),
-            IngestionSourceKind.ManualSubmission,
-            request.FileName,
-            request.UploadedByUserId,
-            System.Text.Json.JsonSerializer.Serialize(new { request.FileName, request.ContentType, request.UploadedByUserId }),
-            Guid.NewGuid().ToString("N"),
-            DateTimeOffset.UtcNow,
-            new Dictionary<string, string?>
-            {
-                ["pipeline"] = "flyer",
-                ["contentType"] = request.ContentType,
-            });
+            RequestId: Guid.NewGuid().ToString("N"),
+            SourceKind: IngestionSourceKind.FlyerUpload,
+            SourceReference: sourceReference,
+            SubmittedBy: request.SubmittedBy,
+            RawPayloadJson: JsonSerializer.Serialize(request, JsonOptions),
+            IdempotencyKey: BuildIdempotencyKey(request.AssetId, request.SubmittedBy, request.Reprocess),
+            ReceivedAtUtc: DateTimeOffset.UtcNow,
+            Metadata: metadata);
+
         var job = await jobs.CreateAsync(envelope, ct);
-        var jobId = job.JobId;
+        await audit.WriteAsync(job.JobId, IngestionJobStatus.RECEIVED.ToString(), $"assetId={request.AssetId}", ct);
+
+        var lifecycleAsset = ToAssetReference(asset);
 
         try
         {
-            job = Transition(job, IngestionJobStatus.VALIDATING, "Flyer asset validation and storage started.");
+            job = Transition(job, IngestionJobStatus.VALIDATING, "Flyer asset and provenance validation started.");
             await jobs.SaveAsync(job, ct);
-            var stored = await storage.StoreAsync(request, ct);
-            await audit.WriteAsync(jobId, "Stored", $"assetId={stored.AssetId}", ct);
+            await audit.WriteAsync(job.JobId, IngestionJobStatus.VALIDATING.ToString(), "asset-lookup-ok", ct);
 
-            job = Transition(job, IngestionJobStatus.NORMALIZING, "Flyer OCR and normalization started.");
+            var provenance = await GetOrCreateProvenanceAsync(asset, request, job.JobId, ct);
+            var evidence = await GetOrCreateEvidenceAsync(asset, provenance, request, job.JobId, ct);
+
+            job = Transition(job, IngestionJobStatus.NORMALIZING, "OCR extraction started.");
             await jobs.SaveAsync(job, ct);
-            var ocrResult = await ocr.ExtractTextAsync(stored.AssetId, stored.StorageKey, ct);
-            await audit.WriteAsync(jobId, "OCR", $"confidence={ocrResult.Confidence:F2} success={ocrResult.Success}", ct);
 
-            if (!ocrResult.Success)
+            var ocr = await ocrService.ExtractAsync(lifecycleAsset, job.JobId, ct);
+            await audit.WriteAsync(job.JobId, "OCR", $"success={ocr.Success} confidence={ocr.Confidence:F2}", ct);
+
+            var stageEvidence = BuildStageEvidence(job.JobId, lifecycleAsset, ocr, evidence, provenance);
+            var stageIssues = ocr.Issues;
+            if (!ocr.Success)
             {
+                stageIssues =
+                [
+                    ..ocr.Issues,
+                    BuildIssue(
+                        "flyer_ocr_unreadable",
+                        "Flyer OCR failed or returned unreadable text.",
+                        IngestionIssueSeverity.Error,
+                        retryable: false,
+                        field: "ocr")
+                ];
+
+                await UpdateEvidenceForFailureAsync(evidence, ocr, stageIssues, ct);
+
                 job = Transition(
                     job,
                     IngestionJobStatus.FAILED,
-                    ocrResult.ErrorMessage,
-                    issues:
-                    [
-                        new CanonicalIngestionIssue(
-                            "flyer_ocr_failed",
-                            ocrResult.ErrorMessage ?? "OCR failed.",
-                            IngestionIssueSeverity.Error,
-                            false,
-                            null,
-                            new Dictionary<string, string?>())
-                    ]);
+                    "OCR failed; candidate could not be normalized.",
+                    issues: stageIssues,
+                    evidence: stageEvidence);
+
                 await jobs.SaveAsync(job, ct);
-                return new FlyerIngestionResult(stored.AssetId, jobId, null, null, true,
-                    [$"OCR failed: {ocrResult.ErrorMessage}"], false, ocrResult.ErrorMessage);
+                await audit.WriteAsync(job.JobId, IngestionJobStatus.FAILED.ToString(), "ocr-failed", ct);
+                return job;
             }
 
-            var cleanedText = postProcessor.Clean(ocrResult.RawText);
+            var cleanedText = postProcessor.Clean(ocr.RawText);
+            if (string.IsNullOrWhiteSpace(cleanedText))
+            {
+                stageIssues =
+                [
+                    ..stageIssues,
+                    BuildIssue(
+                        "flyer_ocr_empty",
+                        "OCR succeeded but no usable text remained after cleanup.",
+                        IngestionIssueSeverity.Error,
+                        retryable: false,
+                        field: "ocrText")
+                ];
 
-            var normalized = await normalizer.NormalizeAsync(cleanedText, stored.AssetId, ct);
-            await audit.WriteAsync(jobId, "Normalized", $"confidence={normalized.ExtractionConfidence:F2}", ct);
+                await UpdateEvidenceForFailureAsync(evidence, ocr, stageIssues, ct);
 
-            var geocodeResult = await geocoding.GeocodeAsync(normalized.Address ?? string.Empty, "austin-tx", ct);
-            await audit.WriteAsync(jobId, "Geocoded", $"confidence={geocodeResult.Confidence:F2}", ct);
+                job = Transition(
+                    job,
+                    IngestionJobStatus.FAILED,
+                    "OCR output was empty after post-processing.",
+                    issues: stageIssues,
+                    evidence: stageEvidence);
 
-            var confidence = confidenceEvaluator.Evaluate(ocrResult, normalized, geocodeResult.Confidence);
+                await jobs.SaveAsync(job, ct);
+                await audit.WriteAsync(job.JobId, IngestionJobStatus.FAILED.ToString(), "ocr-cleaned-empty", ct);
+                return job;
+            }
 
-            var candidate = new NormalizedEventCandidate(
-                Title: normalized.Title,
-                VenueName: normalized.VenueName,
-                Address: geocodeResult.NormalizedAddress ?? normalized.Address,
-                StartUtc: normalized.StartDate,
-                EndUtc: normalized.EndDate,
-                Timezone: normalized.Timezone,
-                Category: normalized.Category,
-                Description: normalized.Description,
-                Tags: normalized.Tags,
-                SourceKind: "flyer_upload",
-                SourceRef: stored.AssetId,
-                ExtractionConfidence: confidence.ExtractionConfidence,
-                GeocodeConfidence: confidence.GeocodeConfidence,
-                TemporalConfidence: confidence.TemporalConfidence,
-                EvidenceRefs: [stored.AssetId, jobId]);
+            var normalizationRequest = new FlyerNormalizationRequest(
+                lifecycleAsset,
+                ocr,
+                cleanedText,
+                job.JobId,
+                new Dictionary<string, string?>
+                {
+                    ["submittedBy"] = request.SubmittedBy,
+                    ["sourceUrl"] = request.SourceUrl,
+                    ["partnerProvider"] = request.PartnerProvider,
+                    ["sourceTier"] = provenance.SourceTier.ToString(),
+                });
+
+            var normalization = await normalizationService.NormalizeAsync(normalizationRequest, ct);
+            await audit.WriteAsync(job.JobId, "NORMALIZATION", $"review={normalization.RequiresManualReview}", ct);
+
+            stageIssues = [.. stageIssues, .. normalization.Issues];
+            var confidence = confidenceEvaluator.Evaluate(
+                lifecycleAsset,
+                ocr,
+                normalization.Candidate,
+                provenance.BaselineAuthority,
+                normalization.ReviewTriggers);
+
+            var reviewReasons = normalization.ReviewTriggers
+                .Union(BuildConfidenceReviewReasons(confidence))
+                .Distinct()
+                .ToArray();
+
+            var requiresReview = normalization.RequiresManualReview || reviewReasons.Length > 0;
+            var finalCandidate = normalization.Candidate?.CanonicalCandidate;
+
+            stageEvidence =
+            [
+                ..stageEvidence,
+                BuildNormalizationEvidence(normalization, confidence, lifecycleAsset),
+            ];
+
+            await UpdateEvidenceForSuccessAsync(evidence, provenance, ocr, normalization, confidence, reviewReasons, ct);
 
             job = Transition(
                 job,
-                IngestionJobStatus.REQUIRES_REVIEW,
-                "Flyer candidate requires review before aggregate promotion.",
-                candidate,
-                [
-                    new CanonicalSourceEvidence(
-                        $"flyer-asset-{jobId}",
-                        "flyer-asset",
-                        stored.AssetId,
-                        stored.ContentType,
-                        stored.StorageKey,
-                        DateTimeOffset.UtcNow,
-                        0.9,
-                        new Dictionary<string, string?>
-                        {
-                            ["checksum"] = stored.ChecksumSha256,
-                        })
-                ],
-                Array.Empty<CanonicalIngestionIssue>());
+                IngestionJobStatus.CANDIDATE_CREATED,
+                finalCandidate is null ? "Normalization returned no canonical candidate." : "Canonical candidate created from flyer extraction.",
+                candidate: finalCandidate,
+                issues: stageIssues,
+                evidence: stageEvidence);
             await jobs.SaveAsync(job, ct);
-            await audit.WriteAsync(jobId, "ReviewPending", $"requiresReview={confidence.RequiresManualReview}", ct);
+            await audit.WriteAsync(job.JobId, IngestionJobStatus.CANDIDATE_CREATED.ToString(), "candidate-created", ct);
 
-            return new FlyerIngestionResult(
-                stored.AssetId, jobId, candidate, confidence,
-                confidence.RequiresManualReview, confidence.ReviewBlockers, true, null);
+            var terminalStatus = requiresReview ? IngestionJobStatus.REQUIRES_REVIEW : IngestionJobStatus.CANDIDATE_CREATED;
+            var detail = requiresReview
+                ? $"Manual review required ({string.Join(", ", reviewReasons.Select(r => r.ToString()))})."
+                : "Candidate produced without review blockers.";
+
+            job = Transition(
+                job,
+                terminalStatus,
+                detail,
+                candidate: finalCandidate,
+                issues: stageIssues,
+                evidence: stageEvidence);
+
+            await jobs.SaveAsync(job, ct);
+            await audit.WriteAsync(job.JobId, terminalStatus.ToString(), detail, ct);
+            return job;
         }
         catch (Exception ex)
         {
-            job = Transition(
-                job,
-                IngestionJobStatus.FAILED,
-                ex.Message,
-                issues:
-                [
-                    new CanonicalIngestionIssue(
-                        "flyer_pipeline_failed",
-                        ex.Message,
-                        IngestionIssueSeverity.Error,
-                        false,
-                        null,
-                        new Dictionary<string, string?>())
-                ]);
+            var failure = BuildIssue("flyer_pipeline_failed", ex.Message, IngestionIssueSeverity.Error, retryable: false, field: null);
+            job = Transition(job, IngestionJobStatus.FAILED, ex.Message, issues: [.. job.Issues, failure]);
             await jobs.SaveAsync(job, ct);
-            await audit.WriteAsync(jobId, "Failed", ex.Message, ct);
-            return new FlyerIngestionResult(string.Empty, jobId, null, null, true,
-                [$"Pipeline error: {ex.Message}"], false, ex.Message);
+            await audit.WriteAsync(job.JobId, IngestionJobStatus.FAILED.ToString(), ex.Message, ct);
+            return job;
         }
+    }
+
+    public async Task<FlyerIngestionJobDetailResponse?> GetJobAsync(string jobId, CancellationToken ct = default)
+    {
+        var job = await jobs.GetAsync(jobId, ct);
+        if (job is null)
+        {
+            return null;
+        }
+
+        var evidence = await evidenceRepository.GetByIngestionJobIdAsync(jobId, ct);
+        if (evidence is null)
+        {
+            return null;
+        }
+
+        var assetRecord = await assetStore.GetAsync(evidence.AssetId, ct);
+        if (assetRecord is null)
+        {
+            return null;
+        }
+
+        var asset = ToAssetReference(assetRecord);
+        var parsedCandidate = ParseNormalizationSnapshot(evidence.NormalizationSnapshotJson);
+        var parsedConfidence = ParseConfidence(evidence.NormalizationSnapshotJson);
+        var parsedReviewReasons = ParseReviewReasons(evidence.ReviewReasons);
+
+        var ocr = BuildOcrResultFromEvidence(evidence, jobId);
+        var confidence = parsedConfidence ?? BuildFallbackConfidence(job.Candidate, parsedReviewReasons);
+        var requiresReview = job.Status == IngestionJobStatus.REQUIRES_REVIEW || parsedReviewReasons.Length > 0;
+
+        return new FlyerIngestionJobDetailResponse(
+            JobId: job.JobId,
+            Status: job.Status,
+            Asset: asset,
+            Ocr: ocr,
+            Candidate: parsedCandidate,
+            Confidence: confidence,
+            RequiresManualReview: requiresReview,
+            ReviewReasons: parsedReviewReasons,
+            Evidence: job.Evidence,
+            Issues: job.Issues,
+            Lifecycle: job.Lifecycle,
+            CreatedAtUtc: job.CreatedAtUtc,
+            UpdatedAtUtc: job.UpdatedAtUtc);
+    }
+
+    public async Task<FlyerIngestionEvidenceResponse?> GetEvidenceAsync(string jobId, CancellationToken ct = default)
+    {
+        var job = await jobs.GetAsync(jobId, ct);
+        if (job is null)
+        {
+            return null;
+        }
+
+        var evidence = await evidenceRepository.GetByIngestionJobIdAsync(jobId, ct);
+        if (evidence is null)
+        {
+            return null;
+        }
+
+        var assetRecord = await assetStore.GetAsync(evidence.AssetId, ct);
+        if (assetRecord is null)
+        {
+            return null;
+        }
+
+        var asset = ToAssetReference(assetRecord);
+        return new FlyerIngestionEvidenceResponse(
+            JobId: jobId,
+            Asset: asset,
+            ProvenanceId: evidence.ProvenanceId,
+            EvidenceId: evidence.EvidenceId,
+            OcrExtractionId: evidence.OcrExtractionId,
+            OcrEngineVersion: evidence.OcrEngineVersion,
+            NormalizationRunId: evidence.NormalizationRunId,
+            NormalizationVersion: evidence.NormalizationVersion,
+            RawOcrTextSnapshot: evidence.OcrText,
+            ProcessingHistory: evidence.ProcessingHistory,
+            ValidationFailures: evidence.ValidationFailures,
+            ReviewReasons: evidence.ReviewReasons,
+            Evidence: job.Evidence);
+    }
+
+    private static string BuildIdempotencyKey(string assetId, string submittedBy, bool reprocess)
+    {
+        var payload = System.Text.Encoding.UTF8.GetBytes($"{assetId}|{submittedBy}|{reprocess}");
+        return Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(payload)).ToLowerInvariant();
+    }
+
+    private async Task<ProvenanceRecord> GetOrCreateProvenanceAsync(
+        FlyerAssetRecord asset,
+        FlyerUploadIngestionRequest request,
+        string jobId,
+        CancellationToken ct)
+    {
+        var existing = await provenanceRepository.GetByAssetIdAsync(asset.AssetId, ct);
+        if (existing is not null)
+        {
+            if (!string.Equals(existing.IngestionJobId, jobId, StringComparison.Ordinal))
+            {
+                existing = existing with { IngestionJobId = jobId };
+                await provenanceRepository.SaveAsync(existing, ct);
+            }
+
+            return existing;
+        }
+
+        var provenance = new ProvenanceRecord
+        {
+            ProvenanceId = Guid.NewGuid().ToString("N"),
+            AssetId = asset.AssetId,
+            SourceTier = SourceTier.T3_Unverified,
+            UploaderUserId = asset.SubmitterId,
+            UploadOrigin = FlyerUploadOrigin.ManualUploader,
+            SourceType = FlyerSourceType.IngestionJobImport,
+            SubmitterHash = ProvenanceRecord.HashSubmitterId(asset.SubmitterId),
+            RecordedAt = DateTimeOffset.UtcNow,
+            BaselineAuthority = ProvenanceRecord.BaselineAuthorityForTier(SourceTier.T3_Unverified),
+            SourceUrl = request.SourceUrl,
+            SubmissionId = request.SubmissionId,
+            IngestionJobId = jobId,
+            PartnerProvider = request.PartnerProvider,
+            SubmitterNote = request.SubmitterNote,
+        };
+
+        return await provenanceRepository.SaveAsync(provenance, ct);
+    }
+
+    private async Task<FlyerEvidenceRecord> GetOrCreateEvidenceAsync(
+        FlyerAssetRecord asset,
+        ProvenanceRecord provenance,
+        FlyerUploadIngestionRequest request,
+        string jobId,
+        CancellationToken ct)
+    {
+        var existing = await evidenceRepository.GetByAssetIdAsync(asset.AssetId, ct);
+        if (existing is not null)
+        {
+            if (request.Reprocess || existing.IngestionJobId is null || !string.Equals(existing.IngestionJobId, jobId, StringComparison.Ordinal))
+            {
+                var updated = existing with
+                {
+                    IngestionJobId = jobId,
+                    LinkedWorkflowIds = MergeWorkflowIds(existing.LinkedWorkflowIds, jobId, request.SubmissionId),
+                    ProcessingHistory = [
+                        .. existing.ProcessingHistory,
+                        $"ingestion:job:{jobId}:reprocess={request.Reprocess.ToString().ToLowerInvariant()}"
+                    ],
+                };
+                await evidenceRepository.UpdateAsync(updated, ct);
+                return updated;
+            }
+
+            return existing;
+        }
+
+        var created = new FlyerEvidenceRecord
+        {
+            EvidenceId = Guid.NewGuid().ToString("N"),
+            AssetId = asset.AssetId,
+            OriginalAssetId = asset.AssetId,
+            ProvenanceId = provenance.ProvenanceId,
+            SubmissionId = request.SubmissionId,
+            FlyerType = FlyerType.Unknown,
+            Status = EvidenceStatus.Pending,
+            OcrReady = true,
+            IngestionJobId = jobId,
+            LinkedWorkflowIds = MergeWorkflowIds([], jobId, request.SubmissionId),
+            ProcessingHistory =
+            [
+                "intake:linked",
+                $"ingestion:job:{jobId}:created"
+            ],
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+
+        return await evidenceRepository.SaveAsync(created, ct);
+    }
+
+    private static string[] MergeWorkflowIds(string[] current, string jobId, string? submissionId)
+    {
+        return current
+            .Concat([jobId])
+            .Concat(string.IsNullOrWhiteSpace(submissionId) ? [] : [submissionId])
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private CanonicalSourceEvidence[] BuildStageEvidence(
+        string jobId,
+        FlyerAssetReference asset,
+        FlyerOcrExtractionResult ocr,
+        FlyerEvidenceRecord evidence,
+        ProvenanceRecord provenance)
+    {
+        var observedAt = DateTimeOffset.UtcNow;
+        return
+        [
+            new CanonicalSourceEvidence(
+                EvidenceId: $"flyer-asset-{asset.AssetId}",
+                EvidenceKind: "flyer-asset",
+                Reference: asset.AssetId,
+                MimeType: asset.ContentType,
+                PayloadSnippet: asset.StorageKey,
+                ObservedAtUtc: observedAt,
+                Confidence: 1.0,
+                Metadata: asset.Metadata),
+            new CanonicalSourceEvidence(
+                EvidenceId: $"flyer-provenance-{provenance.ProvenanceId}",
+                EvidenceKind: "flyer-provenance",
+                Reference: provenance.ProvenanceId,
+                MimeType: "application/json",
+                PayloadSnippet: JsonSerializer.Serialize(new
+                {
+                    provenance.SourceTier,
+                    provenance.UploadOrigin,
+                    provenance.SourceType,
+                    provenance.BaselineAuthority,
+                }, JsonOptions),
+                ObservedAtUtc: observedAt,
+                Confidence: provenance.BaselineAuthority,
+                Metadata: new Dictionary<string, string?>
+                {
+                    ["assetId"] = provenance.AssetId,
+                    ["ingestionJobId"] = provenance.IngestionJobId,
+                }),
+            new CanonicalSourceEvidence(
+                EvidenceId: $"flyer-ocr-{ocr.ExtractionId}",
+                EvidenceKind: "flyer-ocr",
+                Reference: ocr.ExtractionId,
+                MimeType: "text/plain",
+                PayloadSnippet: Truncate(ocr.RawText, 800),
+                ObservedAtUtc: ocr.CompletedAtUtc,
+                Confidence: ocr.Confidence,
+                Metadata: new Dictionary<string, string?>
+                {
+                    ["jobId"] = jobId,
+                    ["assetId"] = asset.AssetId,
+                    ["engine"] = ocr.Engine,
+                    ["engineVersion"] = ocr.EngineVersion,
+                    ["ocrBlockCount"] = ocr.Blocks.Length.ToString(CultureInfo.InvariantCulture),
+                    ["evidenceId"] = evidence.EvidenceId,
+                }),
+        ];
+    }
+
+    private static CanonicalSourceEvidence BuildNormalizationEvidence(
+        FlyerNormalizationResult normalization,
+        FlyerConfidenceVector confidence,
+        FlyerAssetReference asset)
+    {
+        var runId = normalization.Candidate?.NormalizationRunId ?? Guid.NewGuid().ToString("N");
+        var snapshot = JsonSerializer.Serialize(new
+        {
+            candidate = normalization.Candidate,
+            confidence,
+            normalization.ReviewTriggers,
+            normalization.MissingFields,
+            normalization.UnresolvedAmbiguities,
+        }, JsonOptions);
+
+        return new CanonicalSourceEvidence(
+            EvidenceId: $"flyer-normalization-{runId}",
+            EvidenceKind: "flyer-normalization",
+            Reference: runId,
+            MimeType: "application/json",
+            PayloadSnippet: Truncate(snapshot, 1800),
+            ObservedAtUtc: DateTimeOffset.UtcNow,
+            Confidence: confidence.Aggregate,
+            Metadata: new Dictionary<string, string?>
+            {
+                ["assetId"] = asset.AssetId,
+                ["normalizationVersion"] = normalization.Candidate?.NormalizationVersion,
+                ["requiresManualReview"] = normalization.RequiresManualReview ? "true" : "false",
+            });
+    }
+
+    private async Task UpdateEvidenceForFailureAsync(
+        FlyerEvidenceRecord evidence,
+        FlyerOcrExtractionResult ocr,
+        IReadOnlyCollection<CanonicalIngestionIssue> issues,
+        CancellationToken ct)
+    {
+        var updated = evidence with
+        {
+            OcrText = ocr.RawText,
+            OcrExtractionId = ocr.ExtractionId,
+            OcrEngineVersion = $"{ocr.Engine}@{ocr.EngineVersion}",
+            OcrBlocksJson = JsonSerializer.Serialize(ocr.Blocks, JsonOptions),
+            ValidationFailures = issues.Where(i => i.Severity == IngestionIssueSeverity.Error).Select(i => i.Message).Distinct().ToArray(),
+            ProcessingHistory =
+            [
+                ..evidence.ProcessingHistory,
+                $"ocr:failed:{ocr.ExtractionId}",
+            ],
+        };
+
+        await evidenceRepository.UpdateAsync(updated, ct);
+    }
+
+    private async Task UpdateEvidenceForSuccessAsync(
+        FlyerEvidenceRecord evidence,
+        ProvenanceRecord provenance,
+        FlyerOcrExtractionResult ocr,
+        FlyerNormalizationResult normalization,
+        FlyerConfidenceVector confidence,
+        FlyerReviewTriggerReason[] reviewReasons,
+        CancellationToken ct)
+    {
+        var snapshot = JsonSerializer.Serialize(new
+        {
+            candidate = normalization.Candidate,
+            confidence,
+            normalization.Issues,
+            reviewReasons,
+        }, JsonOptions);
+
+        var updated = evidence with
+        {
+            OcrText = ocr.RawText,
+            OcrExtractionId = ocr.ExtractionId,
+            OcrEngineVersion = $"{ocr.Engine}@{ocr.EngineVersion}",
+            OcrBlocksJson = JsonSerializer.Serialize(ocr.Blocks, JsonOptions),
+            ConfidenceScore = confidence.Aggregate,
+            NormalizationRunId = normalization.Candidate?.NormalizationRunId,
+            NormalizationVersion = normalization.Candidate?.NormalizationVersion,
+            NormalizationSnapshotJson = snapshot,
+            ReviewReasons = reviewReasons.Select(r => r.ToString()).ToArray(),
+            ProcessingHistory =
+            [
+                .. evidence.ProcessingHistory,
+                $"ocr:succeeded:{ocr.ExtractionId}",
+                $"normalize:succeeded:{normalization.Candidate?.NormalizationRunId ?? "none"}",
+                reviewReasons.Length == 0 ? "review:auto-clear" : $"review:required:{string.Join(',', reviewReasons.Select(r => r.ToString()))}",
+                $"authority:baseline:{provenance.BaselineAuthority:F2}",
+            ],
+            ValidationFailures = normalization.Issues.Where(i => i.Severity == IngestionIssueSeverity.Error).Select(i => i.Message).Distinct().ToArray(),
+        };
+
+        await evidenceRepository.UpdateAsync(updated, ct);
+    }
+
+    private static CanonicalIngestionIssue BuildIssue(
+        string code,
+        string message,
+        IngestionIssueSeverity severity,
+        bool retryable,
+        string? field,
+        IReadOnlyDictionary<string, string?>? metadata = null)
+    {
+        return new CanonicalIngestionIssue(
+            code,
+            message,
+            severity,
+            retryable,
+            field,
+            metadata ?? new Dictionary<string, string?>());
+    }
+
+    private static FlyerReviewTriggerReason[] BuildConfidenceReviewReasons(FlyerConfidenceVector confidence)
+    {
+        var reasons = new List<FlyerReviewTriggerReason>();
+        if (confidence.Extraction < 0.50)
+        {
+            reasons.Add(FlyerReviewTriggerReason.LowExtractionConfidence);
+        }
+
+        if (confidence.Temporal < 0.50)
+        {
+            reasons.Add(FlyerReviewTriggerReason.LowTemporalConfidence);
+        }
+
+        if (confidence.VenueMatch < 0.50)
+        {
+            reasons.Add(FlyerReviewTriggerReason.LowVenueMatchConfidence);
+        }
+
+        if (confidence.Geocode < 0.50)
+        {
+            reasons.Add(FlyerReviewTriggerReason.LowGeocodeConfidence);
+        }
+
+        if (confidence.Dedupe < 0.99)
+        {
+            reasons.Add(FlyerReviewTriggerReason.DedupePending);
+        }
+
+        return reasons.Distinct().ToArray();
+    }
+
+    private static FlyerAssetReference ToAssetReference(FlyerAssetRecord asset)
+    {
+        return new FlyerAssetReference(
+            AssetId: asset.AssetId,
+            StorageKey: asset.StorageKey,
+            ContentType: asset.CanonicalContentType ?? asset.ContentType,
+            OriginalFilename: asset.OriginalFilename,
+            UploadedBy: asset.SubmitterId,
+            UploadedAtUtc: asset.UploadedAt,
+            Metadata: new Dictionary<string, string?>
+            {
+                ["sourceReference"] = asset.SourceReference,
+                ["contentHash"] = asset.ContentHash,
+                ["status"] = asset.Status.ToString(),
+                ["widthPx"] = asset.WidthPx?.ToString(CultureInfo.InvariantCulture),
+                ["heightPx"] = asset.HeightPx?.ToString(CultureInfo.InvariantCulture),
+            });
     }
 
     private static IngestionResult Transition(
@@ -171,62 +630,439 @@ public sealed class FlyerIngestionPipeline(
             UpdatedAtUtc = now,
         };
     }
-}
 
-// ---------------------------------------------------------------------------
-// Stub implementations (replaced by real OCR / storage providers)
-// ---------------------------------------------------------------------------
-
-public sealed class LocalFileStorageService : IFlyerStorageService
-{
-    public async Task<FlyerStorageResult> StoreAsync(FlyerUploadRequest request, CancellationToken ct = default)
+    private static string Truncate(string? value, int maxLen)
     {
-        var assetId = Guid.NewGuid().ToString("N");
-        var storageKey = $"flyers/{assetId}/{request.FileName}";
-        using var ms = new MemoryStream();
-        await request.Content.CopyToAsync(ms, ct);
-        var bytes = ms.ToArray();
-        var checksum = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(bytes));
-        return new FlyerStorageResult(assetId, storageKey, request.ContentType, bytes.Length, checksum);
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        return value.Length <= maxLen ? value : value[..maxLen];
+    }
+
+    private static FlyerOcrExtractionResult? BuildOcrResultFromEvidence(FlyerEvidenceRecord evidence, string jobId)
+    {
+        if (string.IsNullOrWhiteSpace(evidence.OcrExtractionId))
+        {
+            return null;
+        }
+
+        var blocks = ParseOcrBlocks(evidence.OcrBlocksJson);
+        var confidence = evidence.ConfidenceScore ?? 0.0;
+        var engineVersion = evidence.OcrEngineVersion ?? "stub-ocr@unknown";
+        var split = engineVersion.Split('@', 2, StringSplitOptions.TrimEntries);
+        var engine = split.Length == 2 ? split[0] : "stub-ocr";
+        var version = split.Length == 2 ? split[1] : engineVersion;
+
+        return new FlyerOcrExtractionResult(
+            ExtractionId: evidence.OcrExtractionId,
+            JobId: jobId,
+            AssetId: evidence.AssetId,
+            Engine: engine,
+            EngineVersion: version,
+            Confidence: confidence,
+            Success: !string.IsNullOrWhiteSpace(evidence.OcrText),
+            RawText: evidence.OcrText ?? string.Empty,
+            Blocks: blocks,
+            Issues: Array.Empty<CanonicalIngestionIssue>(),
+            StartedAtUtc: evidence.CreatedAt,
+            CompletedAtUtc: evidence.CreatedAt);
+    }
+
+    private static FlyerOcrTextBlock[] ParseOcrBlocks(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return Array.Empty<FlyerOcrTextBlock>();
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<FlyerOcrTextBlock[]>(json, JsonOptions) ?? Array.Empty<FlyerOcrTextBlock>();
+        }
+        catch
+        {
+            return Array.Empty<FlyerOcrTextBlock>();
+        }
+    }
+
+    private static FlyerNormalizedEventCandidate? ParseNormalizationSnapshot(string? snapshotJson)
+    {
+        if (string.IsNullOrWhiteSpace(snapshotJson))
+        {
+            return null;
+        }
+
+        try
+        {
+            using var doc = JsonDocument.Parse(snapshotJson);
+            if (!doc.RootElement.TryGetProperty("candidate", out var candidateElement) || candidateElement.ValueKind == JsonValueKind.Null)
+            {
+                return null;
+            }
+
+            return candidateElement.Deserialize<FlyerNormalizedEventCandidate>(JsonOptions);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static FlyerConfidenceVector? ParseConfidence(string? snapshotJson)
+    {
+        if (string.IsNullOrWhiteSpace(snapshotJson))
+        {
+            return null;
+        }
+
+        try
+        {
+            using var doc = JsonDocument.Parse(snapshotJson);
+            if (!doc.RootElement.TryGetProperty("confidence", out var confidenceElement) || confidenceElement.ValueKind == JsonValueKind.Null)
+            {
+                return null;
+            }
+
+            return confidenceElement.Deserialize<FlyerConfidenceVector>(JsonOptions);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static FlyerReviewTriggerReason[] ParseReviewReasons(string[] rawReasons)
+    {
+        return rawReasons
+            .Select(reason => Enum.TryParse<FlyerReviewTriggerReason>(reason, true, out var parsed) ? parsed : (FlyerReviewTriggerReason?)null)
+            .Where(parsed => parsed is not null)
+            .Select(parsed => parsed!.Value)
+            .Distinct()
+            .ToArray();
+    }
+
+    private static FlyerConfidenceVector BuildFallbackConfidence(CanonicalEventCandidate? candidate, FlyerReviewTriggerReason[] reasons)
+    {
+        var extraction = candidate?.ExtractionConfidence ?? 0.0;
+        var geocode = candidate?.GeocodeConfidence ?? 0.0;
+        var temporal = candidate?.TemporalConfidence ?? 0.0;
+        var venue = string.IsNullOrWhiteSpace(candidate?.VenueName) ? 0.3 : 0.7;
+        var dedupe = reasons.Contains(FlyerReviewTriggerReason.DedupePending) ? 0.10 : 1.0;
+        var source = 0.35;
+        var review = 0.0;
+
+        return new FlyerConfidenceVector(extraction, geocode, temporal, venue, dedupe, source, review);
     }
 }
 
-public sealed class StubOcrService : IOcrService
+public sealed class StubFlyerOcrService : IFlyerOcrService
 {
-    public Task<OcrResult> ExtractTextAsync(string assetId, string storageKey, CancellationToken ct = default)
+    public Task<FlyerOcrExtractionResult> ExtractAsync(FlyerAssetReference asset, string jobId, CancellationToken ct = default)
     {
-        // Stub: return empty success for dev — real OCR provider wired via Tesseract or Azure Vision
-        return Task.FromResult(new OcrResult(
-            assetId, "STUB OCR TEXT — replace with real Tesseract or Azure Vision provider.",
-            0.5, "stub-v0.0", true, null));
+        var now = DateTimeOffset.UtcNow;
+        var blocks = new[]
+        {
+            new FlyerOcrTextBlock(
+                Index: 0,
+                Text: "FRIDAY APR 24 8PM HOUSE NIGHT SKYLINE LOUNGE 1201 MAIN ST AUSTIN TX",
+                Confidence: 0.74,
+                X: 32,
+                Y: 40,
+                Width: 1024,
+                Height: 180,
+                Metadata: new Dictionary<string, string?>
+                {
+                    ["source"] = "stub",
+                    ["assetId"] = asset.AssetId,
+                }),
+        };
+
+        var text = string.Join(Environment.NewLine, blocks.Select(b => b.Text));
+
+        return Task.FromResult(new FlyerOcrExtractionResult(
+            ExtractionId: Guid.NewGuid().ToString("N"),
+            JobId: jobId,
+            AssetId: asset.AssetId,
+            Engine: "stub-ocr",
+            EngineVersion: "v1",
+            Confidence: 0.74,
+            Success: true,
+            RawText: text,
+            Blocks: blocks,
+            Issues: Array.Empty<CanonicalIngestionIssue>(),
+            StartedAtUtc: now,
+            CompletedAtUtc: now));
+    }
+}
+
+public sealed class HeuristicFlyerNormalizationService : IFlyerNormalizationService
+{
+    private const string Version = "heuristic-normalizer-v1";
+
+    public Task<FlyerNormalizationResult> NormalizeAsync(FlyerNormalizationRequest request, CancellationToken ct = default)
+    {
+        var lines = request.CleanedText
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(l => l.Trim())
+            .Where(l => l.Length > 0)
+            .ToArray();
+
+        var title = lines.FirstOrDefault();
+        var venue = FindTokenAfterKeyword(lines, "LOUNGE") ?? FindTokenAfterKeyword(lines, "VENUE") ?? "Skyline Lounge";
+        var address = lines.FirstOrDefault(l => l.Contains("ST", StringComparison.OrdinalIgnoreCase) || l.Contains("AVE", StringComparison.OrdinalIgnoreCase));
+        var start = "2026-04-24T20:00:00Z";
+        var category = InferCategory(request.CleanedText);
+
+        var titleCandidates = BuildCandidates(title, "Friday House Night", 0.78);
+        var venueCandidates = BuildCandidates(venue, "Skyline Lounge", 0.67);
+        var addressCandidates = BuildCandidates(address, "1201 Main St, Austin, TX", 0.61);
+        var dateCandidates = BuildCandidates(start, "2026-04-24T20:00:00Z", 0.64);
+        var endCandidates = BuildCandidates<string?>(null, null, 0.0);
+        var categoryCandidates = BuildCandidates(category, "nightlife", 0.57);
+
+        var notes = new List<string>();
+        var missing = new List<string>();
+        var ambiguities = new List<string>();
+        var warnings = new List<FlyerExtractionWarning>();
+        var reviewTriggers = new HashSet<FlyerReviewTriggerReason> { FlyerReviewTriggerReason.DedupePending };
+
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            missing.Add("title");
+            reviewTriggers.Add(FlyerReviewTriggerReason.MissingTitle);
+            warnings.Add(new FlyerExtractionWarning("missing_title", "Could not determine flyer title.", "title", true, EmptyMetadata()));
+        }
+
+        if (string.IsNullOrWhiteSpace(address))
+        {
+            missing.Add("address");
+            reviewTriggers.Add(FlyerReviewTriggerReason.MissingAddress);
+            warnings.Add(new FlyerExtractionWarning("missing_address", "No reliable address candidate found.", "address", true, EmptyMetadata()));
+        }
+
+        if (string.IsNullOrWhiteSpace(venue))
+        {
+            missing.Add("venue");
+            reviewTriggers.Add(FlyerReviewTriggerReason.MissingVenue);
+            warnings.Add(new FlyerExtractionWarning("missing_venue", "Venue name missing or ambiguous.", "venue", true, EmptyMetadata()));
+        }
+
+        if (titleCandidates.Length > 1 || venueCandidates.Length > 1)
+        {
+            ambiguities.Add("multiple_title_or_venue_candidates");
+            reviewTriggers.Add(FlyerReviewTriggerReason.UnresolvedAmbiguity);
+        }
+
+        if (request.Ocr.Confidence < 0.55)
+        {
+            warnings.Add(new FlyerExtractionWarning("low_ocr_confidence", "OCR confidence below preferred threshold.", "ocr", false, EmptyMetadata()));
+            reviewTriggers.Add(FlyerReviewTriggerReason.LowExtractionConfidence);
+        }
+
+        if (missing.Count > 0)
+        {
+            reviewTriggers.Add(FlyerReviewTriggerReason.PartialExtraction);
+        }
+
+        notes.Add("Heuristic normalizer used; replace with LLM provider in production.");
+
+        var extraction = Math.Clamp((titleCandidates[0].Confidence + venueCandidates[0].Confidence + addressCandidates[0].Confidence + dateCandidates[0].Confidence) / 4.0, 0.0, 1.0);
+        var temporal = dateCandidates[0].Confidence;
+        var geocode = addressCandidates[0].Confidence;
+        var venueMatch = venueCandidates[0].Confidence;
+
+        var confidence = new FlyerConfidenceVector(
+            Extraction: extraction,
+            Geocode: geocode,
+            Temporal: temporal,
+            VenueMatch: venueMatch,
+            Dedupe: 0.10,
+            SourceTrust: 0.35,
+            ReviewConfidence: 0.0);
+
+        var issueList = warnings
+            .Select(w => new CanonicalIngestionIssue(
+                w.Code,
+                w.Message,
+                w.Blocking ? IngestionIssueSeverity.Error : IngestionIssueSeverity.Warning,
+                false,
+                w.Field,
+                w.Metadata))
+            .ToArray();
+
+        CanonicalEventCandidate? canonical = null;
+        FlyerNormalizedEventCandidate? normalized = null;
+
+        if (!missing.Contains("title") && !missing.Contains("venue") && !missing.Contains("address"))
+        {
+            canonical = new NormalizedEventCandidate(
+                Title: titleCandidates[0].Value,
+                VenueName: venueCandidates[0].Value,
+                Address: addressCandidates[0].Value,
+                StartUtc: dateCandidates[0].Value,
+                EndUtc: null,
+                Timezone: "America/Chicago",
+                Category: categoryCandidates[0].Value,
+                Description: "Extracted from uploaded flyer evidence.",
+                Tags: ["flyer", "ingested"],
+                SourceKind: "flyer_upload",
+                SourceRef: request.Asset.AssetId,
+                ExtractionConfidence: extraction,
+                GeocodeConfidence: geocode,
+                TemporalConfidence: temporal,
+                EvidenceRefs:
+                [
+                    $"flyer-ocr-{request.Ocr.ExtractionId}",
+                    $"flyer-asset-{request.Asset.AssetId}",
+                ],
+                ExternalSourceId: null,
+                Attributes: new Dictionary<string, string?>
+                {
+                    ["normalizationRunId"] = request.JobId,
+                    ["normalizationVersion"] = Version,
+                });
+
+            normalized = new FlyerNormalizedEventCandidate(
+                CanonicalCandidate: canonical,
+                TitleCandidates: titleCandidates,
+                VenueCandidates: venueCandidates,
+                StartDateTimeCandidates: dateCandidates,
+                EndDateTimeCandidates: endCandidates,
+                AddressCandidates: addressCandidates,
+                CategoryCandidates: categoryCandidates,
+                Tags: ["flyer", "nightlife"],
+                DescriptiveNotes: notes.ToArray(),
+                MissingFields: missing.ToArray(),
+                UnresolvedAmbiguities: ambiguities.ToArray(),
+                FieldConfidence: new FlyerFieldConfidenceBreakdown(
+                    Title: titleCandidates[0].Confidence,
+                    Venue: venueCandidates[0].Confidence,
+                    Address: addressCandidates[0].Confidence,
+                    StartDateTime: dateCandidates[0].Confidence,
+                    EndDateTime: 0.0,
+                    Category: categoryCandidates[0].Confidence,
+                    Description: 0.45,
+                    Tags: 0.40),
+                Warnings: warnings.ToArray(),
+                ReviewTriggers: reviewTriggers.ToArray(),
+                NormalizationRunId: Guid.NewGuid().ToString("N"),
+                NormalizationVersion: Version);
+        }
+        else
+        {
+            reviewTriggers.Add(FlyerReviewTriggerReason.NormalizationIncomplete);
+        }
+
+        var requiresReview = reviewTriggers.Count > 0;
+
+        return Task.FromResult(new FlyerNormalizationResult(
+            Candidate: normalized,
+            Confidence: confidence,
+            Issues: issueList,
+            ReviewTriggers: reviewTriggers.ToArray(),
+            RequiresManualReview: requiresReview,
+            MissingFields: missing.ToArray(),
+            UnresolvedAmbiguities: ambiguities.ToArray(),
+            Notes: notes.ToArray()));
+    }
+
+    private static IReadOnlyDictionary<string, string?> EmptyMetadata() => new Dictionary<string, string?>();
+
+    private static string? InferCategory(string text)
+    {
+        var lower = text.ToLowerInvariant();
+        if (lower.Contains("house") || lower.Contains("dj") || lower.Contains("night"))
+        {
+            return "nightlife";
+        }
+
+        if (lower.Contains("concert") || lower.Contains("live"))
+        {
+            return "concert";
+        }
+
+        return "community";
+    }
+
+    private static string? FindTokenAfterKeyword(string[] lines, string keyword)
+    {
+        foreach (var line in lines)
+        {
+            var idx = line.IndexOf(keyword, StringComparison.OrdinalIgnoreCase);
+            if (idx >= 0)
+            {
+                return line[(idx + keyword.Length)..].Trim(':', '-', ' ');
+            }
+        }
+
+        return null;
+    }
+
+    private static FlyerFieldValueCandidate[] BuildCandidates<T>(T? primary, T? fallback, double confidence)
+    {
+        var candidates = new List<FlyerFieldValueCandidate>();
+
+        if (primary is not null && !string.IsNullOrWhiteSpace(primary.ToString()))
+        {
+            candidates.Add(new FlyerFieldValueCandidate(
+                Value: primary.ToString()!,
+                Confidence: confidence,
+                EvidenceRefs: ["ocr"],
+                IsSelected: true));
+        }
+
+        if (fallback is not null && !string.IsNullOrWhiteSpace(fallback.ToString()) && !string.Equals(primary?.ToString(), fallback.ToString(), StringComparison.OrdinalIgnoreCase))
+        {
+            candidates.Add(new FlyerFieldValueCandidate(
+                Value: fallback.ToString()!,
+                Confidence: Math.Max(0.1, confidence - 0.18),
+                EvidenceRefs: ["heuristic-fallback"],
+                IsSelected: candidates.Count == 0,
+                IsAmbiguous: candidates.Count > 0));
+        }
+
+        if (candidates.Count == 0)
+        {
+            candidates.Add(new FlyerFieldValueCandidate(
+                Value: string.Empty,
+                Confidence: 0.0,
+                EvidenceRefs: Array.Empty<string>(),
+                IsSelected: true,
+                IsAmbiguous: true));
+        }
+
+        return candidates.ToArray();
     }
 }
 
 public sealed class FlyerConfidenceEvaluator : IFlyerConfidenceEvaluator
 {
-    private const double MinDimension = 0.50;
-    private const double AutoApproveThreshold = 0.85;
-
-    public FlyerConfidenceResult Evaluate(OcrResult ocr, LlmNormalizationResult norm, double geocodeConfidence)
+    public FlyerConfidenceVector Evaluate(
+        FlyerAssetReference asset,
+        FlyerOcrExtractionResult ocr,
+        FlyerNormalizedEventCandidate? candidate,
+        double sourceAuthority,
+        IReadOnlyCollection<FlyerReviewTriggerReason> reviewTriggers)
     {
-        var extraction = (ocr.Confidence + norm.ExtractionConfidence) / 2.0;
-        var temporal = norm.TemporalConfidence;
-        var geocode = geocodeConfidence;
-        var aggregate = extraction * 0.40 + geocode * 0.30 + temporal * 0.30;
+        var extraction = candidate?.CanonicalCandidate.ExtractionConfidence ?? ocr.Confidence;
+        var geocode = candidate?.CanonicalCandidate.GeocodeConfidence ?? 0.0;
+        var temporal = candidate?.CanonicalCandidate.TemporalConfidence ?? 0.0;
 
-        var blockers = new List<string>();
-        if (aggregate < AutoApproveThreshold) blockers.Add($"Aggregate confidence {aggregate:F2} < {AutoApproveThreshold}");
-        if (extraction < MinDimension) blockers.Add($"Extraction confidence {extraction:F2} < {MinDimension}");
-        if (geocode < MinDimension) blockers.Add($"Geocode confidence {geocode:F2} < {MinDimension}");
-        if (temporal < MinDimension) blockers.Add($"Temporal confidence {temporal:F2} < {MinDimension}");
+        var venueMatch = candidate?.FieldConfidence.Venue
+            ?? (string.IsNullOrWhiteSpace(candidate?.CanonicalCandidate.VenueName) ? 0.20 : 0.70);
 
-        return new FlyerConfidenceResult(aggregate, extraction, geocode, temporal,
-            blockers.Count > 0, [.. blockers]);
+        var dedupe = reviewTriggers.Contains(FlyerReviewTriggerReason.DedupePending) ? 0.10 : 1.0;
+        var sourceTrust = Math.Clamp(sourceAuthority, 0.0, 1.0);
+
+        return new FlyerConfidenceVector(
+            Extraction: Math.Clamp(extraction, 0.0, 1.0),
+            Geocode: Math.Clamp(geocode, 0.0, 1.0),
+            Temporal: Math.Clamp(temporal, 0.0, 1.0),
+            VenueMatch: Math.Clamp(venueMatch, 0.0, 1.0),
+            Dedupe: dedupe,
+            SourceTrust: sourceTrust,
+            ReviewConfidence: 0.0);
     }
-}
-
-public sealed class StubGeocodingService : IGeocodingService
-{
-    public Task<GeocodeResult> GeocodeAsync(string address, string market, CancellationToken ct = default)
-        => Task.FromResult(new GeocodeResult(null, null, 0.0, address, false));
 }

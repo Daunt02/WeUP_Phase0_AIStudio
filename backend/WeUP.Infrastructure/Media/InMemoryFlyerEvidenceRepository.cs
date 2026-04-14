@@ -29,6 +29,12 @@ public sealed class InMemoryFlyerEvidenceRepository : IFlyerEvidenceRepository
         return Task.FromResult(record);
     }
 
+    public Task<FlyerEvidenceRecord?> GetByIngestionJobIdAsync(string ingestionJobId, CancellationToken ct = default)
+    {
+        var record = _store.Values.FirstOrDefault(r => r.IngestionJobId == ingestionJobId);
+        return Task.FromResult(record);
+    }
+
     public Task<FlyerEvidenceRecord[]> ListByEventIdAsync(string eventId, CancellationToken ct = default)
     {
         var records = _store.Values

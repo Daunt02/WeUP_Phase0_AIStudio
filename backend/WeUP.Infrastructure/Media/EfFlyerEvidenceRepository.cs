@@ -43,6 +43,14 @@ public sealed class EfFlyerEvidenceRepository : IFlyerEvidenceRepository
         return entity is null ? null : ToDomain(entity);
     }
 
+    public async Task<FlyerEvidenceRecord?> GetByIngestionJobIdAsync(string ingestionJobId, CancellationToken ct = default)
+    {
+        var entity = await _db.FlyerEvidence.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.IngestionJobId == ingestionJobId, ct);
+
+        return entity is null ? null : ToDomain(entity);
+    }
+
     public async Task<FlyerEvidenceRecord[]> ListByEventIdAsync(string eventId, CancellationToken ct = default)
     {
         var entities = await _db.FlyerEvidence.AsNoTracking()
@@ -87,6 +95,9 @@ public sealed class EfFlyerEvidenceRepository : IFlyerEvidenceRepository
         FlyerType = record.FlyerType.ToString(),
         Status = record.Status.ToString(),
         OcrText = record.OcrText,
+        OcrExtractionId = record.OcrExtractionId,
+        OcrEngineVersion = record.OcrEngineVersion,
+        OcrBlocksJson = record.OcrBlocksJson,
         OcrReady = record.OcrReady,
         ConfidenceScore = record.ConfidenceScore,
         DerivativeAssetIdsJson = SerializeArray(record.DerivativeAssetIds),
@@ -96,6 +107,10 @@ public sealed class EfFlyerEvidenceRepository : IFlyerEvidenceRepository
         ModerationItemId = record.ModerationItemId,
         CanonicalEventId = record.CanonicalEventId,
         LinkedWorkflowIdsJson = SerializeArray(record.LinkedWorkflowIds),
+        NormalizationRunId = record.NormalizationRunId,
+        NormalizationVersion = record.NormalizationVersion,
+        NormalizationSnapshotJson = record.NormalizationSnapshotJson,
+        ReviewReasonsJson = SerializeArray(record.ReviewReasons),
         CreatedAt = record.CreatedAt,
         ReviewNotes = record.ReviewNotes,
         UpdatedAt = DateTimeOffset.UtcNow,
@@ -111,6 +126,9 @@ public sealed class EfFlyerEvidenceRepository : IFlyerEvidenceRepository
         entity.FlyerType = record.FlyerType.ToString();
         entity.Status = record.Status.ToString();
         entity.OcrText = record.OcrText;
+        entity.OcrExtractionId = record.OcrExtractionId;
+        entity.OcrEngineVersion = record.OcrEngineVersion;
+        entity.OcrBlocksJson = record.OcrBlocksJson;
         entity.OcrReady = record.OcrReady;
         entity.ConfidenceScore = record.ConfidenceScore;
         entity.DerivativeAssetIdsJson = SerializeArray(record.DerivativeAssetIds);
@@ -120,6 +138,10 @@ public sealed class EfFlyerEvidenceRepository : IFlyerEvidenceRepository
         entity.ModerationItemId = record.ModerationItemId;
         entity.CanonicalEventId = record.CanonicalEventId;
         entity.LinkedWorkflowIdsJson = SerializeArray(record.LinkedWorkflowIds);
+        entity.NormalizationRunId = record.NormalizationRunId;
+        entity.NormalizationVersion = record.NormalizationVersion;
+        entity.NormalizationSnapshotJson = record.NormalizationSnapshotJson;
+        entity.ReviewReasonsJson = SerializeArray(record.ReviewReasons);
         entity.ReviewNotes = record.ReviewNotes;
         entity.UpdatedAt = DateTimeOffset.UtcNow;
     }
@@ -140,6 +162,9 @@ public sealed class EfFlyerEvidenceRepository : IFlyerEvidenceRepository
             FlyerType = flyerType,
             Status = status,
             OcrText = entity.OcrText,
+            OcrExtractionId = entity.OcrExtractionId,
+            OcrEngineVersion = entity.OcrEngineVersion,
+            OcrBlocksJson = entity.OcrBlocksJson,
             OcrReady = entity.OcrReady,
             ConfidenceScore = entity.ConfidenceScore,
             DerivativeAssetIds = DeserializeArray(entity.DerivativeAssetIdsJson),
@@ -149,6 +174,10 @@ public sealed class EfFlyerEvidenceRepository : IFlyerEvidenceRepository
             ModerationItemId = entity.ModerationItemId,
             CanonicalEventId = entity.CanonicalEventId,
             LinkedWorkflowIds = DeserializeArray(entity.LinkedWorkflowIdsJson),
+            NormalizationRunId = entity.NormalizationRunId,
+            NormalizationVersion = entity.NormalizationVersion,
+            NormalizationSnapshotJson = entity.NormalizationSnapshotJson,
+            ReviewReasons = DeserializeArray(entity.ReviewReasonsJson),
             CreatedAt = entity.CreatedAt,
             ReviewNotes = entity.ReviewNotes,
         };

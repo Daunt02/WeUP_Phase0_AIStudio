@@ -53,6 +53,15 @@ public sealed record FlyerEvidenceRecord
     /// <summary>Raw OCR text extracted from the flyer image (null until OCR is run).</summary>
     public string? OcrText { get; init; }
 
+    /// <summary>Stable id for the OCR extraction attempt bound to this evidence record.</summary>
+    public string? OcrExtractionId { get; init; }
+
+    /// <summary>OCR engine/version used to produce the extracted text snapshot.</summary>
+    public string? OcrEngineVersion { get; init; }
+
+    /// <summary>Serialized OCR block/region metadata when available.</summary>
+    public string? OcrBlocksJson { get; init; }
+
     /// <summary>
     /// Indicates if this asset should be consumed by OCR pipelines.
     /// </summary>
@@ -92,6 +101,18 @@ public sealed record FlyerEvidenceRecord
     /// <summary>Workflow ids connected to this evidence record (submission/ingestion/moderation/OCR).</summary>
     public string[] LinkedWorkflowIds { get; init; } = [];
 
+    /// <summary>Stable id for the normalization run applied after OCR.</summary>
+    public string? NormalizationRunId { get; init; }
+
+    /// <summary>Normalization model or prompt version identifier.</summary>
+    public string? NormalizationVersion { get; init; }
+
+    /// <summary>Serialized normalized flyer candidate snapshot for reviewer inspection.</summary>
+    public string? NormalizationSnapshotJson { get; init; }
+
+    /// <summary>Deterministic review reasons attached by the flyer ingestion pipeline.</summary>
+    public string[] ReviewReasons { get; init; } = [];
+
     public required DateTimeOffset CreatedAt { get; init; }
 
     /// <summary>Free-text notes from the reviewer.</summary>
@@ -122,6 +143,7 @@ public interface IFlyerEvidenceRepository
     Task<FlyerEvidenceRecord> SaveAsync(FlyerEvidenceRecord record, CancellationToken ct = default);
     Task<FlyerEvidenceRecord?> GetAsync(string evidenceId, CancellationToken ct = default);
     Task<FlyerEvidenceRecord?> GetByAssetIdAsync(string assetId, CancellationToken ct = default);
+    Task<FlyerEvidenceRecord?> GetByIngestionJobIdAsync(string ingestionJobId, CancellationToken ct = default);
     Task<FlyerEvidenceRecord[]> ListByEventIdAsync(string eventId, CancellationToken ct = default);
     Task<FlyerEvidenceRecord[]> ListBySubmissionIdAsync(string submissionId, CancellationToken ct = default);
     Task<FlyerEvidenceRecord[]> ListPendingAsync(CancellationToken ct = default);

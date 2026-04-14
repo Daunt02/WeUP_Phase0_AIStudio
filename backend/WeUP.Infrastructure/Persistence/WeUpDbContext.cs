@@ -234,6 +234,9 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
             b.Property(e => e.Status).HasMaxLength(64).IsRequired();
             b.Property(e => e.OcrReady).IsRequired();
             b.Property(e => e.OcrText).HasColumnType("text");
+            b.Property(e => e.OcrExtractionId).HasMaxLength(128);
+            b.Property(e => e.OcrEngineVersion).HasMaxLength(128);
+            b.Property(e => e.OcrBlocksJson).HasColumnType("jsonb");
             b.Property(e => e.DerivativeAssetIdsJson).HasColumnType("jsonb");
             b.Property(e => e.ProcessingHistoryJson).HasColumnType("jsonb");
             b.Property(e => e.ValidationFailuresJson).HasColumnType("jsonb");
@@ -241,6 +244,10 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
             b.Property(e => e.ModerationItemId).HasMaxLength(128);
             b.Property(e => e.CanonicalEventId).HasMaxLength(128);
             b.Property(e => e.LinkedWorkflowIdsJson).HasColumnType("jsonb");
+            b.Property(e => e.NormalizationRunId).HasMaxLength(128);
+            b.Property(e => e.NormalizationVersion).HasMaxLength(128);
+            b.Property(e => e.NormalizationSnapshotJson).HasColumnType("jsonb");
+            b.Property(e => e.ReviewReasonsJson).HasColumnType("jsonb");
             b.Property(e => e.ReviewNotes).HasMaxLength(4000);
             b.HasIndex(e => e.EvidenceId).IsUnique();
             b.HasIndex(e => e.AssetId);
@@ -248,6 +255,8 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
             b.HasIndex(e => e.Status);
             b.HasIndex(e => e.SubmissionId);
             b.HasIndex(e => e.IngestionJobId);
+            b.HasIndex(e => e.OcrExtractionId);
+            b.HasIndex(e => e.NormalizationRunId);
             b.HasIndex(e => e.ModerationItemId);
             b.HasIndex(e => e.CanonicalEventId);
         });

@@ -1,3 +1,4 @@
+using WeUP.Contracts.Ingestion;
 using WeUP.Domain.Flyer;
 
 namespace WeUP.Api.Endpoints;
@@ -8,38 +9,87 @@ public static class FlyerEndpoints
     {
         var group = app.MapGroup("/api/ingestion/flyers").WithTags("Ingestion");
 
-        // POST /api/ingestion/flyers
-        // Accepts multipart/form-data with a single "file" field.
-        group.MapPost("/", async (
-            IFormFile file,
+        group.MapPost("", async (
+            FlyerUploadIngestionRequest request,
             IFlyerIngestionPipeline pipeline,
-            HttpContext http,
             CancellationToken ct) =>
         {
-            if (file is null || file.Length == 0)
+            if (string.IsNullOrWhiteSpace(request.AssetId))
+            {
                 return Results.ValidationProblem(new Dictionary<string, string[]>
-                    { ["file"] = ["A non-empty file is required."] });
+                {
+                    ["assetId"] = ["assetId is required."],
+                });
+            }
 
-            var userId = http.User.Identity?.Name ?? "anonymous";
+            if (string.IsNullOrWhiteSpace(request.SubmittedBy))
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["submittedBy"] = ["submittedBy is required."],
+                });
+            }
 
-            await using var stream = file.OpenReadStream();
-            var request = new FlyerUploadRequest(stream, file.FileName, file.ContentType, userId);
-
-            var result = await pipeline.ProcessAsync(request, ct);
-
-            if (!result.Success)
+            try
+            {
+                var result = await pipeline.SubmitAsync(request, ct);
+                var statusUrl = $"/api/ingestion/flyers/{result.JobId}";
+                return Results.Accepted(statusUrl, new IngestionAcceptedResponse(result.JobId, result.Status, statusUrl));
+            }
+            catch (InvalidOperationException ex)
+            {
                 return Results.Problem(
-                    title: "Flyer ingestion failed",
-                    detail: result.ErrorMessage,
-                    statusCode: 422);
-
-            return Results.Accepted(
-                $"/api/ingestion/jobs/{result.JobId}",
-                new { result.JobId, result.AssetId, result.RequiresReview, result.ReviewBlockers });
+                    title: "Flyer ingestion request rejected",
+                    detail: ex.Message,
+                    statusCode: StatusCodes.Status422UnprocessableEntity);
+            }
         })
         .WithName("IngestFlyer")
-        .DisableAntiforgery()
-        .Produces(202)
-        .ProducesProblem(422);
+        .Produces<IngestionAcceptedResponse>(202)
+        .ProducesProblem(422)
+        .ProducesValidationProblem();
+
+        group.MapGet("/{jobId}", async (
+            string jobId,
+            IFlyerIngestionPipeline pipeline,
+            CancellationToken ct) =>
+        {
+            var detail = await pipeline.GetJobAsync(jobId, ct);
+            if (detail is null)
+            {
+                return Results.NotFound(new ProblemDetails
+                {
+                    Title = "Flyer ingestion job not found",
+                    Status = StatusCodes.Status404NotFound,
+                });
+            }
+
+            return Results.Ok(detail);
+        })
+        .WithName("GetFlyerIngestionJob")
+        .Produces<FlyerIngestionJobDetailResponse>(200)
+        .ProducesProblem(404);
+
+        group.MapGet("/{jobId}/evidence", async (
+            string jobId,
+            IFlyerIngestionPipeline pipeline,
+            CancellationToken ct) =>
+        {
+            var evidence = await pipeline.GetEvidenceAsync(jobId, ct);
+            if (evidence is null)
+            {
+                return Results.NotFound(new ProblemDetails
+                {
+                    Title = "Flyer ingestion evidence not found",
+                    Status = StatusCodes.Status404NotFound,
+                });
+            }
+
+            return Results.Ok(evidence);
+        })
+        .WithName("GetFlyerIngestionEvidence")
+        .Produces<FlyerIngestionEvidenceResponse>(200)
+        .ProducesProblem(404);
+
     }
 }

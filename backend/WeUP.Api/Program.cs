@@ -98,11 +98,9 @@ builder.Services.AddSingleton<IEventSourceAdapterResolver, EventSourceAdapterRes
 builder.Services.AddScoped<IIngestionCoordinator, IngestionCoordinator>();
 
 // Flyer pipeline
-builder.Services.AddSingleton<IFlyerStorageService, LocalFileStorageService>();
-builder.Services.AddSingleton<IOcrService, StubOcrService>();
 builder.Services.AddSingleton<IFlyerTextPostProcessor, FlyerTextPostProcessor>();
-builder.Services.AddSingleton<ILlmEventNormalizer, HeuristicLlmNormalizer>();
-builder.Services.AddSingleton<IGeocodingService, StubGeocodingService>();
+builder.Services.AddSingleton<IFlyerOcrService, StubFlyerOcrService>();
+builder.Services.AddSingleton<IFlyerNormalizationService, HeuristicFlyerNormalizationService>();
 builder.Services.AddSingleton<IFlyerConfidenceEvaluator, FlyerConfidenceEvaluator>();
 builder.Services.AddScoped<IFlyerIngestionPipeline, FlyerIngestionPipeline>();
 
