@@ -31,6 +31,8 @@ public sealed class InMemoryPreferencesRepository : IUserPreferencesRepository
             NotifyOnNewEvents:     request.NotifyOnNewEvents     ?? current.NotifyOnNewEvents,
             NotifyOnSaveReminders: request.NotifyOnSaveReminders ?? current.NotifyOnSaveReminders,
             PreferredTimeZone:     request.PreferredTimeZone     ?? current.PreferredTimeZone,
+            LastKnownMapCenterLat: request.LastKnownMapCenterLat ?? current.LastKnownMapCenterLat,
+            LastKnownMapCenterLng: request.LastKnownMapCenterLng ?? current.LastKnownMapCenterLng,
             UpdatedAt:             DateTimeOffset.UtcNow);
 
         _store[userId] = updated;
@@ -40,5 +42,8 @@ public sealed class InMemoryPreferencesRepository : IUserPreferencesRepository
     private static UserPreferencesDto Defaults(string userId) =>
         new(userId, [], DefaultRadiusMeters,
             NotifyOnNewEvents: false, NotifyOnSaveReminders: false,
-            PreferredTimeZone: null, UpdatedAt: DateTimeOffset.UtcNow);
+            PreferredTimeZone: null,
+            LastKnownMapCenterLat: null,
+            LastKnownMapCenterLng: null,
+            UpdatedAt: DateTimeOffset.UtcNow);
 }

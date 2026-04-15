@@ -140,7 +140,8 @@
       "displayName": "Moderator Phase0",
       "homeMarket": "sf",
       "onboardingState": "COMPLETE",
-      "createdAt": "2026-04-02T18:00:00Z"
+      "createdAt": "2026-04-02T18:00:00Z",
+      "roles": ["user", "moderator"]
     }
   ],
   "saves": [

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getAuthHeader } from "@/services/auth";
+import { getAuthHeader, getCurrentUserProfile } from "@/services/auth";
 import { listSavedEventIds, setSavedEvent } from "@/services/saveService";
 
 const LOCAL_ANON_SAVES_KEY = "weup.saved-events.anon.v1";
@@ -65,9 +65,19 @@ export function useSavedEventsAuthority() {
   });
 
   const refresh = useCallback(async () => {
-    const headers = getAuthHeader();
+    const tokenHeaders = getAuthHeader();
+    if (!tokenHeaders.Authorization) {
+      setState((current) => ({
+        ...current,
+        sessionKind: "anonymous",
+        savedEventIds: readAnonymousSavedEventIds(),
+        loading: false,
+      }));
+      return;
+    }
 
-    if (!headers.Authorization) {
+    const profile = await getCurrentUserProfile();
+    if (!profile) {
       setState((current) => ({
         ...current,
         sessionKind: "anonymous",

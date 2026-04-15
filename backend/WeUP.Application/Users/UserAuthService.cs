@@ -9,7 +9,9 @@ namespace WeUP.Application.Users;
 /// </summary>
 public sealed class UserAuthService(
     IUserProfileRepository users,
-    ITokenService tokens)
+    ITokenService tokens,
+    IUserRoleRepository roleRepository,
+    IUserRoleResolver roles)
 {
     /// <summary>
     /// Register a new user. If the email already exists, returns the existing profile
@@ -19,9 +21,20 @@ public sealed class UserAuthService(
     {
         var existing = await users.GetByEmailAsync(request.Email, ct);
         var profile  = existing ?? await users.CreateAsync(request.Email, request.DisplayName, request.HomeMarket, ct);
+        if (existing is null)
+        {
+            await roleRepository.SetRolesAsync(profile.UserId, [UserRoles.User], ct);
+        }
 
         var token = tokens.IssueToken(profile.UserId);
-        return new AuthResponse(profile.UserId, token, TokenTypes.Bearer, tokens.ExpiresInSeconds, profile);
+        var resolvedRoles = await roles.ResolveRolesAsync(profile.UserId, ct);
+        return new AuthResponse(
+            profile.UserId,
+            token,
+            TokenTypes.Bearer,
+            tokens.ExpiresInSeconds,
+            profile with { Roles = resolvedRoles },
+            resolvedRoles);
     }
 
     /// <summary>
@@ -34,12 +47,31 @@ public sealed class UserAuthService(
         if (profile is null) return null;
 
         var token = tokens.IssueToken(profile.UserId);
-        return new AuthResponse(profile.UserId, token, TokenTypes.Bearer, tokens.ExpiresInSeconds, profile);
+        var resolvedRoles = await roles.ResolveRolesAsync(profile.UserId, ct);
+        return new AuthResponse(
+            profile.UserId,
+            token,
+            TokenTypes.Bearer,
+            tokens.ExpiresInSeconds,
+            profile with { Roles = resolvedRoles },
+            resolvedRoles);
     }
 
-    public Task<UserProfileDto?> GetProfileAsync(string userId, CancellationToken ct = default) =>
-        users.GetByIdAsync(userId, ct);
+    public async Task<UserProfileDto?> GetProfileAsync(string userId, CancellationToken ct = default)
+    {
+        var profile = await users.GetByIdAsync(userId, ct);
+        if (profile is null)
+        {
+            return null;
+        }
+
+        var resolvedRoles = await roles.ResolveRolesAsync(userId, ct);
+        return profile with { Roles = resolvedRoles };
+    }
 
     public async Task<UserProfileDto> UpdateProfileAsync(string userId, UpdateProfileRequest request, CancellationToken ct = default) =>
-        await users.UpdateAsync(userId, request, ct);
+        (await users.UpdateAsync(userId, request, ct)) with
+        {
+            Roles = await roles.ResolveRolesAsync(userId, ct),
+        };
 }

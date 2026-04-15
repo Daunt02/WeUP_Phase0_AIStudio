@@ -88,6 +88,7 @@ if (runtime.UsesDatabase)
     builder.Services.AddScoped<IEventLifecycleRepository, EfEventRepository>();
     builder.Services.AddScoped<ISaveRepository, EfSaveRepository>();
     builder.Services.AddScoped<IUserProfileRepository, EfUserProfileRepository>();
+    builder.Services.AddScoped<IUserRoleRepository, EfUserRoleRepository>();
     builder.Services.AddScoped<IEventSubmissionService, EfSubmissionRepository>();
 }
 else
@@ -100,6 +101,8 @@ else
     builder.Services.AddSingleton<ISaveRepository>(sp => sp.GetRequiredService<StubSaveRepository>());
     builder.Services.AddSingleton<InMemoryUserRepository>();
     builder.Services.AddSingleton<IUserProfileRepository>(sp => sp.GetRequiredService<InMemoryUserRepository>());
+    builder.Services.AddSingleton<InMemoryUserRoleRepository>();
+    builder.Services.AddSingleton<IUserRoleRepository>(sp => sp.GetRequiredService<InMemoryUserRoleRepository>());
     builder.Services.AddSingleton<InMemorySubmissionRepository>();
     builder.Services.AddSingleton<IEventSubmissionService>(sp => sp.GetRequiredService<InMemorySubmissionRepository>());
 }
@@ -150,7 +153,8 @@ builder.Services.AddScoped<ReviewActionService>();
 builder.Services.AddScoped<IReviewActionService>(sp => sp.GetRequiredService<ReviewActionService>());
 builder.Services.AddScoped<IReviewDecisionService, ReviewDecisionService>();
 builder.Services.AddScoped<IRollbackService>(sp => sp.GetRequiredService<ReviewActionService>());
-builder.Services.AddSingleton<IModerationAuthorizationService, AllowAllModerationAuthorizationService>();
+builder.Services.AddScoped<IUserRoleResolver, UserRoleResolver>();
+builder.Services.AddScoped<IModerationAuthorizationService, RoleBasedModerationAuthorizationService>();
 builder.Services.AddScoped<ModeratorAuthorizationFilter>();
 
 // Auth services (P16)
@@ -160,7 +164,14 @@ builder.Services.AddScoped<UserAuthService>();
 
 // User persistence services (P17)
 builder.Services.AddSingleton<IItineraryRepository, InMemoryItineraryRepository>();
-builder.Services.AddSingleton<IUserPreferencesRepository, InMemoryPreferencesRepository>();
+if (runtime.UsesDatabase)
+{
+    builder.Services.AddScoped<IUserPreferencesRepository, EfUserPreferencesRepository>();
+}
+else
+{
+    builder.Services.AddSingleton<IUserPreferencesRepository, InMemoryPreferencesRepository>();
+}
 
 // Spatial query services (P19) — bounding box, district, viewport queries
 builder.Services.AddScoped<IViewportQueryService, ViewportQueryService>();
@@ -300,6 +311,7 @@ if (!app.Environment.IsEnvironment("Testing"))
 // ---------------------------------------------------------------------------
 
 app.MapAuthEndpoints();
+app.MapRoleManagementEndpoints();
 app.MapItineraryEndpoints();
 app.MapSubmissionEndpoints();
 app.MapEventEndpoints();

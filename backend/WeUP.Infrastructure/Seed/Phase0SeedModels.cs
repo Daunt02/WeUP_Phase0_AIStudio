@@ -63,7 +63,8 @@ public sealed record Phase0UserSeed(
     string? DisplayName,
     string? HomeMarket,
     string OnboardingState,
-    string CreatedAt);
+    string CreatedAt,
+    string[]? Roles = null);
 
 public sealed record Phase0SaveSeed(string UserId, string EventId, string SavedAt);
 

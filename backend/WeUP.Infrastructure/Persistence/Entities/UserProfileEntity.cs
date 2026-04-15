@@ -16,4 +16,6 @@ public sealed class UserProfileEntity
 
     // Navigation
     public ICollection<SavedEventEntity> Saves { get; set; } = [];
+    public ICollection<UserRoleEntity> Roles { get; set; } = [];
+    public UserPreferencesEntity? Preferences { get; set; }
 }

@@ -1,20 +1,38 @@
 using Microsoft.AspNetCore.Http;
+using WeUP.Contracts.Auth;
+using WeUP.Domain.Users;
 
 namespace WeUP.Api.Endpoints;
 
 public interface IModerationAuthorizationService
 {
-    ValueTask<bool> IsModeratorAuthorizedAsync(HttpContext context, CancellationToken ct = default);
+    ValueTask<ModerationAuthorizationDecision> AuthorizeAsync(HttpContext context, CancellationToken ct = default);
 }
 
-/// <summary>
-/// Authorization seam for moderator APIs.
-/// Replace with policy/role-backed enforcement when full auth is enabled.
-/// </summary>
-public sealed class AllowAllModerationAuthorizationService : IModerationAuthorizationService
+public readonly record struct ModerationAuthorizationDecision(bool IsAuthenticated, bool IsAuthorized, string? UserId)
 {
-    public ValueTask<bool> IsModeratorAuthorizedAsync(HttpContext context, CancellationToken ct = default) =>
-        ValueTask.FromResult(true);
+    public static ModerationAuthorizationDecision Anonymous => new(false, false, null);
+    public static ModerationAuthorizationDecision Forbidden(string userId) => new(true, false, userId);
+    public static ModerationAuthorizationDecision Allowed(string userId) => new(true, true, userId);
+};
+
+public sealed class RoleBasedModerationAuthorizationService(
+    ITokenService tokens,
+    IUserRoleResolver roles) : IModerationAuthorizationService
+{
+    public async ValueTask<ModerationAuthorizationDecision> AuthorizeAsync(HttpContext context, CancellationToken ct = default)
+    {
+        var userId = AuthEndpoints.ResolveUserId(context, tokens);
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return ModerationAuthorizationDecision.Anonymous;
+        }
+
+        var authorized = await roles.IsInRoleAsync(userId, UserRoles.Moderator, ct);
+        return authorized
+            ? ModerationAuthorizationDecision.Allowed(userId)
+            : ModerationAuthorizationDecision.Forbidden(userId);
+    }
 }
 
 public sealed class ModeratorAuthorizationFilter(IModerationAuthorizationService authorization) : IEndpointFilter
@@ -22,11 +40,18 @@ public sealed class ModeratorAuthorizationFilter(IModerationAuthorizationService
     public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
     {
         var http = context.HttpContext;
-        var allowed = await authorization.IsModeratorAuthorizedAsync(http, http.RequestAborted);
-        if (!allowed)
+        var decision = await authorization.AuthorizeAsync(http, http.RequestAborted);
+        if (!decision.IsAuthenticated)
         {
-            return Results.Forbid();
+            return Results.Unauthorized();
         }
+
+        if (!decision.IsAuthorized)
+        {
+            return Results.StatusCode(StatusCodes.Status403Forbidden);
+        }
+
+        http.Items["moderatorUserId"] = decision.UserId;
 
         return await next(context);
     }

@@ -75,3 +75,25 @@ export interface SubmitForReviewResponse {
   status: SubmissionStatus;
   message: string;
 }
+
+export interface UserPreferencesDto {
+  userId: string;
+  preferredCategories: string[];
+  homeRadiusMeters: number;
+  notifyOnNewEvents: boolean;
+  notifyOnSaveReminders: boolean;
+  preferredTimeZone: string | null;
+  lastKnownMapCenterLat: number | null;
+  lastKnownMapCenterLng: number | null;
+  updatedAt: string;
+}
+
+export interface UpdatePreferencesRequest {
+  preferredCategories?: string[];
+  homeRadiusMeters?: number;
+  notifyOnNewEvents?: boolean;
+  notifyOnSaveReminders?: boolean;
+  preferredTimeZone?: string | null;
+  lastKnownMapCenterLat?: number | null;
+  lastKnownMapCenterLng?: number | null;
+}

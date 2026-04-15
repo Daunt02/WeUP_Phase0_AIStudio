@@ -26,6 +26,7 @@ import {
   PHASE0_FIXED_NOW,
 } from "@/lib/testing/phase0Seed";
 import { uploadFlyer } from "@/services/mediaService";
+import { getCurrentUserProfile } from "@/services/auth";
 
 interface AddEventModalProps {
   isVisible: boolean;
@@ -163,10 +164,8 @@ export default function AddEventModal({
     }, 160);
 
     try {
-      const localUploaderId =
-        typeof window !== "undefined"
-          ? localStorage.getItem("weup_dev_user_id") || "phase0-ui-uploader"
-          : "phase0-ui-uploader";
+      const uploaderProfile = await getCurrentUserProfile();
+      const localUploaderId = uploaderProfile?.userId ?? "anonymous-uploader";
 
       const assetId = await uploadFlyer(file, localUploaderId);
       clearInterval(progressInterval);

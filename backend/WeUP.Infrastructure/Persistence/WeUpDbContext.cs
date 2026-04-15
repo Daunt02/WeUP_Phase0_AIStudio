@@ -14,6 +14,8 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
     public DbSet<EventSourceEntity> EventSources => Set<EventSourceEntity>();
     public DbSet<EventMediaEntity> EventMedia => Set<EventMediaEntity>();
     public DbSet<UserProfileEntity> UserProfiles => Set<UserProfileEntity>();
+    public DbSet<UserRoleEntity> UserRoles => Set<UserRoleEntity>();
+    public DbSet<UserPreferencesEntity> UserPreferences => Set<UserPreferencesEntity>();
     public DbSet<SavedEventEntity> SavedEvents => Set<SavedEventEntity>();
     public DbSet<EventReviewEntity> EventReviews => Set<EventReviewEntity>();
     public DbSet<IngestionJobEntity> IngestionJobs => Set<IngestionJobEntity>();
@@ -73,6 +75,33 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
             b.Property(e => e.DisplayName).HasMaxLength(128);
             b.Property(e => e.HomeMarket).HasMaxLength(64);
             b.Property(e => e.OnboardingState).HasMaxLength(32).IsRequired();
+
+            b.HasMany(e => e.Roles)
+                .WithOne(e => e.User)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasOne(e => e.Preferences)
+                .WithOne(e => e.User)
+                .HasForeignKey<UserPreferencesEntity>(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<UserRoleEntity>(b =>
+        {
+            b.ToTable("user_roles");
+            b.HasKey(e => new { e.UserId, e.Role });
+            b.Property(e => e.Role).HasMaxLength(64).IsRequired();
+            b.HasIndex(e => e.Role);
+        });
+
+        modelBuilder.Entity<UserPreferencesEntity>(b =>
+        {
+            b.ToTable("user_preferences");
+            b.HasKey(e => e.UserId);
+            b.Property(e => e.PreferredCategoriesJson).HasColumnType("jsonb").IsRequired();
+            b.Property(e => e.HomeRadiusMeters).IsRequired();
+            b.Property(e => e.PreferredTimeZone).HasMaxLength(64);
         });
 
         modelBuilder.Entity<EventSubmissionEntity>(b =>

@@ -14,6 +14,24 @@ public interface IUserProfileRepository
 }
 
 /// <summary>
+/// Resolves effective user roles for authenticated requests.
+/// </summary>
+public interface IUserRoleResolver
+{
+    Task<string[]> ResolveRolesAsync(string userId, CancellationToken ct = default);
+    Task<bool> IsInRoleAsync(string userId, string role, CancellationToken ct = default);
+}
+
+/// <summary>
+/// Persistent source of per-user role assignments.
+/// </summary>
+public interface IUserRoleRepository
+{
+    Task<string[]> GetRolesAsync(string userId, CancellationToken ct = default);
+    Task<string[]> SetRolesAsync(string userId, IReadOnlyCollection<string> roles, CancellationToken ct = default);
+}
+
+/// <summary>
 /// Issues and validates opaque bearer tokens mapped to user IDs.
 /// Phase 0: in-memory. Real JWT (P16.5+): Microsoft.AspNetCore.Authentication.JwtBearer.
 /// </summary>

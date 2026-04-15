@@ -50,7 +50,7 @@ public static class SubmissionEndpoints
 
             var dto = await svc.GetAsync(id, ct);
             if (dto is null) return Results.NotFound();
-            if (dto.SubmittedByUserId != userId) return Results.Forbid();
+            if (dto.SubmittedByUserId != userId) return Results.StatusCode(StatusCodes.Status403Forbidden);
             return Results.Ok(dto);
         })
         .WithName("GetSubmission")
@@ -91,15 +91,21 @@ public static class SubmissionEndpoints
 
         // GET /api/events/submissions/{id}/status
         group.MapGet("/{id}/status", async (
-            string id, IEventSubmissionService svc, CancellationToken ct) =>
+            string id, IEventSubmissionService svc,
+            ITokenService tokens, HttpContext ctx,
+            CancellationToken ct) =>
         {
+            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            if (userId is null) return Results.Unauthorized();
+
             var dto = await svc.GetAsync(id, ct);
-            return dto is null
-                ? Results.NotFound()
-                : Results.Ok(new { submissionId = id, status = dto.Status.ToString() });
+            if (dto is null) return Results.NotFound();
+            if (!string.Equals(dto.SubmittedByUserId, userId, StringComparison.Ordinal)) return Results.StatusCode(StatusCodes.Status403Forbidden);
+
+            return Results.Ok(new { submissionId = id, status = dto.Status.ToString() });
         })
         .WithName("GetSubmissionStatus")
-        .WithSummary("Get the status of a submission (public)");
+        .WithSummary("Get the status of an owned submission");
 
         return app;
     }

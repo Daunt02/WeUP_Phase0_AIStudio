@@ -49,6 +49,18 @@ describe("useSavedEventsAuthority", () => {
     (global.fetch as jest.Mock)
       .mockResolvedValueOnce({
         ok: true,
+        json: async () => ({
+          userId: "user-sf-camille",
+          email: "camille+phase0@weup.test",
+          displayName: "Camille",
+          homeMarket: "sf",
+          onboardingState: "COMPLETE",
+          createdAt: "2026-04-01T18:00:00Z",
+          roles: ["user"],
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
         json: async () => ({ items: [], hasNextPage: false }),
       })
       .mockResolvedValueOnce({
@@ -66,7 +78,7 @@ describe("useSavedEventsAuthority", () => {
     expect(localStorage.getItem("weup.saved-events.anon.v1")).toBeNull();
     expect(global.fetch).toHaveBeenNthCalledWith(
       1,
-      "/api/users/me/saves?page=1&pageSize=100",
+      "/auth/me",
       expect.objectContaining({
         headers: expect.objectContaining({
           Authorization: "Bearer token-123",
@@ -75,6 +87,15 @@ describe("useSavedEventsAuthority", () => {
     );
     expect(global.fetch).toHaveBeenNthCalledWith(
       2,
+      "/api/users/me/saves?page=1&pageSize=100",
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: "Bearer token-123",
+        }),
+      }),
+    );
+    expect(global.fetch).toHaveBeenNthCalledWith(
+      3,
       "/api/users/me/saves/evt-local-1",
       expect.objectContaining({
         method: "POST",

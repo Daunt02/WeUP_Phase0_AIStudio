@@ -70,6 +70,8 @@ public sealed class Phase0ReleaseApiTests : IClassFixture<Phase0ReleaseApiTests.
     [Fact]
     public async Task ModerationQueue_ApproveFlow_WorksForSeededItem()
     {
+        await AuthenticateAsync("moderator+phase0@weup.test");
+
         var queueResponse = await _client.GetAsync("/api/moderation/queue?pageSize=5");
         queueResponse.EnsureSuccessStatusCode();
 
@@ -79,12 +81,23 @@ public sealed class Phase0ReleaseApiTests : IClassFixture<Phase0ReleaseApiTests.
 
         var approve = await _client.PostAsJsonAsync("/api/moderation/queue/mod-sf-neon-market/approve", new
         {
-            actorId = "user-sf-moderator",
+            actorId = "ignored-by-server",
             note = "Release hardening approval path",
             publishedEventId = "evt-sf-midnight-groove",
         });
 
         approve.EnsureSuccessStatusCode();
+    }
+
+    private async Task AuthenticateAsync(string email)
+    {
+        var login = await _client.PostAsJsonAsync("/auth/login", new LoginRequest(email));
+        login.EnsureSuccessStatusCode();
+
+        var auth = await login.Content.ReadFromJsonAsync<AuthResponse>();
+        Assert.NotNull(auth);
+
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth!.Token);
     }
 
     public sealed class Phase0ApiFactory : WebApplicationFactory<Program>

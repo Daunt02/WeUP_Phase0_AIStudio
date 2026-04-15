@@ -5,6 +5,12 @@ public static class TokenTypes
     public const string Bearer = "Bearer";
 }
 
+public static class UserRoles
+{
+    public const string User = "user";
+    public const string Moderator = "moderator";
+}
+
 public static class OnboardingStates
 {
     public const string New      = "NEW";
@@ -40,7 +46,8 @@ public sealed record AuthResponse(
     string Token,
     string TokenType,
     int ExpiresInSeconds,
-    UserProfileDto Profile);
+    UserProfileDto Profile,
+    string[] Roles);
 
 /// <summary>Full profile shape returned on GET /auth/me.</summary>
 public sealed record UserProfileDto(
@@ -49,4 +56,12 @@ public sealed record UserProfileDto(
     string? DisplayName,
     string? HomeMarket,
     string OnboardingState,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    string[]? Roles = null);
+
+public sealed record UpdateUserRolesRequest(string[] Roles);
+
+public sealed record UserRolesResponse(
+    string UserId,
+    string[] Roles,
+    DateTimeOffset UpdatedAt);

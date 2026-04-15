@@ -52,7 +52,11 @@ function reducer(
     case "SET_VIEW_MODE":
       return { ...state, viewMode: action.mode };
     case "SET_MAP_CENTER":
-      return { ...state, mapCenter: action.center };
+      return {
+        ...state,
+        mapCenter: action.center,
+        lastKnownMapCenter: action.center,
+      };
     case "SET_MAP_BOUNDS":
       return { ...state, mapBounds: action.bounds };
     case "SET_TEMPORAL_MODE":
@@ -72,6 +76,7 @@ function reducer(
       // Restore only local UI persistence fields; save IDs are migrated by the save authority layer.
       return {
         ...state,
+        mapCenter: action.persisted.lastKnownMapCenter || state.mapCenter,
         lastKnownMapCenter:
           action.persisted.lastKnownMapCenter || state.lastKnownMapCenter,
       };

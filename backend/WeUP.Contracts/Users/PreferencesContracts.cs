@@ -11,6 +11,8 @@ public sealed record UserPreferencesDto(
     bool NotifyOnNewEvents,
     bool NotifyOnSaveReminders,
     string? PreferredTimeZone,
+    double? LastKnownMapCenterLat,
+    double? LastKnownMapCenterLng,
     DateTimeOffset UpdatedAt);
 
 public sealed record UpdatePreferencesRequest(
@@ -18,4 +20,6 @@ public sealed record UpdatePreferencesRequest(
     double? HomeRadiusMeters,
     bool? NotifyOnNewEvents,
     bool? NotifyOnSaveReminders,
-    string? PreferredTimeZone);
+    string? PreferredTimeZone,
+    double? LastKnownMapCenterLat,
+    double? LastKnownMapCenterLng);

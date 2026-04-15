@@ -69,7 +69,7 @@ public sealed class Phase0SeedService(
         if (db.Database.IsNpgsql())
         {
             await db.Database.ExecuteSqlRawAsync(
-                "TRUNCATE TABLE \"saved_events\", \"event_sources\", \"event_media\", \"event_reviews\", \"event_submissions\", \"events\", \"user_profiles\" RESTART IDENTITY CASCADE;",
+                "TRUNCATE TABLE \"saved_events\", \"event_sources\", \"event_media\", \"event_reviews\", \"event_submissions\", \"events\", \"user_roles\", \"user_preferences\", \"user_profiles\" RESTART IDENTITY CASCADE;",
                 ct);
         }
         else
@@ -80,6 +80,8 @@ public sealed class Phase0SeedService(
             db.EventReviews.RemoveRange(db.EventReviews);
             db.EventSubmissions.RemoveRange(db.EventSubmissions);
             db.Events.RemoveRange(db.Events);
+            db.UserRoles.RemoveRange(db.UserRoles);
+            db.UserPreferences.RemoveRange(db.UserPreferences);
             db.UserProfiles.RemoveRange(db.UserProfiles);
             await db.SaveChangesAsync(ct);
         }
@@ -155,11 +157,33 @@ public sealed class Phase0SeedService(
             SavedAt = DateTimeOffset.Parse(save.SavedAt),
         }).ToArray();
 
+        var roles = dataset.Users
+            .SelectMany(user =>
+            {
+                var seeded = user.Roles is { Length: > 0 }
+                    ? user.Roles
+                    : ["user"];
+
+                return seeded
+                    .Where(role => !string.IsNullOrWhiteSpace(role))
+                    .Select(role => role.Trim().ToLowerInvariant())
+                    .Append("user")
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Select(role => new UserRoleEntity
+                    {
+                        UserId = DeterministicGuid.Create($"user:{user.UserId}"),
+                        Role = role,
+                        AssignedAt = seedTimestamp,
+                    });
+            })
+            .ToArray();
+
         await db.UserProfiles.AddRangeAsync(users, ct);
         await db.Events.AddRangeAsync(events, ct);
         await db.EventMedia.AddRangeAsync(eventMedia, ct);
         await db.EventSources.AddRangeAsync(eventSources, ct);
         await db.SavedEvents.AddRangeAsync(saves, ct);
+        await db.UserRoles.AddRangeAsync(roles, ct);
         await db.SaveChangesAsync(ct);
     }
 
@@ -168,6 +192,7 @@ public sealed class Phase0SeedService(
         services.GetService<StubEventRepository>()?.Reset(dataset);
         services.GetService<StubSaveRepository>()?.Reset(dataset);
         services.GetService<InMemoryUserRepository>()?.Reset(dataset);
+        services.GetService<InMemoryUserRoleRepository>()?.Reset(dataset);
         services.GetService<InMemorySubmissionRepository>()?.Reset(dataset);
         services.GetService<InMemoryModerationQueue>()?.Reset(dataset);
         services.GetService<InMemoryIngestionJobRepository>()?.Reset(dataset);

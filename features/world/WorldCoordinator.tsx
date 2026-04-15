@@ -16,6 +16,8 @@ import { useSavedEventsAuthority } from "@/hooks/useSavedEventsAuthority";
 import { useEventFeed } from "@/hooks/useEventFeed";
 import { useTemporalQuery } from "@/hooks/useTemporalQuery";
 import { useEventSubmission } from "@/hooks/useEventSubmission";
+import { getCurrentUserProfile } from "@/services/auth";
+import { getMyPreferences, patchMyPreferences } from "@/services/preferences";
 import {
   RuntimeEventProjection,
   SubmissionDraftProjection,
@@ -43,13 +45,59 @@ export default function WorldCoordinator() {
 
   const { savedEventIds, toggleSavedEvent } = useSavedEventsAuthority();
 
-  // Persisted UI snapshot key
-  const PERSIST_KEY = "weup.ui.persisted.v1";
+  const [persistKey, setPersistKey] = useState("weup.ui.persisted.anon.v1");
+  const [isAuthenticatedSession, setIsAuthenticatedSession] = useState(false);
 
-  // Hydrate persisted UI slice on mount
   useEffect(() => {
+    let canceled = false;
+
+    void (async () => {
+      try {
+        const profile = await getCurrentUserProfile();
+        if (canceled) return;
+        const key = profile
+          ? `weup.ui.persisted.user.${profile.userId}.v1`
+          : "weup.ui.persisted.anon.v1";
+        setPersistKey(key);
+        setIsAuthenticatedSession(Boolean(profile));
+
+        if (profile) {
+          const prefs = await getMyPreferences();
+          const lat = prefs?.lastKnownMapCenterLat;
+          const lng = prefs?.lastKnownMapCenterLng;
+          if (
+            lat !== null &&
+            lat !== undefined &&
+            lng !== null &&
+            lng !== undefined
+          ) {
+            restorePersistedState({
+              lastKnownMapCenter: {
+                lat,
+                lng,
+              },
+            });
+          }
+        }
+      } catch {
+        if (!canceled) {
+          setPersistKey("weup.ui.persisted.anon.v1");
+          setIsAuthenticatedSession(false);
+        }
+      }
+    })();
+
+    return () => {
+      canceled = true;
+    };
+  }, []);
+
+  // Hydrate persisted UI slice for anonymous sessions only.
+  useEffect(() => {
+    if (isAuthenticatedSession) return;
+
     try {
-      const raw = localStorage.getItem(PERSIST_KEY);
+      const raw = localStorage.getItem(persistKey);
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === "object") {
@@ -59,17 +107,43 @@ export default function WorldCoordinator() {
     } catch (err) {
       console.warn("Failed to restore persisted UI state", err);
     }
-  }, [restorePersistedState]);
+  }, [isAuthenticatedSession, persistKey, restorePersistedState]);
 
-  // Save persisted slice when it changes
+  // Save persisted slice when it changes.
+  // Authenticated users persist map context via backend preferences;
+  // anonymous users continue using local storage.
   useEffect(() => {
-    try {
-      const snap = persistedSnapshot();
-      localStorage.setItem(PERSIST_KEY, JSON.stringify(snap));
-    } catch (err) {
-      console.warn("Failed to persist UI snapshot", err);
+    const snap = persistedSnapshot();
+
+    if (!snap.lastKnownMapCenter) {
+      return;
     }
-  }, [state.lastKnownMapCenter, persistedSnapshot]);
+
+    if (!isAuthenticatedSession) {
+      try {
+        localStorage.setItem(persistKey, JSON.stringify(snap));
+      } catch (err) {
+        console.warn("Failed to persist UI snapshot", err);
+      }
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      void patchMyPreferences({
+        lastKnownMapCenterLat: snap.lastKnownMapCenter?.lat ?? null,
+        lastKnownMapCenterLng: snap.lastKnownMapCenter?.lng ?? null,
+      }).catch((err) => {
+        console.warn("Failed to persist map context to preferences", err);
+      });
+    }, 400);
+
+    return () => window.clearTimeout(timeout);
+  }, [
+    isAuthenticatedSession,
+    persistKey,
+    state.lastKnownMapCenter,
+    persistedSnapshot,
+  ]);
 
   // ── Data layers ────────────────────────────────────────────────────────────
   const { events, prependEvent } = useEventFeed(state.mapBounds);

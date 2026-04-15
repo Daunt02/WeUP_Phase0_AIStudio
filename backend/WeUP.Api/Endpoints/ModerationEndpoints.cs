@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using WeUP.Application.Moderation;
 using WeUP.Contracts.Moderation;
+using WeUP.Domain.Users;
 
 namespace WeUP.Api.Endpoints;
 
@@ -83,9 +84,19 @@ public static class ModerationEndpoints
         group.MapPost("/reviews/{id}/approve", async (
             string id,
             [FromBody] ReviewDecisionRequest request,
+            ITokenService tokens,
+            HttpContext ctx,
             IReviewDecisionService reviews,
             CancellationToken ct) =>
-            await SubmitDecisionAsync(id, request with { Decision = ReviewDecisionKind.Approve }, reviews, ct))
+            await SubmitDecisionAsync(
+                id,
+                request with
+                {
+                    ActorId = AuthEndpoints.ResolveUserId(ctx, tokens) ?? string.Empty,
+                    Decision = ReviewDecisionKind.Approve,
+                },
+                reviews,
+                ct))
         .WithName("ApproveModerationReview")
         .Produces<ReviewDecisionResponse>()
         .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
@@ -93,9 +104,19 @@ public static class ModerationEndpoints
         group.MapPost("/reviews/{id}/reject", async (
             string id,
             [FromBody] ReviewDecisionRequest request,
+            ITokenService tokens,
+            HttpContext ctx,
             IReviewDecisionService reviews,
             CancellationToken ct) =>
-            await SubmitDecisionAsync(id, request with { Decision = ReviewDecisionKind.Reject }, reviews, ct))
+            await SubmitDecisionAsync(
+                id,
+                request with
+                {
+                    ActorId = AuthEndpoints.ResolveUserId(ctx, tokens) ?? string.Empty,
+                    Decision = ReviewDecisionKind.Reject,
+                },
+                reviews,
+                ct))
         .WithName("RejectModerationReview")
         .Produces<ReviewDecisionResponse>()
         .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
@@ -103,9 +124,19 @@ public static class ModerationEndpoints
         group.MapPost("/reviews/{id}/request-changes", async (
             string id,
             [FromBody] ReviewDecisionRequest request,
+            ITokenService tokens,
+            HttpContext ctx,
             IReviewDecisionService reviews,
             CancellationToken ct) =>
-            await SubmitDecisionAsync(id, request with { Decision = ReviewDecisionKind.RequestChanges }, reviews, ct))
+            await SubmitDecisionAsync(
+                id,
+                request with
+                {
+                    ActorId = AuthEndpoints.ResolveUserId(ctx, tokens) ?? string.Empty,
+                    Decision = ReviewDecisionKind.RequestChanges,
+                },
+                reviews,
+                ct))
         .WithName("RequestChangesModerationReview")
         .Produces<ReviewDecisionResponse>()
         .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
@@ -153,14 +184,14 @@ public static class ModerationEndpoints
         .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
         // Backward compatible route aliases
-        group.MapPost("/queue/{id}/approve", async (string id, [FromBody] ApproveRequest req, IReviewDecisionService reviews, CancellationToken ct) =>
-            await SubmitDecisionAsync(id, new ReviewDecisionRequest(req.ActorId, ReviewDecisionKind.Approve, req.Note), reviews, ct));
+        group.MapPost("/queue/{id}/approve", async (string id, [FromBody] ApproveRequest req, ITokenService tokens, HttpContext ctx, IReviewDecisionService reviews, CancellationToken ct) =>
+            await SubmitDecisionAsync(id, new ReviewDecisionRequest(AuthEndpoints.ResolveUserId(ctx, tokens) ?? string.Empty, ReviewDecisionKind.Approve, req.Note), reviews, ct));
 
-        group.MapPost("/queue/{id}/reject", async (string id, [FromBody] RejectRequest req, IReviewDecisionService reviews, CancellationToken ct) =>
-            await SubmitDecisionAsync(id, new ReviewDecisionRequest(req.ActorId, ReviewDecisionKind.Reject, req.Note, [req.RejectionReason]), reviews, ct));
+        group.MapPost("/queue/{id}/reject", async (string id, [FromBody] RejectRequest req, ITokenService tokens, HttpContext ctx, IReviewDecisionService reviews, CancellationToken ct) =>
+            await SubmitDecisionAsync(id, new ReviewDecisionRequest(AuthEndpoints.ResolveUserId(ctx, tokens) ?? string.Empty, ReviewDecisionKind.Reject, req.Note, [req.RejectionReason]), reviews, ct));
 
-        group.MapPost("/queue/{id}/request-changes", async (string id, [FromBody] RequestChangesRequest req, IReviewDecisionService reviews, CancellationToken ct) =>
-            await SubmitDecisionAsync(id, new ReviewDecisionRequest(req.ActorId, ReviewDecisionKind.RequestChanges, req.Note, [req.CorrectionInstructions]), reviews, ct));
+        group.MapPost("/queue/{id}/request-changes", async (string id, [FromBody] RequestChangesRequest req, ITokenService tokens, HttpContext ctx, IReviewDecisionService reviews, CancellationToken ct) =>
+            await SubmitDecisionAsync(id, new ReviewDecisionRequest(AuthEndpoints.ResolveUserId(ctx, tokens) ?? string.Empty, ReviewDecisionKind.RequestChanges, req.Note, [req.CorrectionInstructions]), reviews, ct));
     }
 
     private static async Task<IResult> SubmitDecisionAsync(
