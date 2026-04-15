@@ -5,8 +5,6 @@
  * Encapsulates bounds-driven event fetching. Re-fetches whenever mapBounds
  * changes (driven by the world-surface reducer). Returns a stable events
  * array and a loading flag.
- *
- * Seam: replace eventService.fetchEventsInBounds with a real API call in P09.
  */
 
 import { useEffect, useState } from "react";

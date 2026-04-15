@@ -1,165 +1,183 @@
 /**
- * WeUP Phase 0 — Event Service (frontend API seam)
+ * WeUP Phase 0 — Event Service (frontend API adapter)
  *
- * This service sits between UI components and data. Currently it returns
- * mock data; the backend integration step (P09) replaces the internals with
- * real HTTP calls while the public API surface here stays the same.
- *
- * IMPORTANT: generateDynamicEvents() (random synthetic data) is removed.
- * The service must return deterministic results from the mock dataset only.
+ * Thin adapter between UI contracts and backend event endpoints.
+ * Production behavior is API-backed with no local mock fallback.
  */
 
-import phase0Seed from "@/seed/phase0-dataset.json";
 import {
   MapFeedQuery,
   CalendarFeedQuery,
   EventDetailQuery,
+  EventFilters,
   MapFeedResponse,
   CalendarFeedResponse,
   EventDetailResponse,
-  GeoBoundingBox,
 } from "@/domains/query/contracts";
-import {
-  toMapCard,
-  toCalendarProjection,
-  toDetailProjection,
-} from "@/domains/event/projections";
-import { EventAggregate, EventStatus, SourceKind } from "@/domains/event/types";
-
-type SeedVenue = (typeof phase0Seed.venues)[number];
-type SeedEvent = (typeof phase0Seed.events)[number];
-
-const venueById = new Map<string, SeedVenue>(
-  phase0Seed.venues.map((venue) => [venue.venueId, venue]),
-);
-
-function seedSourceToKind(src: string): SourceKind {
-  switch (src) {
-    case "manual_submission":
-    case "flyer_upload":
-    case "pasted_url":
-    case "scraped_venue_page":
-    case "external_feed":
-      return src;
-    default:
-      return "manual_submission";
-  }
-}
-
-function seedEventToAggregate(event: SeedEvent): EventAggregate {
-  const venue = venueById.get(event.venueId);
-  if (!venue) {
-    throw new Error(
-      `[eventService] Missing venue '${event.venueId}' for event '${event.eventId}'.`,
-    );
-  }
-
-  return {
-    id: event.eventId,
-    status: (event.status as EventStatus) ?? "PUBLISHED",
-    canonicalTitle: event.title,
-    canonicalDescription: event.description ?? null,
-    category: event.category as EventAggregate["category"],
-    venue: { venueId: venue.venueId, name: venue.name },
-    address: {
-      line1: venue.address,
-      city: venue.districtCode,
-      country: "US",
-      raw: venue.address,
-    },
-    geo: { lat: venue.latitude, lng: venue.longitude },
-    timeRange: { startUtc: event.startsAtUtc, endUtc: event.endsAtUtc ?? null },
-    timezone: "America/Los_Angeles",
-    sourceRefs: [
-      {
-        kind: seedSourceToKind(event.sourceKind),
-        ref: event.eventId,
-        ingestedAt: event.startsAtUtc,
-      },
-    ],
-    mediaRefs: event.imageUrl
-      ? [{ assetId: event.eventId, url: event.imageUrl, kind: "image" }]
-      : [],
-    tags: event.tags ?? [],
-    confidence: event.confidence ?? 0.9,
-    review: {},
-    audit: { createdAt: event.startsAtUtc, updatedAt: event.startsAtUtc },
-  };
-}
+import { EventCalendarProjection, EventDetailProjection, EventMapCardProjection } from "@/domains/event/projections";
+import { toApiUrl } from "@/services/apiBase";
 
 // ---------------------------------------------------------------------------
 // EventService
 // ---------------------------------------------------------------------------
 
+interface MapFeedApiRequest {
+  bounds: MapFeedQuery["bounds"];
+  window: MapFeedQuery["window"];
+  categories?: EventFilters["categories"];
+  districtCode?: string;
+  minConfidence: number;
+  sort: string;
+}
+
+interface CalendarFeedApiRequest {
+  window: CalendarFeedQuery["window"];
+  categories?: EventFilters["categories"];
+  districtCode?: string;
+  minConfidence: number;
+  sort: string;
+  page: number;
+  pageSize: number;
+}
+
+interface EventDetailApiResponse {
+  event?: EventDetailProjection | null;
+  Event?: EventDetailProjection | null;
+}
+
+function normalizeMapCard(item: Partial<EventMapCardProjection>): EventMapCardProjection {
+  return {
+    id: item.id ?? "",
+    title: item.title ?? "",
+    venueName: item.venueName ?? "",
+    category: (item.category ?? "other") as EventMapCardProjection["category"],
+    lat: item.lat ?? 0,
+    lng: item.lng ?? 0,
+    thumbnailUrl: item.thumbnailUrl ?? null,
+    status: (item.status ?? "PUBLISHED") as EventMapCardProjection["status"],
+    confidence: item.confidence ?? 0,
+  };
+}
+
+function normalizeCalendarItem(
+  item: Partial<EventCalendarProjection>,
+): EventCalendarProjection {
+  return {
+    id: item.id ?? "",
+    title: item.title ?? "",
+    venueName: item.venueName ?? "",
+    category: (item.category ?? "other") as EventCalendarProjection["category"],
+    startUtc: item.startUtc ?? new Date(0).toISOString(),
+    endUtc: item.endUtc ?? null,
+    timezone: item.timezone ?? "UTC",
+    thumbnailUrl: item.thumbnailUrl ?? null,
+    status: (item.status ?? "PUBLISHED") as EventCalendarProjection["status"],
+  };
+}
+
+async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(toApiUrl(path), {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...(init?.headers ?? {}),
+    },
+  });
+
+  if (!response.ok) {
+    let detail = "";
+    try {
+      detail = await response.text();
+    } catch {
+      detail = "";
+    }
+
+    throw new Error(
+      `[eventService] ${response.status} ${response.statusText}${detail ? ` - ${detail}` : ""}`,
+    );
+  }
+
+  return (await response.json()) as T;
+}
+
+function toMapFeedApiRequest(query: MapFeedQuery): MapFeedApiRequest {
+  return {
+    bounds: query.bounds,
+    window: query.window,
+    categories: query.filters?.categories,
+    districtCode: query.filters?.districtCode,
+    minConfidence: query.filters?.minConfidence ?? 0,
+    sort: query.sort ?? "start_time_asc",
+  };
+}
+
+function toCalendarFeedApiRequest(query: CalendarFeedQuery): CalendarFeedApiRequest {
+  return {
+    window: query.window,
+    categories: query.filters?.categories,
+    districtCode: query.filters?.districtCode,
+    minConfidence: query.filters?.minConfidence ?? 0,
+    sort: query.sort ?? "start_time_asc",
+    page: query.pagination?.page ?? 1,
+    pageSize: query.pagination?.pageSize ?? 50,
+  };
+}
+
 class EventService {
-  private readonly allEvents: EventAggregate[] =
-    phase0Seed.events.map(seedEventToAggregate);
 
   // ------------------------------------------------------------------
   // Map feed — uses MapFeedQuery contract
   // ------------------------------------------------------------------
 
   async fetchMapFeed(query: MapFeedQuery): Promise<MapFeedResponse> {
-    await this._simulateLatency();
-    const { bounds, window, filters } = query;
+    const payload = await fetchJson<{
+      events?: EventMapCardProjection[];
+      Events?: EventMapCardProjection[];
+      totalCount?: number;
+      TotalCount?: number;
+    }>("/api/events/map", {
+      method: "POST",
+      body: JSON.stringify(toMapFeedApiRequest(query)),
+    });
 
-    const filtered = this.allEvents
-      .filter((e) => this._inBounds(e.geo.lat, e.geo.lng, bounds))
-      .filter((e) =>
-        this._inTimeWindow(
-          e.timeRange.startUtc,
-          window.startUtc,
-          window.endUtc,
-        ),
-      )
-      .filter(
-        (e) => !filters?.categories || filters.categories.includes(e.category),
-      )
-      .filter((e) => e.confidence >= (filters?.minConfidence ?? 0));
-
-    const events = filtered.map(toMapCard);
-    return { events, totalCount: events.length };
+    const items = payload.events ?? payload.Events ?? [];
+    return {
+      events: items.map((item) => normalizeMapCard(item)),
+      totalCount: payload.totalCount ?? payload.TotalCount ?? items.length,
+    };
   }
 
   // ------------------------------------------------------------------
   // Temporal feed seam — requests canonical time-window from backend
   // ------------------------------------------------------------------
 
-  async fetchTemporalFeed(temporalQuery: any): Promise<MapFeedResponse> {
-    try {
-      const resp = await fetch("/api/temporal/window", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(temporalQuery),
-      });
+  async fetchTemporalFeed(temporalQuery: unknown): Promise<MapFeedResponse> {
+    const windowPayload = await fetchJson<{
+      startUtc?: string;
+      StartUtc?: string;
+      endUtc?: string;
+      EndUtc?: string;
+      timezone?: string;
+      Timezone?: string;
+    }>("/api/temporal/window", {
+      method: "POST",
+      body: JSON.stringify(temporalQuery),
+    });
 
-      if (!resp.ok) throw new Error("temporal endpoint error");
-      const windowPayload = await resp.json();
+    const window = {
+      startUtc: windowPayload.startUtc ?? windowPayload.StartUtc ?? new Date().toISOString(),
+      endUtc:
+        windowPayload.endUtc ??
+        windowPayload.EndUtc ??
+        new Date(Date.now() + 3_600_000).toISOString(),
+      timezone: windowPayload.timezone ?? windowPayload.Timezone ?? "UTC",
+    };
 
-      // windowPayload should be { startUtc, endUtc, timezone }
-      const window = {
-        startUtc: windowPayload.startUtc ?? windowPayload.StartUtc,
-        endUtc: windowPayload.endUtc ?? windowPayload.EndUtc,
-      } as any;
-
-      // Forward to existing map feed contract using a small MapFeedQuery shim
-      const query = {
-        bounds: { minLat: -90, minLng: -180, maxLat: 90, maxLng: 180 },
-        window,
-        filters: {},
-      };
-      return this.fetchMapFeed(query as MapFeedQuery);
-    } catch (e) {
-      // Fallback to local behavior when backend is unreachable
-      return this.fetchMapFeed({
-        bounds: { minLat: -90, minLng: -180, maxLat: 90, maxLng: 180 },
-        window: {
-          startUtc: new Date().toISOString(),
-          endUtc: new Date(Date.now() + 3600000).toISOString(),
-        },
-        filters: {},
-      } as any);
-    }
+    return this.fetchMapFeed({
+      bounds: { minLat: -90, minLng: -180, maxLat: 90, maxLng: 180 },
+      window,
+      filters: {},
+    });
   }
 
   // ------------------------------------------------------------------
@@ -169,40 +187,34 @@ class EventService {
   async fetchCalendarFeed(
     query: CalendarFeedQuery,
   ): Promise<CalendarFeedResponse> {
-    await this._simulateLatency();
-    const { window, filters, pagination } = query;
-    const page = pagination?.page ?? 1;
-    const pageSize = pagination?.pageSize ?? 50;
+    const payload = await fetchJson<{
+      items?: EventCalendarProjection[];
+      Items?: EventCalendarProjection[];
+      totalCount?: number;
+      TotalCount?: number;
+      page?: number;
+      Page?: number;
+      pageSize?: number;
+      PageSize?: number;
+      hasNextPage?: boolean;
+      HasNextPage?: boolean;
+    }>("/api/events/calendar", {
+      method: "POST",
+      body: JSON.stringify(toCalendarFeedApiRequest(query)),
+    });
 
-    const filtered = this.allEvents
-      .filter((e) =>
-        this._inTimeWindow(
-          e.timeRange.startUtc,
-          window.startUtc,
-          window.endUtc,
-        ),
-      )
-      .filter(
-        (e) => !filters?.categories || filters.categories.includes(e.category),
-      )
-      .sort(
-        (a, b) =>
-          new Date(a.timeRange.startUtc).getTime() -
-          new Date(b.timeRange.startUtc).getTime(),
-      );
-
-    const totalCount = filtered.length;
-    const start = (page - 1) * pageSize;
-    const items = filtered
-      .slice(start, start + pageSize)
-      .map(toCalendarProjection);
+    const items = payload.items ?? payload.Items ?? [];
+    const page = payload.page ?? payload.Page ?? query.pagination?.page ?? 1;
+    const pageSize =
+      payload.pageSize ?? payload.PageSize ?? query.pagination?.pageSize ?? 50;
+    const totalCount = payload.totalCount ?? payload.TotalCount ?? items.length;
 
     return {
-      items,
+      items: items.map((item) => normalizeCalendarItem(item)),
       totalCount,
       page,
       pageSize,
-      hasNextPage: start + pageSize < totalCount,
+      hasNextPage: payload.hasNextPage ?? payload.HasNextPage ?? page * pageSize < totalCount,
     };
   }
 
@@ -213,38 +225,14 @@ class EventService {
   async fetchEventDetail(
     query: EventDetailQuery,
   ): Promise<EventDetailResponse> {
-    await this._simulateLatency();
-    const item = this.allEvents.find((e) => e.id === query.eventId);
-    if (!item) return { event: null };
-    return { event: toDetailProjection(item) };
-  }
-
-  // ------------------------------------------------------------------
-  // Private helpers
-  // ------------------------------------------------------------------
-
-  private async _simulateLatency(): Promise<void> {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-
-  private _inBounds(lat: number, lng: number, bounds: GeoBoundingBox): boolean {
-    return (
-      lat >= bounds.minLat &&
-      lat <= bounds.maxLat &&
-      lng >= bounds.minLng &&
-      lng <= bounds.maxLng
+    const payload = await fetchJson<EventDetailApiResponse>(
+      `/api/events/${encodeURIComponent(query.eventId)}`,
+      { method: "GET" },
     );
-  }
 
-  private _inTimeWindow(
-    startTime: string,
-    windowStart: string,
-    windowEnd: string,
-  ): boolean {
-    const t = new Date(startTime).getTime();
-    return (
-      t >= new Date(windowStart).getTime() && t < new Date(windowEnd).getTime()
-    );
+    return {
+      event: payload.event ?? payload.Event ?? null,
+    };
   }
 }
 

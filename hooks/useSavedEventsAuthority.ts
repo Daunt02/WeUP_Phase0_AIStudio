@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getAuthHeader } from "@/services/auth";
-import { toApiUrl } from "@/services/apiBase";
+import { listSavedEventIds, setSavedEvent } from "@/services/saveService";
 
 const LOCAL_ANON_SAVES_KEY = "weup.saved-events.anon.v1";
 
@@ -14,13 +14,6 @@ export interface SaveAuthorityState {
   loading: boolean;
   syncing: boolean;
   error: string | null;
-}
-
-interface SavedEventsApiPayload {
-  items?: Array<{ eventId?: string; EventId?: string }>;
-  Items?: Array<{ eventId?: string; EventId?: string }>;
-  hasNextPage?: boolean;
-  HasNextPage?: boolean;
 }
 
 function normalizeEventIds(value: unknown): string[] {
@@ -62,71 +55,6 @@ function writeAnonymousSavedEventIds(ids: string[]) {
   }
 }
 
-function extractSavedIds(payload: SavedEventsApiPayload): string[] {
-  const items = payload.items ?? payload.Items ?? [];
-
-  const ids = items
-    .map((item) => {
-      const id = item.eventId ?? item.EventId;
-      return typeof id === "string" ? id.trim() : "";
-    })
-    .filter((id) => id.length > 0);
-
-  return Array.from(new Set(ids));
-}
-
-function hasNextPage(payload: SavedEventsApiPayload): boolean {
-  return Boolean(payload.hasNextPage ?? payload.HasNextPage ?? false);
-}
-
-async function fetchRemoteSavedEventIds(
-  headers: Record<string, string>,
-): Promise<string[]> {
-  const collected: string[] = [];
-  let page = 1;
-  let hasNext = true;
-
-  while (hasNext && page <= 20) {
-    const response = await fetch(
-      toApiUrl(`/api/users/me/saves?page=${page}&pageSize=100`),
-      { headers },
-    );
-
-    if (!response.ok) {
-      throw new Error(
-        `Save list request failed with status ${response.status}.`,
-      );
-    }
-
-    const payload = (await response.json()) as SavedEventsApiPayload;
-    const pageIds = extractSavedIds(payload);
-    collected.push(...pageIds);
-
-    hasNext = hasNextPage(payload);
-    page += 1;
-  }
-
-  return Array.from(new Set(collected));
-}
-
-async function persistRemoteSave(
-  eventId: string,
-  saved: boolean,
-  headers: Record<string, string>,
-): Promise<void> {
-  const response = await fetch(
-    toApiUrl(`/api/users/me/saves/${encodeURIComponent(eventId)}`),
-    {
-      method: saved ? "POST" : "DELETE",
-      headers,
-    },
-  );
-
-  if (!response.ok) {
-    throw new Error(`Save request failed with status ${response.status}.`);
-  }
-}
-
 export function useSavedEventsAuthority() {
   const [state, setState] = useState<SaveAuthorityState>({
     sessionKind: "anonymous",
@@ -157,7 +85,7 @@ export function useSavedEventsAuthority() {
     }));
 
     try {
-      const remoteIds = await fetchRemoteSavedEventIds(headers);
+      const remoteIds = await listSavedEventIds();
       const remoteSet = new Set(remoteIds);
       const localIds = readAnonymousSavedEventIds();
 
@@ -167,7 +95,7 @@ export function useSavedEventsAuthority() {
 
       for (const eventId of migrationCandidates) {
         try {
-          await persistRemoteSave(eventId, true, headers);
+          await setSavedEvent(eventId, true);
           migratedIds.push(eventId);
         } catch {
           failedMigrationIds.push(eventId);
@@ -265,7 +193,7 @@ export function useSavedEventsAuthority() {
         }
 
         const currentlySaved = state.savedEventIds.includes(normalizedId);
-        await persistRemoteSave(normalizedId, !currentlySaved, headers);
+        await setSavedEvent(normalizedId, !currentlySaved);
 
         setState((current) => {
           const exists = current.savedEventIds.includes(normalizedId);
