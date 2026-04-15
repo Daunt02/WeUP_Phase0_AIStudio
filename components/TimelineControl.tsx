@@ -40,14 +40,14 @@ export default function TimelineControl({
 }: TimelineControlProps) {
   const [isHolding, setIsHolding] = useState(false);
   const [currentTime, setCurrentTime] =
-    useState<TemporalPresetSelection>("NOW");
+    useState<TemporalPresetSelection>("Today");
   const containerRef = useRef<HTMLDivElement>(null);
 
   const x = useMotionValue(0);
   const springX = useSpring(x, { stiffness: 300, damping: 30 });
 
   const timeLabels = useMemo<TemporalPresetSelection[]>(
-    () => ["NOW", "6PM", "9PM", "MIDNIGHT", "3AM", "FRI", "SAT", "SUN"],
+    () => ["Today", "Tonight", "Weekend", "Next7Days"],
     [],
   );
 

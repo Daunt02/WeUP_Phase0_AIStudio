@@ -38,7 +38,7 @@ public static class TemporalEndpoints
         var timeWindow = TemporalPresetMapper.GetTimeWindow(
             request.Preset,
             referenceTime: DateTimeOffset.UtcNow,
-            marketTimezone: request.MarketTimezone ?? "America/Los_Angeles");
+            marketTimezone: request.MarketTimezone ?? "America/Chicago");
 
         timeWindow.Validate();
 

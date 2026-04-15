@@ -39,7 +39,7 @@ export function useTemporalQuery(
 
     temporalService
       .getEventsAtTime(
-        { preset, marketTimezone: "America/Los_Angeles" },
+        { preset, marketTimezone: "America/Chicago" },
         controller.signal,
       )
       .then((response) => {

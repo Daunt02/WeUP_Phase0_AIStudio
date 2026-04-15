@@ -150,7 +150,7 @@ export default function WorldCoordinator() {
 
   // Timeline scrubber value owns the temporal preset string.
   const [currentTimePreset, setCurrentTimePreset] =
-    useState<TemporalPresetSelection>("NOW");
+    useState<TemporalPresetSelection>("Today");
   const { temporalWindow, loading: temporalLoading } =
     useTemporalQuery(currentTimePreset);
 

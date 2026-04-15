@@ -1,12 +1,12 @@
 /**
  * Temporal Query Service — P21
- * Maps temporal presets (NOW, 6PM, MIDNIGHT, etc.) to backend time windows
+ * Maps canonical temporal presets (TODAY, TONIGHT, WEEKEND) to backend time windows
  */
 
-import { getAuthHeader } from './auth';
+import { getAuthHeader } from "./auth";
 
 export interface TemporalPresetRequest {
-  preset: string; // NOW, 6PM, 9PM, MIDNIGHT, 3AM, FRI, SAT, SUN
+  preset: string; // Today, Tonight, Weekend, Next7Days
   marketTimezone?: string; // e.g., "America/Los_Angeles"
 }
 
@@ -35,12 +35,12 @@ export interface PresetListResponse {
  */
 export async function getEventsAtTime(
   request: TemporalPresetRequest,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<TemporalQueryResponse> {
-  const response = await fetch('/api/temporal/events-at-time', {
-    method: 'POST',
+  const response = await fetch("/api/temporal/events-at-time", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...getAuthHeader(),
     },
     body: JSON.stringify(request),
@@ -58,10 +58,10 @@ export async function getEventsAtTime(
  * List all available temporal presets with labels
  */
 export async function getTemporalPresets(
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<PresetListResponse> {
-  const response = await fetch('/api/temporal/presets', {
-    method: 'GET',
+  const response = await fetch("/api/temporal/presets", {
+    method: "GET",
     headers: getAuthHeader(),
     signal,
   });
@@ -77,12 +77,8 @@ export async function getTemporalPresets(
  * Preset label map for UI display
  */
 export const PRESET_LABELS: Record<string, string> = {
-  NOW: 'NOW',
-  Evening6PM: '6PM',
-  Evening9PM: '9PM',
-  Midnight: 'MIDNIGHT',
-  EarlyMorning3AM: '3AM',
-  Friday: 'FRI',
-  Saturday: 'SAT',
-  Sunday: 'SUN',
+  Today: "TODAY",
+  Tonight: "TONIGHT",
+  Weekend: "WEEKEND",
+  Next7Days: "NEXT 7 DAYS",
 };

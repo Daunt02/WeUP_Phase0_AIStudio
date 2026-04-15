@@ -11,14 +11,10 @@ namespace WeUP.Contracts.Temporal
 
     public enum TemporalPresetDto
     {
-        NOW = 0,
-        Evening6PM = 1,
-        Evening9PM = 2,
-        Midnight = 3,
-        EarlyMorning3AM = 4,
-        Friday = 5,
-        Saturday = 6,
-        Sunday = 7
+        Today = 0,
+        Tonight = 1,
+        Weekend = 2,
+        Next7Days = 3
     }
 
     public record TimeWindowDto(DateTimeOffset StartUtc, DateTimeOffset EndUtc, string Timezone);

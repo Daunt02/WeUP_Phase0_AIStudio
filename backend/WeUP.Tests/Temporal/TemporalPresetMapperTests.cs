@@ -9,74 +9,58 @@ namespace WeUP.Tests.Temporal;
 public class TemporalPresetMapperTests
 {
     [Fact]
-    public void GetTimeWindow_WithNOWPreset_ReturnsOneHourWindow()
+    public void GetTimeWindow_WithTodayPreset_ReturnsLocalDayWindow()
     {
-        // Arrange
-        var preset = TemporalPreset.NOW;
-        var referenceTime = new DateTimeOffset(2026, 4, 4, 12, 0, 0, TimeSpan.Zero);
+        var referenceTime = DateTimeOffset.Parse("2026-04-10T16:30:00Z"); // 11:30 local CDT
+        var window = TemporalPresetMapper.GetTimeWindow(TemporalPreset.Today, referenceTime, "America/Chicago");
 
-        // Act
-        var window = TemporalPresetMapper.GetTimeWindow(preset, referenceTime, "America/Los_Angeles");
-
-        // Assert
-        Assert.NotNull(window);
-        Assert.Equal(referenceTime, window.StartUtc);
-        Assert.Equal(referenceTime.AddHours(1), window.EndUtc);
+        Assert.Equal(TimeSpan.FromDays(1), window.EndUtc - window.StartUtc);
+        Assert.Equal("America/Chicago", window.Timezone);
+        Assert.Equal(0, window.StartUtc.Hour);
+        Assert.Equal(0, window.StartUtc.Minute);
+        Assert.Equal(0, window.EndUtc.Hour);
+        Assert.Equal(0, window.EndUtc.Minute);
     }
 
     [Fact]
-    public void GetTimeWindow_ReturnsValidTimeWindow()
+    public void GetTimeWindow_WithTonightPreset_ReturnsNineHourWindow()
     {
-        // Arrange
-        var preset = TemporalPreset.Evening6PM;
-        var referenceTime = new DateTimeOffset(2026, 4, 4, 12, 0, 0, TimeSpan.Zero);
+        var referenceTime = DateTimeOffset.Parse("2026-04-10T16:30:00Z");
+        var window = TemporalPresetMapper.GetTimeWindow(TemporalPreset.Tonight, referenceTime, "America/Chicago");
 
-        // Act
-        var window = TemporalPresetMapper.GetTimeWindow(preset, referenceTime, "America/Los_Angeles");
-
-        // Assert
-        Assert.NotNull(window);
-        // Validate should not throw
+        Assert.Equal(TimeSpan.FromHours(9), window.EndUtc - window.StartUtc);
         window.Validate();
     }
 
     [Fact]
-    public void GetPresetLabel_WithNOWPreset_ReturnsNOW()
+    public void GetTimeWindow_WithWeekendPreset_ReturnsFridayToMondayWindow()
     {
-        // Act
-        var label = TemporalPresetMapper.GetPresetLabel(TemporalPreset.NOW);
+        var referenceTime = DateTimeOffset.Parse("2026-04-08T12:00:00Z"); // Wednesday
+        var window = TemporalPresetMapper.GetTimeWindow(TemporalPreset.Weekend, referenceTime, "America/Chicago");
 
-        // Assert
-        Assert.Equal("NOW", label);
+        Assert.Equal(TimeSpan.FromHours(54), window.EndUtc - window.StartUtc);
     }
 
     [Fact]
-    public void GetPresetLabel_WithEvening6PM_Returns6PM()
+    public void GetTimeWindow_WithNext7DaysPreset_ReturnsSevenDayWindow()
     {
-        // Act
-        var label = TemporalPresetMapper.GetPresetLabel(TemporalPreset.Evening6PM);
+        var referenceTime = DateTimeOffset.Parse("2026-04-10T20:30:00Z");
+        var window = TemporalPresetMapper.GetTimeWindow(TemporalPreset.Next7Days, referenceTime, "America/Chicago");
 
-        // Assert
-        Assert.Equal("6PM", label);
+        Assert.Equal(TimeSpan.FromDays(7), window.EndUtc - window.StartUtc);
     }
 
     [Fact]
     public void GetPresetLabel_ReturnsLabelForAllPresets()
     {
-        // Arrange
         var presets = new[]
         {
-            TemporalPreset.NOW,
-            TemporalPreset.Evening6PM,
-            TemporalPreset.Evening9PM,
-            TemporalPreset.Midnight,
-            TemporalPreset.EarlyMorning3AM,
-            TemporalPreset.Friday,
-            TemporalPreset.Saturday,
-            TemporalPreset.Sunday,
+            TemporalPreset.Today,
+            TemporalPreset.Tonight,
+            TemporalPreset.Weekend,
+            TemporalPreset.Next7Days,
         };
 
-        // Act & Assert
         foreach (var preset in presets)
         {
             var label = TemporalPresetMapper.GetPresetLabel(preset);

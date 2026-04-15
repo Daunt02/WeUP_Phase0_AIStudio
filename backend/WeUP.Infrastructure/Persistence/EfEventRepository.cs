@@ -30,8 +30,8 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
         if (request.Categories?.Length > 0)
             query = query.Where(e => request.Categories.Contains(e.Category));
 
-        if (!string.IsNullOrEmpty(request.DistrictCode))
-            query = query.Where(e => e.AddressCity == request.DistrictCode); // TODO: replace with district FK in P20
+        var locality = NormalizeLocality(request.Locality, request.DistrictCode);
+        query = ApplyLocalityFilter(query, locality);
 
         if (request.MinConfidence > 0)
             query = query.Where(e => e.Confidence >= request.MinConfidence);
@@ -49,7 +49,8 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
             .ToListAsync(ct);
 
         var events = entities.Select(e => ToMapCard(e)).ToArray();
-        return new MapFeedResponse(events, events.Length);
+        var clusters = BuildViewportClusters(events);
+        return new MapFeedResponse(events, events.Length, clusters, "bounding_box");
     }
 
     // ---------------------------------------------------------------------------
@@ -67,6 +68,9 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
 
         if (request.Categories?.Length > 0)
             query = query.Where(e => request.Categories.Contains(e.Category));
+
+        var locality = NormalizeLocality(request.Locality, request.DistrictCode);
+        query = ApplyLocalityFilter(query, locality);
 
         if (request.MinConfidence > 0)
             query = query.Where(e => e.Confidence >= request.MinConfidence);
@@ -125,6 +129,9 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
             VenueName = request.VenueName,
             AddressLine1 = request.Address,
             AddressCity = string.Empty,
+            MarketCode = null,
+            DistrictCode = null,
+            NeighborhoodCode = null,
             AddressCountry = "US",
             AddressRaw = request.Address,
             Latitude = 0,
@@ -237,5 +244,64 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
         var poster = e.Media.FirstOrDefault(m => m.Kind == "poster");
         var image  = e.Media.FirstOrDefault(m => m.Kind == "image");
         return (poster ?? image)?.Url;
+    }
+
+    private static IQueryable<EventEntity> ApplyLocalityFilter(
+        IQueryable<EventEntity> query,
+        LocalityFilterRequest? locality)
+    {
+        if (locality == null)
+            return query;
+
+        if (!string.IsNullOrWhiteSpace(locality.MarketCode))
+        {
+            var marketCode = locality.MarketCode.Trim();
+            query = query.Where(e => e.MarketCode == marketCode);
+        }
+
+        if (!string.IsNullOrWhiteSpace(locality.DistrictCode))
+        {
+            var districtCode = locality.DistrictCode.Trim();
+            query = query.Where(e => e.DistrictCode == districtCode);
+        }
+
+        if (!string.IsNullOrWhiteSpace(locality.NeighborhoodCode))
+        {
+            var neighborhoodCode = locality.NeighborhoodCode.Trim();
+            query = query.Where(e => e.NeighborhoodCode == neighborhoodCode);
+        }
+
+        return query;
+    }
+
+    private static LocalityFilterRequest? NormalizeLocality(LocalityFilterRequest? locality, string? legacyDistrictCode)
+    {
+        if (locality != null)
+            return locality;
+
+        if (string.IsNullOrWhiteSpace(legacyDistrictCode))
+            return null;
+
+        return new LocalityFilterRequest(DistrictCode: legacyDistrictCode);
+    }
+
+    private static EventMapClusterDto[]? BuildViewportClusters(EventMapCardDto[] events)
+    {
+        if (events.Length == 0)
+            return [];
+
+        // Phase 0 cluster seam: fixed-size quantization; replace with PostGIS ST_Cluster*.
+        var clusters = events
+            .GroupBy(e => $"{Math.Round(e.Lat, 2):F2}:{Math.Round(e.Lng, 2):F2}")
+            .Select(group => new EventMapClusterDto(
+                ClusterId: group.Key,
+                CenterLat: group.Average(e => e.Lat),
+                CenterLng: group.Average(e => e.Lng),
+                Count: group.Count(),
+                EventIds: group.Select(e => e.Id).ToArray()))
+            .OrderByDescending(cluster => cluster.Count)
+            .ToArray();
+
+        return clusters;
     }
 }

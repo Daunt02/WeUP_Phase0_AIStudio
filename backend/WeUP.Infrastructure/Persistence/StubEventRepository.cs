@@ -18,6 +18,7 @@ public sealed class StubEventRepository : IEventRepository, IEventSubmissionRepo
     private EventDetailDto[] _details = [];
     private readonly Dictionary<string, string> _submissionStatuses = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> _eventStatuses = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, (string MarketCode, string DistrictCode, string NeighborhoodCode)> _eventLocalities = new(StringComparer.OrdinalIgnoreCase);
     private int _submissionSequence;
 
     public void Reset(Phase0SeedDataset dataset)
@@ -81,9 +82,16 @@ public sealed class StubEventRepository : IEventRepository, IEventSubmissionRepo
             }).ToArray();
 
             _eventStatuses.Clear();
+            _eventLocalities.Clear();
             foreach (var evt in dataset.Events)
             {
                 _eventStatuses[evt.EventId] = evt.Status;
+
+                var venue = venueById[evt.VenueId];
+                _eventLocalities[evt.EventId] = (
+                    venue.MarketCode,
+                    venue.DistrictCode,
+                    evt.Neighborhood);
             }
 
             _submissionStatuses.Clear();
@@ -98,9 +106,10 @@ public sealed class StubEventRepository : IEventRepository, IEventSubmissionRepo
             .Where(e => e.Lat >= bb.MinLat && e.Lat <= bb.MaxLat &&
                         e.Lng >= bb.MinLng && e.Lng <= bb.MaxLng)
             .Where(e => request.Categories is null || request.Categories.Length == 0 || request.Categories.Contains(e.Category, StringComparer.OrdinalIgnoreCase))
+            .Where(e => MatchesLocality(e.Id, request.Locality, request.DistrictCode))
             .Where(e => e.Confidence >= request.MinConfidence)
             .ToArray();
-        return Task.FromResult(new MapFeedResponse(events, events.Length));
+        return Task.FromResult(new MapFeedResponse(events, events.Length, null, "bounding_box"));
     }
 
     public Task<CalendarFeedResponse> GetCalendarFeedAsync(CalendarFeedRequest request, CancellationToken ct = default)
@@ -109,6 +118,7 @@ public sealed class StubEventRepository : IEventRepository, IEventSubmissionRepo
         var items = _calendarItems
             .Where(i => i.StartUtc >= w.StartUtc && i.StartUtc < w.EndUtc)
             .Where(i => request.Categories is null || request.Categories.Length == 0 || request.Categories.Contains(i.Category, StringComparer.OrdinalIgnoreCase))
+            .Where(i => MatchesLocality(i.Id, request.Locality, request.DistrictCode))
             .ToArray();
         return Task.FromResult(new CalendarFeedResponse(items, items.Length, request.Page, request.PageSize, false));
     }
@@ -181,4 +191,31 @@ public sealed class StubEventRepository : IEventRepository, IEventSubmissionRepo
 
     private static DateTimeOffset ParseDate(string value) =>
         DateTimeOffset.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+
+    private bool MatchesLocality(string eventId, LocalityFilterRequest? locality, string? districtCode)
+    {
+        var normalized = locality ?? (!string.IsNullOrWhiteSpace(districtCode)
+            ? new LocalityFilterRequest(DistrictCode: districtCode)
+            : null);
+
+        if (normalized == null)
+            return true;
+
+        if (!_eventLocalities.TryGetValue(eventId, out var location))
+            return false;
+
+        if (!string.IsNullOrWhiteSpace(normalized.MarketCode) &&
+            !location.MarketCode.Equals(normalized.MarketCode, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        if (!string.IsNullOrWhiteSpace(normalized.DistrictCode) &&
+            !location.DistrictCode.Equals(normalized.DistrictCode, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        if (!string.IsNullOrWhiteSpace(normalized.NeighborhoodCode) &&
+            !location.NeighborhoodCode.Equals(normalized.NeighborhoodCode, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        return true;
+    }
 }

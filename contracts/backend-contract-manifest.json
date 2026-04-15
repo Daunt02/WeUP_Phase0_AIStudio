@@ -2,10 +2,12 @@
   "contracts": {
     "GeoBoundingBox": ["maxLat", "maxLng", "minLat", "minLng"],
     "TimeWindowRequest": ["endUtc", "startUtc", "timezone"],
+    "LocalityFilterRequest": ["districtCode", "marketCode", "neighborhoodCode"],
     "MapFeedRequest": [
       "bounds",
       "categories",
       "districtCode",
+      "locality",
       "minConfidence",
       "sort",
       "window"
@@ -21,10 +23,18 @@
       "title",
       "venueName"
     ],
-    "MapFeedResponse": ["events", "totalCount"],
+    "EventMapClusterDto": [
+      "centerLat",
+      "centerLng",
+      "clusterId",
+      "count",
+      "eventIds"
+    ],
+    "MapFeedResponse": ["clusters", "events", "queryMode", "totalCount"],
     "CalendarFeedRequest": [
       "categories",
       "districtCode",
+      "locality",
       "minConfidence",
       "page",
       "pageSize",

@@ -18,7 +18,12 @@ export type ModalState =
   | { kind: "NONE" }
   | { kind: "STACK"; stack: ModalKind[] };
 
-export type TemporalMode = "TODAY" | "NEXT_7_DAYS" | "CUSTOM_DATE";
+export type TemporalMode =
+  | "TODAY"
+  | "TONIGHT"
+  | "WEEKEND"
+  | "NEXT_7_DAYS"
+  | "CUSTOM_DATE";
 
 // Draft object used while creating a new event on the UI surface. Ephemeral by default.
 // Field names are camelCase — mirrors GhostEventDraft and SubmissionDraftProjection.

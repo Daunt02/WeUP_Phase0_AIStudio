@@ -27,6 +27,11 @@ public sealed class EventEntity
     public string AddressCountry { get; set; } = "US";
     public string AddressRaw { get; set; } = string.Empty;
 
+    // Canonical locality dimensions (Phase 0 hardening).
+    public string? MarketCode { get; set; }
+    public string? DistrictCode { get; set; }
+    public string? NeighborhoodCode { get; set; }
+
     // Geospatial (PostGIS-ready; lat/lng stored until PostGIS extension is enabled)
     public double Latitude { get; set; }
     public double Longitude { get; set; }

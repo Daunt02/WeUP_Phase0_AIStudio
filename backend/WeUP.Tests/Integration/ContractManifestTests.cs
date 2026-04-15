@@ -17,8 +17,10 @@ public sealed class ContractManifestTests
         {
             [nameof(GeoBoundingBox)] = GetJsonPropertyNames<GeoBoundingBox>(),
             [nameof(TimeWindowRequest)] = GetJsonPropertyNames<TimeWindowRequest>(),
+            [nameof(LocalityFilterRequest)] = GetJsonPropertyNames<LocalityFilterRequest>(),
             [nameof(MapFeedRequest)] = GetJsonPropertyNames<MapFeedRequest>(),
             [nameof(EventMapCardDto)] = GetJsonPropertyNames<EventMapCardDto>(),
+            [nameof(EventMapClusterDto)] = GetJsonPropertyNames<EventMapClusterDto>(),
             [nameof(MapFeedResponse)] = GetJsonPropertyNames<MapFeedResponse>(),
             [nameof(CalendarFeedRequest)] = GetJsonPropertyNames<CalendarFeedRequest>(),
             [nameof(EventCalendarDto)] = GetJsonPropertyNames<EventCalendarDto>(),

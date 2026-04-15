@@ -7,29 +7,17 @@ namespace WeUP.Domain.Temporal;
 /// </summary>
 public enum TemporalPreset
 {
-    /// <summary>Events happening right now.</summary>
-    NOW = 0,
+    /// <summary>Events in today's local market day window.</summary>
+    Today = 0,
 
-    /// <summary>Events in the 6 PM hour.</summary>
-    Evening6PM = 1,
+    /// <summary>Local nightlife window from 18:00 to 03:00 next day.</summary>
+    Tonight = 1,
 
-    /// <summary>Events in the 9 PM hour.</summary>
-    Evening9PM = 2,
+    /// <summary>Friday 18:00 through Monday 00:00 in market local time.</summary>
+    Weekend = 2,
 
-    /// <summary>Events at midnight and early morning.</summary>
-    Midnight = 3,
-
-    /// <summary>Events in the 3 AM hour (early morning).</summary>
-    EarlyMorning3AM = 4,
-
-    /// <summary>Events on Friday.</summary>
-    Friday = 5,
-
-    /// <summary>Events on Saturday.</summary>
-    Saturday = 6,
-
-    /// <summary>Events on Sunday.</summary>
-    Sunday = 7,
+    /// <summary>Rolling next seven days from reference time.</summary>
+    Next7Days = 3,
 }
 
 /// <summary>
@@ -73,11 +61,12 @@ public static class TemporalPresetMapper
         DateTimeOffset? referenceTime = null,
         string? marketTimezone = null)
     {
-        marketTimezone ??= "America/Los_Angeles"; // default market id (IANA)
+        marketTimezone ??= "America/Chicago"; // Houston Phase 0 default market timezone
         var refUtc = (referenceTime ?? DateTimeOffset.UtcNow).ToUniversalTime();
 
         // Resolve a TimeZoneInfo for the market. Accept both common IANA ids and Windows ids.
-        var tz = ResolveTimeZone(marketTimezone);
+        var resolved = ResolveTimeZone(marketTimezone);
+        var tz = resolved.Timezone;
 
         // Convert reference to market-local time for canonical window computation.
         var localRef = TimeZoneInfo.ConvertTime(refUtc, tz);
@@ -87,42 +76,24 @@ public static class TemporalPresetMapper
 
         switch (preset)
         {
-            case TemporalPreset.NOW:
-                localStart = localRef.Date.Add(localRef.TimeOfDay);
-                localEnd = localStart.AddHours(1);
+            case TemporalPreset.Today:
+                localStart = localRef.Date;
+                localEnd = localStart.AddDays(1);
                 break;
 
-            case TemporalPreset.Evening6PM:
+            case TemporalPreset.Tonight:
+                // Cross-midnight nightlife window: 18:00 -> 03:00 (next day)
                 localStart = localRef.Date.AddHours(18);
-                localEnd = localStart.AddHours(1);
+                localEnd = localStart.AddHours(9);
                 break;
 
-            case TemporalPreset.Evening9PM:
-                localStart = localRef.Date.AddHours(21);
-                localEnd = localStart.AddHours(1);
+            case TemporalPreset.Weekend:
+                (localStart, localEnd) = GetWeekendRange(localRef);
                 break;
 
-            case TemporalPreset.Midnight:
-                // Cross-midnight nightlife window: 23:00 -> 02:00 (next day)
-                localStart = localRef.Date.AddHours(23);
-                localEnd = localStart.AddHours(3);
-                break;
-
-            case TemporalPreset.EarlyMorning3AM:
-                localStart = localRef.Date.AddHours(3);
-                localEnd = localStart.AddHours(1);
-                break;
-
-            case TemporalPreset.Friday:
-                (localStart, localEnd) = GetNextDayRange(localRef, DayOfWeek.Friday);
-                break;
-
-            case TemporalPreset.Saturday:
-                (localStart, localEnd) = GetNextDayRange(localRef, DayOfWeek.Saturday);
-                break;
-
-            case TemporalPreset.Sunday:
-                (localStart, localEnd) = GetNextDayRange(localRef, DayOfWeek.Sunday);
+            case TemporalPreset.Next7Days:
+                localStart = localRef.DateTime;
+                localEnd = localStart.AddDays(7);
                 break;
 
             default:
@@ -134,30 +105,30 @@ public static class TemporalPresetMapper
         var startOffset = new DateTimeOffset(localStart, tz.GetUtcOffset(localStart));
         var endOffset = new DateTimeOffset(localEnd, tz.GetUtcOffset(localEnd));
 
-        return new TimeWindow(startOffset, endOffset, tz.Id);
+        var timezoneForContract = resolved.ContractTimezone;
+        return new TimeWindow(startOffset, endOffset, timezoneForContract);
     }
 
-    /// <summary>
-    /// Helper to compute next occurrence of a day of week (midnight to midnight).
-    /// </summary>
-    private static (DateTime startLocal, DateTime endLocal) GetNextDayRange(DateTimeOffset localRef, DayOfWeek targetDay)
+    private static (DateTime startLocal, DateTime endLocal) GetWeekendRange(DateTimeOffset localRef)
     {
-        var daysUntil = ((int)targetDay - (int)localRef.DayOfWeek + 7) % 7;
-        if (daysUntil == 0) daysUntil = 7; // prefer next week's instance if same-day
-        var dayStart = localRef.Date.AddDays(daysUntil);
-        return (dayStart, dayStart.AddDays(1));
+        // Friday 18:00 through Monday 00:00 in local time.
+        const int friday = (int)DayOfWeek.Friday;
+        var today = (int)localRef.DayOfWeek;
+        var daysUntilFriday = (friday - today + 7) % 7;
+        var fridayStart = localRef.Date.AddDays(daysUntilFriday).AddHours(18);
+        return (fridayStart, fridayStart.AddHours(54));
     }
 
     /// <summary>
     /// Resolve a TimeZoneInfo from a market identifier. Accept a few common IANA ids
     /// and map them to Windows ids when necessary. Extend this mapping as markets are added.
     /// </summary>
-    private static TimeZoneInfo ResolveTimeZone(string marketTimezone)
+    private static (TimeZoneInfo Timezone, string ContractTimezone) ResolveTimeZone(string marketTimezone)
     {
         try
         {
             // Try as provided (works for Windows timezone ids on Windows)
-            return TimeZoneInfo.FindSystemTimeZoneById(marketTimezone);
+            return (TimeZoneInfo.FindSystemTimeZoneById(marketTimezone), marketTimezone);
         }
         catch
         {
@@ -173,10 +144,10 @@ public static class TemporalPresetMapper
             };
 
             if (mapping != null)
-                return TimeZoneInfo.FindSystemTimeZoneById(mapping);
+                return (TimeZoneInfo.FindSystemTimeZoneById(mapping), marketTimezone);
 
             // Fall back to UTC
-            return TimeZoneInfo.Utc;
+            return (TimeZoneInfo.Utc, "UTC");
         }
     }
 
@@ -185,14 +156,10 @@ public static class TemporalPresetMapper
     /// </summary>
     public static string GetPresetLabel(TemporalPreset preset) => preset switch
     {
-        TemporalPreset.NOW => "NOW",
-        TemporalPreset.Evening6PM => "6PM",
-        TemporalPreset.Evening9PM => "9PM",
-        TemporalPreset.Midnight => "MIDNIGHT",
-        TemporalPreset.EarlyMorning3AM => "3AM",
-        TemporalPreset.Friday => "FRI",
-        TemporalPreset.Saturday => "SAT",
-        TemporalPreset.Sunday => "SUN",
+        TemporalPreset.Today => "TODAY",
+        TemporalPreset.Tonight => "TONIGHT",
+        TemporalPreset.Weekend => "WEEKEND",
+        TemporalPreset.Next7Days => "NEXT 7 DAYS",
         _ => "UNKNOWN",
     };
 }

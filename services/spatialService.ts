@@ -1,5 +1,5 @@
-import { getAuthHeader } from './auth';
-import { publicEnv } from '@/lib/env/public';
+import { getAuthHeader } from "./auth";
+import { publicEnv } from "@/lib/env/public";
 
 const API_BASE = publicEnv.NEXT_PUBLIC_API_BASE_URL;
 
@@ -12,14 +12,21 @@ export interface BoundingBoxDto {
 
 export interface TimeWindowRequest {
   startUtc: string; // ISO 8601
-  endUtc: string;   // ISO 8601
+  endUtc: string; // ISO 8601
   timezone: string; // IANA timezone
+}
+
+export interface LocalityFilterRequest {
+  marketCode?: string;
+  districtCode?: string;
+  neighborhoodCode?: string;
 }
 
 export interface MapFeedRequestDto {
   bounds: BoundingBoxDto;
   window: TimeWindowRequest;
   categories?: string[];
+  locality?: LocalityFilterRequest;
   districtCode?: string;
   minConfidence?: number;
   sort?: string;
@@ -37,9 +44,19 @@ export interface EventMapCardDto {
   confidence: number;
 }
 
+export interface EventMapClusterDto {
+  clusterId: string;
+  centerLat: number;
+  centerLng: number;
+  count: number;
+  eventIds: string[];
+}
+
 export interface MapFeedResponseDto {
   events: EventMapCardDto[];
   totalCount: number;
+  clusters?: EventMapClusterDto[];
+  queryMode?: "bounding_box" | "cluster_aggregation";
 }
 
 export interface DistrictDto {
@@ -76,9 +93,9 @@ export const spatialService = {
    */
   async getMapFeed(request: MapFeedRequestDto): Promise<MapFeedResponseDto> {
     const res = await fetch(`${API_BASE}/api/spatial/map-feed`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...getAuthHeader(),
       },
       body: JSON.stringify(request),
@@ -95,10 +112,15 @@ export const spatialService = {
   /**
    * Get all districts for a market.
    */
-  async getDistrictsForMarket(marketCode: string): Promise<DistrictListResponseDto> {
-    const res = await fetch(`${API_BASE}/api/spatial/districts/${encodeURIComponent(marketCode)}`, {
-      headers: getAuthHeader(),
-    });
+  async getDistrictsForMarket(
+    marketCode: string,
+  ): Promise<DistrictListResponseDto> {
+    const res = await fetch(
+      `${API_BASE}/api/spatial/districts/${encodeURIComponent(marketCode)}`,
+      {
+        headers: getAuthHeader(),
+      },
+    );
 
     if (!res.ok) {
       throw new Error(`Get districts error: ${res.statusText}`);
@@ -113,7 +135,7 @@ export const spatialService = {
   async getDistrict(districtCode: string): Promise<DistrictDto | null> {
     const res = await fetch(
       `${API_BASE}/api/spatial/district/${encodeURIComponent(districtCode)}`,
-      { headers: getAuthHeader() }
+      { headers: getAuthHeader() },
     );
 
     if (res.status === 404) return null;
@@ -126,11 +148,13 @@ export const spatialService = {
   /**
    * Determine which district a coordinate belongs to.
    */
-  async determineDistrict(request: DetermineDistrictRequestDto): Promise<string | null> {
+  async determineDistrict(
+    request: DetermineDistrictRequestDto,
+  ): Promise<string | null> {
     const res = await fetch(`${API_BASE}/api/spatial/determine-district`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...getAuthHeader(),
       },
       body: JSON.stringify(request),

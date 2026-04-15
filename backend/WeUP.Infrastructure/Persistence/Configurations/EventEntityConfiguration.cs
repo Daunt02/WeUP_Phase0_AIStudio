@@ -23,6 +23,9 @@ public sealed class EventEntityConfiguration : IEntityTypeConfiguration<EventEnt
         builder.Property(e => e.AddressPostalCode).HasMaxLength(20);
         builder.Property(e => e.AddressCountry).HasMaxLength(4).IsRequired();
         builder.Property(e => e.AddressRaw).HasMaxLength(1024).IsRequired();
+        builder.Property(e => e.MarketCode).HasMaxLength(64);
+        builder.Property(e => e.DistrictCode).HasMaxLength(128);
+        builder.Property(e => e.NeighborhoodCode).HasMaxLength(128);
         builder.Property(e => e.Timezone).HasMaxLength(64).IsRequired();
         builder.Property(e => e.CreatedBy).HasMaxLength(128);
 
@@ -35,6 +38,9 @@ public sealed class EventEntityConfiguration : IEntityTypeConfiguration<EventEnt
         builder.HasIndex(e => new { e.Latitude, e.Longitude, e.StartUtc });   // map feed compound
         builder.HasIndex(e => e.Category);
         builder.HasIndex(e => e.VenueId);
+        builder.HasIndex(e => e.MarketCode);
+        builder.HasIndex(e => e.DistrictCode);
+        builder.HasIndex(e => new { e.MarketCode, e.DistrictCode, e.NeighborhoodCode });
 
         // Relationships
         builder.HasMany(e => e.Sources).WithOne(s => s.Event).HasForeignKey(s => s.EventId);

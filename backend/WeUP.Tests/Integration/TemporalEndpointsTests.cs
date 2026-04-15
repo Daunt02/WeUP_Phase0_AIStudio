@@ -18,19 +18,15 @@ public class TemporalEndpointsTests
         // Arrange
         var allPresets = new[]
         {
-            TemporalPreset.NOW,
-            TemporalPreset.Evening6PM,
-            TemporalPreset.Evening9PM,
-            TemporalPreset.Midnight,
-            TemporalPreset.EarlyMorning3AM,
-            TemporalPreset.Friday,
-            TemporalPreset.Saturday,
-            TemporalPreset.Sunday,
+            TemporalPreset.Today,
+            TemporalPreset.Tonight,
+            TemporalPreset.Weekend,
+            TemporalPreset.Next7Days,
         };
 
         // Act & Assert
         Assert.NotEmpty(allPresets);
-        Assert.Equal(8, allPresets.Length);
+        Assert.Equal(4, allPresets.Length);
 
         foreach (var preset in allPresets)
         {
@@ -40,14 +36,10 @@ public class TemporalEndpointsTests
     }
 
     [Theory]
-    [InlineData(TemporalPreset.NOW, "NOW")]
-    [InlineData(TemporalPreset.Evening6PM, "6PM")]
-    [InlineData(TemporalPreset.Evening9PM, "9PM")]
-    [InlineData(TemporalPreset.Midnight, "MIDNIGHT")]
-    [InlineData(TemporalPreset.EarlyMorning3AM, "3AM")]
-    [InlineData(TemporalPreset.Friday, "FRI")]
-    [InlineData(TemporalPreset.Saturday, "SAT")]
-    [InlineData(TemporalPreset.Sunday, "SUN")]
+    [InlineData(TemporalPreset.Today, "TODAY")]
+    [InlineData(TemporalPreset.Tonight, "TONIGHT")]
+    [InlineData(TemporalPreset.Weekend, "WEEKEND")]
+    [InlineData(TemporalPreset.Next7Days, "NEXT 7 DAYS")]
     public void GetTemporalPresets_ReturnsCorrectLabels(TemporalPreset preset, string expectedLabel)
     {
         // Arrange & Act
@@ -61,17 +53,16 @@ public class TemporalEndpointsTests
     public void GetEventsAtTime_WithValidPreset_ReturnsTimeWindow()
     {
         // Arrange
-        var preset = TemporalPreset.NOW;
+        var preset = TemporalPreset.Today;
         var referenceTime = new DateTimeOffset(2026, 4, 4, 12, 0, 0, TimeSpan.Zero);
-        var marketTimezone = "America/Los_Angeles";
+        var marketTimezone = "America/Chicago";
 
         // Act
         var timeWindow = TemporalPresetMapper.GetTimeWindow(preset, referenceTime, marketTimezone);
 
         // Assert
         Assert.NotNull(timeWindow);
-        Assert.Equal(referenceTime, timeWindow.StartUtc);
-        Assert.Equal(referenceTime.AddHours(1), timeWindow.EndUtc);
+        Assert.Equal(TimeSpan.FromDays(1), timeWindow.EndUtc - timeWindow.StartUtc);
         Assert.Equal(marketTimezone, timeWindow.Timezone);
     }
 
@@ -79,33 +70,33 @@ public class TemporalEndpointsTests
     public void GetEventsAtTime_TimeWindowIsValid()
     {
         // Arrange
-        var preset = TemporalPreset.Evening6PM;
+        var preset = TemporalPreset.Today;
         var referenceTime = new DateTimeOffset(2026, 4, 4, 12, 0, 0, TimeSpan.Zero);
 
         // Act
-        var timeWindow = TemporalPresetMapper.GetTimeWindow(preset, referenceTime, "America/Los_Angeles");
+        var timeWindow = TemporalPresetMapper.GetTimeWindow(preset, referenceTime, "America/Chicago");
 
         // Assert
         timeWindow.Validate(); // Should not throw
     }
 
     [Fact]
-    public void GetEventsAtTime_MidnightWindowSpansMidnight()
+    public void GetEventsAtTime_TonightWindowSpansNightlifeWindow()
     {
         // Arrange
-        var preset = TemporalPreset.Midnight;
+        var preset = TemporalPreset.Tonight;
         var referenceTime = new DateTimeOffset(2026, 4, 4, 12, 0, 0, TimeSpan.Zero);
 
         // Act
-        var timeWindow = TemporalPresetMapper.GetTimeWindow(preset, referenceTime, "America/Los_Angeles");
+        var timeWindow = TemporalPresetMapper.GetTimeWindow(preset, referenceTime, "America/Chicago");
 
         // Assert
         Assert.NotNull(timeWindow);
-        Assert.Equal("America/Los_Angeles", timeWindow.Timezone);
-        Assert.Equal(23, timeWindow.StartUtc.Hour);
+        Assert.Equal("America/Chicago", timeWindow.Timezone);
+        Assert.Equal(18, timeWindow.StartUtc.Hour);
         Assert.Equal(0, timeWindow.StartUtc.Minute);
-        Assert.Equal(2, timeWindow.EndUtc.Hour);
-        Assert.Equal(timeWindow.StartUtc.AddHours(3), timeWindow.EndUtc);
+        Assert.Equal(3, timeWindow.EndUtc.Hour);
+        Assert.Equal(timeWindow.StartUtc.AddHours(9), timeWindow.EndUtc);
     }
 
     [Fact]

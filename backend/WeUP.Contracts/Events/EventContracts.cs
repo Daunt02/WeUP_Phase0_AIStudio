@@ -15,6 +15,11 @@ public record TimeWindowRequest(
     DateTimeOffset EndUtc,
     string Timezone);
 
+public record LocalityFilterRequest(
+    string? MarketCode = null,
+    string? DistrictCode = null,
+    string? NeighborhoodCode = null);
+
 // ---------------------------------------------------------------------------
 // Map feed
 // ---------------------------------------------------------------------------
@@ -23,6 +28,7 @@ public record MapFeedRequest(
     GeoBoundingBox Bounds,
     TimeWindowRequest Window,
     string[]? Categories = null,
+    LocalityFilterRequest? Locality = null,
     string? DistrictCode = null,
     double MinConfidence = 0.0,
     string Sort = "start_time_asc");
@@ -40,7 +46,16 @@ public record EventMapCardDto(
 
 public record MapFeedResponse(
     EventMapCardDto[] Events,
-    int TotalCount);
+    int TotalCount,
+    EventMapClusterDto[]? Clusters = null,
+    string QueryMode = "bounding_box");
+
+public record EventMapClusterDto(
+    string ClusterId,
+    double CenterLat,
+    double CenterLng,
+    int Count,
+    string[] EventIds);
 
 // ---------------------------------------------------------------------------
 // Calendar feed
@@ -49,6 +64,7 @@ public record MapFeedResponse(
 public record CalendarFeedRequest(
     TimeWindowRequest Window,
     string[]? Categories = null,
+    LocalityFilterRequest? Locality = null,
     string? DistrictCode = null,
     double MinConfidence = 0.0,
     string Sort = "start_time_asc",
@@ -146,6 +162,18 @@ public static class GeoBoundingBoxExtensions
             throw new InvalidOperationException($"MinLat ({bbox.MinLat}) must be less than MaxLat ({bbox.MaxLat})");
         if (bbox.MinLng >= bbox.MaxLng)
             throw new InvalidOperationException($"MinLng ({bbox.MinLng}) must be less than MaxLng ({bbox.MaxLng})");
+
+        // Guardrails for query scale in Phase 0: keep viewports reasonably scoped.
+        var latSpan = bbox.MaxLat - bbox.MinLat;
+        var lngSpan = bbox.MaxLng - bbox.MinLng;
+        if (latSpan > 5)
+            throw new InvalidOperationException($"Latitude span ({latSpan}) exceeds max allowed span (5)");
+        if (lngSpan > 5)
+            throw new InvalidOperationException($"Longitude span ({lngSpan}) exceeds max allowed span (5)");
+
+        var area = latSpan * lngSpan;
+        if (area > 8)
+            throw new InvalidOperationException($"Bounding box area ({area}) exceeds max allowed area (8 square degrees)");
     }
 
     /// <summary>

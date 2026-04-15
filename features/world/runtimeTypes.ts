@@ -13,14 +13,10 @@ export type MapCenter = {
 export type MapBounds = GeoBoundingBox | null;
 
 export type TemporalPresetSelection =
-  | "NOW"
-  | "6PM"
-  | "9PM"
-  | "MIDNIGHT"
-  | "3AM"
-  | "FRI"
-  | "SAT"
-  | "SUN";
+  | "Today"
+  | "Tonight"
+  | "Weekend"
+  | "Next7Days";
 
 export interface RuntimeEventProjection {
   id: SelectedEventId;

@@ -7,33 +7,31 @@ namespace WeUP.Tests.Temporal
     public class TemporalPresetTests
     {
         [Fact]
-        public void Midnight_preset_spans_midnight_for_market()
+        public void Tonight_preset_spans_nine_hours_for_market()
         {
-            // Reference time: 2026-04-10T10:00:00Z (UTC) — arbitrary
             var refTime = DateTimeOffset.Parse("2026-04-10T10:00:00Z");
-            var tz = "America/Los_Angeles";
+            var tz = "America/Chicago";
 
-            var win = TemporalPresetMapper.GetTimeWindow(TemporalPreset.Midnight, refTime, tz);
+            var win = TemporalPresetMapper.GetTimeWindow(TemporalPreset.Tonight, refTime, tz);
 
             Assert.True(win.StartUtc < win.EndUtc);
-            // Duration should be 3 hours as per mapping (23:00 -> 02:00)
-            Assert.Equal(TimeSpan.FromHours(3), win.EndUtc - win.StartUtc);
+            Assert.Equal(TimeSpan.FromHours(9), win.EndUtc - win.StartUtc);
         }
 
         [Fact]
-        public void Now_preset_is_one_hour()
+        public void Today_preset_is_one_day()
         {
             var refTime = DateTimeOffset.Parse("2026-04-10T20:30:00Z");
-            var win = TemporalPresetMapper.GetTimeWindow(TemporalPreset.NOW, refTime, "America/Los_Angeles");
-            Assert.Equal(TimeSpan.FromHours(1), win.EndUtc - win.StartUtc);
+            var win = TemporalPresetMapper.GetTimeWindow(TemporalPreset.Today, refTime, "America/Chicago");
+            Assert.Equal(TimeSpan.FromDays(1), win.EndUtc - win.StartUtc);
         }
 
         [Fact]
-        public void Friday_preset_is_next_friday_full_day()
+        public void Weekend_preset_is_friday_evening_through_monday_start()
         {
             var refTime = DateTimeOffset.Parse("2026-04-08T12:00:00Z"); // Wednesday
-            var win = TemporalPresetMapper.GetTimeWindow(TemporalPreset.Friday, refTime, "America/Los_Angeles");
-            Assert.Equal(TimeSpan.FromDays(1), win.EndUtc - win.StartUtc);
+            var win = TemporalPresetMapper.GetTimeWindow(TemporalPreset.Weekend, refTime, "America/Chicago");
+            Assert.Equal(TimeSpan.FromHours(54), win.EndUtc - win.StartUtc);
         }
     }
 }

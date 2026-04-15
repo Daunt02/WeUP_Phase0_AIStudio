@@ -57,6 +57,20 @@ describe("backend contract manifest", () => {
     confidence: 0.96,
   };
 
+  const localityFilter = {
+    marketCode: "houston",
+    districtCode: "downtown",
+    neighborhoodCode: "market-square",
+  };
+
+  const mapCluster = {
+    clusterId: "29.75:-95.36",
+    centerLat: 29.75,
+    centerLng: -95.36,
+    count: 3,
+    eventIds: ["evt-sf-midnight-groove"],
+  };
+
   const calendarItem: EventCalendarProjection = {
     id: "evt-sf-midnight-groove",
     title: "Midnight Groove Assembly",
@@ -117,6 +131,8 @@ describe("backend contract manifest", () => {
     const mapFeedResponse: MapFeedResponse = {
       events: [mapCard],
       totalCount: 1,
+      clusters: [mapCluster],
+      queryMode: "bounding_box",
     };
 
     const calendarFeedResponse: CalendarFeedResponse = {
@@ -203,15 +219,19 @@ describe("backend contract manifest", () => {
       bounds: mapFeedRequest.bounds,
       categories: mapFeedRequest.filters?.categories,
       districtCode: mapFeedRequest.filters?.districtCode,
+      locality: localityFilter,
       minConfidence: mapFeedRequest.filters?.minConfidence ?? 0,
       sort: mapFeedRequest.sort,
       window: mapFeedRequest.window,
     });
     expectKeys("EventMapCardDto", mapCard);
+    expectKeys("LocalityFilterRequest", localityFilter);
+    expectKeys("EventMapClusterDto", mapCluster);
     expectKeys("MapFeedResponse", mapFeedResponse);
     expectKeys("CalendarFeedRequest", {
       categories: calendarFeedRequest.filters?.categories,
       districtCode: calendarFeedRequest.filters?.districtCode,
+      locality: localityFilter,
       minConfidence: calendarFeedRequest.filters?.minConfidence ?? 0,
       page: calendarFeedRequest.pagination?.page,
       pageSize: calendarFeedRequest.pagination?.pageSize,

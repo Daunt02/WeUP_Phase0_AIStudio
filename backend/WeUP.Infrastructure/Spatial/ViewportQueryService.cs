@@ -1,6 +1,7 @@
 using WeUP.Contracts.Events;
 using WeUP.Domain.Events;
 using WeUP.Domain.Spatial;
+using WeUP.Infrastructure.Seed;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 
@@ -15,45 +16,16 @@ public class ViewportQueryService : IViewportQueryService
     private readonly IEventRepository _eventRepository;
     private readonly ILogger<ViewportQueryService> _logger;
 
-    // Phase 0 stub: in-memory district registry
-    // Future: load from database or configuration
-    private static readonly Dictionary<string, District> _districtRegistry;
+    private readonly Dictionary<string, District> _districtRegistry;
 
-    // Static initializer for districts
-    static ViewportQueryService()
-    {
-        _districtRegistry = new(StringComparer.OrdinalIgnoreCase)
-        {
-            ["downtown"] = new District(
-                districtCode: "downtown",
-                displayName: "Downtown",
-                marketCode: "sf",
-                boundingBoxApproximation: new BoundingBox(37.78, 37.80, -122.415, -122.393),
-                sortOrder: 1,
-                description: "Downtown SF"),
-
-            ["mission"] = new District(
-                districtCode: "mission",
-                displayName: "Mission District",
-                marketCode: "sf",
-                boundingBoxApproximation: new BoundingBox(37.75, 37.77, -122.42, -122.40),
-                sortOrder: 2,
-                description: "Mission District"),
-
-            ["marina"] = new District(
-                districtCode: "marina",
-                displayName: "Marina District",
-                marketCode: "sf",
-                boundingBoxApproximation: new BoundingBox(37.80, 37.81, -122.44, -122.42),
-                sortOrder: 3,
-                description: "Marina District"),
-        };
-    }
-
-    public ViewportQueryService(IEventRepository eventRepository, ILogger<ViewportQueryService> logger)
+    public ViewportQueryService(
+        IEventRepository eventRepository,
+        Phase0SeedLoader seedLoader,
+        ILogger<ViewportQueryService> logger)
     {
         _eventRepository = eventRepository;
         _logger = logger;
+        _districtRegistry = BuildDistrictRegistry(seedLoader.Load());
     }
 
     public async Task<MapFeedResponse> GetEventsInViewportAsync(
@@ -64,15 +36,16 @@ public class ViewportQueryService : IViewportQueryService
         request.Bounds.Validate();
 
         _logger.LogInformation(
-            "Viewport query: bounds=[{MinLat},{MaxLat},{MinLng},{MaxLng}] district={District}",
+            "Viewport query: bounds=[{MinLat},{MaxLat},{MinLng},{MaxLng}] locality.market={Market} locality.district={District} locality.neighborhood={Neighborhood}",
             request.Bounds.MinLat,
             request.Bounds.MaxLat,
             request.Bounds.MinLng,
             request.Bounds.MaxLng,
-            request.DistrictCode ?? "all");
+            request.Locality?.MarketCode ?? "all",
+            request.Locality?.DistrictCode ?? request.DistrictCode ?? "all",
+            request.Locality?.NeighborhoodCode ?? "all");
 
-        // For Phase 0: use stub repository to get all events, then filter client-side
-        // Future: send bounding box to PostGIS backend query
+        // Phase 0: repository returns event list; spatial index/PostGIS can replace this seam.
         var allEventsResponse = await _eventRepository.GetMapFeedAsync(request, ct);
 
         // Filter events within the bounding box
@@ -85,7 +58,11 @@ public class ViewportQueryService : IViewportQueryService
             eventsInViewport.Length,
             allEventsResponse.Events.Length);
 
-        return new MapFeedResponse(eventsInViewport, eventsInViewport.Length);
+        return new MapFeedResponse(
+            eventsInViewport,
+            eventsInViewport.Length,
+            allEventsResponse.Clusters,
+            allEventsResponse.QueryMode);
     }
 
     public async Task<EventMapCardDto[]> GetEventsInDistrictAsync(
@@ -107,7 +84,13 @@ public class ViewportQueryService : IViewportQueryService
             district.BoundingBoxApproximation.MaxLng);
 
         // Query within the district's bounding box approximation
-        var request = new MapFeedRequest(geoBbox, window, categories, districtCode, minConfidence);
+        var request = new MapFeedRequest(
+            geoBbox,
+            window,
+            categories,
+            Locality: new LocalityFilterRequest(DistrictCode: districtCode),
+            DistrictCode: districtCode,
+            MinConfidence: minConfidence);
 
         var response = await GetEventsInViewportAsync(request, ct);
         return response.Events;
@@ -154,5 +137,56 @@ public class ViewportQueryService : IViewportQueryService
             .ToList();
 
         return topLevelDistricts.FirstOrDefault()?.DistrictCode;
+    }
+
+    private static Dictionary<string, District> BuildDistrictRegistry(Phase0SeedDataset dataset)
+    {
+        var venueByDistrict = dataset.Venues
+            .GroupBy(v => (
+                MarketCode: v.MarketCode.ToLowerInvariant(),
+                DistrictCode: v.DistrictCode.ToLowerInvariant()))
+            .ToDictionary(g => g.Key, g => g.ToArray());
+
+        var districts = new Dictionary<string, District>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var market in dataset.Markets)
+        {
+            for (var i = 0; i < market.Districts.Length; i++)
+            {
+                var districtCode = market.Districts[i];
+                var key = (market.Code.ToLowerInvariant(), districtCode.ToLowerInvariant());
+                if (!venueByDistrict.TryGetValue(key, out var districtVenues) || districtVenues.Length == 0)
+                {
+                    continue;
+                }
+
+                var bbox = BuildDistrictBoundingBox(districtVenues);
+                districts[districtCode] = new District(
+                    districtCode: districtCode,
+                    displayName: HumanizeDistrictName(districtCode),
+                    marketCode: market.Code,
+                    boundingBoxApproximation: bbox,
+                    sortOrder: i + 1,
+                    description: $"{HumanizeDistrictName(districtCode)} ({market.DisplayName})");
+            }
+        }
+
+        return districts;
+    }
+
+    private static BoundingBox BuildDistrictBoundingBox(Phase0VenueSeed[] venues)
+    {
+        const double padding = 0.01;
+        var minLat = venues.Min(v => v.Latitude) - padding;
+        var maxLat = venues.Max(v => v.Latitude) + padding;
+        var minLng = venues.Min(v => v.Longitude) - padding;
+        var maxLng = venues.Max(v => v.Longitude) + padding;
+        return new BoundingBox(minLat, maxLat, minLng, maxLng);
+    }
+
+    private static string HumanizeDistrictName(string districtCode)
+    {
+        var parts = districtCode.Split('-', StringSplitOptions.RemoveEmptyEntries);
+        return string.Join(' ', parts.Select(p => char.ToUpperInvariant(p[0]) + p[1..]));
     }
 }
