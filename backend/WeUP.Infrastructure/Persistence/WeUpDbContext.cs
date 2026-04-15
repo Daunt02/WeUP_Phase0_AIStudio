@@ -29,6 +29,7 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
     public DbSet<VideoFlyerUploadEntity> VideoFlyerUploads => Set<VideoFlyerUploadEntity>();
     public DbSet<VideoProcessingJobEntity> VideoProcessingJobs => Set<VideoProcessingJobEntity>();
     public DbSet<VideoDerivedFrameEntity> VideoDerivedFrames => Set<VideoDerivedFrameEntity>();
+    public DbSet<EventSubmissionEntity> EventSubmissions => Set<EventSubmissionEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -64,11 +65,34 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
         {
             b.ToTable("user_profiles");
             b.HasKey(e => e.Id);
+            b.Property(e => e.PublicId).HasMaxLength(128).IsRequired();
             b.Property(e => e.Email).HasMaxLength(320).IsRequired();
+            b.HasIndex(e => e.PublicId).IsUnique();
             b.HasIndex(e => e.Email).IsUnique();
             b.Property(e => e.DisplayName).HasMaxLength(128);
             b.Property(e => e.HomeMarket).HasMaxLength(64);
             b.Property(e => e.OnboardingState).HasMaxLength(32).IsRequired();
+        });
+
+        modelBuilder.Entity<EventSubmissionEntity>(b =>
+        {
+            b.ToTable("event_submissions");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.SubmissionId).HasMaxLength(128).IsRequired();
+            b.Property(e => e.SubmittedByUserId).HasMaxLength(128).IsRequired();
+            b.Property(e => e.Status).HasMaxLength(64).IsRequired();
+            b.Property(e => e.Title).HasMaxLength(512);
+            b.Property(e => e.VenueName).HasMaxLength(256);
+            b.Property(e => e.Address).HasMaxLength(1024);
+            b.Property(e => e.Timezone).HasMaxLength(64);
+            b.Property(e => e.Category).HasMaxLength(64);
+            b.Property(e => e.Description).HasMaxLength(4000);
+            b.Property(e => e.TagsJson).HasColumnType("jsonb");
+            b.Property(e => e.FlyerAssetIdsJson).HasColumnType("jsonb");
+            b.Property(e => e.ReviewNote).HasMaxLength(4000);
+            b.HasIndex(e => e.SubmissionId).IsUnique();
+            b.HasIndex(e => e.SubmittedByUserId);
+            b.HasIndex(e => new { e.SubmittedByUserId, e.Status });
         });
 
         modelBuilder.Entity<EventReviewEntity>(b =>

@@ -1,20 +1,20 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using WeUP.Infrastructure.Auth;
 using WeUP.Infrastructure.Ingestion;
 using WeUP.Infrastructure.Markets;
 using WeUP.Infrastructure.Moderation;
 using WeUP.Infrastructure.Persistence;
+using WeUP.Infrastructure.Persistence.Entities;
 using WeUP.Infrastructure.Submissions;
 
 namespace WeUP.Infrastructure.Seed;
 
 public sealed class Phase0SeedService(
+    IConfiguration configuration,
+    IServiceProvider services,
     Phase0SeedLoader loader,
-    StubEventRepository events,
-    StubSaveRepository saves,
-    InMemoryUserRepository users,
-    InMemorySubmissionRepository submissions,
-    InMemoryModerationQueue moderation,
-    InMemoryIngestionJobRepository ingestionJobs,
     MarketPolicyService markets)
 {
     private readonly SemaphoreSlim _gate = new(1, 1);
@@ -29,12 +29,8 @@ public sealed class Phase0SeedService(
         {
             var dataset = loader.Load();
 
-            events.Reset(dataset);
-            saves.Reset(dataset);
-            users.Reset(dataset);
-            submissions.Reset(dataset);
-            moderation.Reset(dataset);
-            ingestionJobs.Reset(dataset);
+            await ResetPersistenceAsync(dataset, ct);
+            ResetInMemoryStores(dataset);
             markets.Reset(dataset);
 
             _lastSnapshot = new Phase0SeedSnapshot(
@@ -55,5 +51,125 @@ public sealed class Phase0SeedService(
         {
             _gate.Release();
         }
+    }
+
+    private async Task ResetPersistenceAsync(Phase0SeedDataset dataset, CancellationToken ct)
+    {
+        if (!string.Equals(configuration["WeUP:PersistenceMode"], "Postgres", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var db = services.GetService<WeUpDbContext>();
+        if (db is null)
+        {
+            return;
+        }
+
+        if (db.Database.IsNpgsql())
+        {
+            await db.Database.ExecuteSqlRawAsync(
+                "TRUNCATE TABLE \"saved_events\", \"event_sources\", \"event_media\", \"event_reviews\", \"event_submissions\", \"events\", \"user_profiles\" RESTART IDENTITY CASCADE;",
+                ct);
+        }
+        else
+        {
+            db.SavedEvents.RemoveRange(db.SavedEvents);
+            db.EventSources.RemoveRange(db.EventSources);
+            db.EventMedia.RemoveRange(db.EventMedia);
+            db.EventReviews.RemoveRange(db.EventReviews);
+            db.EventSubmissions.RemoveRange(db.EventSubmissions);
+            db.Events.RemoveRange(db.Events);
+            db.UserProfiles.RemoveRange(db.UserProfiles);
+            await db.SaveChangesAsync(ct);
+        }
+
+        var venues = dataset.Venues.ToDictionary(v => v.VenueId, StringComparer.OrdinalIgnoreCase);
+        var marketsByCode = dataset.Markets.ToDictionary(m => m.Code, StringComparer.OrdinalIgnoreCase);
+        var seedTimestamp = DateTimeOffset.Parse(dataset.Meta.FixedNow);
+
+        var users = dataset.Users.Select(user => new UserProfileEntity
+        {
+            Id = DeterministicGuid.Create($"user:{user.UserId}"),
+            PublicId = user.UserId,
+            Email = user.Email,
+            DisplayName = user.DisplayName,
+            HomeMarket = user.HomeMarket,
+            OnboardingState = user.OnboardingState,
+            CreatedAt = DateTimeOffset.Parse(user.CreatedAt),
+            UpdatedAt = DateTimeOffset.Parse(user.CreatedAt),
+        }).ToArray();
+
+        var events = dataset.Events.Select(seedEvent =>
+        {
+            var venue = venues[seedEvent.VenueId];
+            return new EventEntity
+            {
+                Id = DeterministicGuid.Create($"event:{seedEvent.EventId}"),
+                PublicId = seedEvent.EventId,
+                Status = seedEvent.Status,
+                CanonicalTitle = seedEvent.Title,
+                CanonicalDescription = seedEvent.Description,
+                Category = seedEvent.Category,
+                VenueName = venue.Name,
+                AddressLine1 = venue.Address,
+                AddressCity = venue.DistrictCode,
+                AddressCountry = "US",
+                AddressRaw = venue.Address,
+                Latitude = venue.Latitude,
+                Longitude = venue.Longitude,
+                StartUtc = DateTimeOffset.Parse(seedEvent.StartsAtUtc),
+                EndUtc = DateTimeOffset.Parse(seedEvent.EndsAtUtc),
+                Timezone = marketsByCode[venue.MarketCode].Timezone,
+                TagsCsv = seedEvent.Tags.Length == 0 ? null : string.Join(',', seedEvent.Tags),
+                Confidence = seedEvent.Confidence,
+                CreatedAt = seedTimestamp,
+                UpdatedAt = seedTimestamp,
+            };
+        }).ToArray();
+
+        var eventMedia = dataset.Events.Select(seedEvent => new EventMediaEntity
+        {
+            Id = DeterministicGuid.Create($"event-media:{seedEvent.EventId}"),
+            EventId = DeterministicGuid.Create($"event:{seedEvent.EventId}"),
+            AssetId = $"asset-{seedEvent.EventId}",
+            Url = seedEvent.ImageUrl,
+            Kind = "poster",
+            CreatedAt = seedTimestamp,
+        }).ToArray();
+
+        var eventSources = dataset.Events.Select(seedEvent => new EventSourceEntity
+        {
+            Id = DeterministicGuid.Create($"event-source:{seedEvent.EventId}"),
+            EventId = DeterministicGuid.Create($"event:{seedEvent.EventId}"),
+            SourceKind = seedEvent.SourceKind,
+            SourceRef = seedEvent.EventId,
+            ExtractionVersion = dataset.Meta.SeedVersion,
+            IngestedAt = seedTimestamp,
+        }).ToArray();
+
+        var saves = dataset.Saves.Select(save => new SavedEventEntity
+        {
+            UserId = DeterministicGuid.Create($"user:{save.UserId}"),
+            EventId = DeterministicGuid.Create($"event:{save.EventId}"),
+            SavedAt = DateTimeOffset.Parse(save.SavedAt),
+        }).ToArray();
+
+        await db.UserProfiles.AddRangeAsync(users, ct);
+        await db.Events.AddRangeAsync(events, ct);
+        await db.EventMedia.AddRangeAsync(eventMedia, ct);
+        await db.EventSources.AddRangeAsync(eventSources, ct);
+        await db.SavedEvents.AddRangeAsync(saves, ct);
+        await db.SaveChangesAsync(ct);
+    }
+
+    private void ResetInMemoryStores(Phase0SeedDataset dataset)
+    {
+        services.GetService<StubEventRepository>()?.Reset(dataset);
+        services.GetService<StubSaveRepository>()?.Reset(dataset);
+        services.GetService<InMemoryUserRepository>()?.Reset(dataset);
+        services.GetService<InMemorySubmissionRepository>()?.Reset(dataset);
+        services.GetService<InMemoryModerationQueue>()?.Reset(dataset);
+        services.GetService<InMemoryIngestionJobRepository>()?.Reset(dataset);
     }
 }

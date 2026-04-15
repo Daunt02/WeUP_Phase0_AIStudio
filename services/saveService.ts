@@ -1,12 +1,11 @@
 import { getAuthHeader } from "@/services/auth";
 import { toApiUrl } from "@/services/apiBase";
+import type { SavedEventsResponse } from "@/services/backendContracts";
 
-interface SavedEventsApiPayload {
-  items?: Array<{ eventId?: string; EventId?: string }>;
+type SavedEventsApiPayload = SavedEventsResponse & {
   Items?: Array<{ eventId?: string; EventId?: string }>;
-  hasNextPage?: boolean;
   HasNextPage?: boolean;
-}
+};
 
 function extractSavedIds(payload: SavedEventsApiPayload): string[] {
   const items = payload.items ?? payload.Items ?? [];
@@ -52,7 +51,9 @@ export async function listSavedEventIds(): Promise<string[]> {
     );
 
     if (!response.ok) {
-      throw new Error(`Save list request failed with status ${response.status}.`);
+      throw new Error(
+        `Save list request failed with status ${response.status}.`,
+      );
     }
 
     const payload = (await response.json()) as SavedEventsApiPayload;

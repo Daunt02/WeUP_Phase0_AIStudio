@@ -13,12 +13,18 @@ public sealed class EfSaveRepository(WeUpDbContext db) : ISaveRepository
 {
     public async Task<SavedEventsResponse> GetSavesAsync(string userId, int page, int pageSize, CancellationToken ct = default)
     {
-        if (!Guid.TryParse(userId, out var userGuid))
+        var userGuid = await db.UserProfiles
+            .AsNoTracking()
+            .Where(u => u.PublicId == userId)
+            .Select(u => (Guid?)u.Id)
+            .FirstOrDefaultAsync(ct);
+
+        if (userGuid is null)
             return new SavedEventsResponse([], 0, page, pageSize, false);
 
         var totalCount = await db.SavedEvents
             .AsNoTracking()
-            .CountAsync(s => s.UserId == userGuid, ct);
+            .CountAsync(s => s.UserId == userGuid.Value, ct);
 
         var clampedPage = Math.Max(1, page);
         var clampedSize = Math.Clamp(pageSize, 1, 200);
@@ -26,7 +32,7 @@ public sealed class EfSaveRepository(WeUpDbContext db) : ISaveRepository
         // Fetch saves first, then load matching events separately (EF Core does not support Include inside Join)
         var saves = await db.SavedEvents
             .AsNoTracking()
-            .Where(s => s.UserId == userGuid)
+            .Where(s => s.UserId == userGuid.Value)
             .OrderByDescending(s => s.SavedAt)
             .Skip((clampedPage - 1) * clampedSize)
             .Take(clampedSize)
@@ -48,7 +54,7 @@ public sealed class EfSaveRepository(WeUpDbContext db) : ISaveRepository
                 var thumb = evt.Media.FirstOrDefault(m => m.Kind == "poster")
                          ?? evt.Media.FirstOrDefault(m => m.Kind == "image");
                 return new SavedEventDto(
-                    evt.Id.ToString(),
+                    evt.PublicId,
                     evt.CanonicalTitle,
                     evt.VenueName,
                     evt.StartUtc,
@@ -67,18 +73,20 @@ public sealed class EfSaveRepository(WeUpDbContext db) : ISaveRepository
 
     public async Task<SaveEventResponse> SaveEventAsync(string userId, string eventId, CancellationToken ct = default)
     {
-        if (!Guid.TryParse(userId, out var userGuid) || !Guid.TryParse(eventId, out var eventGuid))
+        var user = await db.UserProfiles.FirstOrDefaultAsync(u => u.PublicId == userId, ct);
+        var evt = await db.Events.FirstOrDefaultAsync(e => e.PublicId == eventId, ct);
+        if (user is null || evt is null)
             return new SaveEventResponse(eventId, false, "Invalid userId or eventId");
 
         var exists = await db.SavedEvents
-            .AnyAsync(s => s.UserId == userGuid && s.EventId == eventGuid, ct);
+            .AnyAsync(s => s.UserId == user.Id && s.EventId == evt.Id, ct);
 
         if (!exists)
         {
             db.SavedEvents.Add(new SavedEventEntity
             {
-                UserId = userGuid,
-                EventId = eventGuid,
+                UserId = user.Id,
+                EventId = evt.Id,
                 SavedAt = DateTimeOffset.UtcNow,
             });
             await db.SaveChangesAsync(ct);
@@ -89,11 +97,13 @@ public sealed class EfSaveRepository(WeUpDbContext db) : ISaveRepository
 
     public async Task<SaveEventResponse> UnsaveEventAsync(string userId, string eventId, CancellationToken ct = default)
     {
-        if (!Guid.TryParse(userId, out var userGuid) || !Guid.TryParse(eventId, out var eventGuid))
+        var user = await db.UserProfiles.FirstOrDefaultAsync(u => u.PublicId == userId, ct);
+        var evt = await db.Events.FirstOrDefaultAsync(e => e.PublicId == eventId, ct);
+        if (user is null || evt is null)
             return new SaveEventResponse(eventId, false, "Invalid userId or eventId");
 
         var entity = await db.SavedEvents
-            .FirstOrDefaultAsync(s => s.UserId == userGuid && s.EventId == eventGuid, ct);
+            .FirstOrDefaultAsync(s => s.UserId == user.Id && s.EventId == evt.Id, ct);
 
         if (entity is not null)
         {

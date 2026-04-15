@@ -11,6 +11,7 @@ public sealed class EventEntityConfiguration : IEntityTypeConfiguration<EventEnt
         builder.ToTable("events");
         builder.HasKey(e => e.Id);
 
+        builder.Property(e => e.PublicId).HasMaxLength(128).IsRequired();
         builder.Property(e => e.Status).HasMaxLength(32).IsRequired();
         builder.Property(e => e.CanonicalTitle).HasMaxLength(512).IsRequired();
         builder.Property(e => e.CanonicalDescription).HasMaxLength(4000);
@@ -27,6 +28,7 @@ public sealed class EventEntityConfiguration : IEntityTypeConfiguration<EventEnt
 
         // Indexes for Phase 0 query patterns
         builder.HasIndex(e => e.Status);                                      // status filter
+        builder.HasIndex(e => e.PublicId).IsUnique();                         // stable external API id
         builder.HasIndex(e => e.StartUtc);                                    // date-window queries
         builder.HasIndex(e => new { e.StartUtc, e.Status });                  // calendar feed
         builder.HasIndex(e => new { e.Latitude, e.Longitude });               // spatial filter (pre-PostGIS)

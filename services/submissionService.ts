@@ -1,6 +1,11 @@
 import { getAuthHeader } from "./auth";
 import { toApiUrl } from "./apiBase";
 import type { DraftSubmissionRequest } from "@/features/world/runtimeTypes";
+import type {
+  SubmissionDto,
+  SubmissionListResponse,
+  SubmitForReviewResponse,
+} from "@/services/backendContracts";
 
 const BASE = toApiUrl("/api/events/submissions");
 
@@ -34,7 +39,10 @@ export async function createDraft(
   return checkResponse(res);
 }
 
-export async function updateDraft(id: string, patch: any) {
+export async function updateDraft(
+  id: string,
+  patch: any,
+): Promise<SubmissionDto> {
   const res = await fetch(`${BASE}/${encodeURIComponent(id)}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json", ...getAuthHeader() },
@@ -43,7 +51,9 @@ export async function updateDraft(id: string, patch: any) {
   return checkResponse(res);
 }
 
-export async function submitForReview(id: string) {
+export async function submitForReview(
+  id: string,
+): Promise<SubmitForReviewResponse> {
   const res = await fetch(`${BASE}/${encodeURIComponent(id)}/submit`, {
     method: "POST",
     headers: { ...getAuthHeader() },
@@ -51,14 +61,14 @@ export async function submitForReview(id: string) {
   return checkResponse(res);
 }
 
-export async function getSubmission(id: string) {
+export async function getSubmission(id: string): Promise<SubmissionDto> {
   const res = await fetch(`${BASE}/${encodeURIComponent(id)}`, {
     headers: { ...getAuthHeader() },
   });
   return checkResponse(res);
 }
 
-export async function listSubmissions() {
+export async function listSubmissions(): Promise<SubmissionListResponse> {
   const res = await fetch(BASE, { headers: { ...getAuthHeader() } });
   return checkResponse(res);
 }

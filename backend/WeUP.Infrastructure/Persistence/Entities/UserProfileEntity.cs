@@ -6,6 +6,7 @@ namespace WeUP.Infrastructure.Persistence.Entities;
 public sealed class UserProfileEntity
 {
     public Guid Id { get; set; }
+    public string PublicId { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string? DisplayName { get; set; }
     public string? HomeMarket { get; set; }

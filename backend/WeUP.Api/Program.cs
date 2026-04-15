@@ -1,5 +1,7 @@
 using WeUP.Api.Endpoints;
+using WeUP.Api.Configuration;
 using WeUP.Api.Observability;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using WeUP.Application.Ingestion;
 using WeUP.Application.Moderation;
@@ -31,21 +33,29 @@ using WeUP.Infrastructure.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var useStubRepositories = builder.Configuration.GetValue<bool>("WeUP:UseStubRepositories");
-var isTestingEnvironment = builder.Environment.IsEnvironment("Testing");
-var connStr = builder.Configuration.GetConnectionString("WeUpDb");
+var runtimeOptions = builder.Configuration.GetSection(WeUpRuntimeOptions.SectionName).Get<WeUpRuntimeOptions>() ?? new WeUpRuntimeOptions();
+var persistenceMode = runtimeOptions.ResolvePersistenceMode();
+var runtime = new PersistenceRuntime(
+    persistenceMode,
+    runtimeOptions.Database.ConnectionStringName,
+    persistenceMode == PersistenceMode.Postgres);
+var connStr = builder.Configuration.GetConnectionString(runtime.ConnectionStringName);
 var hasConnectionString = !string.IsNullOrWhiteSpace(connStr);
-var useEfRepositories = !useStubRepositories && !isTestingEnvironment;
 
-if (useEfRepositories && !hasConnectionString)
+builder.Services.AddSingleton(runtimeOptions);
+builder.Services.AddSingleton(runtime);
+builder.Services.AddSingleton<PersistenceStartupValidator>();
+
+if (runtime.UsesDatabase && !hasConnectionString)
 {
     throw new InvalidOperationException(
-        "Runtime mode is EF-backed by default. Configure ConnectionStrings:WeUpDb or set WeUP:UseStubRepositories=true to run isolated stub mode.");
+        $"Postgres persistence mode requires ConnectionStrings:{runtime.ConnectionStringName}. Configure the connection string or set WeUP:PersistenceMode=Stub.");
 }
 
-if (useEfRepositories)
+if (runtime.UsesDatabase)
 {
-    builder.Services.AddDbContext<WeUpDbContext>(opts => opts.UseNpgsql(connStr!));
+    builder.Services.AddDbContext<WeUpDbContext>(opts =>
+        opts.UseNpgsql(connStr!, npgsql => npgsql.MigrationsAssembly(typeof(WeUpDbContext).Assembly.FullName)));
 }
 
 // ---------------------------------------------------------------------------
@@ -57,7 +67,7 @@ builder.Services.Configure<MediaIntakeOptions>(builder.Configuration.GetSection(
 builder.Services.Configure<VideoIntakeOptions>(builder.Configuration.GetSection(VideoIntakeOptions.SectionName));
 builder.Services.AddSwaggerGen(c =>
 {
-    var runtimeLabel = useEfRepositories ? "v1 (EF runtime)" : "v1 (stub runtime)";
+    var runtimeLabel = runtime.UsesDatabase ? "v1 (Postgres runtime)" : "v1 (stub runtime)";
     c.SwaggerDoc("v1", new() { Title = "WeUP API", Version = runtimeLabel });
 });
 
@@ -65,18 +75,20 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddCors(opts =>
 {
     opts.AddPolicy("LocalDev", policy =>
-        policy.WithOrigins("http://localhost:3000", "http://127.0.0.1:3000")
+        policy.WithOrigins(runtimeOptions.Frontend.AllowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod());
 });
 
 // Domain / Application services
-if (useEfRepositories)
+if (runtime.UsesDatabase)
 {
     builder.Services.AddScoped<IEventRepository, EfEventRepository>();
     builder.Services.AddScoped<IEventSubmissionRepository, EfEventRepository>();
     builder.Services.AddScoped<IEventLifecycleRepository, EfEventRepository>();
     builder.Services.AddScoped<ISaveRepository, EfSaveRepository>();
+    builder.Services.AddScoped<IUserProfileRepository, EfUserProfileRepository>();
+    builder.Services.AddScoped<IEventSubmissionService, EfSubmissionRepository>();
 }
 else
 {
@@ -86,11 +98,15 @@ else
     builder.Services.AddSingleton<IEventLifecycleRepository>(sp => sp.GetRequiredService<StubEventRepository>());
     builder.Services.AddSingleton<StubSaveRepository>();
     builder.Services.AddSingleton<ISaveRepository>(sp => sp.GetRequiredService<StubSaveRepository>());
+    builder.Services.AddSingleton<InMemoryUserRepository>();
+    builder.Services.AddSingleton<IUserProfileRepository>(sp => sp.GetRequiredService<InMemoryUserRepository>());
+    builder.Services.AddSingleton<InMemorySubmissionRepository>();
+    builder.Services.AddSingleton<IEventSubmissionService>(sp => sp.GetRequiredService<InMemorySubmissionRepository>());
 }
 
 // Ingestion services
 builder.Services.AddHttpClient("ingestion").AddHttpMessageHandler<WeUP.Api.Observability.CorrelationIdDelegatingHandler>();
-if (useEfRepositories)
+if (runtime.UsesDatabase)
 {
     builder.Services.AddScoped<IIngestionJobRepository, EfIngestionJobRepository>();
     builder.Services.AddScoped<IIngestionAuditWriter, ConsoleIngestionAuditWriter>();
@@ -132,21 +148,15 @@ builder.Services.AddScoped<ModeratorAuthorizationFilter>();
 
 // Auth services (P16)
 // Phase 0: in-memory token store. Real JWT: add JwtBearer, set WeUp:Auth:JwtSecret in appsettings.
-builder.Services.AddSingleton<InMemoryUserRepository>();
-builder.Services.AddSingleton<IUserProfileRepository>(sp => sp.GetRequiredService<InMemoryUserRepository>());
 builder.Services.AddSingleton<ITokenService, BearerTokenService>();
-builder.Services.AddSingleton<UserAuthService>();
+builder.Services.AddScoped<UserAuthService>();
 
 // User persistence services (P17)
 builder.Services.AddSingleton<IItineraryRepository, InMemoryItineraryRepository>();
 builder.Services.AddSingleton<IUserPreferencesRepository, InMemoryPreferencesRepository>();
 
-// Event submission workflow (P18)
-builder.Services.AddSingleton<InMemorySubmissionRepository>();
-builder.Services.AddSingleton<IEventSubmissionService>(sp => sp.GetRequiredService<InMemorySubmissionRepository>());
-
 // Spatial query services (P19) — bounding box, district, viewport queries
-builder.Services.AddSingleton<IViewportQueryService, ViewportQueryService>();
+builder.Services.AddScoped<IViewportQueryService, ViewportQueryService>();
 
 // Market policy services (P20) — market boundaries, freeze rules, assignment
 builder.Services.AddSingleton<MarketPolicyService>();
@@ -175,7 +185,7 @@ builder.Services.AddScoped<IVideoProcessingOrchestrator, VideoProcessingOrchestr
 builder.Services.AddScoped<IVideoFlyerUploadService, VideoFlyerUploadService>();
 builder.Services.AddScoped<IVideoDerivedAssetQueryService, VideoDerivedAssetQueryService>();
 
-if (useEfRepositories)
+if (runtime.UsesDatabase)
 {
     builder.Services.AddScoped<IFlyerAssetStore, EfFlyerAssetStore>();
     builder.Services.AddScoped<IFlyerDuplicateDetector, FlyerDuplicateDetector>();
@@ -231,13 +241,16 @@ builder.AddWeUPObservability();
 // builder.Services.AddOpenTelemetry()...
 
 // Health checks
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+    .AddCheck<PersistenceHealthCheck>("persistence");
 
 // ---------------------------------------------------------------------------
 // Pipeline
 // ---------------------------------------------------------------------------
 
 var app = builder.Build();
+
+await app.Services.GetRequiredService<PersistenceStartupValidator>().ValidateAsync();
 
 if (app.Environment.IsDevelopment())
 {
@@ -294,7 +307,10 @@ app.MapAnalyticsEndpoints(); // P23: Analytics event recording
 app.MapMediaEndpoints(); // P25: Flyer media intake
 app.MapVideoFlyerEndpoints(); // P28: Video flyer intake
 app.MapResolutionEndpoints(); // P12: Deterministic entity resolution and merge
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = HealthCheckResponseWriter.WriteAsync,
+});
 
 var enableSeedResetEndpoint = builder.Configuration.GetValue<bool>("SeedData:EnableResetEndpoint") || app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing");
 if (enableSeedResetEndpoint)
@@ -302,7 +318,8 @@ if (enableSeedResetEndpoint)
     app.MapSeedEndpoints();
 }
 
-var enableSeedOnStartup = builder.Configuration.GetValue<bool?>("SeedData:EnableOnStartup") ?? app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing");
+var enableSeedOnStartup = builder.Configuration.GetValue<bool?>("SeedData:EnableOnStartup")
+    ?? (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"));
 if (enableSeedOnStartup)
 {
     var seeder = app.Services.GetRequiredService<Phase0SeedService>();

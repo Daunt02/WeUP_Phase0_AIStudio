@@ -7,6 +7,7 @@ namespace WeUP.Infrastructure.Persistence.Entities;
 public sealed class EventEntity
 {
     public Guid Id { get; set; }
+    public string PublicId { get; set; } = string.Empty;
     public string Status { get; set; } = "DRAFT";
 
     // Canonical content

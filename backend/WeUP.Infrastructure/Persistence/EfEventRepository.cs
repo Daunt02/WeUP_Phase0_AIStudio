@@ -94,14 +94,11 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
 
     public async Task<EventDetailResponse> GetEventDetailAsync(string eventId, CancellationToken ct = default)
     {
-        if (!Guid.TryParse(eventId, out var guid))
-            return new EventDetailResponse(null);
-
         var entity = await db.Events
             .AsNoTracking()
             .Include(e => e.Media)
             .Include(e => e.Sources)
-            .FirstOrDefaultAsync(e => e.Id == guid, ct);
+            .FirstOrDefaultAsync(e => e.PublicId == eventId, ct);
 
         if (entity is null) return new EventDetailResponse(null);
         return new EventDetailResponse(ToDetail(entity));
@@ -114,11 +111,13 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
     public async Task<string> CreateSubmissionAsync(string userId, EventSubmissionRequest request, CancellationToken ct = default)
     {
         var id = Guid.NewGuid();
+        var publicId = $"evt-{Guid.NewGuid():N}";
         var now = DateTimeOffset.UtcNow;
 
         var entity = new EventEntity
         {
             Id = id,
+            PublicId = publicId,
             Status = "DRAFT",
             CanonicalTitle = request.Title,
             CanonicalDescription = request.Description,
@@ -154,41 +153,30 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
 
         db.Events.Add(entity);
         await db.SaveChangesAsync(ct);
-        return id.ToString("N");
+        return publicId;
     }
 
     public async Task<string?> GetSubmissionStatusAsync(string submissionId, CancellationToken ct = default)
     {
-        if (!Guid.TryParse(submissionId, out var guid)) return null;
         return await db.Events
             .AsNoTracking()
-            .Where(e => e.Id == guid)
+            .Where(e => e.PublicId == submissionId)
             .Select(e => (string?)e.Status)
             .FirstOrDefaultAsync(ct);
     }
 
     public async Task<string?> GetLifecycleStatusAsync(string eventId, CancellationToken ct = default)
     {
-        if (!Guid.TryParse(eventId, out var guid))
-        {
-            return null;
-        }
-
         return await db.Events
             .AsNoTracking()
-            .Where(e => e.Id == guid)
+            .Where(e => e.PublicId == eventId)
             .Select(e => (string?)e.Status)
             .FirstOrDefaultAsync(ct);
     }
 
     public async Task<bool> TransitionLifecycleStatusAsync(string eventId, string newStatus, CancellationToken ct = default)
     {
-        if (!Guid.TryParse(eventId, out var guid))
-        {
-            return false;
-        }
-
-        var entity = await db.Events.FirstOrDefaultAsync(e => e.Id == guid, ct);
+        var entity = await db.Events.FirstOrDefaultAsync(e => e.PublicId == eventId, ct);
         if (entity is null)
         {
             return false;
@@ -205,7 +193,7 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
     // ---------------------------------------------------------------------------
 
     private static EventMapCardDto ToMapCard(EventEntity e) => new(
-        e.Id.ToString(),
+        e.PublicId,
         e.CanonicalTitle,
         e.VenueName,
         e.Category,
@@ -216,7 +204,7 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
         e.Confidence);
 
     private static EventCalendarDto ToCalendar(EventEntity e) => new(
-        e.Id.ToString(),
+        e.PublicId,
         e.CanonicalTitle,
         e.VenueName,
         e.Category,
@@ -227,7 +215,7 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
         e.Status);
 
     private static EventDetailDto ToDetail(EventEntity e) => new(
-        e.Id.ToString(),
+        e.PublicId,
         e.CanonicalTitle,
         e.CanonicalDescription,
         e.VenueName,
