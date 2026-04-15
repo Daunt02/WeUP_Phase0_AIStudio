@@ -15,6 +15,7 @@ public sealed class WeUpRuntimeOptions
     public string LaunchMarket { get; set; } = "austin-tx";
     public FrontendOptions Frontend { get; set; } = new();
     public DatabaseOptions Database { get; set; } = new();
+    public ReleaseOptions Release { get; set; } = new();
 
     public PersistenceMode ResolvePersistenceMode()
     {
@@ -61,5 +62,15 @@ public sealed class WeUpRuntimeOptions
         public bool AutoApplyMigrations { get; set; }
         public bool RequireConnectivity { get; set; } = true;
         public bool FailOnPendingMigrations { get; set; } = true;
+    }
+
+    public sealed class ReleaseOptions
+    {
+        public bool Enabled { get; set; }
+        public bool RequireDatabaseRuntime { get; set; } = true;
+        public bool RequireAuthService { get; set; } = true;
+        public bool RequireTelemetryExportEndpoint { get; set; }
+        public bool RequireContractManifestValidation { get; set; } = true;
+        public string ContractManifestPath { get; set; } = "contracts/backend-contract-manifest.json";
     }
 }

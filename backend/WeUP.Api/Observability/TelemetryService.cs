@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
@@ -16,16 +15,23 @@ namespace WeUP.Api.Observability
     {
         private readonly ILogger<OperationalTelemetry> _logger;
         private readonly ActivitySource _activitySource;
+        private readonly CorrelationIdProvider _correlationIdProvider;
 
-        public OperationalTelemetry(ILogger<OperationalTelemetry> logger, ActivitySource activitySource)
+        public OperationalTelemetry(
+            ILogger<OperationalTelemetry> logger,
+            ActivitySource activitySource,
+            CorrelationIdProvider correlationIdProvider)
         {
             _logger = logger;
             _activitySource = activitySource;
+            _correlationIdProvider = correlationIdProvider;
         }
 
         public void TrackEvent(string name, IDictionary<string, string>? properties = null)
         {
             using var a = _activitySource.StartActivity(name, ActivityKind.Internal);
+            var correlationId = _correlationIdProvider.GetCorrelationId();
+            a?.SetTag("correlation_id", correlationId);
             if (properties != null)
             {
                 foreach (var kv in properties)
@@ -34,14 +40,21 @@ namespace WeUP.Api.Observability
                 }
             }
 
-            _logger.LogInformation("Telemetry Event: {EventName} {@Properties}", name, properties);
+            _logger.LogInformation(
+                "Telemetry event {EventName} correlationId={CorrelationId} props={@Properties}",
+                name,
+                correlationId,
+                properties);
         }
 
         public void TrackException(Exception ex, IDictionary<string, string>? properties = null)
         {
             using var a = _activitySource.StartActivity("exception", ActivityKind.Internal);
+            var correlationId = _correlationIdProvider.GetCorrelationId();
+            a?.SetTag("correlation_id", correlationId);
             a?.SetTag("exception.type", ex.GetType().FullName ?? "unknown");
             a?.SetTag("exception.message", ex.Message);
+            a?.SetStatus(ActivityStatusCode.Error, ex.Message);
 
             if (properties != null)
             {
@@ -51,7 +64,12 @@ namespace WeUP.Api.Observability
                 }
             }
 
-            _logger.LogError(ex, "Telemetry Exception: {Message} {@Properties}", ex.Message, properties);
+            _logger.LogError(
+                ex,
+                "Telemetry exception correlationId={CorrelationId} message={Message} props={@Properties}",
+                correlationId,
+                ex.Message,
+                properties);
         }
     }
 }

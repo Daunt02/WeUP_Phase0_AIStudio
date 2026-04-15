@@ -8,7 +8,6 @@ public class CorrelationIdMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<CorrelationIdMiddleware> _logger;
-    public const string HeaderName = "X-Correlation-ID";
 
     public CorrelationIdMiddleware(RequestDelegate next, ILogger<CorrelationIdMiddleware> logger)
     {
@@ -18,16 +17,18 @@ public class CorrelationIdMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        var correlationId = context.Request.Headers[HeaderName].FirstOrDefault();
+        var correlationId = context.Request.Headers[ObservabilityConstants.CorrelationHeader].FirstOrDefault();
         if (string.IsNullOrWhiteSpace(correlationId))
+        {
             correlationId = Guid.NewGuid().ToString("d");
+        }
 
-        context.Response.Headers[HeaderName] = correlationId;
+        context.Response.Headers[ObservabilityConstants.CorrelationHeader] = correlationId;
+        context.Items[ObservabilityConstants.CorrelationContextKey] = correlationId;
 
         Activity.Current?.SetTag("correlation_id", correlationId);
         using (_logger.BeginScope(new Dictionary<string, object> { ["CorrelationId"] = correlationId }))
         {
-            context.Items[HeaderName] = correlationId;
             await _next(context);
         }
     }

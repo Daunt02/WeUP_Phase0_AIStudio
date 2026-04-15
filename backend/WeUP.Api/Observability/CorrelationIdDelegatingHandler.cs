@@ -8,7 +8,6 @@ namespace WeUP.Api.Observability;
 public class CorrelationIdDelegatingHandler : DelegatingHandler
 {
     private readonly IHttpContextAccessor _accessor;
-    public const string HeaderName = "X-Correlation-ID";
 
     public CorrelationIdDelegatingHandler(IHttpContextAccessor accessor)
     {
@@ -18,7 +17,7 @@ public class CorrelationIdDelegatingHandler : DelegatingHandler
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         string? id = null;
-        id = _accessor.HttpContext?.Items[HeaderName] as string;
+        id = _accessor.HttpContext?.Items[ObservabilityConstants.CorrelationContextKey] as string;
         if (string.IsNullOrEmpty(id))
         {
             var activity = Activity.Current;
@@ -29,9 +28,9 @@ public class CorrelationIdDelegatingHandler : DelegatingHandler
             }
         }
 
-        if (!string.IsNullOrEmpty(id) && !request.Headers.Contains(HeaderName))
+        if (!string.IsNullOrEmpty(id) && !request.Headers.Contains(ObservabilityConstants.CorrelationHeader))
         {
-            request.Headers.Add(HeaderName, id);
+            request.Headers.Add(ObservabilityConstants.CorrelationHeader, id);
         }
 
         return base.SendAsync(request, cancellationToken);

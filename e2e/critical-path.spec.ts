@@ -11,6 +11,15 @@ async function loginSeededUser(request: APIRequestContext) {
   return response.json();
 }
 
+async function loginSeededModerator(request: APIRequestContext) {
+  const response = await request.post(`${backendBaseUrl}/auth/login`, {
+    data: { email: "moderator+phase0@weup.test" },
+  });
+
+  expect(response.ok()).toBeTruthy();
+  return response.json();
+}
+
 test.beforeEach(async ({ request }) => {
   const reset = await request.post(`${backendBaseUrl}/internal/seed/reset`);
   expect(reset.ok()).toBeTruthy();
@@ -21,6 +30,7 @@ test("critical Phase 0 release path stays healthy", async ({
   request,
 }) => {
   const auth = await loginSeededUser(request);
+  const moderatorAuth = await loginSeededModerator(request);
 
   const mapFeed = await request.post(`${backendBaseUrl}/api/events/map`, {
     data: {
@@ -36,6 +46,8 @@ test("critical Phase 0 release path stays healthy", async ({
   expect(await mapFeed.text()).toContain("evt-sf-midnight-groove");
 
   await page.goto("/");
+  await expect(page.getByRole("heading", { name: "WEUP" })).toBeVisible();
+
   await page.evaluate((token) => {
     window.localStorage.setItem("weup_dev_token", token);
   }, auth.token as string);
@@ -43,7 +55,7 @@ test("critical Phase 0 release path stays healthy", async ({
   await page.goto("/events/evt-sf-midnight-groove");
   await expect(page.getByText("Midnight Groove Assembly")).toBeVisible();
   await expect(page.getByTestId("event-session-state")).toContainText(
-    "Camille Phase0",
+    "AUTHENTICATED",
   );
 
   const saveButton = page.getByTestId("event-save-button");
@@ -86,6 +98,9 @@ test("critical Phase 0 release path stays healthy", async ({
 
   const moderationQueue = await request.get(
     `${backendBaseUrl}/api/moderation/queue?pageSize=5`,
+    {
+      headers: { Authorization: `Bearer ${moderatorAuth.token}` },
+    },
   );
   expect(moderationQueue.ok()).toBeTruthy();
   const moderationBody = await moderationQueue.text();
@@ -94,6 +109,7 @@ test("critical Phase 0 release path stays healthy", async ({
   const approve = await request.post(
     `${backendBaseUrl}/api/moderation/queue/mod-sf-neon-market/approve`,
     {
+      headers: { Authorization: `Bearer ${moderatorAuth.token}` },
       data: {
         actorId: "user-sf-moderator",
         note: "Resolved in release validation",
@@ -102,4 +118,16 @@ test("critical Phase 0 release path stays healthy", async ({
     },
   );
   expect(approve.ok()).toBeTruthy();
+});
+
+test("event detail remains usable for anonymous visitors", async ({ page }) => {
+  await page.goto("/events/evt-sf-midnight-groove");
+
+  await expect(page.getByText("Midnight Groove Assembly")).toBeVisible();
+  await expect(page.getByTestId("event-session-state")).toContainText(
+    "ANONYMOUS",
+  );
+  await expect(page.getByTestId("event-save-button")).toContainText(
+    "SAVE_SIGNAL",
+  );
 });

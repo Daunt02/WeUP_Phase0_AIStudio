@@ -2,6 +2,7 @@ using WeUP.Api.Endpoints;
 using WeUP.Api.Configuration;
 using WeUP.Api.Observability;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using WeUP.Application.Ingestion;
 using WeUP.Application.Moderation;
@@ -45,6 +46,7 @@ var hasConnectionString = !string.IsNullOrWhiteSpace(connStr);
 builder.Services.AddSingleton(runtimeOptions);
 builder.Services.AddSingleton(runtime);
 builder.Services.AddSingleton<PersistenceStartupValidator>();
+builder.Services.AddSingleton<ReleaseStartupValidator>();
 
 if (runtime.UsesDatabase && !hasConnectionString)
 {
@@ -233,7 +235,7 @@ else
     // Flyer provenance and evidence services (P27) — dev/test in-memory path
     builder.Services.AddSingleton<IProvenanceRepository, InMemoryProvenanceRepository>();
     builder.Services.AddSingleton<IFlyerEvidenceRepository, InMemoryFlyerEvidenceRepository>();
-    builder.Services.AddSingleton<IFlyerIntakeService, FlyerIntakeService>();
+    builder.Services.AddScoped<IFlyerIntakeService, FlyerIntakeService>();
     builder.Services.AddSingleton<IFlyerEvidenceQueryService, FlyerEvidenceQueryService>();
 
     // Video flyer persistence (P29) — dev/test in-memory path
@@ -269,6 +271,7 @@ builder.Services.AddHealthChecks()
 var app = builder.Build();
 
 await app.Services.GetRequiredService<PersistenceStartupValidator>().ValidateAsync();
+await app.Services.GetRequiredService<ReleaseStartupValidator>().ValidateAsync();
 
 if (app.Environment.IsDevelopment())
 {
@@ -287,13 +290,32 @@ if (app.Environment.IsDevelopment())
 // Observability middleware (P22) — correlation IDs
 app.UseWeUPObservability();
 
-// Simple request logging middleware to aid smoke tests and debugging
-app.Use(async (context, next) =>
+app.UseExceptionHandler(errorApp =>
 {
-    var logger = app.Logger;
-    logger.LogInformation("Incoming request: {Method} {Path}", context.Request.Method, context.Request.Path);
-    await next();
-    logger.LogInformation("Response: {StatusCode} for {Method} {Path}", context.Response.StatusCode, context.Request.Method, context.Request.Path);
+    errorApp.Run(async context =>
+    {
+        var telemetry = context.RequestServices.GetRequiredService<IOperationalTelemetry>();
+        var feature = context.Features.Get<IExceptionHandlerPathFeature>();
+        var correlationId = context.Items[ObservabilityConstants.CorrelationContextKey]?.ToString() ?? "unknown";
+        var path = feature?.Path ?? context.Request.Path.Value ?? "unknown";
+        var error = feature?.Error ?? new Exception("Unhandled exception with missing error feature.");
+
+        telemetry.TrackException(error, new Dictionary<string, string>
+        {
+            ["path"] = path,
+            ["method"] = context.Request.Method,
+            ["correlationId"] = correlationId,
+        });
+
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.ContentType = "application/problem+json";
+        await context.Response.WriteAsJsonAsync(new
+        {
+            title = "Unexpected server error",
+            status = StatusCodes.Status500InternalServerError,
+            correlationId,
+        });
+    });
 });
 
 app.UseCors("LocalDev");

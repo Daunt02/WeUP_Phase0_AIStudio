@@ -2,26 +2,85 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using WeUP.Api.FeatureFlags;
 
 namespace WeUP.Api.Observability;
 
 /// <summary>
-/// P22 OpenTelemetry & Structured Logging Setup
-/// Minimal implementation: console logging, correlation IDs, trace instrumentation
+/// OpenTelemetry and structured logging setup for Phase 0 runtime.
 /// </summary>
 public static class ObservabilitySetup
 {
     public static void AddWeUPObservability(this WebApplicationBuilder builder)
     {
-        // Structured logging (minimal: console sink)
+        var serviceResource = ResourceBuilder.CreateDefault()
+            .AddService(ObservabilityConstants.ServiceName, serviceVersion: ObservabilityConstants.ServiceVersion);
+
+        // Structured logging
         builder.Logging.ClearProviders();
-        builder.Logging.AddConsole();
+        builder.Logging.AddJsonConsole(options =>
+        {
+            options.IncludeScopes = true;
+            options.UseUtcTimestamp = true;
+        });
         builder.Logging.SetMinimumLevel(LogLevel.Information);
+        builder.Logging.AddOpenTelemetry(options =>
+        {
+            options.IncludeScopes = true;
+            options.ParseStateValues = true;
+            options.SetResourceBuilder(serviceResource);
+            options.AddConsoleExporter();
+        });
+
+        builder.Services.AddSingleton(new System.Diagnostics.ActivitySource(ObservabilityConstants.ActivitySourceName));
+        builder.Services.AddSingleton(new System.Diagnostics.Metrics.Meter(ObservabilityConstants.MeterName));
+
+        builder.Services.AddOpenTelemetry()
+            .ConfigureResource(resource => resource.AddService(
+                serviceName: ObservabilityConstants.ServiceName,
+                serviceVersion: ObservabilityConstants.ServiceVersion))
+            .WithTracing(tracing =>
+            {
+                tracing
+                    .AddSource(ObservabilityConstants.ActivitySourceName)
+                    .AddAspNetCoreInstrumentation(options =>
+                    {
+                        options.RecordException = true;
+                    })
+                    .AddHttpClientInstrumentation(options =>
+                    {
+                        options.RecordException = true;
+                    })
+                    .AddConsoleExporter();
+
+                var otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
+                if (!string.IsNullOrWhiteSpace(otlpEndpoint))
+                {
+                    tracing.AddOtlpExporter();
+                }
+            })
+            .WithMetrics(metrics =>
+            {
+                metrics
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddMeter(ObservabilityConstants.MeterName)
+                    .AddConsoleExporter();
+
+                var otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
+                if (!string.IsNullOrWhiteSpace(otlpEndpoint))
+                {
+                    metrics.AddOtlpExporter();
+                }
+            });
 
         // Correlation, telemetry, and feature flag seams used by the Phase 0 API.
         builder.Services.AddHttpContextAccessor();
-        builder.Services.AddScoped<CorrelationIdProvider>();
+        builder.Services.AddSingleton<CorrelationIdProvider>();
         builder.Services.AddSingleton<CorrelationIdDelegatingHandler>();
         builder.Services.AddSingleton<IOperationalTelemetry, OperationalTelemetry>();
         builder.Services.Configure<FeatureFlagsOptions>(builder.Configuration.GetSection("FeatureFlags"));
@@ -30,27 +89,30 @@ public static class ObservabilitySetup
 
     public static void UseWeUPObservability(this WebApplication app)
     {
-        // Correlation ID middleware
-        app.Use(async (context, next) =>
-        {
-            var correlationId = context.Request.Headers["X-Correlation-ID"].FirstOrDefault()
-                ?? Guid.NewGuid().ToString();
-
-            context.Items["CorrelationId"] = correlationId;
-            context.Response.Headers["X-Correlation-ID"] = correlationId;
-
-            await next();
-        });
+        app.UseMiddleware<CorrelationIdMiddleware>();
     }
 }
 
 /// <summary>
 /// Provider for correlation IDs across requests.
 /// </summary>
-public class CorrelationIdProvider
+public sealed class CorrelationIdProvider
 {
-    public string GetCorrelationId(IHttpContextAccessor httpContextAccessor)
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public CorrelationIdProvider(IHttpContextAccessor httpContextAccessor)
     {
-        return httpContextAccessor?.HttpContext?.Items["CorrelationId"]?.ToString() ?? "unknown";
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    public string GetCorrelationId()
+    {
+        var fromContext = _httpContextAccessor.HttpContext?.Items[ObservabilityConstants.CorrelationContextKey]?.ToString();
+        if (!string.IsNullOrWhiteSpace(fromContext))
+        {
+            return fromContext;
+        }
+
+        return System.Diagnostics.Activity.Current?.TraceId.ToString() ?? "unknown";
     }
 }

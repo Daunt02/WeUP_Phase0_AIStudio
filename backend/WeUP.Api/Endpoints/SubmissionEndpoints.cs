@@ -1,4 +1,5 @@
 using WeUP.Contracts.Events;
+using WeUP.Api.Observability;
 using WeUP.Domain.Events;
 using WeUP.Domain.Users;
 
@@ -14,12 +15,18 @@ public static class SubmissionEndpoints
         group.MapPost("/", async (
             DraftSubmissionRequest request,
             IEventSubmissionService svc, ITokenService tokens,
+            IOperationalTelemetry telemetry,
             HttpContext ctx, CancellationToken ct) =>
         {
             var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
             if (userId is null) return Results.Unauthorized();
 
             var dto = await svc.CreateDraftAsync(userId, request, ct);
+            telemetry.TrackEvent("submission.draft.created", new Dictionary<string, string>
+            {
+                ["submissionId"] = dto.SubmissionId,
+                ["status"] = dto.Status.ToString(),
+            });
             return Results.Created($"/api/events/submissions/{dto.SubmissionId}", dto);
         })
         .WithName("CreateDraft")
@@ -76,12 +83,18 @@ public static class SubmissionEndpoints
         // POST /api/events/submissions/{id}/submit — submit for review
         group.MapPost("/{id}/submit", async (
             string id, IEventSubmissionService svc,
-            ITokenService tokens, HttpContext ctx, CancellationToken ct) =>
+            ITokenService tokens, HttpContext ctx, IOperationalTelemetry telemetry, CancellationToken ct) =>
         {
             var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
             if (userId is null) return Results.Unauthorized();
 
             var result = await svc.SubmitForReviewAsync(id, userId, ct);
+            telemetry.TrackEvent("submission.review.submit", new Dictionary<string, string>
+            {
+                ["submissionId"] = id,
+                ["accepted"] = (result.Status == SubmissionStatus.SubmittedForReview).ToString(),
+                ["status"] = result.Status.ToString(),
+            });
             return result.Status == SubmissionStatus.SubmittedForReview
                 ? Results.Accepted($"/api/events/submissions/{id}", result)
                 : Results.UnprocessableEntity(result);

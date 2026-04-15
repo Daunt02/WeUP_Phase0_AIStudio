@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using WeUP.Application.Moderation;
+using WeUP.Api.Observability;
 using WeUP.Contracts.Moderation;
 using WeUP.Domain.Users;
 
@@ -29,6 +30,7 @@ public static class ModerationEndpoints
             [FromQuery] int pageSize,
             [FromQuery] string? cursor,
             IModerationQueueService queue,
+            IOperationalTelemetry telemetry,
             CancellationToken ct) =>
         {
             var filter = new ModerationQueueFilter(
@@ -48,7 +50,13 @@ public static class ModerationEndpoints
                 PageSize: Math.Clamp(pageSize == 0 ? 25 : pageSize, 1, 100),
                 Cursor: cursor);
 
-            return Results.Ok(await queue.GetQueueAsync(filter, ct));
+            var response = await queue.GetQueueAsync(filter, ct);
+            telemetry.TrackEvent("moderation.queue.read", new Dictionary<string, string>
+            {
+                ["count"] = response.Items.Count().ToString(),
+                ["cursor"] = cursor ?? string.Empty,
+            });
+            return Results.Ok(response);
         })
         .WithName("GetModerationQueue")
         .Produces<ModerationQueueResponse>();
@@ -86,6 +94,7 @@ public static class ModerationEndpoints
             [FromBody] ReviewDecisionRequest request,
             ITokenService tokens,
             HttpContext ctx,
+            IOperationalTelemetry telemetry,
             IReviewDecisionService reviews,
             CancellationToken ct) =>
             await SubmitDecisionAsync(
@@ -95,6 +104,7 @@ public static class ModerationEndpoints
                     ActorId = AuthEndpoints.ResolveUserId(ctx, tokens) ?? string.Empty,
                     Decision = ReviewDecisionKind.Approve,
                 },
+                telemetry,
                 reviews,
                 ct))
         .WithName("ApproveModerationReview")
@@ -106,6 +116,7 @@ public static class ModerationEndpoints
             [FromBody] ReviewDecisionRequest request,
             ITokenService tokens,
             HttpContext ctx,
+            IOperationalTelemetry telemetry,
             IReviewDecisionService reviews,
             CancellationToken ct) =>
             await SubmitDecisionAsync(
@@ -115,6 +126,7 @@ public static class ModerationEndpoints
                     ActorId = AuthEndpoints.ResolveUserId(ctx, tokens) ?? string.Empty,
                     Decision = ReviewDecisionKind.Reject,
                 },
+                telemetry,
                 reviews,
                 ct))
         .WithName("RejectModerationReview")
@@ -126,6 +138,7 @@ public static class ModerationEndpoints
             [FromBody] ReviewDecisionRequest request,
             ITokenService tokens,
             HttpContext ctx,
+            IOperationalTelemetry telemetry,
             IReviewDecisionService reviews,
             CancellationToken ct) =>
             await SubmitDecisionAsync(
@@ -135,6 +148,7 @@ public static class ModerationEndpoints
                     ActorId = AuthEndpoints.ResolveUserId(ctx, tokens) ?? string.Empty,
                     Decision = ReviewDecisionKind.RequestChanges,
                 },
+                telemetry,
                 reviews,
                 ct))
         .WithName("RequestChangesModerationReview")
@@ -184,19 +198,20 @@ public static class ModerationEndpoints
         .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
         // Backward compatible route aliases
-        group.MapPost("/queue/{id}/approve", async (string id, [FromBody] ApproveRequest req, ITokenService tokens, HttpContext ctx, IReviewDecisionService reviews, CancellationToken ct) =>
-            await SubmitDecisionAsync(id, new ReviewDecisionRequest(AuthEndpoints.ResolveUserId(ctx, tokens) ?? string.Empty, ReviewDecisionKind.Approve, req.Note), reviews, ct));
+        group.MapPost("/queue/{id}/approve", async (string id, [FromBody] ApproveRequest req, ITokenService tokens, HttpContext ctx, IOperationalTelemetry telemetry, IReviewDecisionService reviews, CancellationToken ct) =>
+            await SubmitDecisionAsync(id, new ReviewDecisionRequest(AuthEndpoints.ResolveUserId(ctx, tokens) ?? string.Empty, ReviewDecisionKind.Approve, req.Note), telemetry, reviews, ct));
 
-        group.MapPost("/queue/{id}/reject", async (string id, [FromBody] RejectRequest req, ITokenService tokens, HttpContext ctx, IReviewDecisionService reviews, CancellationToken ct) =>
-            await SubmitDecisionAsync(id, new ReviewDecisionRequest(AuthEndpoints.ResolveUserId(ctx, tokens) ?? string.Empty, ReviewDecisionKind.Reject, req.Note, [req.RejectionReason]), reviews, ct));
+        group.MapPost("/queue/{id}/reject", async (string id, [FromBody] RejectRequest req, ITokenService tokens, HttpContext ctx, IOperationalTelemetry telemetry, IReviewDecisionService reviews, CancellationToken ct) =>
+            await SubmitDecisionAsync(id, new ReviewDecisionRequest(AuthEndpoints.ResolveUserId(ctx, tokens) ?? string.Empty, ReviewDecisionKind.Reject, req.Note, [req.RejectionReason]), telemetry, reviews, ct));
 
-        group.MapPost("/queue/{id}/request-changes", async (string id, [FromBody] RequestChangesRequest req, ITokenService tokens, HttpContext ctx, IReviewDecisionService reviews, CancellationToken ct) =>
-            await SubmitDecisionAsync(id, new ReviewDecisionRequest(AuthEndpoints.ResolveUserId(ctx, tokens) ?? string.Empty, ReviewDecisionKind.RequestChanges, req.Note, [req.CorrectionInstructions]), reviews, ct));
+        group.MapPost("/queue/{id}/request-changes", async (string id, [FromBody] RequestChangesRequest req, ITokenService tokens, HttpContext ctx, IOperationalTelemetry telemetry, IReviewDecisionService reviews, CancellationToken ct) =>
+            await SubmitDecisionAsync(id, new ReviewDecisionRequest(AuthEndpoints.ResolveUserId(ctx, tokens) ?? string.Empty, ReviewDecisionKind.RequestChanges, req.Note, [req.CorrectionInstructions]), telemetry, reviews, ct));
     }
 
     private static async Task<IResult> SubmitDecisionAsync(
         string id,
         ReviewDecisionRequest request,
+        IOperationalTelemetry telemetry,
         IReviewDecisionService reviews,
         CancellationToken ct)
     {
@@ -208,17 +223,43 @@ public static class ModerationEndpoints
             });
         }
 
-        var result = await reviews.SubmitDecisionAsync(id, request, ct);
-        if (!result.Accepted)
+        try
         {
-            return Results.UnprocessableEntity(new ProblemDetails
+            var result = await reviews.SubmitDecisionAsync(id, request, ct);
+            if (!result.Accepted)
             {
-                Title = "Decision could not be applied",
-                Detail = result.ErrorMessage,
-                Status = StatusCodes.Status422UnprocessableEntity,
-            });
-        }
+                telemetry.TrackEvent("moderation.decision.rejected", new Dictionary<string, string>
+                {
+                    ["itemId"] = id,
+                    ["decision"] = request.Decision.ToString(),
+                    ["actorId"] = request.ActorId,
+                });
 
-        return Results.Ok(result);
+                return Results.UnprocessableEntity(new ProblemDetails
+                {
+                    Title = "Decision could not be applied",
+                    Detail = result.ErrorMessage,
+                    Status = StatusCodes.Status422UnprocessableEntity,
+                });
+            }
+
+            telemetry.TrackEvent("moderation.decision.accepted", new Dictionary<string, string>
+            {
+                ["itemId"] = id,
+                ["decision"] = request.Decision.ToString(),
+                ["actorId"] = request.ActorId,
+            });
+            return Results.Ok(result);
+        }
+        catch (Exception ex)
+        {
+            telemetry.TrackException(ex, new Dictionary<string, string>
+            {
+                ["route"] = "/api/moderation/reviews",
+                ["itemId"] = id,
+                ["decision"] = request.Decision.ToString(),
+            });
+            throw;
+        }
     }
 }

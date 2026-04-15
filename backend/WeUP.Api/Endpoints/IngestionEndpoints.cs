@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using WeUP.Api.Observability;
 using WeUP.Contracts.Ingestion;
 using WeUP.Domain.Ingestion;
 
@@ -13,12 +14,30 @@ public static class IngestionEndpoints
         group.MapPost("/manual", async (
             [FromBody] ManualIngestionRequest request,
             IIngestionCoordinator coordinator,
+            IOperationalTelemetry telemetry,
             CancellationToken ct) =>
         {
-            var result = await coordinator.SubmitManualAsync(request, ct);
-            return Results.Accepted(
-                $"/api/ingestion/jobs/{result.JobId}",
-                new IngestionAcceptedResponse(result.JobId, result.Status, $"/api/ingestion/jobs/{result.JobId}"));
+            try
+            {
+                var result = await coordinator.SubmitManualAsync(request, ct);
+                telemetry.TrackEvent("ingestion.manual.accepted", new Dictionary<string, string>
+                {
+                    ["jobId"] = result.JobId,
+                    ["status"] = result.Status.ToString(),
+                });
+
+                return Results.Accepted(
+                    $"/api/ingestion/jobs/{result.JobId}",
+                    new IngestionAcceptedResponse(result.JobId, result.Status, $"/api/ingestion/jobs/{result.JobId}"));
+            }
+            catch (Exception ex)
+            {
+                telemetry.TrackException(ex, new Dictionary<string, string>
+                {
+                    ["route"] = "/api/ingestion/manual",
+                });
+                throw;
+            }
         })
         .WithName("IngestManual")
         .Produces<IngestionAcceptedResponse>(202);
@@ -26,6 +45,7 @@ public static class IngestionEndpoints
         group.MapPost("/url", async (
             [FromBody] UrlIngestionRequest request,
             IIngestionCoordinator coordinator,
+            IOperationalTelemetry telemetry,
             CancellationToken ct) =>
         {
             if (string.IsNullOrWhiteSpace(request.Url) || !Uri.TryCreate(request.Url, UriKind.Absolute, out _))
@@ -34,10 +54,27 @@ public static class IngestionEndpoints
                     { ["url"] = ["A valid absolute URL is required."] });
             }
 
-            var result = await coordinator.SubmitUrlAsync(request, ct);
-            return Results.Accepted(
-                $"/api/ingestion/jobs/{result.JobId}",
-                new IngestionAcceptedResponse(result.JobId, result.Status, $"/api/ingestion/jobs/{result.JobId}"));
+            try
+            {
+                var result = await coordinator.SubmitUrlAsync(request, ct);
+                telemetry.TrackEvent("ingestion.url.accepted", new Dictionary<string, string>
+                {
+                    ["jobId"] = result.JobId,
+                    ["status"] = result.Status.ToString(),
+                });
+
+                return Results.Accepted(
+                    $"/api/ingestion/jobs/{result.JobId}",
+                    new IngestionAcceptedResponse(result.JobId, result.Status, $"/api/ingestion/jobs/{result.JobId}"));
+            }
+            catch (Exception ex)
+            {
+                telemetry.TrackException(ex, new Dictionary<string, string>
+                {
+                    ["route"] = "/api/ingestion/url",
+                });
+                throw;
+            }
         })
         .WithName("IngestUrl")
         .Produces<IngestionAcceptedResponse>(202)
@@ -59,12 +96,30 @@ public static class IngestionEndpoints
         group.MapPost("/venue-page", async (
             [FromBody] VenuePageIngestionRequest request,
             IIngestionCoordinator coordinator,
+            IOperationalTelemetry telemetry,
             CancellationToken ct) =>
         {
-            var result = await coordinator.SubmitVenuePageAsync(request, ct);
-            return Results.Accepted(
-                $"/api/ingestion/jobs/{result.JobId}",
-                new IngestionAcceptedResponse(result.JobId, result.Status, $"/api/ingestion/jobs/{result.JobId}"));
+            try
+            {
+                var result = await coordinator.SubmitVenuePageAsync(request, ct);
+                telemetry.TrackEvent("ingestion.venue-page.accepted", new Dictionary<string, string>
+                {
+                    ["jobId"] = result.JobId,
+                    ["status"] = result.Status.ToString(),
+                });
+
+                return Results.Accepted(
+                    $"/api/ingestion/jobs/{result.JobId}",
+                    new IngestionAcceptedResponse(result.JobId, result.Status, $"/api/ingestion/jobs/{result.JobId}"));
+            }
+            catch (Exception ex)
+            {
+                telemetry.TrackException(ex, new Dictionary<string, string>
+                {
+                    ["route"] = "/api/ingestion/venue-page",
+                });
+                throw;
+            }
         })
         .WithName("IngestVenuePage")
         .Produces<IngestionAcceptedResponse>(202);
@@ -72,9 +127,16 @@ public static class IngestionEndpoints
         group.MapGet("/jobs/{id}", async (
             string id,
             IIngestionCoordinator coordinator,
+            IOperationalTelemetry telemetry,
             CancellationToken ct) =>
         {
             var job = await coordinator.GetJobAsync(id, ct);
+            telemetry.TrackEvent("ingestion.job.lookup", new Dictionary<string, string>
+            {
+                ["jobId"] = id,
+                ["found"] = (job is not null).ToString(),
+            });
+
             return job is null
                 ? Results.NotFound(new ProblemDetails { Title = "Ingestion job not found", Status = 404 })
                 : Results.Ok(job);
