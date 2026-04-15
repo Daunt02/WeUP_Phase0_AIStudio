@@ -132,17 +132,24 @@ builder.Services.AddSingleton<IFlyerConfidenceEvaluator, FlyerConfidenceEvaluato
 builder.Services.AddScoped<IFlyerIngestionPipeline, FlyerIngestionPipeline>();
 
 // Moderation queue (P13), publish eligibility (P14), review actions (P15)
-builder.Services.AddSingleton<InMemoryModerationQueue>();
-builder.Services.AddSingleton<IModerationQueueRepository>(sp => sp.GetRequiredService<InMemoryModerationQueue>());
+if (runtime.UsesDatabase)
+{
+    builder.Services.AddScoped<IModerationQueueRepository, EfModerationQueueRepository>();
+}
+else
+{
+    builder.Services.AddSingleton<InMemoryModerationQueue>();
+    builder.Services.AddSingleton<IModerationQueueRepository>(sp => sp.GetRequiredService<InMemoryModerationQueue>());
+}
 builder.Services.AddSingleton<IAuditTrailService, InMemoryAuditTrail>();
-builder.Services.AddSingleton<IModerationQueueService, ModerationQueueService>();
+builder.Services.AddScoped<IModerationQueueService, ModerationQueueService>();
 builder.Services.AddScoped<IModerationEvidenceService, ModerationEvidenceService>();
 builder.Services.AddSingleton<IConfidenceScoringService, ConfidenceScoringService>();
 builder.Services.AddSingleton<IPublishEligibilityService, PublishEligibilityService>();
-builder.Services.AddSingleton<ReviewActionService>();
-builder.Services.AddSingleton<IReviewActionService>(sp => sp.GetRequiredService<ReviewActionService>());
+builder.Services.AddScoped<ReviewActionService>();
+builder.Services.AddScoped<IReviewActionService>(sp => sp.GetRequiredService<ReviewActionService>());
 builder.Services.AddScoped<IReviewDecisionService, ReviewDecisionService>();
-builder.Services.AddSingleton<IRollbackService>(sp => sp.GetRequiredService<ReviewActionService>());
+builder.Services.AddScoped<IRollbackService>(sp => sp.GetRequiredService<ReviewActionService>());
 builder.Services.AddSingleton<IModerationAuthorizationService, AllowAllModerationAuthorizationService>();
 builder.Services.AddScoped<ModeratorAuthorizationFilter>();
 

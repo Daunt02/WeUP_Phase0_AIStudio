@@ -1,5 +1,6 @@
 import rawSeed from "@/seed/phase0-dataset.json";
 import { NightlifeItem } from "@/types";
+import type { SubmissionDraftProjection } from "@/features/world/runtimeTypes";
 
 type RawSeed = typeof rawSeed;
 type RawEvent = RawSeed["events"][number];
@@ -65,7 +66,7 @@ export function getSeedEvent(eventId: string): NightlifeItem | undefined {
 export function getDeterministicDraft(
   source: "UPLOAD" | "LINK" | "MANUAL" | "CENTER",
   mapCenter: { lat: number; lng: number },
-): Partial<NightlifeItem> {
+): Partial<SubmissionDraftProjection> {
   const midnightGroove = getSeedEvent(PRIMARY_EVENT_ID) ?? SEEDED_EVENTS[0];
   const rooftopSignals =
     getSeedEvent("evt-sf-rooftop-signals") ??
@@ -79,17 +80,16 @@ export function getDeterministicDraft(
         title: "Neon Market After Hours",
         description:
           "Deterministic upload extraction preview for release validation.",
-        venue_name: midnightGroove.venue_name,
+        venueName: midnightGroove.venue_name,
         address: midnightGroove.address,
         latitude: midnightGroove.latitude,
         longitude: midnightGroove.longitude,
-        start_time: "2026-04-13T03:30:00Z",
-        end_time: "2026-04-13T07:00:00Z",
+        startTime: "2026-04-13T03:30:00Z",
+        endTime: "2026-04-13T07:00:00Z",
         category: "nightlife",
-        price_tier: "$$",
+        priceTier: "$$",
         source: "manual",
-        image_url:
-          "https://picsum.photos/seed/weup-upload-neon-market/800/1200",
+        imageUrl: "https://picsum.photos/seed/weup-upload-neon-market/800/1200",
         status: "NEEDS_REVIEW",
         confidence: 0.91,
         tags: ["After Hours", "House"],
@@ -100,16 +100,16 @@ export function getDeterministicDraft(
         title: "Rooftop Signals Late Session",
         description:
           "Deterministic pasted-link extraction preview for release validation.",
-        venue_name: rooftopSignals.venue_name,
+        venueName: rooftopSignals.venue_name,
         address: rooftopSignals.address,
         latitude: rooftopSignals.latitude,
         longitude: rooftopSignals.longitude,
-        start_time: "2026-04-12T00:00:00Z",
-        end_time: "2026-04-12T03:00:00Z",
+        startTime: "2026-04-12T00:00:00Z",
+        endTime: "2026-04-12T03:00:00Z",
         category: "rooftop",
-        price_tier: "$$$",
+        priceTier: "$$$",
         source: "manual",
-        image_url:
+        imageUrl:
           "https://picsum.photos/seed/weup-link-rooftop-session/800/1200",
         status: "PUBLISHED",
         confidence: 0.94,
@@ -121,16 +121,16 @@ export function getDeterministicDraft(
         title: "Seeded Map Center Signal",
         description:
           "Deterministic center-drop draft used for manual validation flows.",
-        venue_name: "Map Center",
+        venueName: "Map Center",
         address: "Centered on current map viewport",
         latitude: mapCenter.lat,
         longitude: mapCenter.lng,
-        start_time: rawSeed.meta.fixedNow,
-        end_time: "2026-04-11T20:00:00Z",
+        startTime: rawSeed.meta.fixedNow,
+        endTime: "2026-04-11T20:00:00Z",
         category: "nightlife",
-        price_tier: "$$",
+        priceTier: "$$",
         source: "manual",
-        image_url: "https://picsum.photos/seed/weup-center-signal/800/1200",
+        imageUrl: "https://picsum.photos/seed/weup-center-signal/800/1200",
         status: "DRAFT",
         confidence: 0.5,
         tags: ["Draft"],
@@ -141,16 +141,16 @@ export function getDeterministicDraft(
         id: "draft-manual-seeded-signal",
         title: "",
         description: "",
-        venue_name: "",
+        venueName: "",
         address: "",
         latitude: mapCenter.lat,
         longitude: mapCenter.lng,
-        start_time: rawSeed.meta.fixedNow,
-        end_time: "2026-04-11T20:00:00Z",
+        startTime: rawSeed.meta.fixedNow,
+        endTime: "2026-04-11T20:00:00Z",
         category: "nightlife",
-        price_tier: "$$",
+        priceTier: "$$",
         source: "manual",
-        image_url: "https://picsum.photos/seed/weup-manual-signal/800/1200",
+        imageUrl: "https://picsum.photos/seed/weup-manual-signal/800/1200",
         status: "DRAFT",
         confidence: 0,
         tags: [],

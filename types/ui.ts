@@ -21,19 +21,20 @@ export type ModalState =
 export type TemporalMode = "TODAY" | "NEXT_7_DAYS" | "CUSTOM_DATE";
 
 // Draft object used while creating a new event on the UI surface. Ephemeral by default.
+// Field names are camelCase — mirrors GhostEventDraft and SubmissionDraftProjection.
 export interface GhostDraft {
   id?: string;
   latitude?: number;
   longitude?: number;
   title?: string;
-  venue_name?: string;
+  venueName?: string;
   address?: string;
-  category?: string;
-  start_time?: string;
-  end_time?: string;
+  category?: import("@/domains/event/types").EventCategory | string;
+  startTime?: string;
+  endTime?: string;
   description?: string;
-  image_url?: string;
-  price_tier?: string;
+  imageUrl?: string;
+  priceTier?: string;
   tags?: string[];
 }
 

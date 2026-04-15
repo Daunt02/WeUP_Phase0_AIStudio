@@ -30,6 +30,7 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
     public DbSet<VideoProcessingJobEntity> VideoProcessingJobs => Set<VideoProcessingJobEntity>();
     public DbSet<VideoDerivedFrameEntity> VideoDerivedFrames => Set<VideoDerivedFrameEntity>();
     public DbSet<EventSubmissionEntity> EventSubmissions => Set<EventSubmissionEntity>();
+    public DbSet<ModerationQueueItemEntity> ModerationQueueItems => Set<ModerationQueueItemEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -384,6 +385,29 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
             b.HasIndex(e => e.ProcessingJobId);
             b.HasIndex(e => new { e.SourceVideoAssetId, e.IsPosterSelected });
             b.HasIndex(e => e.DerivedAssetId).IsUnique();
+        });
+
+        modelBuilder.Entity<ModerationQueueItemEntity>(b =>
+        {
+            b.ToTable("moderation_queue_items");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.ItemId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.Kind).HasMaxLength(64).IsRequired();
+            b.Property(e => e.Status).HasMaxLength(64).IsRequired();
+            b.Property(e => e.CandidateJson).HasColumnType("jsonb");
+            b.Property(e => e.ProvenanceJson).HasColumnType("jsonb").IsRequired();
+            b.Property(e => e.ConfidenceJson).HasColumnType("jsonb").IsRequired();
+            b.Property(e => e.DedupeMatchJson).HasColumnType("jsonb");
+            b.Property(e => e.IngestionJobJson).HasColumnType("jsonb");
+            b.Property(e => e.ReviewReasonsJson).HasColumnType("jsonb").IsRequired();
+            b.Property(e => e.HistoryJson).HasColumnType("jsonb").IsRequired();
+            b.Property(e => e.AssignedReviewerId).HasMaxLength(128);
+            b.Property(e => e.LinkedEventId).HasMaxLength(128);
+            b.HasIndex(e => e.ItemId).IsUnique();
+            b.HasIndex(e => e.Status);
+            b.HasIndex(e => e.Kind);
+            b.HasIndex(e => e.AssignedReviewerId);
+            b.HasIndex(e => e.CreatedAt);
         });
     }
 }

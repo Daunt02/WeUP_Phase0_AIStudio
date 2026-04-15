@@ -4,7 +4,6 @@ import TopBar from "@/components/TopBar";
 import RadarMap from "@/components/RadarMap";
 import BottomNav from "@/components/BottomNav";
 import CulturalCalendar from "@/components/CulturalCalendar";
-import SocialSignalPanel from "@/components/SocialSignalPanel";
 import SavedEvents from "@/components/SavedEvents";
 import ProfilePanel from "@/components/ProfilePanel";
 import TimelineControl from "@/components/TimelineControl";
@@ -22,14 +21,7 @@ import {
   SubmissionDraftProjection,
   TemporalPresetSelection,
   SelectedEventId,
-  GhostDraftPatch,
 } from "@/features/world/runtimeTypes";
-import {
-  fromLegacyDraftPatch,
-  fromLegacyNightlifeItem,
-  toLegacyDraftPatch,
-  toLegacyNightlifeItem,
-} from "@/features/world/legacyBoundary";
 
 export default function WorldCoordinator() {
   const {
@@ -101,12 +93,11 @@ export default function WorldCoordinator() {
   );
 
   const handleGhostUpdate = useCallback(
-    (patch: GhostDraftPatch | null) => {
+    (patch: Partial<SubmissionDraftProjection> | null) => {
       if (patch) {
-        beginDraft(toLegacyDraftPatch(patch));
+        beginDraft(patch);
         return;
       }
-
       updateDraft({});
     },
     [beginDraft, updateDraft],
@@ -228,18 +219,18 @@ export default function WorldCoordinator() {
       <AddEventModal
         isVisible={topModalKind === "ADD_EVENT"}
         onClose={() => closeModal()}
-        onPublish={async (event) =>
-          handleConfirmPublish(fromLegacyNightlifeItem(event))
+        onPublish={handleConfirmPublish}
+        onGhostUpdate={handleGhostUpdate}
+        ghostEvent={
+          state.ghostDraft as
+            | import("@/features/world/runtimeTypes").SubmissionDraftProjection
+            | null
         }
-        onGhostUpdate={(patch) =>
-          handleGhostUpdate(patch ? fromLegacyDraftPatch(patch) : null)
-        }
-        ghostEvent={state.ghostDraft}
         mapCenter={state.mapCenter}
       />
 
       <EventSignalModal
-        event={selectedEvent ? toLegacyNightlifeItem(selectedEvent) : null}
+        event={selectedEvent}
         state={
           state.modal.kind === "STACK" &&
           state.modal.stack.includes("EVENT_DETAIL")

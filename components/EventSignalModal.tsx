@@ -3,7 +3,8 @@
 import React, { useMemo, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Image from "next/image";
-import { NightlifeItem, EventSignalState } from "@/types";
+import { EventSignalState } from "@/types";
+import type { RuntimeEventProjection } from "@/features/world/runtimeTypes";
 import {
   X,
   MapPin,
@@ -24,7 +25,7 @@ import {
 } from "lucide-react";
 
 interface EventSignalModalProps {
-  event: NightlifeItem | null;
+  event: RuntimeEventProjection | null;
   state: EventSignalState;
   onClose: () => void;
   onSave?: (id: string) => void;
@@ -260,7 +261,7 @@ export default function EventSignalModal({
               {/* Media Section */}
               <div className="w-full md:w-1/2 h-[40vh] md:h-auto relative shrink-0">
                 <Image
-                  src={event.image_url}
+                  src={event.imageUrl}
                   alt={event.title}
                   fill
                   className="object-cover"
@@ -304,7 +305,7 @@ export default function EventSignalModal({
                         <div className="flex items-center gap-2">
                           <MapPin size={12} className={config.color} />
                           <p className="text-xs font-black uppercase text-white/80">
-                            {event.venue_name}
+                            {event.venueName}
                           </p>
                         </div>
                         <p className="text-[10px] text-white/40 ml-5 leading-tight">
@@ -319,18 +320,15 @@ export default function EventSignalModal({
                           <Clock size={12} className={config.color} />
                           <p className="text-xs font-black uppercase text-white/80">
                             {isClient &&
-                              new Date(event.start_time).toLocaleTimeString(
-                                [],
-                                {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  hour12: false,
-                                },
-                              )}
+                              new Date(event.startTime).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: false,
+                              })}
                           </p>
                         </div>
                         <p className="text-[10px] text-white/40 ml-5">
-                          {new Date(event.start_time).toLocaleDateString([], {
+                          {new Date(event.startTime).toLocaleDateString([], {
                             weekday: "short",
                             month: "short",
                             day: "numeric",
@@ -357,7 +355,7 @@ export default function EventSignalModal({
                             initial={{ scaleY: 0.5, opacity: 0.3 }}
                             animate={{
                               scaleY: [0.5, 1, 0.5],
-                              opacity: i < (event.energyLevel || 8) ? 1 : 0.1,
+                              opacity: i < 8 ? 1 : 0.1,
                             }}
                             transition={{
                               duration: 1.5,
@@ -365,7 +363,7 @@ export default function EventSignalModal({
                               delay: i * 0.1,
                               ease: "easeInOut",
                             }}
-                            className={`flex-1 rounded-full ${i < (event.energyLevel || 8) ? config.color.replace("text-", "bg-") : "bg-white/10"}`}
+                            className={`flex-1 rounded-full ${i < 8 ? config.color.replace("text-", "bg-") : "bg-white/10"}`}
                           />
                         ))}
                       </div>

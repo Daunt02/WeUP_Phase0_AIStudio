@@ -531,7 +531,13 @@ export default function RadarMap({
           // Dim roads, buildings, and water - but keep them sharp
           if (["line", "fill", "fill-extrusion"].includes(layer.type)) {
             try {
-              map.setPaintProperty(layer.id, `${layer.type}-opacity`, 0.45); // Increased opacity for readability
+              map.setPaintProperty(
+                layer.id,
+                `${layer.type}-opacity` as Parameters<
+                  typeof map.setPaintProperty
+                >[1],
+                0.45,
+              ); // Increased opacity for readability
             } catch (e) {
               // Some layers might not support opacity
             }

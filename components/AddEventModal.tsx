@@ -19,8 +19,8 @@ import {
   AlertCircle,
 } from "lucide-react";
 import Image from "next/image";
-import { NightlifeItem } from "@/types";
 import { publicEnv } from "../lib/env/public";
+import type { SubmissionDraftProjection } from "@/features/world/runtimeTypes";
 import {
   getDeterministicDraft,
   PHASE0_FIXED_NOW,
@@ -30,9 +30,9 @@ import { uploadFlyer } from "@/services/mediaService";
 interface AddEventModalProps {
   isVisible: boolean;
   onClose: () => void;
-  onPublish: (event: NightlifeItem) => Promise<any> | void;
-  onGhostUpdate: (event: Partial<NightlifeItem> | null) => void;
-  ghostEvent?: Partial<NightlifeItem> | null;
+  onPublish: (event: SubmissionDraftProjection) => Promise<any> | void;
+  onGhostUpdate: (event: Partial<SubmissionDraftProjection> | null) => void;
+  ghostEvent?: Partial<SubmissionDraftProjection> | null;
   mapCenter: { lat: number; lng: number };
 }
 
@@ -59,7 +59,7 @@ export default function AddEventModal({
   const [step, setStep] = useState<Step>("CHOICE");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [extractedData, setExtractedData] =
-    useState<Partial<NightlifeItem> | null>(null);
+    useState<Partial<SubmissionDraftProjection> | null>(null);
   const [confidenceScore, setConfidenceScore] = useState(0);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isGeocoding, setIsGeocoding] = useState(false);
@@ -233,12 +233,12 @@ export default function AddEventModal({
       const rawAddress = seededDraft.address || "";
       const geocodeResult = await geocodeAddress(rawAddress);
 
-      const mockExtracted: Partial<NightlifeItem> = {
+      const mockExtracted: Partial<SubmissionDraftProjection> = {
         ...seededDraft,
-        image_url:
+        imageUrl:
           source === "UPLOAD"
-            ? uploadedPreviewUrl || seededDraft.image_url
-            : seededDraft.image_url,
+            ? uploadedPreviewUrl || seededDraft.imageUrl
+            : seededDraft.imageUrl,
         address:
           geocodeResult?.full_address || seededDraft.address || rawAddress,
         latitude:
@@ -269,8 +269,8 @@ export default function AddEventModal({
     // STRICT VALIDATION
     if (
       !extractedData.title ||
-      !extractedData.start_time ||
-      !extractedData.venue_name ||
+      !extractedData.startTime ||
+      !extractedData.venueName ||
       !extractedData.address ||
       !extractedData.latitude ||
       !extractedData.longitude
@@ -281,18 +281,18 @@ export default function AddEventModal({
       return;
     }
 
-    const finalEvent: NightlifeItem = {
-      ...(extractedData as NightlifeItem),
+    const finalEvent: SubmissionDraftProjection = {
+      ...(extractedData as SubmissionDraftProjection),
       id:
         extractedData.id ||
         buildDraftId(extractedData.title || "phase0-signal"),
-      price_tier: extractedData.price_tier || "$$",
+      priceTier: extractedData.priceTier || "$$",
       source: "manual",
       status: "PUBLISHED",
       confidence: extractedData.confidence || 1,
     };
 
-    const submissionPayload: NightlifeItem & { flyerAssetIds?: string[] } = {
+    const submissionPayload: SubmissionDraftProjection = {
       ...finalEvent,
       ...(uploadedFlyerAssetId
         ? { flyerAssetIds: [uploadedFlyerAssetId] }
@@ -508,7 +508,7 @@ export default function AddEventModal({
               <div className="space-y-6">
                 <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-white/10">
                   <Image
-                    src={extractedData.image_url || ""}
+                    src={extractedData.imageUrl || ""}
                     alt="Preview"
                     fill
                     className="object-cover"
@@ -520,7 +520,7 @@ export default function AddEventModal({
                       {extractedData.title}
                     </h3>
                     <p className="text-[10px] font-mono text-white/60 uppercase tracking-widest mt-1">
-                      {extractedData.venue_name}
+                      {extractedData.venueName}
                     </p>
                   </div>
                 </div>
@@ -529,18 +529,16 @@ export default function AddEventModal({
                   <div className="p-3 bg-white/5 rounded-xl border border-white/10 flex items-center gap-3">
                     <Calendar size={14} className="text-brand-primary" />
                     <span className="text-[10px] font-mono text-white/80 uppercase tracking-widest">
-                      {extractedData.start_time
-                        ? new Date(
-                            extractedData.start_time,
-                          ).toLocaleDateString()
+                      {extractedData.startTime
+                        ? new Date(extractedData.startTime).toLocaleDateString()
                         : "DATE_MISSING"}
                     </span>
                   </div>
                   <div className="p-3 bg-white/5 rounded-xl border border-white/10 flex items-center gap-3">
                     <Clock size={14} className="text-brand-primary" />
                     <span className="text-[10px] font-mono text-white/80 uppercase tracking-widest">
-                      {extractedData.start_time
-                        ? new Date(extractedData.start_time).toLocaleTimeString(
+                      {extractedData.startTime
+                        ? new Date(extractedData.startTime).toLocaleTimeString(
                             [],
                             { hour: "2-digit", minute: "2-digit" },
                           )
@@ -646,11 +644,11 @@ export default function AddEventModal({
                       <div className="flex-1 min-w-0">
                         <input
                           className="w-full bg-transparent border-b border-white/10 text-[10px] font-black uppercase text-white outline-none focus:border-brand-primary pb-1"
-                          value={extractedData.venue_name}
+                          value={extractedData.venueName}
                           onChange={(e) =>
                             setExtractedData({
                               ...extractedData,
-                              venue_name: e.target.value,
+                              venueName: e.target.value,
                             })
                           }
                           placeholder="VENUE_NAME"
@@ -736,9 +734,9 @@ export default function AddEventModal({
               <div className="space-y-6">
                 <div className="flex gap-4">
                   <div className="relative w-24 h-32 rounded-2xl overflow-hidden bg-white/5 shrink-0 border border-white/10">
-                    {extractedData.image_url ? (
+                    {extractedData.imageUrl ? (
                       <Image
-                        src={extractedData.image_url}
+                        src={extractedData.imageUrl}
                         alt="Flyer"
                         fill
                         className="object-cover"
@@ -772,11 +770,11 @@ export default function AddEventModal({
                       </label>
                       <input
                         className="w-full bg-transparent border-b border-white/10 text-xs font-bold uppercase text-white/80 focus:border-brand-primary outline-none pb-1"
-                        value={extractedData.venue_name}
+                        value={extractedData.venueName}
                         onChange={(e) =>
                           setExtractedData({
                             ...extractedData,
-                            venue_name: e.target.value,
+                            venueName: e.target.value,
                           })
                         }
                       />
@@ -792,13 +790,13 @@ export default function AddEventModal({
                     <input
                       type="date"
                       className="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-[10px] text-white/80 font-mono outline-none focus:border-brand-primary"
-                      value={extractedData.start_time?.split("T")[0]}
+                      value={extractedData.startTime?.split("T")[0]}
                       onChange={(e) => {
                         const time =
-                          extractedData.start_time?.split("T")[1] || "20:00:00";
+                          extractedData.startTime?.split("T")[1] || "20:00:00";
                         setExtractedData({
                           ...extractedData,
-                          start_time: `${e.target.value}T${time}`,
+                          startTime: `${e.target.value}T${time}`,
                         });
                       }}
                     />
@@ -810,16 +808,16 @@ export default function AddEventModal({
                     <input
                       type="time"
                       className="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-[10px] text-white/80 font-mono outline-none focus:border-brand-primary"
-                      value={extractedData.start_time
+                      value={extractedData.startTime
                         ?.split("T")[1]
                         ?.substring(0, 5)}
                       onChange={(e) => {
                         const date =
-                          extractedData.start_time?.split("T")[0] ||
+                          extractedData.startTime?.split("T")[0] ||
                           PHASE0_FIXED_NOW.split("T")[0];
                         setExtractedData({
                           ...extractedData,
-                          start_time: `${date}T${e.target.value}:00`,
+                          startTime: `${date}T${e.target.value}:00`,
                         });
                       }}
                     />
@@ -836,7 +834,8 @@ export default function AddEventModal({
                     onChange={(e) =>
                       setExtractedData({
                         ...extractedData,
-                        category: e.target.value,
+                        category: e.target
+                          .value as import("@/domains/event/types").EventCategory,
                       })
                     }
                   >

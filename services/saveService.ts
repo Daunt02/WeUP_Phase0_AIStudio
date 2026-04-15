@@ -3,7 +3,7 @@ import { toApiUrl } from "@/services/apiBase";
 import type { SavedEventsResponse } from "@/services/backendContracts";
 
 type SavedEventsApiPayload = SavedEventsResponse & {
-  Items?: Array<{ eventId?: string; EventId?: string }>;
+  Items?: Array<{ eventId?: string }>;
   HasNextPage?: boolean;
 };
 
@@ -14,7 +14,7 @@ function extractSavedIds(payload: SavedEventsApiPayload): string[] {
     new Set(
       items
         .map((item) => {
-          const id = item.eventId ?? item.EventId;
+          const id = item.eventId;
           return typeof id === "string" ? id.trim() : "";
         })
         .filter((id) => id.length > 0),
