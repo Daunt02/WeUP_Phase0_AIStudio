@@ -20,7 +20,6 @@ const initialState: WorldSurfaceState = {
   temporalMode: "TODAY",
   selectedDate: "DAY 1",
   // Persisted-ready fields
-  savedEventIds: [],
   lastKnownMapCenter: { lat: 29.7604, lng: -95.3698 },
   ghostDraft: null,
 };
@@ -60,17 +59,6 @@ function reducer(
       return { ...state, temporalMode: action.mode };
     case "SET_SELECTED_DATE":
       return { ...state, selectedDate: action.date };
-    case "SET_SAVED_EVENT_IDS":
-      return { ...state, savedEventIds: action.ids };
-    case "TOGGLE_SAVE_EVENT": {
-      const exists = state.savedEventIds.includes(action.id);
-      return {
-        ...state,
-        savedEventIds: exists
-          ? state.savedEventIds.filter((i) => i !== action.id)
-          : [...state.savedEventIds, action.id],
-      };
-    }
     case "BEGIN_DRAFT":
       return { ...state, ghostDraft: action.draft };
     case "UPDATE_DRAFT":
@@ -127,14 +115,6 @@ export function useWorldSurfaceState() {
     (date: string) => dispatch({ type: "SET_SELECTED_DATE", date }),
     [],
   );
-  const setSavedEventIds = useCallback(
-    (ids: string[]) => dispatch({ type: "SET_SAVED_EVENT_IDS", ids }),
-    [],
-  );
-  const toggleSave = useCallback(
-    (id: string) => dispatch({ type: "TOGGLE_SAVE_EVENT", id }),
-    [],
-  );
   const beginDraft = useCallback(
     (draft: GhostDraft) => dispatch({ type: "BEGIN_DRAFT", draft }),
     [],
@@ -178,8 +158,6 @@ export function useWorldSurfaceState() {
     setMapCenter,
     setMapBounds,
     setSelectedDate,
-    setSavedEventIds,
-    toggleSave,
     beginDraft,
     updateDraft,
     publishDraft,

@@ -45,13 +45,11 @@ export default function WorldCoordinator() {
     beginDraft,
     updateDraft,
     publishDraft,
-    setSavedEventIds,
     persistedSnapshot,
     restorePersistedState,
   } = useWorldSurfaceState();
 
-  const { savedEventIds, toggleSavedEvent, ingestLegacyLocalSaves } =
-    useSavedEventsAuthority();
+  const { savedEventIds, toggleSavedEvent } = useSavedEventsAuthority();
 
   // Persisted UI snapshot key
   const PERSIST_KEY = "weup.ui.persisted.v1";
@@ -64,19 +62,12 @@ export default function WorldCoordinator() {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === "object") {
           restorePersistedState(parsed);
-          if (Array.isArray(parsed.savedEventIds)) {
-            ingestLegacyLocalSaves(parsed.savedEventIds);
-          }
         }
       }
     } catch (err) {
       console.warn("Failed to restore persisted UI state", err);
     }
-  }, [restorePersistedState, ingestLegacyLocalSaves]);
-
-  useEffect(() => {
-    setSavedEventIds(savedEventIds);
-  }, [savedEventIds, setSavedEventIds]);
+  }, [restorePersistedState]);
 
   // Save persisted slice when it changes
   useEffect(() => {

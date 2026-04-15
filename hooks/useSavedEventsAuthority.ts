@@ -132,36 +132,6 @@ export function useSavedEventsAuthority() {
     void refresh();
   }, [refresh]);
 
-  const ingestLegacyLocalSaves = useCallback(
-    (legacyIds: string[]) => {
-      const normalized = normalizeEventIds(legacyIds);
-      if (normalized.length === 0) return;
-
-      const merged = Array.from(
-        new Set([...readAnonymousSavedEventIds(), ...normalized]),
-      );
-      writeAnonymousSavedEventIds(merged);
-
-      setState((current) => {
-        if (current.sessionKind === "authenticated") {
-          return current;
-        }
-
-        return {
-          ...current,
-          savedEventIds: Array.from(
-            new Set([...current.savedEventIds, ...merged]),
-          ),
-        };
-      });
-
-      if (getAuthHeader().Authorization) {
-        void refresh();
-      }
-    },
-    [refresh],
-  );
-
   const toggleSavedEvent = useCallback(
     async (eventId: string) => {
       const normalizedId = eventId.trim();
@@ -243,7 +213,6 @@ export function useSavedEventsAuthority() {
       toggleSavedEvent,
       refresh,
       clearError,
-      ingestLegacyLocalSaves,
     }),
     [
       state.sessionKind,
@@ -255,7 +224,6 @@ export function useSavedEventsAuthority() {
       toggleSavedEvent,
       refresh,
       clearError,
-      ingestLegacyLocalSaves,
     ],
   );
 }

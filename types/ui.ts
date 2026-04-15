@@ -40,8 +40,6 @@ export interface GhostDraft {
 // Persisted slice: what we consider safe to persist to localStorage.
 export interface PersistedUIState {
   lastKnownMapCenter: { lat: number; lng: number } | null;
-  // Backward-compat only for legacy local save migration.
-  savedEventIds?: string[];
 }
 
 // Transient UI: ephemeral during a session and not persisted automatically.
@@ -62,11 +60,7 @@ export interface TransientUIState {
   ghostDraft: GhostDraft | null;
 }
 
-// Full coordinator state keeps save IDs as an always-present synchronized field.
-export type WorldSurfaceState = TransientUIState &
-  Omit<PersistedUIState, "savedEventIds"> & {
-    savedEventIds: string[];
-  };
+export type WorldSurfaceState = TransientUIState & PersistedUIState;
 
 // Actions are discriminated union of typed events used to transition state.
 export type WorldAction =
@@ -87,8 +81,6 @@ export type WorldAction =
     }
   | { type: "SET_TEMPORAL_MODE"; mode: TemporalMode }
   | { type: "SET_SELECTED_DATE"; date: string }
-  | { type: "SET_SAVED_EVENT_IDS"; ids: string[] }
-  | { type: "TOGGLE_SAVE_EVENT"; id: string }
   | { type: "BEGIN_DRAFT"; draft: GhostDraft }
   | { type: "UPDATE_DRAFT"; patch: Partial<GhostDraft> }
   | { type: "PUBLISH_DRAFT"; id: string }

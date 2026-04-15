@@ -148,39 +148,6 @@ class EventService {
   }
 
   // ------------------------------------------------------------------
-  // Temporal feed seam — requests canonical time-window from backend
-  // ------------------------------------------------------------------
-
-  async fetchTemporalFeed(temporalQuery: unknown): Promise<MapFeedResponse> {
-    const windowPayload = await fetchJson<{
-      startUtc?: string;
-      StartUtc?: string;
-      endUtc?: string;
-      EndUtc?: string;
-      timezone?: string;
-      Timezone?: string;
-    }>("/api/temporal/window", {
-      method: "POST",
-      body: JSON.stringify(temporalQuery),
-    });
-
-    const window = {
-      startUtc: windowPayload.startUtc ?? windowPayload.StartUtc ?? new Date().toISOString(),
-      endUtc:
-        windowPayload.endUtc ??
-        windowPayload.EndUtc ??
-        new Date(Date.now() + 3_600_000).toISOString(),
-      timezone: windowPayload.timezone ?? windowPayload.Timezone ?? "UTC",
-    };
-
-    return this.fetchMapFeed({
-      bounds: { minLat: -90, minLng: -180, maxLat: 90, maxLng: 180 },
-      window,
-      filters: {},
-    });
-  }
-
-  // ------------------------------------------------------------------
   // Calendar feed — uses CalendarFeedQuery contract
   // ------------------------------------------------------------------
 
