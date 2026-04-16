@@ -117,14 +117,19 @@ builder.Services.AddHttpClient("ingestion").AddHttpMessageHandler<WeUP.Api.Obser
 if (runtime.UsesDatabase)
 {
     builder.Services.AddScoped<IIngestionJobRepository, EfIngestionJobRepository>();
+    builder.Services.AddScoped<IIngestionOrchestrationRepository, EfIngestionOrchestrationRepository>();
     builder.Services.AddScoped<IIngestionAuditWriter, ConsoleIngestionAuditWriter>();
 }
 else
 {
     builder.Services.AddSingleton<InMemoryIngestionJobRepository>();
     builder.Services.AddSingleton<IIngestionJobRepository>(sp => sp.GetRequiredService<InMemoryIngestionJobRepository>());
+    builder.Services.AddSingleton<IIngestionOrchestrationRepository, InMemoryIngestionOrchestrationRepository>();
     builder.Services.AddSingleton<IIngestionAuditWriter, ConsoleIngestionAuditWriter>();
 }
+
+builder.Services.AddSingleton<IIngestionLifecycleObserver, LoggingIngestionLifecycleObserver>();
+builder.Services.AddScoped<IIngestionOrchestrator, IngestionOrchestrator>();
 
 builder.Services.AddSingleton<IEventSourceAdapter, ManualSubmissionAdapter>();
 builder.Services.AddSingleton<IEventSourceAdapter, LinkAdapter>();

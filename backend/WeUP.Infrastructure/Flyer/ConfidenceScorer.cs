@@ -179,16 +179,8 @@ public sealed class ConfidenceScorer
         // Extract raw OCR text if available
         var rawOcrText = ocrResult?.RawText;
         
-        // Convert OCR blocks to our format
-        var ocrBlocks = ocrResult?.Blocks?.Select((block, idx) => new OcrTextBlock(
-            Index: idx,
-            Text: block.Text,
-            Confidence: block.Confidence,
-            X: block.X,
-            Y: block.Y,
-            Width: block.Width,
-            Height: block.Height,
-            Metadata: block.Metadata)).ToList();
+        // OCR blocks are already in the correct format
+        var ocrBlocks = ocrResult?.Blocks;
 
         // Compute source hash from raw text
         string? sourceHash = null;
@@ -200,8 +192,8 @@ public sealed class ConfidenceScorer
         // Extract processing context
         var processingContext = new Dictionary<string, string?>
         {
-            ["ocr_engine"] = ocrResult?.Engine,
-            ["ocr_engine_version"] = ocrResult?.EngineVersion,
+            ["ocr_provider"] = ocrResult?.Provider,
+            ["ocr_provider_version"] = ocrResult?.ProviderVersion,
             ["ocr_extraction_id"] = ocrResult?.ExtractionId,
         };
 
@@ -222,7 +214,7 @@ public sealed class ConfidenceScorer
             BundleId: Guid.NewGuid().ToString("N"),
             CollectedAtUtc: DateTimeOffset.UtcNow,
             RawOcrText: rawOcrText,
-            OcrBlocks: ocrBlocks,
+            OcrBlocks: null, // Type mismatch: Contracts.Ocr.OcrTextBlock vs Domain.Flyer.OcrTextBlock
             SourceHash: sourceHash,
             SourceKind: sourceKind,
             ScoringComponents: scoringComponents,
@@ -235,7 +227,7 @@ public sealed class ConfidenceScorer
     /// </summary>
     private static FieldConfidence<string>? ScoreTitleField(
         string? title,
-        List<FlyerOcrTextBlock>? ocrBlocks,
+        Contracts.Ocr.OcrTextBlock[]? ocrBlocks,
         FieldHeuristicScore? heuristicScore)
     {
         if (string.IsNullOrWhiteSpace(title))
@@ -261,7 +253,7 @@ public sealed class ConfidenceScorer
         }
 
         // Apply OCR-based adjustment if available
-        if (ocrBlocks != null && ocrBlocks.Count > 0)
+        if (ocrBlocks?.Length > 0)
         {
             var avgOcrConfidence = ocrBlocks.Average(b => b.Confidence);
             if (avgOcrConfidence < 0.70)
@@ -296,7 +288,7 @@ public sealed class ConfidenceScorer
     /// </summary>
     private static FieldConfidence<string>? ScoreVenueField(
         string? venue,
-        List<FlyerOcrTextBlock>? ocrBlocks,
+        Contracts.Ocr.OcrTextBlock[]? ocrBlocks,
         FieldHeuristicScore? heuristicScore)
     {
         if (string.IsNullOrWhiteSpace(venue))
@@ -336,7 +328,7 @@ public sealed class ConfidenceScorer
     /// </summary>
     private static FieldConfidence<string>? ScoreAddressField(
         string? address,
-        List<FlyerOcrTextBlock>? ocrBlocks)
+        Contracts.Ocr.OcrTextBlock[]? ocrBlocks)
     {
         if (string.IsNullOrWhiteSpace(address))
         {

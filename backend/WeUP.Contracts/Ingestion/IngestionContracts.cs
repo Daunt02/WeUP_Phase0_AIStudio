@@ -1,6 +1,7 @@
 namespace WeUP.Contracts.Ingestion;
 
 using System.Text.Json.Serialization;
+using WeUP.Contracts.Ocr;
 
 public enum IngestionSourceKind
 {
@@ -20,6 +21,12 @@ public enum IngestionJobStatus
     REQUIRES_REVIEW,
     FAILED,
     RETRYABLE_FAILURE,
+    Pending,
+    Processing,
+    OCR,
+    Normalized,
+    ReadyForDedup,
+    Completed,
 }
 
 public enum IngestionIssueSeverity
@@ -217,6 +224,44 @@ public sealed record IngestionStatusRecord(
     IngestionJobStatus Status,
     DateTimeOffset TimestampUtc,
     string? Detail = null);
+
+public sealed record IngestionEvidenceRecord(
+    string EvidenceId,
+    string Stage,
+    string Kind,
+    string Reference,
+    string? Payload,
+    DateTimeOffset ObservedAtUtc,
+    IReadOnlyDictionary<string, string?> Metadata);
+
+public sealed record NormalizedPayloadSnapshot(
+    string? Title,
+    string? Venue,
+    string? Address,
+    string? StartUtc,
+    string? EndUtc,
+    string[] Tags,
+    IReadOnlyDictionary<string, string?> RawFields,
+    IReadOnlyDictionary<string, double> FieldConfidences,
+    double AggregateConfidence);
+
+public sealed record IngestionJob(
+    string JobId,
+    string RequestId,
+    IngestionSourceType SourceType,
+    string SubmittedBy,
+    IngestionJobStatus Status,
+    RawIngestionPayload? Payload,
+    OcrResult? Ocr,
+    NormalizedPayloadSnapshot? Normalized,
+    IngestionEvidenceRecord[] Evidence,
+    IngestionStatusRecord[] Lifecycle,
+    int OcrAttemptCount,
+    string? ErrorMessage,
+    IReadOnlyDictionary<string, string?> Metadata,
+    DateTimeOffset CreatedAtUtc,
+    DateTimeOffset UpdatedAtUtc,
+    DateTimeOffset? CompletedAtUtc);
 
 public sealed record IngestionRequestEnvelope(
     string RequestId,
