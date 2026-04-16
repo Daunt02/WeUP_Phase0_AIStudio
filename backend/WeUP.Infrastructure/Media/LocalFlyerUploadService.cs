@@ -47,9 +47,16 @@ public sealed class LocalFlyerUploadService : IFlyerUploadService
         }
 
         // Persist upload first so all validation outcomes map to explicit lifecycle states.
-        fileStream.Position = 0;
-        await using var dest = File.OpenWrite(localPath);
-        await fileStream.CopyToAsync(dest, ct);
+        if (fileStream.CanSeek)
+        {
+            fileStream.Position = 0;
+        }
+
+        await using (var dest = File.OpenWrite(localPath))
+        {
+            await fileStream.CopyToAsync(dest, ct);
+        }
+
         var fileSizeBytes = new FileInfo(localPath).Length;
 
         var record = await _store.SaveAsync(new FlyerAssetRecord
