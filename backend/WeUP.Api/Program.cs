@@ -144,6 +144,7 @@ builder.Services.AddSingleton<IFlyerTextPostProcessor, FlyerTextPostProcessor>()
 builder.Services.AddSingleton<IOcrProvider, SidecarOcrProvider>();
 builder.Services.AddSingleton<IOcrService, ProviderBackedOcrService>();
 builder.Services.AddSingleton<IFlyerOcrService, FlyerOcrServiceAdapter>();
+builder.Services.AddSingleton<INormalizationEngine, NormalizationEngine>();
 builder.Services.AddSingleton<IFlyerNormalizationService, HeuristicFlyerNormalizationService>();
 builder.Services.AddSingleton<IFlyerConfidenceEvaluator, FlyerConfidenceEvaluator>();
 builder.Services.AddScoped<IFlyerIngestionPipeline, FlyerIngestionPipeline>();

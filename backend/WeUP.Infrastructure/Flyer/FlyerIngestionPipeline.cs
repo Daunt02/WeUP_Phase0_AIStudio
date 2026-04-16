@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using WeUP.Contracts.Ingestion;
+using WeUP.Contracts.Ocr;
 using WeUP.Domain.Flyer;
 using WeUP.Domain.Ingestion;
 using WeUP.Domain.Media;
@@ -759,30 +760,21 @@ public sealed class FlyerIngestionPipeline(
     }
 }
 
-public sealed class HeuristicFlyerNormalizationService : IFlyerNormalizationService
+public sealed class HeuristicFlyerNormalizationService(INormalizationEngine normalizationEngine) : IFlyerNormalizationService
 {
-    private const string Version = "heuristic-normalizer-v1";
+    private const string Version = "heuristic-normalizer-v1.0";
 
     public Task<FlyerNormalizationResult> NormalizeAsync(FlyerNormalizationRequest request, CancellationToken ct = default)
     {
-        var lines = request.CleanedText
-            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(l => l.Trim())
-            .Where(l => l.Length > 0)
-            .ToArray();
+        var ocrResult = ToContractOcrResult(request.Ocr, request.Metadata);
+        var extracted = normalizationEngine.Normalize(ocrResult);
 
-        var title = lines.FirstOrDefault();
-        var venue = FindTokenAfterKeyword(lines, "LOUNGE") ?? FindTokenAfterKeyword(lines, "VENUE") ?? "Skyline Lounge";
-        var address = lines.FirstOrDefault(l => l.Contains("ST", StringComparison.OrdinalIgnoreCase) || l.Contains("AVE", StringComparison.OrdinalIgnoreCase));
-        var start = "2026-04-24T20:00:00Z";
-        var category = InferCategory(request.CleanedText);
-
-        var titleCandidates = BuildCandidates(title, "Friday House Night", 0.78);
-        var venueCandidates = BuildCandidates(venue, "Skyline Lounge", 0.67);
-        var addressCandidates = BuildCandidates(address, "1201 Main St, Austin, TX", 0.61);
-        var dateCandidates = BuildCandidates(start, "2026-04-24T20:00:00Z", 0.64);
-        var endCandidates = BuildCandidates<string?>(null, null, 0.0);
-        var categoryCandidates = BuildCandidates(category, "nightlife", 0.57);
+        var titleCandidates = BuildCandidates(extracted.Title, GetScore(extracted, "title"), "ocr:title");
+        var venueCandidates = BuildCandidates(extracted.Venue, GetScore(extracted, "venue"), "ocr:venue");
+        var addressCandidates = BuildCandidates(extracted.Address, GetScore(extracted, "address"), "ocr:address");
+        var dateCandidates = BuildCandidates(ToIso(extracted.StartUtc), GetScore(extracted, "startUtc"), "ocr:startUtc");
+        var endCandidates = BuildCandidates(ToIso(extracted.EndUtc), GetScore(extracted, "endUtc"), "ocr:endUtc");
+        var categoryCandidates = Array.Empty<FlyerFieldValueCandidate>();
 
         var notes = new List<string>();
         var missing = new List<string>();
@@ -790,28 +782,36 @@ public sealed class HeuristicFlyerNormalizationService : IFlyerNormalizationServ
         var warnings = new List<FlyerExtractionWarning>();
         var reviewTriggers = new HashSet<FlyerReviewTriggerReason> { FlyerReviewTriggerReason.DedupePending };
 
-        if (string.IsNullOrWhiteSpace(title))
+        if (string.IsNullOrWhiteSpace(extracted.Title))
         {
             missing.Add("title");
             reviewTriggers.Add(FlyerReviewTriggerReason.MissingTitle);
             warnings.Add(new FlyerExtractionWarning("missing_title", "Could not determine flyer title.", "title", true, EmptyMetadata()));
         }
 
-        if (string.IsNullOrWhiteSpace(address))
+        if (string.IsNullOrWhiteSpace(extracted.Address))
         {
             missing.Add("address");
             reviewTriggers.Add(FlyerReviewTriggerReason.MissingAddress);
             warnings.Add(new FlyerExtractionWarning("missing_address", "No reliable address candidate found.", "address", true, EmptyMetadata()));
         }
 
-        if (string.IsNullOrWhiteSpace(venue))
+        if (string.IsNullOrWhiteSpace(extracted.Venue))
         {
             missing.Add("venue");
             reviewTriggers.Add(FlyerReviewTriggerReason.MissingVenue);
             warnings.Add(new FlyerExtractionWarning("missing_venue", "Venue name missing or ambiguous.", "venue", true, EmptyMetadata()));
         }
 
-        if (titleCandidates.Length > 1 || venueCandidates.Length > 1)
+        if (extracted.StartUtc is null)
+        {
+            missing.Add("startUtc");
+            reviewTriggers.Add(FlyerReviewTriggerReason.MissingDate);
+            warnings.Add(new FlyerExtractionWarning("missing_start_utc", "No explicit timezone datetime was found.", "startUtc", true, EmptyMetadata()));
+        }
+
+        if (GetRationale(extracted, "venue").Contains("ambiguous", StringComparison.OrdinalIgnoreCase)
+            || GetRationale(extracted, "title").Contains("ambiguous", StringComparison.OrdinalIgnoreCase))
         {
             ambiguities.Add("multiple_title_or_venue_candidates");
             reviewTriggers.Add(FlyerReviewTriggerReason.UnresolvedAmbiguity);
@@ -826,14 +826,23 @@ public sealed class HeuristicFlyerNormalizationService : IFlyerNormalizationServ
         if (missing.Count > 0)
         {
             reviewTriggers.Add(FlyerReviewTriggerReason.PartialExtraction);
+            reviewTriggers.Add(FlyerReviewTriggerReason.NormalizationIncomplete);
         }
 
-        notes.Add("Heuristic normalizer used; replace with LLM provider in production.");
+        notes.Add("Deterministic normalization engine v1.0 (no fabricated fallback values).");
+        notes.AddRange(extracted.FieldScores.Select(kvp => $"{kvp.Key}:{kvp.Value.Rationale}"));
 
-        var extraction = Math.Clamp((titleCandidates[0].Confidence + venueCandidates[0].Confidence + addressCandidates[0].Confidence + dateCandidates[0].Confidence) / 4.0, 0.0, 1.0);
-        var temporal = dateCandidates[0].Confidence;
-        var geocode = addressCandidates[0].Confidence;
-        var venueMatch = venueCandidates[0].Confidence;
+        var extractionSignals = new[]
+        {
+            GetScore(extracted, "title"),
+            GetScore(extracted, "venue"),
+            GetScore(extracted, "address"),
+            GetScore(extracted, "startUtc"),
+        };
+        var extraction = Math.Clamp(extractionSignals.Average(), 0.0, 1.0);
+        var temporal = GetScore(extracted, "startUtc");
+        var geocode = GetScore(extracted, "address");
+        var venueMatch = GetScore(extracted, "venue");
 
         var confidence = new FlyerConfidenceVector(
             Extraction: extraction,
@@ -854,68 +863,55 @@ public sealed class HeuristicFlyerNormalizationService : IFlyerNormalizationServ
                 w.Metadata))
             .ToArray();
 
-        CanonicalEventCandidate? canonical = null;
-        FlyerNormalizedEventCandidate? normalized = null;
+        var normalizationRunId = Guid.NewGuid().ToString("N");
+        var canonical = new NormalizedEventCandidate(
+            Title: extracted.Title,
+            VenueName: extracted.Venue,
+            Address: extracted.Address,
+            StartUtc: ToIso(extracted.StartUtc),
+            EndUtc: ToIso(extracted.EndUtc),
+            Timezone: null,
+            Category: null,
+            Description: null,
+            Tags: extracted.Tags.Length == 0 ? null : extracted.Tags,
+            SourceKind: "flyer_upload",
+            SourceRef: request.Asset.AssetId,
+            ExtractionConfidence: extraction,
+            GeocodeConfidence: geocode,
+            TemporalConfidence: temporal,
+            EvidenceRefs:
+            [
+                $"flyer-ocr-{request.Ocr.ExtractionId}",
+                $"flyer-asset-{request.Asset.AssetId}",
+            ],
+            ExternalSourceId: null,
+            Attributes: BuildAttributes(extracted, normalizationRunId));
 
-        if (!missing.Contains("title") && !missing.Contains("venue") && !missing.Contains("address"))
-        {
-            canonical = new NormalizedEventCandidate(
-                Title: titleCandidates[0].Value,
-                VenueName: venueCandidates[0].Value,
-                Address: addressCandidates[0].Value,
-                StartUtc: dateCandidates[0].Value,
-                EndUtc: null,
-                Timezone: "America/Chicago",
-                Category: categoryCandidates[0].Value,
-                Description: "Extracted from uploaded flyer evidence.",
-                Tags: ["flyer", "ingested"],
-                SourceKind: "flyer_upload",
-                SourceRef: request.Asset.AssetId,
-                ExtractionConfidence: extraction,
-                GeocodeConfidence: geocode,
-                TemporalConfidence: temporal,
-                EvidenceRefs:
-                [
-                    $"flyer-ocr-{request.Ocr.ExtractionId}",
-                    $"flyer-asset-{request.Asset.AssetId}",
-                ],
-                ExternalSourceId: null,
-                Attributes: new Dictionary<string, string?>
-                {
-                    ["normalizationRunId"] = request.JobId,
-                    ["normalizationVersion"] = Version,
-                });
-
-            normalized = new FlyerNormalizedEventCandidate(
-                CanonicalCandidate: canonical,
-                TitleCandidates: titleCandidates,
-                VenueCandidates: venueCandidates,
-                StartDateTimeCandidates: dateCandidates,
-                EndDateTimeCandidates: endCandidates,
-                AddressCandidates: addressCandidates,
-                CategoryCandidates: categoryCandidates,
-                Tags: ["flyer", "nightlife"],
-                DescriptiveNotes: notes.ToArray(),
-                MissingFields: missing.ToArray(),
-                UnresolvedAmbiguities: ambiguities.ToArray(),
-                FieldConfidence: new FlyerFieldConfidenceBreakdown(
-                    Title: titleCandidates[0].Confidence,
-                    Venue: venueCandidates[0].Confidence,
-                    Address: addressCandidates[0].Confidence,
-                    StartDateTime: dateCandidates[0].Confidence,
-                    EndDateTime: 0.0,
-                    Category: categoryCandidates[0].Confidence,
-                    Description: 0.45,
-                    Tags: 0.40),
-                Warnings: warnings.ToArray(),
-                ReviewTriggers: reviewTriggers.ToArray(),
-                NormalizationRunId: Guid.NewGuid().ToString("N"),
-                NormalizationVersion: Version);
-        }
-        else
-        {
-            reviewTriggers.Add(FlyerReviewTriggerReason.NormalizationIncomplete);
-        }
+        var normalized = new FlyerNormalizedEventCandidate(
+            CanonicalCandidate: canonical,
+            TitleCandidates: titleCandidates,
+            VenueCandidates: venueCandidates,
+            StartDateTimeCandidates: dateCandidates,
+            EndDateTimeCandidates: endCandidates,
+            AddressCandidates: addressCandidates,
+            CategoryCandidates: categoryCandidates,
+            Tags: extracted.Tags,
+            DescriptiveNotes: notes.ToArray(),
+            MissingFields: missing.ToArray(),
+            UnresolvedAmbiguities: ambiguities.ToArray(),
+            FieldConfidence: new FlyerFieldConfidenceBreakdown(
+                Title: GetScore(extracted, "title"),
+                Venue: GetScore(extracted, "venue"),
+                Address: GetScore(extracted, "address"),
+                StartDateTime: GetScore(extracted, "startUtc"),
+                EndDateTime: GetScore(extracted, "endUtc"),
+                Category: 0.0,
+                Description: 0.0,
+                Tags: GetScore(extracted, "tags")),
+            Warnings: warnings.ToArray(),
+            ReviewTriggers: reviewTriggers.ToArray(),
+            NormalizationRunId: normalizationRunId,
+            NormalizationVersion: Version);
 
         var requiresReview = reviewTriggers.Count > 0;
 
@@ -932,70 +928,70 @@ public sealed class HeuristicFlyerNormalizationService : IFlyerNormalizationServ
 
     private static IReadOnlyDictionary<string, string?> EmptyMetadata() => new Dictionary<string, string?>();
 
-    private static string? InferCategory(string text)
+    private static OcrResult ToContractOcrResult(FlyerOcrExtractionResult ocr, IReadOnlyDictionary<string, string?> metadata)
     {
-        var lower = text.ToLowerInvariant();
-        if (lower.Contains("house") || lower.Contains("dj") || lower.Contains("night"))
-        {
-            return "nightlife";
-        }
-
-        if (lower.Contains("concert") || lower.Contains("live"))
-        {
-            return "concert";
-        }
-
-        return "community";
+        return new OcrResult(
+            ExtractionId: ocr.ExtractionId,
+            JobId: ocr.JobId,
+            AssetId: ocr.AssetId,
+            Provider: ocr.Engine,
+            ProviderVersion: ocr.EngineVersion,
+            Confidence: ocr.Confidence,
+            Success: ocr.Success,
+            RawText: ocr.RawText,
+            Blocks: ocr.Blocks.Select(block => new WeUP.Contracts.Ocr.OcrTextBlock(
+                Index: block.Index,
+                Text: block.Text,
+                Confidence: block.Confidence,
+                X: block.X,
+                Y: block.Y,
+                Width: block.Width,
+                Height: block.Height,
+                Metadata: block.Metadata)).ToArray(),
+            FailureReason: ocr.Issues.FirstOrDefault(i => i.Field == "ocr")?.Message,
+            AttemptCount: 1,
+            StartedAtUtc: ocr.StartedAtUtc,
+            CompletedAtUtc: ocr.CompletedAtUtc,
+            Metadata: metadata);
     }
 
-    private static string? FindTokenAfterKeyword(string[] lines, string keyword)
+    private static string? ToIso(DateTimeOffset? value)
+        => value?.ToString("O", CultureInfo.InvariantCulture);
+
+    private static double GetScore(EventCandidate candidate, string field)
+        => candidate.FieldScores.TryGetValue(field, out var score) ? Math.Clamp(score.Confidence, 0.0, 1.0) : 0.0;
+
+    private static string GetRationale(EventCandidate candidate, string field)
+        => candidate.FieldScores.TryGetValue(field, out var score)
+            ? score.Rationale
+            : string.Empty;
+
+    private static FlyerFieldValueCandidate[] BuildCandidates(string? value, double confidence, string evidenceRef)
     {
-        foreach (var line in lines)
+        if (string.IsNullOrWhiteSpace(value))
         {
-            var idx = line.IndexOf(keyword, StringComparison.OrdinalIgnoreCase);
-            if (idx >= 0)
-            {
-                return line[(idx + keyword.Length)..].Trim(':', '-', ' ');
-            }
+            return [];
         }
 
-        return null;
+        return
+        [
+            new FlyerFieldValueCandidate(
+                Value: value,
+                Confidence: Math.Clamp(confidence, 0.0, 1.0),
+                EvidenceRefs: [evidenceRef],
+                IsSelected: true)
+        ];
     }
 
-    private static FlyerFieldValueCandidate[] BuildCandidates<T>(T? primary, T? fallback, double confidence)
+    private static IReadOnlyDictionary<string, string?> BuildAttributes(EventCandidate candidate, string normalizationRunId)
     {
-        var candidates = new List<FlyerFieldValueCandidate>();
-
-        if (primary is not null && !string.IsNullOrWhiteSpace(primary.ToString()))
+        return new Dictionary<string, string?>
         {
-            candidates.Add(new FlyerFieldValueCandidate(
-                Value: primary.ToString()!,
-                Confidence: confidence,
-                EvidenceRefs: ["ocr"],
-                IsSelected: true));
-        }
-
-        if (fallback is not null && !string.IsNullOrWhiteSpace(fallback.ToString()) && !string.Equals(primary?.ToString(), fallback.ToString(), StringComparison.OrdinalIgnoreCase))
-        {
-            candidates.Add(new FlyerFieldValueCandidate(
-                Value: fallback.ToString()!,
-                Confidence: Math.Max(0.1, confidence - 0.18),
-                EvidenceRefs: ["heuristic-fallback"],
-                IsSelected: candidates.Count == 0,
-                IsAmbiguous: candidates.Count > 0));
-        }
-
-        if (candidates.Count == 0)
-        {
-            candidates.Add(new FlyerFieldValueCandidate(
-                Value: string.Empty,
-                Confidence: 0.0,
-                EvidenceRefs: Array.Empty<string>(),
-                IsSelected: true,
-                IsAmbiguous: true));
-        }
-
-        return candidates.ToArray();
+            ["normalizationRunId"] = normalizationRunId,
+            ["normalizationVersion"] = Version,
+            ["rawFieldsJson"] = JsonSerializer.Serialize(candidate.RawFields),
+            ["fieldScoresJson"] = JsonSerializer.Serialize(candidate.FieldScores),
+        };
     }
 }
 
