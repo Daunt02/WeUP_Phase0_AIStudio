@@ -23,6 +23,7 @@ using WeUP.Infrastructure.Flyer;
 using WeUP.Infrastructure.Submissions;
 using WeUP.Infrastructure.Ingestion;
 using WeUP.Infrastructure.Ingestion.Adapters;
+using WeUP.Infrastructure.Ingestion.SourceAdapters;
 using WeUP.Infrastructure.Moderation;
 using WeUP.Infrastructure.Persistence;
 using WeUP.Infrastructure.Spatial;
@@ -128,6 +129,13 @@ builder.Services.AddSingleton<IEventSourceAdapter, LinkAdapter>();
 builder.Services.AddSingleton<IEventSourceAdapter, VenuePageAdapter>();
 builder.Services.AddSingleton<IEventSourceAdapterResolver, EventSourceAdapterResolver>();
 builder.Services.AddScoped<IIngestionCoordinator, IngestionCoordinator>();
+
+// Source adapter ingestion boundary v1.0 (strict fail-fast normalization)
+builder.Services.AddSingleton<ISourceAdapter, ImageUploadAdapter>();
+builder.Services.AddSingleton<ISourceAdapter, ImageUrlAdapter>();
+builder.Services.AddSingleton<ISourceAdapter, ManualEntryAdapter>();
+builder.Services.AddSingleton<ISourceAdapterResolver, SourceAdapterResolver>();
+builder.Services.AddScoped<IRawIngestionPayloadFactory, RawIngestionPayloadFactory>();
 
 // Flyer pipeline
 builder.Services.AddSingleton<IFlyerTextPostProcessor, FlyerTextPostProcessor>();
