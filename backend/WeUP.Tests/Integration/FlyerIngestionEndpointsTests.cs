@@ -3,7 +3,10 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using WeUP.Contracts.Ingestion;
+using WeUP.Contracts.Ocr;
+using WeUP.Infrastructure.Ocr;
 using Xunit;
 
 namespace WeUP.Tests.Integration;
@@ -126,7 +129,7 @@ public sealed class FlyerIngestionEndpointsTests : IClassFixture<FlyerIngestionE
         throw new InvalidOperationException("Fixture flyer not found. Expected flyers/IMG_6661.PNG in repository root hierarchy.");
     }
 
-    public sealed class FlyerIngestionApiFactory : WebApplicationFactory<Program>
+    public class FlyerIngestionApiFactory : WebApplicationFactory<Program>
     {
         protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
         {
@@ -134,6 +137,58 @@ public sealed class FlyerIngestionEndpointsTests : IClassFixture<FlyerIngestionE
             builder.UseSetting("SeedData:EnableOnStartup", "true");
             builder.UseSetting("SeedData:EnableResetEndpoint", "true");
             builder.UseSetting("SeedData:DatasetPath", "..\\..\\seed\\phase0-dataset.json");
+            builder.ConfigureServices(services =>
+            {
+                var existing = services.SingleOrDefault(descriptor => descriptor.ServiceType == typeof(IOcrProvider));
+                if (existing is not null)
+                {
+                    services.Remove(existing);
+                }
+
+                services.AddSingleton<IOcrProvider, DeterministicIntegrationOcrProvider>();
+            });
+        }
+    }
+
+    private sealed class DeterministicIntegrationOcrProvider : IOcrProvider
+    {
+        public string Name => "integration-ocr";
+        public string Version => "v1";
+
+        public Task<OcrResult> ExtractAsync(OcrProviderRequest request, CancellationToken ct = default)
+        {
+            OcrTextBlock[] blocks =
+            [
+                new OcrTextBlock(
+                    Index: 0,
+                    Text: "FRIDAY APR 24 8PM HOUSE NIGHT SKYLINE LOUNGE 1201 MAIN ST AUSTIN TX",
+                    Confidence: 0.74,
+                    X: 32,
+                    Y: 40,
+                    Width: 1024,
+                    Height: 180,
+                    Metadata: new Dictionary<string, string?>
+                    {
+                        ["source"] = "integration-test",
+                        ["assetId"] = request.AssetId,
+                    })
+            ];
+
+            return Task.FromResult(new OcrResult(
+                ExtractionId: request.ExtractionId,
+                JobId: request.JobId,
+                AssetId: request.AssetId,
+                Provider: Name,
+                ProviderVersion: Version,
+                Confidence: 0.74,
+                Success: true,
+                RawText: string.Join(Environment.NewLine, blocks.Select(block => block.Text)),
+                Blocks: blocks,
+                FailureReason: null,
+                AttemptCount: request.AttemptCount,
+                StartedAtUtc: request.StartedAtUtc,
+                CompletedAtUtc: DateTimeOffset.UtcNow,
+                Metadata: new Dictionary<string, string?>()));
         }
     }
 }

@@ -17,6 +17,7 @@ using WeUP.Domain.Spatial;
 using WeUP.Domain.Markets;
 using WeUP.Domain.Analytics;
 using WeUP.Domain.Media;
+using WeUP.Domain.Ocr;
 using WeUP.Domain.Resolution;
 using WeUP.Infrastructure.Auth;
 using WeUP.Infrastructure.Flyer;
@@ -30,6 +31,7 @@ using WeUP.Infrastructure.Spatial;
 using WeUP.Infrastructure.Markets;
 using WeUP.Infrastructure.Analytics;
 using WeUP.Infrastructure.Media;
+using WeUP.Infrastructure.Ocr;
 using WeUP.Infrastructure.Resolution;
 using WeUP.Infrastructure.Seed;
 
@@ -139,7 +141,9 @@ builder.Services.AddScoped<IRawIngestionPayloadFactory, RawIngestionPayloadFacto
 
 // Flyer pipeline
 builder.Services.AddSingleton<IFlyerTextPostProcessor, FlyerTextPostProcessor>();
-builder.Services.AddSingleton<IFlyerOcrService, StubFlyerOcrService>();
+builder.Services.AddSingleton<IOcrProvider, SidecarOcrProvider>();
+builder.Services.AddSingleton<IOcrService, ProviderBackedOcrService>();
+builder.Services.AddSingleton<IFlyerOcrService, FlyerOcrServiceAdapter>();
 builder.Services.AddSingleton<IFlyerNormalizationService, HeuristicFlyerNormalizationService>();
 builder.Services.AddSingleton<IFlyerConfidenceEvaluator, FlyerConfidenceEvaluator>();
 builder.Services.AddScoped<IFlyerIngestionPipeline, FlyerIngestionPipeline>();

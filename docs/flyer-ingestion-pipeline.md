@@ -30,7 +30,8 @@ The endpoint requires a durable flyer `assetId` from media intake (`/api/media/f
 
 2. OCR extraction
 
-- `IFlyerOcrService` accepts `FlyerAssetReference` and returns `FlyerOcrExtractionResult`.
+- `IOcrService` accepts an OCR request envelope and returns a lossless `OcrResult`.
+- `IFlyerOcrService` is now a flyer-specific adapter over `IOcrService` so normalization continues to consume the existing flyer contract.
 - Output includes:
   - extraction id
   - raw OCR text snapshot
@@ -136,9 +137,11 @@ Failures and warnings are deterministic and inspectable via job detail and evide
 
 ## Provider Replacement Seams
 
-Current Phase 0 implementations are intentionally stub/heuristic:
+Current Phase 0 implementations are intentionally seam-first:
 
-- `StubFlyerOcrService` (`IFlyerOcrService`)
+- `ProviderBackedOcrService` (`IOcrService`) with max-1 retry and lossless failure handling
+- `SidecarOcrProvider` (`IOcrProvider`) as the pluggable example provider
+- `FlyerOcrServiceAdapter` (`IFlyerOcrService`)
 - `HeuristicFlyerNormalizationService` (`IFlyerNormalizationService`)
 
 Production integration can replace these with vendor implementations without changing:

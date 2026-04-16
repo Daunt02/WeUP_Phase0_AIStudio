@@ -608,6 +608,8 @@ public sealed class FlyerIngestionPipeline(
                 ["status"] = asset.Status.ToString(),
                 ["widthPx"] = asset.WidthPx?.ToString(CultureInfo.InvariantCulture),
                 ["heightPx"] = asset.HeightPx?.ToString(CultureInfo.InvariantCulture),
+                ["localPath"] = asset.LocalPath,
+                ["s3Url"] = asset.S3Url,
             });
     }
 
@@ -754,46 +756,6 @@ public sealed class FlyerIngestionPipeline(
         var review = 0.0;
 
         return new FlyerConfidenceVector(extraction, geocode, temporal, venue, dedupe, source, review);
-    }
-}
-
-public sealed class StubFlyerOcrService : IFlyerOcrService
-{
-    public Task<FlyerOcrExtractionResult> ExtractAsync(FlyerAssetReference asset, string jobId, CancellationToken ct = default)
-    {
-        var now = DateTimeOffset.UtcNow;
-        var blocks = new[]
-        {
-            new FlyerOcrTextBlock(
-                Index: 0,
-                Text: "FRIDAY APR 24 8PM HOUSE NIGHT SKYLINE LOUNGE 1201 MAIN ST AUSTIN TX",
-                Confidence: 0.74,
-                X: 32,
-                Y: 40,
-                Width: 1024,
-                Height: 180,
-                Metadata: new Dictionary<string, string?>
-                {
-                    ["source"] = "stub",
-                    ["assetId"] = asset.AssetId,
-                }),
-        };
-
-        var text = string.Join(Environment.NewLine, blocks.Select(b => b.Text));
-
-        return Task.FromResult(new FlyerOcrExtractionResult(
-            ExtractionId: Guid.NewGuid().ToString("N"),
-            JobId: jobId,
-            AssetId: asset.AssetId,
-            Engine: "stub-ocr",
-            EngineVersion: "v1",
-            Confidence: 0.74,
-            Success: true,
-            RawText: text,
-            Blocks: blocks,
-            Issues: Array.Empty<CanonicalIngestionIssue>(),
-            StartedAtUtc: now,
-            CompletedAtUtc: now));
     }
 }
 
