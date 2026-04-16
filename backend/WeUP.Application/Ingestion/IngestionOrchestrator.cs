@@ -197,7 +197,7 @@ public sealed class IngestionOrchestrator(
         var failed = await TransitionAsync(current with { ErrorMessage = error }, IngestionJobStatus.FAILED, error, ct, completed: true);
         await observer.ObserveAsync(
             "job_failed",
-            failed,
+            failed!,
             MergeProperties(
                 BuildProperties(failed),
                 new Dictionary<string, string?>
