@@ -3,6 +3,7 @@ using WeUP.Application.Moderation;
 using WeUP.Api.Observability;
 using WeUP.Contracts.Moderation;
 using WeUP.Domain.Users;
+using ContractQueueItem = WeUP.Contracts.Moderation.ModerationQueueItem;
 
 namespace WeUP.Api.Endpoints;
 
@@ -72,7 +73,7 @@ public static class ModerationEndpoints
                 : Results.Ok(item);
         })
         .WithName("GetModerationQueueItem")
-        .Produces<ModerationQueueItem>()
+        .Produces<ContractQueueItem>()
         .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapGet("/queue/{id}/evidence", async (
