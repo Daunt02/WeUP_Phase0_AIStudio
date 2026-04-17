@@ -1,7 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using WeUP.Application.Events;
 using WeUP.Application.Moderation;
 using WeUP.Api.Observability;
+using WeUP.Contracts.Events;
 using WeUP.Contracts.Moderation;
+using WeUP.Domain.Events;
+using WeUP.Domain.Moderation;
 using WeUP.Domain.Users;
 using ContractQueueItem = WeUP.Contracts.Moderation.ModerationQueueItem;
 
@@ -170,8 +174,23 @@ public static class ModerationEndpoints
         .WithName("GetModerationReviewHistory")
         .Produces<IReadOnlyList<ReviewAuditRecord>>();
 
-        group.MapPost("/events/{eventId}/rollback", async (
-            string eventId,
+        // M4-P17: Moderation event view — returns EventModerationDto (OPERATIONAL)
+        // GET /api/moderation/events/{id}
+        group.MapGet("/events/{id}", async (
+            string id,
+            IEventRepository repo,
+            CancellationToken ct) =>
+        {
+            var aggregate = await repo.GetAggregateAsync(id, ct);
+            return aggregate is null
+                ? Results.NotFound(new ProblemDetails { Title = "Event not found", Status = 404 })
+                : Results.Ok(EventDtoMapper.ToModeration(aggregate));
+        })
+        .WithName("GetModerationEventView")
+        .Produces<EventModerationDto>()
+        .ProducesProblem(404);
+
+        group.MapPost("/events/{eventId}/rollback", async (            string eventId,
             [FromBody] RollbackRequest request,
             WeUP.Domain.Moderation.IRollbackService rollback,
             CancellationToken ct) =>

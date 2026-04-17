@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WeUP.Api\WeUP.Api.csproj" />
+    <ProjectReference Include="..\WeUP.Application\WeUP.Application.csproj" />
     <ProjectReference Include="..\WeUP.Domain\WeUP.Domain.csproj" />
     <ProjectReference Include="..\WeUP.Infrastructure\WeUP.Infrastructure.csproj" />
     <ProjectReference Include="..\WeUP.Contracts\WeUP.Contracts.csproj" />

@@ -24,10 +24,17 @@ public sealed class ContractManifestTests
             [nameof(MapFeedResponse)] = GetJsonPropertyNames<MapFeedResponse>(),
             [nameof(CalendarFeedRequest)] = GetJsonPropertyNames<CalendarFeedRequest>(),
             [nameof(EventCalendarDto)] = GetJsonPropertyNames<EventCalendarDto>(),
+            [nameof(EventCalendarCardDto)] = GetJsonPropertyNames<EventCalendarCardDto>(),
             [nameof(CalendarFeedResponse)] = GetJsonPropertyNames<CalendarFeedResponse>(),
             [nameof(MediaRefDto)] = GetJsonPropertyNames<MediaRefDto>(),
             [nameof(EventDetailDto)] = GetJsonPropertyNames<EventDetailDto>(),
             [nameof(EventDetailResponse)] = GetJsonPropertyNames<EventDetailResponse>(),
+            [nameof(EventModerationDto)] = GetJsonPropertyNames<EventModerationDto>(),
+            [nameof(EventMergeLineageSummaryDto)] = GetJsonPropertyNames<EventMergeLineageSummaryDto>(),
+            [nameof(EventPublishEligibilityDto)] = GetJsonPropertyNames<EventPublishEligibilityDto>(),
+            [nameof(PublishBlockerSummaryDto)] = GetJsonPropertyNames<PublishBlockerSummaryDto>(),
+            [nameof(EligibilityConfidenceSummaryDto)] = GetJsonPropertyNames<EligibilityConfidenceSummaryDto>(),
+            [nameof(EligibilityFieldCompletenessSummaryDto)] = GetJsonPropertyNames<EligibilityFieldCompletenessSummaryDto>(),
             [nameof(DraftSubmissionRequest)] = GetJsonPropertyNames<DraftSubmissionRequest>(),
             [nameof(SubmissionDto)] = GetJsonPropertyNames<SubmissionDto>(),
             [nameof(SubmissionListResponse)] = GetJsonPropertyNames<SubmissionListResponse>(),
@@ -59,6 +66,8 @@ public sealed class ContractManifestTests
         {
             // Relative to assembly location (backend/WeUP.Tests/bin/Debug/net8.0)
             Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "contracts", "backend-contract-manifest.json"),
+            // Five levels up (workspace root)
+            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "contracts", "backend-contract-manifest.json"),
             // From current working directory (might be workspace root or backend dir)
             Path.Combine(Environment.CurrentDirectory, "contracts", "backend-contract-manifest.json"),
             Path.Combine(Environment.CurrentDirectory, "..", "contracts", "backend-contract-manifest.json"),

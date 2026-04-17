@@ -10,6 +10,13 @@ public interface IEventRepository
     Task<MapFeedResponse> GetMapFeedAsync(MapFeedRequest request, CancellationToken ct = default);
     Task<CalendarFeedResponse> GetCalendarFeedAsync(CalendarFeedRequest request, CancellationToken ct = default);
     Task<EventDetailResponse> GetEventDetailAsync(string eventId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns the canonical event aggregate for internal/operational use only.
+    /// NEVER expose the returned aggregate directly to the frontend — pass it through
+    /// <see cref="WeUP.Application.Events.EventDtoMapper"/> before serialising.
+    /// </summary>
+    Task<EventAggregate?> GetAggregateAsync(string eventId, CancellationToken ct = default);
 }
 
 /// <summary>

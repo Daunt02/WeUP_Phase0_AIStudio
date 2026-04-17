@@ -59,6 +59,17 @@
       "pageSize",
       "totalCount"
     ],
+    "EventCalendarCardDto": [
+      "category",
+      "endUtc",
+      "id",
+      "startUtc",
+      "status",
+      "thumbnailUrl",
+      "timezone",
+      "title",
+      "venueName"
+    ],
     "MediaRefDto": ["kind", "url"],
     "EventDetailDto": [
       "address",
@@ -79,6 +90,55 @@
       "venueName"
     ],
     "EventDetailResponse": ["event"],
+    "EventModerationDto": [
+      "canonicalEventId",
+      "category",
+      "confidenceScore",
+      "endUtc",
+      "lifecycleStatus",
+      "mergeLineage",
+      "moderationStatus",
+      "publishStatus",
+      "riskLevel",
+      "startUtc",
+      "timezone",
+      "title",
+      "updatedAtUtc",
+      "venueName",
+      "version"
+    ],
+    "EventMergeLineageSummaryDto": [
+      "lastMergedAtUtc",
+      "mergedEventCount",
+      "parentCanonicalEventId"
+    ],
+    "EventPublishEligibilityDto": [
+      "blockers",
+      "canonicalEventId",
+      "confidenceSummary",
+      "eligibilityBand",
+      "eligible",
+      "fieldCompleteness",
+      "notes",
+      "recommendedAction"
+    ],
+    "PublishBlockerSummaryDto": ["code", "field", "isHardBlock", "message"],
+    "EligibilityConfidenceSummaryDto": [
+      "aggregate",
+      "band",
+      "dupeRisk",
+      "extraction",
+      "geocode",
+      "meetsAutoPublishThreshold",
+      "requiresManualReview",
+      "temporal",
+      "venueMatch"
+    ],
+    "EligibilityFieldCompletenessSummaryDto": [
+      "completenessRatio",
+      "isComplete",
+      "missingRequiredFields"
+    ],
     "DraftSubmissionRequest": [
       "address",
       "category",

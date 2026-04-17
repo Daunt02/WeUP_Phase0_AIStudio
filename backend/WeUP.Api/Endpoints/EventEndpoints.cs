@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using WeUP.Application.Events;
 using WeUP.Contracts.Events;
+using WeUP.Contracts.Ingestion;
 using WeUP.Domain.Events;
+using WeUP.Domain.Moderation;
 
 namespace WeUP.Api.Endpoints;
 
@@ -51,6 +54,42 @@ public static class EventEndpoints
         })
         .WithName("GetEventDetail")
         .Produces<EventDetailResponse>()
+        .ProducesProblem(404);
+
+        // M4-P17: Publish eligibility gate — OPERATIONAL (requires moderator auth in Phase 1)
+        // GET /api/events/{id}/publish-eligibility
+        group.MapGet("/{id}/publish-eligibility", async (
+            string id,
+            IEventRepository repo,
+            IPublishEligibilityService eligibility,
+            CancellationToken ct) =>
+        {
+            var aggregate = await repo.GetAggregateAsync(id, ct);
+            if (aggregate is null)
+                return Results.NotFound(new ProblemDetails { Title = "Event not found", Status = 404 });
+
+            var candidate = new NormalizedEventCandidate(
+                Title: aggregate.Title,
+                VenueName: aggregate.VenueName,
+                Address: EventDtoMapper.FormatAddress(aggregate.Address),
+                StartUtc: aggregate.StartUtc.ToString("O"),
+                EndUtc: aggregate.EndUtc?.ToString("O"),
+                Timezone: aggregate.TimeZone,
+                Category: aggregate.Category,
+                Description: aggregate.Description,
+                Tags: aggregate.Tags,
+                SourceKind: aggregate.Provenance.PrimarySourceKind ?? "unknown",
+                SourceRef: aggregate.CanonicalEventId,
+                ExtractionConfidence: aggregate.ConfidenceScore,
+                GeocodeConfidence: aggregate.Latitude != 0 ? 1.0 : 0.0,
+                TemporalConfidence: aggregate.StartUtc != default ? 1.0 : 0.0,
+                EvidenceRefs: null);
+
+            var result = eligibility.Evaluate(candidate);
+            return Results.Ok(EventDtoMapper.ToPublishEligibility(aggregate, result));
+        })
+        .WithName("GetEventPublishEligibility")
+        .Produces<EventPublishEligibilityDto>()
         .ProducesProblem(404);
 
         // Submission routes moved to SubmissionEndpoints (P18) — /api/events/submissions/*

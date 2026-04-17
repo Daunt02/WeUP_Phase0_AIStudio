@@ -49,7 +49,9 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
             .ToListAsync(ct);
 
         var aggregates = entities.Select(entity => entity.ToCanonicalAggregate()).ToArray();
-        var events = aggregates.Select(ToMapCard).ToArray();
+        var events = entities
+            .Select((entity, i) => ToMapCard(aggregates[i], PrimaryThumbnail(entity)))
+            .ToArray();
         var clusters = BuildViewportClusters(events);
         return new MapFeedResponse(events, events.Length, clusters, "bounding_box");
     }
@@ -204,18 +206,29 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
         return true;
     }
 
+    public async Task<EventAggregate?> GetAggregateAsync(string eventId, CancellationToken ct = default)
+    {
+        var entity = await db.Events
+            .AsNoTracking()
+            .Include(e => e.Media)
+            .Include(e => e.Sources)
+            .FirstOrDefaultAsync(e => e.PublicId == eventId, ct);
+        return entity?.ToCanonicalAggregate();
+    }
+
     // ---------------------------------------------------------------------------
     // Projections
     // ---------------------------------------------------------------------------
 
-    private static EventMapCardDto ToMapCard(EventAggregate e) => new(
+    // M4-P17: thumbnail-aware variant replaces the old null-hardcoded signature
+    private static EventMapCardDto ToMapCard(EventAggregate e, string? thumbnail) => new(
         e.CanonicalEventId,
         e.Title,
         e.VenueName,
         e.Category,
         e.Latitude,
         e.Longitude,
-        null,
+        thumbnail,
         EventLifecycleStatusMapper.ToStorage(e.EventStatus),
         e.ConfidenceScore);
 
@@ -230,23 +243,25 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
         null,
         EventLifecycleStatusMapper.ToStorage(e.EventStatus));
 
-    private static EventDetailDto ToDetail(EventAggregate e, EventEntity sourceEntity) => new(
-        e.CanonicalEventId,
-        e.Title,
-        e.Description,
-        e.VenueName,
-        e.Address.RawAddress,
-        e.Latitude,
-        e.Longitude,
-        e.Category,
-        e.StartUtc,
-        e.EndUtc,
-        e.TimeZone,
-        sourceEntity.Media.Select(m => new MediaRefDto(m.Url, m.Kind)).ToArray(),
-        string.IsNullOrEmpty(sourceEntity.TagsCsv) ? [] : sourceEntity.TagsCsv.Split(',', StringSplitOptions.RemoveEmptyEntries),
-        EventLifecycleStatusMapper.ToStorage(e.EventStatus),
-        e.ConfidenceScore,
-        e.Provenance.PrimarySourceKind);
+    // M4-P17: address formatted using display-safe fields only — RawAddress is never returned to clients
+    private static EventDetailDto ToDetail(EventAggregate e, EventEntity sourceEntity)
+    {
+        var media = sourceEntity.Media.Select(m => new MediaRefDto(m.Url, m.Kind)).ToArray();
+        var tags = string.IsNullOrEmpty(sourceEntity.TagsCsv)
+            ? Array.Empty<string>()
+            : sourceEntity.TagsCsv.Split(',', StringSplitOptions.RemoveEmptyEntries);
+        var addressParts = new[] { e.Address.AddressLine1, e.Address.City, e.Address.State }
+            .Where(p => !string.IsNullOrWhiteSpace(p));
+        var address = string.Join(", ", addressParts);
+        return new EventDetailDto(
+            e.CanonicalEventId, e.Title, e.Description, e.VenueName,
+            address,
+            e.Latitude, e.Longitude, e.Category,
+            e.StartUtc, e.EndUtc, e.TimeZone,
+            media, tags,
+            EventLifecycleStatusMapper.ToStorage(e.EventStatus),
+            e.ConfidenceScore, e.Provenance.PrimarySourceKind);
+    }
 
     private static string? PrimaryThumbnail(EventEntity e)
     {

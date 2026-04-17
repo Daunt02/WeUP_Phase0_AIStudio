@@ -130,6 +130,19 @@ public sealed class StubEventRepository : IEventRepository, IEventSubmissionRepo
         return Task.FromResult(new EventDetailResponse(detail));
     }
 
+    public Task<EventAggregate?> GetAggregateAsync(string eventId, CancellationToken ct = default)
+    {
+        EventDetailDto? detail;
+        string? status;
+        lock (_gate)
+        {
+            detail = _details.FirstOrDefault(d => d.Id.Equals(eventId, StringComparison.OrdinalIgnoreCase));
+            _eventStatuses.TryGetValue(eventId, out status);
+        }
+        if (detail is null) return Task.FromResult<EventAggregate?>(null);
+        return Task.FromResult<EventAggregate?>(BuildAggregate(detail, status ?? detail.Status));
+    }
+
     public Task<string> CreateSubmissionAsync(string userId, EventSubmissionRequest request, CancellationToken ct = default)
     {
         var id = $"legacy-submission-{Interlocked.Increment(ref _submissionSequence):000}";

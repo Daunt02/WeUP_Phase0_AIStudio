@@ -33,6 +33,10 @@ public record MapFeedRequest(
     double MinConfidence = 0.0,
     string Sort = "start_time_asc");
 
+/// <summary>
+/// Map pin card DTO — lean surface for map viewport feed.
+/// Frontend-safe. No provenance, no moderation internals.
+/// </summary>
 public record EventMapCardDto(
     string Id,
     string Title,
@@ -41,6 +45,7 @@ public record EventMapCardDto(
     double Lat,
     double Lng,
     string? ThumbnailUrl,
+    /// <remarks>Serialized as uppercase string (e.g. "PUBLISHED").</remarks>
     string Status,
     double Confidence);
 
@@ -71,6 +76,10 @@ public record CalendarFeedRequest(
     int Page = 1,
     int PageSize = 50);
 
+/// <summary>
+/// Calendar item DTO for list/calendar feed.
+/// Prefer <see cref="EventCalendarCardDto"/> for the explicit M4-P17 contract name.
+/// </summary>
 public record EventCalendarDto(
     string Id,
     string Title,
@@ -90,6 +99,29 @@ public record CalendarFeedResponse(
     bool HasNextPage);
 
 // ---------------------------------------------------------------------------
+// Calendar card (explicit named alias matching M4-P17 contract inventory)
+// ---------------------------------------------------------------------------
+
+/// <summary>
+/// Calendar card DTO returned by the calendar feed endpoint.
+/// Aliases EventCalendarDto for contract inventory clarity.
+/// Frontend-safe fields only — no provenance, no internal moderation state.
+/// </summary>
+public record EventCalendarCardDto(
+    string Id,
+    string Title,
+    string VenueName,
+    string Category,
+    /// <remarks>ISO 8601 UTC. Serialize as "yyyy-MM-ddTHH:mm:ssZ".</remarks>
+    DateTimeOffset StartUtc,
+    DateTimeOffset? EndUtc,
+    /// <remarks>IANA timezone identifier.</remarks>
+    string Timezone,
+    string? ThumbnailUrl,
+    /// <remarks>Serialized as uppercase string (e.g. "PUBLISHED").</remarks>
+    string Status);
+
+// ---------------------------------------------------------------------------
 // Event detail
 // ---------------------------------------------------------------------------
 
@@ -102,11 +134,14 @@ public record EventDetailDto(
     double Lat,
     double Lng,
     string Category,
+    /// <remarks>ISO 8601 UTC. Serialize as "yyyy-MM-ddTHH:mm:ssZ".</remarks>
     DateTimeOffset StartUtc,
     DateTimeOffset? EndUtc,
+    /// <remarks>IANA timezone identifier.</remarks>
     string Timezone,
     MediaRefDto[] MediaRefs,
     string[] Tags,
+    /// <remarks>Serialized as uppercase string (e.g. "PUBLISHED").</remarks>
     string Status,
     double Confidence,
     string SourceKind);
@@ -114,6 +149,103 @@ public record EventDetailDto(
 public record MediaRefDto(string Url, string Kind);
 
 public record EventDetailResponse(EventDetailDto? Event);
+
+// ---------------------------------------------------------------------------
+// Event moderation DTO — moderation-only surface (moderator auth required)
+// ---------------------------------------------------------------------------
+
+/// <summary>
+/// Moderation view of a canonical event.
+/// Exposes moderation and lifecycle state to authorised moderators.
+/// INTERNAL/OPERATIONAL only — not for public event endpoints.
+/// </summary>
+public record EventModerationDto(
+    /// <summary>Canonical event identity — aligns with EventMapCardDto.Id and EventDetailDto.Id.</summary>
+    string CanonicalEventId,
+    string Title,
+    string Category,
+    string VenueName,
+    /// <remarks>ISO 8601 UTC.</remarks>
+    DateTimeOffset StartUtc,
+    DateTimeOffset? EndUtc,
+    string Timezone,
+    /// <remarks>Serialized as PascalCase string matching EventLifecycleStatus enum names.</remarks>
+    string LifecycleStatus,
+    /// <remarks>Serialized as PascalCase string matching EventModerationStatus enum names.</remarks>
+    string ModerationStatus,
+    /// <remarks>Serialized as PascalCase string matching EventPublishStatus enum names.</remarks>
+    string PublishStatus,
+    /// <remarks>Serialized as PascalCase string matching EventRiskLevel enum names.</remarks>
+    string RiskLevel,
+    double ConfidenceScore,
+    /// <summary>Version of the canonical aggregate — used for optimistic concurrency checks.</summary>
+    int Version,
+    DateTimeOffset UpdatedAtUtc,
+    /// <summary>Merge lineage summary for deduplication audit. Null if not merged.</summary>
+    EventMergeLineageSummaryDto? MergeLineage);
+
+/// <summary>
+/// Slim merge lineage projection for the moderation view.
+/// Full provenance refs are available via the moderation evidence bundle endpoint.
+/// </summary>
+public record EventMergeLineageSummaryDto(
+    string? ParentCanonicalEventId,
+    int MergedEventCount,
+    DateTimeOffset? LastMergedAtUtc);
+
+// ---------------------------------------------------------------------------
+// Publish eligibility DTO — eligibility gate surface
+// ---------------------------------------------------------------------------
+
+/// <summary>
+/// Publish eligibility summary returned by the eligibility check endpoint.
+/// Exposes operational eligibility state — not moderation internals.
+/// </summary>
+public record EventPublishEligibilityDto(
+    string CanonicalEventId,
+    bool Eligible,
+    /// <remarks>AutoPublishable | ManualReviewRequired | Blocked</remarks>
+    string EligibilityBand,
+    /// <remarks>AutoPublish | RouteToManualReview | BlockPublish</remarks>
+    string RecommendedAction,
+    PublishBlockerSummaryDto[] Blockers,
+    EligibilityConfidenceSummaryDto ConfidenceSummary,
+    EligibilityFieldCompletenessSummaryDto FieldCompleteness,
+    string[] Notes);
+
+/// <summary>
+/// Simplified publish blocker — safe to expose without internal metadata.
+/// </summary>
+public record PublishBlockerSummaryDto(
+    /// <remarks>Stable code string corresponding to PublishBlockerCode enum name.</remarks>
+    string Code,
+    string Message,
+    bool IsHardBlock,
+    string? Field);
+
+/// <summary>
+/// Aggregated confidence summary for eligibility view.
+/// Dimension scores are included for transparency; internal policy weights are omitted.
+/// </summary>
+public record EligibilityConfidenceSummaryDto(
+    double Aggregate,
+    /// <remarks>High | Medium | Low</remarks>
+    string Band,
+    double Extraction,
+    double Geocode,
+    double Temporal,
+    double VenueMatch,
+    double DupeRisk,
+    bool MeetsAutoPublishThreshold,
+    bool RequiresManualReview);
+
+/// <summary>
+/// Field completeness snapshot for the eligibility view.
+/// </summary>
+public record EligibilityFieldCompletenessSummaryDto(
+    bool IsComplete,
+    string[] MissingRequiredFields,
+    double CompletenessRatio);
 
 // ---------------------------------------------------------------------------
 // Event submission
