@@ -34,6 +34,7 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
     public DbSet<VideoDerivedFrameEntity> VideoDerivedFrames => Set<VideoDerivedFrameEntity>();
     public DbSet<EventSubmissionEntity> EventSubmissions => Set<EventSubmissionEntity>();
     public DbSet<ModerationQueueItemEntity> ModerationQueueItems => Set<ModerationQueueItemEntity>();
+    public DbSet<ModerationHistoryEntryEntity> ModerationHistoryEntries => Set<ModerationHistoryEntryEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -453,6 +454,27 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
             b.HasIndex(e => e.Kind);
             b.HasIndex(e => e.AssignedReviewerId);
             b.HasIndex(e => e.CreatedAt);
+        });
+
+        modelBuilder.Entity<ModerationHistoryEntryEntity>(b =>
+        {
+            b.ToTable("moderation_history_entries");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.EntryId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.QueueItemId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.EventId).HasMaxLength(128);
+            b.Property(e => e.CandidateId).HasMaxLength(256).IsRequired();
+            b.Property(e => e.ReviewerId).HasMaxLength(128).IsRequired();
+            b.Property(e => e.ActorId).HasMaxLength(128).IsRequired();
+            b.Property(e => e.Action).HasMaxLength(64).IsRequired();
+            b.Property(e => e.PreviousStatus).HasMaxLength(64).IsRequired();
+            b.Property(e => e.NewStatus).HasMaxLength(64).IsRequired();
+            b.Property(e => e.ReasonComment).HasMaxLength(4000);
+            b.HasIndex(e => e.EntryId).IsUnique();
+            b.HasIndex(e => new { e.CandidateId, e.ActionTimestampUtc });
+            b.HasIndex(e => new { e.ReviewerId, e.ActionTimestampUtc });
+            b.HasIndex(e => new { e.EventId, e.ActionTimestampUtc });
+            b.HasIndex(e => new { e.QueueItemId, e.ActionTimestampUtc });
         });
     }
 }

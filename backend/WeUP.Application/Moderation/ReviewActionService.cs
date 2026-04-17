@@ -12,7 +12,8 @@ namespace WeUP.Application.Moderation;
 /// </summary>
 public sealed class ReviewActionService(
     IModerationQueueRepository queue,
-    IAuditTrailService audit) : IReviewActionService, IRollbackService
+    IAuditTrailService audit,
+    IModerationAuditService moderationAuditService) : IReviewActionService, IRollbackService
 {
     public Task<ReviewActionResponse> ApproveAsync(string itemId, ApproveRequest req, CancellationToken ct = default) =>
         ExecuteActionAsync(itemId, "approve", req.ActorId, req.Note, ct: ct);
@@ -66,6 +67,17 @@ public sealed class ReviewActionService(
 
         var newItemId = await queue.AddItemAsync(rollbackItem, ct);
 
+        var rollbackTimestamp = DateTimeOffset.UtcNow;
+        rollbackItem.AppendHistory(new ReviewHistoryEntry(
+            RecordId: Guid.NewGuid().ToString("N"),
+            Action: "rollback",
+            ActorId: req.ActorId,
+            Note: $"Rollback: {req.RollbackReason}. {req.Note}",
+            PreviousStatus: ModerationItemStatus.Resolved,
+            NextStatus: ModerationItemStatus.Open,
+            Timestamp: rollbackTimestamp));
+        await queue.UpdateItemAsync(rollbackItem, ct);
+
         var auditEntry = BuildAuditEntry(
             newItemId, ModerationItemKind.PublishBlocked,
             "rollback", req.ActorId,
@@ -74,6 +86,16 @@ public sealed class ReviewActionService(
             [eventId]);
 
         await audit.AppendAsync(auditEntry, ct);
+        await moderationAuditService.AppendAsync(
+            rollbackItem,
+            reviewerId: req.ActorId,
+            actorId: req.ActorId,
+            action: "rollback",
+            previousStatus: ModerationItemStatus.Resolved,
+            newStatus: ModerationItemStatus.Open,
+            reasonComment: $"Rollback: {req.RollbackReason}. {req.Note}",
+            actionTimestampUtc: rollbackTimestamp,
+            ct: ct);
 
         return new ReviewActionResponse(newItemId, "rollback",
             ModerationItemStatus.Resolved.ToString(), ModerationItemStatus.Open.ToString(),
@@ -96,6 +118,7 @@ public sealed class ReviewActionService(
 
         var prevStatus = item.Status;
         item.Status = nextStatus;
+        var timestamp = DateTimeOffset.UtcNow;
         item.AppendHistory(new ReviewHistoryEntry(
             RecordId: Guid.NewGuid().ToString("N"),
             Action: action,
@@ -103,12 +126,22 @@ public sealed class ReviewActionService(
             Note: note,
             PreviousStatus: prevStatus,
             NextStatus: nextStatus,
-            Timestamp: DateTimeOffset.UtcNow));
+            Timestamp: timestamp));
         await queue.UpdateItemAsync(item, ct);
 
         var auditEntry = BuildAuditEntry(itemId, item.Kind, action, actorId,
             prevStatus, nextStatus, note, item.Provenance.EvidenceRefs);
         await audit.AppendAsync(auditEntry, ct);
+        await moderationAuditService.AppendAsync(
+            item,
+            reviewerId: actorId,
+            actorId: actorId,
+            action: action,
+            previousStatus: prevStatus,
+            newStatus: nextStatus,
+            reasonComment: note,
+            actionTimestampUtc: timestamp,
+            ct: ct);
 
         return new ReviewActionResponse(itemId, action,
             prevStatus.ToString(), nextStatus.ToString(), true, null);

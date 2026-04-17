@@ -158,13 +158,16 @@ builder.Services.AddScoped<IFlyerIngestionPipeline, FlyerIngestionPipeline>();
 if (runtime.UsesDatabase)
 {
     builder.Services.AddScoped<IModerationQueueRepository, EfModerationQueueRepository>();
+    builder.Services.AddScoped<IModerationAuditRepository, EfModerationAuditRepository>();
 }
 else
 {
     builder.Services.AddSingleton<InMemoryModerationQueue>();
     builder.Services.AddSingleton<IModerationQueueRepository>(sp => sp.GetRequiredService<InMemoryModerationQueue>());
+    builder.Services.AddSingleton<IModerationAuditRepository, InMemoryModerationAuditRepository>();
 }
 builder.Services.AddSingleton<IAuditTrailService, InMemoryAuditTrail>();
+builder.Services.AddScoped<IModerationAuditService, ModerationAuditService>();
 builder.Services.AddScoped<IModerationQueueService, ModerationQueueService>();
 builder.Services.AddScoped<IModerationEvidenceService, ModerationEvidenceService>();
 builder.Services.AddSingleton<IConfidenceScoringService, ConfidenceScoringService>();

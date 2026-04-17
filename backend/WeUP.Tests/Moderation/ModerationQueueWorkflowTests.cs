@@ -124,7 +124,9 @@ public sealed class ModerationQueueWorkflowTests
     private static ModerationQueueService BuildService()
     {
         var repo = new InMemoryModerationQueue();
-        return new ModerationQueueService(repo);
+        var auditRepository = new InMemoryModerationAuditRepository();
+        var auditService = new ModerationAuditService(auditRepository);
+        return new ModerationQueueService(repo, auditService);
     }
 
     private static EventCandidateV2 BuildCandidate(string candidateId, double confidence)

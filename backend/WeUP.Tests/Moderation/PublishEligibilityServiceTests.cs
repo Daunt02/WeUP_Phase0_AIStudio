@@ -116,8 +116,10 @@ public sealed class PublishEligibilityServiceTests
     {
         var queueRepo = new InMemoryModerationQueue();
         var audit = new InMemoryAuditTrail();
-        var reviewAction = new ReviewActionService(queueRepo, audit);
-        var queueService = new ModerationQueueService(queueRepo);
+        var moderationAuditRepository = new InMemoryModerationAuditRepository();
+        var moderationAuditService = new ModerationAuditService(moderationAuditRepository);
+        var reviewAction = new ReviewActionService(queueRepo, audit, moderationAuditService);
+        var queueService = new ModerationQueueService(queueRepo, moderationAuditService);
         var lifecycleRepo = new FakeLifecycleRepository(new Dictionary<string, string>
         {
             ["evt-1"] = "NEEDS_REVIEW",

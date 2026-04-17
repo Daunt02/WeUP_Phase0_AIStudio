@@ -51,7 +51,9 @@ public interface IModerationQueueService
     Task<ModerationQueueItem?> UpdateStatusAsync(string itemId, ModerationStatus nextStatus, string actorId, string? note = null, CancellationToken ct = default);
 }
 
-public sealed class ModerationQueueService(IModerationQueueRepository queue) : IModerationQueueService
+public sealed class ModerationQueueService(
+    IModerationQueueRepository queue,
+    IModerationAuditService moderationAuditService) : IModerationQueueService
 {
     private const string RiskScoreMarker = "risk-score:";
     private const string RiskLevelMarker = "risk-level:";
@@ -212,6 +214,17 @@ public sealed class ModerationQueueService(IModerationQueueRepository queue) : I
             Timestamp: now));
 
         await queue.AddItemAsync(item, ct);
+        await moderationAuditService.AppendAsync(
+            item,
+            reviewerId: "system",
+            actorId: "system",
+            action: "enqueue",
+            previousStatus: ModerationItemStatus.Open,
+            newStatus: ModerationItemStatus.Open,
+            reasonComment: "Candidate enqueued for moderation review.",
+            actionTimestampUtc: now,
+            ct: ct);
+
         return ToWorkflowItem(item);
     }
 
@@ -267,6 +280,17 @@ public sealed class ModerationQueueService(IModerationQueueRepository queue) : I
             Timestamp: now));
 
         await queue.UpdateItemAsync(item, ct);
+        await moderationAuditService.AppendAsync(
+            item,
+            reviewerId: reviewerId,
+            actorId: actorId,
+            action: "assign-reviewer",
+            previousStatus: previousStatus,
+            newStatus: nextStatus,
+            reasonComment: $"Assigned reviewer '{reviewerId}'.",
+            actionTimestampUtc: now,
+            ct: ct);
+
         return ToWorkflowItem(item);
     }
 
@@ -311,6 +335,17 @@ public sealed class ModerationQueueService(IModerationQueueRepository queue) : I
             Timestamp: now));
 
         await queue.UpdateItemAsync(item, ct);
+        await moderationAuditService.AppendAsync(
+            item,
+            reviewerId: actorId,
+            actorId: actorId,
+            action: ToActionName(nextStatus),
+            previousStatus: previousStatus,
+            newStatus: nextItemStatus,
+            reasonComment: note,
+            actionTimestampUtc: now,
+            ct: ct);
+
         return ToWorkflowItem(item);
     }
 
@@ -486,7 +521,7 @@ public sealed class ModerationQueueService(IModerationQueueRepository queue) : I
     {
         var riskScore = ParseRiskScore(item);
         var status = ResolveWorkflowStatus(item);
-        var candidateId = ExtractReviewReasonValue(item.ReviewReasons, CandidateMarker) ?? item.IngestionJob?.JobId ?? item.ItemId;
+        var candidateId = ModerationAuditService.ResolveCandidateId(item);
 
         var transitions = item.History
             .OrderBy(h => h.Timestamp)
