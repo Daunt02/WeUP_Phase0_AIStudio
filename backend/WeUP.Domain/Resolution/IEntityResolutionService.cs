@@ -43,6 +43,13 @@ public interface IEventDuplicateDetector
 
 public interface IMergePlanner
 {
+    /// <summary>
+    /// Generate a comprehensive, auditable merge plan for a single (candidate, canonical) pair.
+    /// 
+    /// This interface has been extended in WeUP.Domain.Dedupe.IMergePlanner with the full
+    /// MergePlanDetail contract. This version here is legacy; use the Domain version for
+    /// new integrations with complete conflict detection and field-level decision tracking.
+    /// </summary>
     MergePlan CreatePlan(
         NormalizedEventCandidate incoming,
         DuplicateMatchCandidate bestMatch,
