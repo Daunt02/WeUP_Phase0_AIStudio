@@ -90,7 +90,8 @@ public sealed record EntityResolutionResult(
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset UpdatedAtUtc,
     DateTimeOffset? MergedAtUtc,
-    string[] AuditTrail);
+    string[] AuditTrail,
+    ProvenanceEntry[]? ProvenanceEntries = null);
 
 public sealed record EvaluateResolutionRequest(
     NormalizedEventCandidate Candidate,

@@ -23,6 +23,7 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
     public DbSet<IngestionCandidateEntity> IngestionCandidates => Set<IngestionCandidateEntity>();
     public DbSet<IngestionAuditEntity> IngestionAudits => Set<IngestionAuditEntity>();
     public DbSet<EntityResolutionRecordEntity> EntityResolutionRecords => Set<EntityResolutionRecordEntity>();
+    public DbSet<EventMergeProvenanceEntity> EventMergeProvenance => Set<EventMergeProvenanceEntity>();
     public DbSet<MediaAssetEntity> MediaAssets => Set<MediaAssetEntity>();
     public DbSet<MediaUploadEntity> MediaUploads => Set<MediaUploadEntity>();
     public DbSet<FlyerProvenanceEntity> FlyerProvenances => Set<FlyerProvenanceEntity>();
@@ -211,6 +212,21 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
             b.HasIndex(e => e.ResolutionId).IsUnique();
             b.HasIndex(e => e.Status);
             b.HasIndex(e => e.CandidateSourceRef);
+        });
+
+        modelBuilder.Entity<EventMergeProvenanceEntity>(b =>
+        {
+            b.ToTable("event_merge_provenance");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.EntryId).HasMaxLength(160).IsRequired();
+            b.Property(e => e.CanonicalEventId).HasMaxLength(128).IsRequired();
+            b.Property(e => e.ResolutionId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.MergeActor).HasMaxLength(256).IsRequired();
+            b.Property(e => e.MergeReason).HasMaxLength(4000).IsRequired();
+            b.Property(e => e.EntryJson).HasColumnType("jsonb").IsRequired();
+            b.HasIndex(e => e.EntryId).IsUnique();
+            b.HasIndex(e => new { e.CanonicalEventId, e.SequenceNumber }).IsUnique();
+            b.HasIndex(e => e.RecordedAtUtc);
         });
 
         modelBuilder.Entity<MediaAssetEntity>(b =>

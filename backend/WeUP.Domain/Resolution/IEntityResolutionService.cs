@@ -24,14 +24,17 @@ public sealed record MergeCommitCommand(
     ResolutionDecision Decision,
     string[] MatchReasons,
     string? RequestedBy,
-    DateTimeOffset RequestedAtUtc);
+    DateTimeOffset RequestedAtUtc,
+    string[]? SourceRequestIds = null,
+    string[]? EvidenceBundleRefs = null);
 
 public sealed record MergeCommitResult(
     bool Success,
     bool RequiresManualReview,
     string Message,
     string? CanonicalEventId,
-    string[] AuditTrail);
+    string[] AuditTrail,
+    ProvenanceEntry[]? ProvenanceEntries = null);
 
 public interface IEventDuplicateDetector
 {
@@ -61,6 +64,9 @@ public interface IEntityResolutionService
     Task<EntityResolutionResult> EvaluateAsync(EvaluateResolutionRequest request, CancellationToken ct = default);
     Task<MergeResolutionResponse> MergeAsync(MergeResolutionRequest request, CancellationToken ct = default);
     Task<EntityResolutionResult?> GetAsync(string resolutionId, CancellationToken ct = default);
+    Task<ProvenanceEntry[]> GetProvenanceAsync(string canonicalEventId, CancellationToken ct = default);
+    Task<FieldLineage[]> GetFieldLineageAsync(string canonicalEventId, string? fieldName = null, CancellationToken ct = default);
+    Task<MergeHistoryEntry[]> GetMergeHistoryAsync(string canonicalEventId, CancellationToken ct = default);
 }
 
 public interface IEntityResolutionRepository
@@ -73,4 +79,5 @@ public interface IEntityResolutionRepository
     Task SaveResultAsync(EntityResolutionResult result, CancellationToken ct = default);
     Task<EntityResolutionResult?> GetResultAsync(string resolutionId, CancellationToken ct = default);
     Task<MergeCommitResult> CommitMergeAsync(MergeCommitCommand command, CancellationToken ct = default);
+    Task<ProvenanceEntry[]> GetProvenanceAsync(string canonicalEventId, CancellationToken ct = default);
 }

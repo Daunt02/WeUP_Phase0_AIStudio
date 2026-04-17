@@ -420,6 +420,7 @@ public sealed class DeterministicMergePlanner : IMergePlanner
 public sealed class EntityResolutionService(
     IEventDuplicateDetector duplicateDetector,
     IMergePlanner mergePlanner,
+    IProvenanceService provenanceService,
     IEntityResolutionRepository repository) : IEntityResolutionService
 {
     private const double LikelyDuplicateThreshold = 0.82;
@@ -436,6 +437,9 @@ public sealed class EntityResolutionService(
         var plan = best is null || string.IsNullOrWhiteSpace(best.CanonicalEventId)
             ? null
             : mergePlanner.CreatePlan(request.Candidate, best, decision);
+        var provenanceEntries = best is null || string.IsNullOrWhiteSpace(best.CanonicalEventId)
+            ? []
+            : await repository.GetProvenanceAsync(best.CanonicalEventId, ct);
 
         var status = decision.RequiresManualReview ? "MANUAL_REVIEW_REQUIRED" : "EVALUATED";
 
@@ -466,7 +470,8 @@ public sealed class EntityResolutionService(
             CreatedAtUtc: now,
             UpdatedAtUtc: now,
             MergedAtUtc: null,
-            AuditTrail: audit.ToArray());
+            AuditTrail: audit.ToArray(),
+            ProvenanceEntries: provenanceEntries);
 
         await repository.SaveResultAsync(result, ct);
         return result;
@@ -492,6 +497,7 @@ public sealed class EntityResolutionService(
                 Status = "MANUAL_REVIEW_REQUIRED",
                 UpdatedAtUtc = DateTimeOffset.UtcNow,
                 AuditTrail = result.AuditTrail.Concat(["Merge blocked: no safe canonical target available."]).ToArray(),
+                ProvenanceEntries = result.ProvenanceEntries,
             };
             await repository.SaveResultAsync(noPlan, ct);
             return new MergeResolutionResponse(result.ResolutionId, false, true, "Merge requires manual review.", null, noPlan.AuditTrail);
@@ -504,6 +510,7 @@ public sealed class EntityResolutionService(
                 Status = "MANUAL_REVIEW_REQUIRED",
                 UpdatedAtUtc = DateTimeOffset.UtcNow,
                 AuditTrail = result.AuditTrail.Concat(["Merge blocked by manual-review policy."]).ToArray(),
+                ProvenanceEntries = result.ProvenanceEntries,
             };
             await repository.SaveResultAsync(blocked, ct);
             return new MergeResolutionResponse(result.ResolutionId, false, true, "Merge requires manual review.", result.MergePlan.CanonicalEventId, blocked.AuditTrail);
@@ -517,7 +524,9 @@ public sealed class EntityResolutionService(
             Decision: result.Decision,
             MatchReasons: result.BestMatch.Score.Explanations,
             RequestedBy: request.RequestedBy,
-            RequestedAtUtc: DateTimeOffset.UtcNow), ct);
+            RequestedAtUtc: DateTimeOffset.UtcNow,
+            SourceRequestIds: ExtractSourceRequestIds(result.Candidate, result.ResolutionId),
+            EvidenceBundleRefs: ExtractEvidenceBundleRefs(result.Candidate)), ct);
 
         var updated = result with
         {
@@ -525,6 +534,7 @@ public sealed class EntityResolutionService(
             UpdatedAtUtc = DateTimeOffset.UtcNow,
             MergedAtUtc = commit.Success ? DateTimeOffset.UtcNow : null,
             AuditTrail = result.AuditTrail.Concat(commit.AuditTrail).ToArray(),
+            ProvenanceEntries = commit.ProvenanceEntries ?? result.ProvenanceEntries,
         };
 
         await repository.SaveResultAsync(updated, ct);
@@ -540,6 +550,21 @@ public sealed class EntityResolutionService(
 
     public Task<EntityResolutionResult?> GetAsync(string resolutionId, CancellationToken ct = default)
         => repository.GetResultAsync(resolutionId, ct);
+
+    public Task<ProvenanceEntry[]> GetProvenanceAsync(string canonicalEventId, CancellationToken ct = default)
+        => repository.GetProvenanceAsync(canonicalEventId, ct);
+
+    public async Task<FieldLineage[]> GetFieldLineageAsync(string canonicalEventId, string? fieldName = null, CancellationToken ct = default)
+    {
+        var entries = await repository.GetProvenanceAsync(canonicalEventId, ct);
+        return provenanceService.GetFieldLineage(entries, fieldName);
+    }
+
+    public async Task<MergeHistoryEntry[]> GetMergeHistoryAsync(string canonicalEventId, CancellationToken ct = default)
+    {
+        var entries = await repository.GetProvenanceAsync(canonicalEventId, ct);
+        return provenanceService.GetMergeHistory(entries);
+    }
 
     private static ResolutionDecision BuildDecision(
         string resolutionId,
@@ -614,5 +639,49 @@ public sealed class EntityResolutionService(
             RequiresManualReview: false,
             Reasons: reasons.ToArray(),
             DecidedAtUtc: decidedAtUtc);
+    }
+
+    private static string[] ExtractSourceRequestIds(NormalizedEventCandidate candidate, string resolutionId)
+    {
+        var values = new List<string>();
+        AddAttribute(candidate.Attributes, values, "requestId");
+        AddAttribute(candidate.Attributes, values, "sourceRequestId");
+        AddAttribute(candidate.Attributes, values, "ingestionRequestId");
+
+        if (values.Count == 0)
+        {
+            values.Add(resolutionId);
+        }
+
+        return values
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static string[] ExtractEvidenceBundleRefs(NormalizedEventCandidate candidate)
+    {
+        var values = new List<string>();
+        AddAttribute(candidate.Attributes, values, "evidenceBundleId");
+        AddAttribute(candidate.Attributes, values, "bundleId");
+        AddAttribute(candidate.Attributes, values, "confidenceBundleId");
+
+        return values
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static void AddAttribute(IReadOnlyDictionary<string, string?>? attributes, ICollection<string> values, string key)
+    {
+        if (attributes is null)
+        {
+            return;
+        }
+
+        if (attributes.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value))
+        {
+            values.Add(value);
+        }
     }
 }

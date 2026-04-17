@@ -268,6 +268,7 @@ else
 
 builder.Services.AddScoped<IEventDuplicateDetector, DeterministicEventDuplicateDetector>();
 builder.Services.AddScoped<IMergePlanner, DeterministicMergePlanner>();
+builder.Services.AddScoped<IProvenanceService, ProvenanceService>();
 builder.Services.AddScoped<IEntityResolutionService, EntityResolutionService>();
 builder.Services.AddSingleton<Phase0SeedLoader>();
 builder.Services.AddSingleton<Phase0SeedService>();
