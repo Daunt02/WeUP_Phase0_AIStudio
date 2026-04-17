@@ -74,10 +74,12 @@
     "EventDetailDto": [
       "address",
       "category",
+      "concurrencyToken",
       "confidence",
       "description",
       "endUtc",
       "id",
+      "lastChangeType",
       "lat",
       "lng",
       "mediaRefs",
@@ -87,14 +89,18 @@
       "tags",
       "timezone",
       "title",
-      "venueName"
+      "venueName",
+      "version"
     ],
     "EventDetailResponse": ["event"],
     "EventModerationDto": [
       "canonicalEventId",
       "category",
+      "concurrencyToken",
       "confidenceScore",
       "endUtc",
+      "hasPendingReview",
+      "lastChangeType",
       "lifecycleStatus",
       "mergeLineage",
       "moderationStatus",

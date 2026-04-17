@@ -251,11 +251,18 @@ public sealed record EventAggregate(
 
     /// <summary>
     /// Validate aggregate invariants for MVP/Phase 0 canonical contract.
+    /// Throws InvalidOperationException on first failure — use
+    /// EventAggregateSchemaValidator.ValidateAggregate() for a full violation list.
     /// </summary>
     public void Validate()
     {
+        // Identity
         if (string.IsNullOrWhiteSpace(CanonicalEventId))
             throw new InvalidOperationException("CanonicalEventId is required.");
+        if (SourceEventIds is null)
+            throw new InvalidOperationException("SourceEventIds must be non-null (empty array is allowed).");
+
+        // Content
         if (string.IsNullOrWhiteSpace(Title))
             throw new InvalidOperationException("Title is required.");
         if (string.IsNullOrWhiteSpace(VenueName))
@@ -264,26 +271,56 @@ public sealed record EventAggregate(
             throw new InvalidOperationException("Category is required.");
         if (Tags is null)
             throw new InvalidOperationException("Tags must be non-null (empty array is allowed).");
+
+        // Temporal
         if (string.IsNullOrWhiteSpace(TimeZone))
             throw new InvalidOperationException("TimeZone is required.");
+        if (StartUtc == default)
+            throw new InvalidOperationException("StartUtc must not be DateTimeOffset.MinValue.");
+        if (EndUtc.HasValue && EndUtc.Value < StartUtc)
+            throw new InvalidOperationException("EndUtc cannot be earlier than StartUtc.");
+
+        // Address
         if (Address is null)
             throw new InvalidOperationException("Address is required.");
-        if (string.IsNullOrWhiteSpace(Address.AddressLine1) || string.IsNullOrWhiteSpace(Address.RawAddress))
-            throw new InvalidOperationException("Address line and raw address are required.");
+        if (string.IsNullOrWhiteSpace(Address.AddressLine1))
+            throw new InvalidOperationException("Address.AddressLine1 is required.");
+        if (string.IsNullOrWhiteSpace(Address.City))
+            throw new InvalidOperationException("Address.City is required.");
+        if (string.IsNullOrWhiteSpace(Address.Country))
+            throw new InvalidOperationException("Address.Country is required.");
+        if (string.IsNullOrWhiteSpace(Address.RawAddress))
+            throw new InvalidOperationException("Address.RawAddress is required.");
+
+        // Geo
         if (double.IsNaN(Latitude) || Latitude < -90 || Latitude > 90)
             throw new InvalidOperationException("Latitude must be within [-90, 90].");
         if (double.IsNaN(Longitude) || Longitude < -180 || Longitude > 180)
             throw new InvalidOperationException("Longitude must be within [-180, 180].");
-        if (EndUtc.HasValue && EndUtc.Value < StartUtc)
-            throw new InvalidOperationException("EndUtc cannot be earlier than StartUtc.");
+
+        // Confidence
         if (double.IsNaN(ConfidenceScore) || ConfidenceScore < 0 || ConfidenceScore > 1)
             throw new InvalidOperationException("ConfidenceScore must be within [0, 1].");
+
+        // Version / concurrency
         if (Version <= 0)
             throw new InvalidOperationException("Version must be >= 1.");
         if (string.IsNullOrWhiteSpace(EffectiveConcurrencyToken))
             throw new InvalidOperationException("ConcurrencyToken is required.");
+
+        // Provenance integrity
         if (Provenance is null)
             throw new InvalidOperationException("Provenance metadata is required.");
+        if (string.IsNullOrWhiteSpace(Provenance.PrimarySourceKind))
+            throw new InvalidOperationException("Provenance.PrimarySourceKind is required.");
+        if (string.IsNullOrWhiteSpace(Provenance.PrimarySourceRef))
+            throw new InvalidOperationException("Provenance.PrimarySourceRef is required.");
+        if (Provenance.EvidenceRefs is null)
+            throw new InvalidOperationException("Provenance.EvidenceRefs must be non-null (empty array is allowed).");
+
+        // Merge lineage
+        if (MergeLineage is null)
+            throw new InvalidOperationException("MergeLineage is required.");
 
         ValidateStatusConsistency();
     }

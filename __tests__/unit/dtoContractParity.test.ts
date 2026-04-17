@@ -125,6 +125,9 @@ const sampleDetail: EventDetailDto = {
   status: "PUBLISHED",
   confidence: 0.9,
   sourceKind: "manual submission",
+  version: 3,
+  lastChangeType: null,
+  concurrencyToken: "evt-001:v3",
 };
 
 const sampleMergeLineage: EventMergeLineageSummaryDto = {
@@ -148,6 +151,9 @@ const sampleModeration: EventModerationDto = {
   confidenceScore: 0.92,
   version: 3,
   updatedAtUtc: "2024-07-30T08:00:00Z",
+  lastChangeType: null,
+  hasPendingReview: false,
+  concurrencyToken: "evt-001:v3",
   mergeLineage: null,
 };
 

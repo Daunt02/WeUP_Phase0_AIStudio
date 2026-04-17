@@ -167,11 +167,11 @@ export function fromMapCardDto(dto: EventMapCardDto): EventMapCardProjection {
     id: dto.id,
     title: dto.title,
     venueName: dto.venueName,
-    category: (dto.category ?? "other") as EventCategory,
+    category: dto.category as EventCategory,
     lat: dto.lat,
     lng: dto.lng,
     thumbnailUrl: dto.thumbnailUrl,
-    status: (dto.status ?? "PUBLISHED") as EventStatus,
+    status: dto.status as EventStatus,
     confidence: dto.confidence,
   };
 }
@@ -184,12 +184,12 @@ export function fromCalendarCardDto(
     id: dto.id,
     title: dto.title,
     venueName: dto.venueName,
-    category: (dto.category ?? "other") as EventCategory,
+    category: dto.category as EventCategory,
     startUtc: dto.startUtc,
     endUtc: dto.endUtc,
     timezone: dto.timezone,
     thumbnailUrl: dto.thumbnailUrl,
-    status: (dto.status ?? "PUBLISHED") as EventStatus,
+    status: dto.status as EventStatus,
   };
 }
 
@@ -203,7 +203,7 @@ export function fromDetailDto(dto: EventDetailDto): EventDetailProjection {
     address: dto.address,
     lat: dto.lat,
     lng: dto.lng,
-    category: (dto.category ?? "other") as EventCategory,
+    category: dto.category as EventCategory,
     startUtc: dto.startUtc,
     endUtc: dto.endUtc,
     timezone: dto.timezone,
@@ -212,7 +212,7 @@ export function fromDetailDto(dto: EventDetailDto): EventDetailProjection {
       kind: m.kind as "image" | "video" | "poster",
     })),
     tags: dto.tags ?? [],
-    status: (dto.status ?? "PUBLISHED") as EventStatus,
+    status: dto.status as EventStatus,
     confidence: dto.confidence,
     sourceKind: dto.sourceKind,
   };

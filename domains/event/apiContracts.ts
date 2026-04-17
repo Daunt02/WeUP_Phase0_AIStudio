@@ -100,6 +100,12 @@ export interface EventDetailDto {
   readonly confidence: number;
   /** Human-readable source kind label (e.g. "flyer upload"). */
   readonly sourceKind: string;
+  /** Canonical aggregate version — use for optimistic client behaviour. Always >= 1. */
+  readonly version: number;
+  /** Last classified change type (MinorMetadataUpdate | MaterialEventChange | StatusTransition | MergeLineageUpdate). null if no history. */
+  readonly lastChangeType: string | null;
+  /** Concurrency token for conditional update calls. */
+  readonly concurrencyToken: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -139,6 +145,12 @@ export interface EventModerationDto {
   readonly version: number;
   /** ISO 8601 UTC. */
   readonly updatedAtUtc: string;
+  /** Last classified change type. null if no version history exists. */
+  readonly lastChangeType: string | null;
+  /** True when the last change requires moderator confirmation before publish. */
+  readonly hasPendingReview: boolean;
+  /** Concurrency token for conditional mutation requests. */
+  readonly concurrencyToken: string | null;
   /** null if event has not been through merge. */
   readonly mergeLineage: EventMergeLineageSummaryDto | null;
 }
