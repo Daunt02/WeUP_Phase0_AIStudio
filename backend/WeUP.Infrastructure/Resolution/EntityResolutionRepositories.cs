@@ -5,6 +5,8 @@ using WeUP.Contracts.Events;
 using WeUP.Contracts.Ingestion;
 using WeUP.Contracts.Resolution;
 using WeUP.Domain.Dedupe;
+using WeUP.Domain.Events;
+using WeUP.Domain.Moderation;
 using WeUP.Domain.Resolution;
 using WeUP.Infrastructure.Ingestion;
 using WeUP.Infrastructure.Persistence;
@@ -17,20 +19,9 @@ public sealed class InMemoryEntityResolutionRepository(
     InMemoryIngestionJobRepository ingestionJobs,
     IProvenanceService provenanceService) : IEntityResolutionRepository
 {
-    private sealed record CanonicalEventState(
-        string CanonicalEventId,
-        IReadOnlyDictionary<string, string?> Fields,
-        double Latitude,
-        double Longitude,
-        double Confidence,
-        string[] SourceRefs,
-        string[] EvidenceRefs,
-        bool IsApproved,
-        string? ExternalSourceId);
-
     private readonly Dictionary<string, EntityResolutionResult> _results = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, ProvenanceEntry[]> _provenanceByCanonicalEventId = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<string, CanonicalEventState> _canonicalStates = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, EventAggregate> _canonicalStates = new(StringComparer.OrdinalIgnoreCase);
     private readonly object _gate = new();
 
     public Task<ResolutionComparisonRecord[]> GetComparisonRecordsAsync(
@@ -46,22 +37,22 @@ public sealed class InMemoryEntityResolutionRepository(
             {
                 var state = GetOrCreateCanonicalState(detail);
                 var projected = new NormalizedEventCandidate(
-                    Title: GetField(state.Fields, "Title"),
-                    VenueName: GetField(state.Fields, "VenueName"),
-                    Address: GetField(state.Fields, "Address"),
-                    StartUtc: GetField(state.Fields, "StartUtc"),
-                    EndUtc: GetField(state.Fields, "EndUtc"),
-                    Timezone: GetField(state.Fields, "Timezone"),
-                    Category: GetField(state.Fields, "Category"),
-                    Description: GetField(state.Fields, "Description"),
-                    Tags: SplitTags(GetField(state.Fields, "Tags")),
+                    Title: state.Title,
+                    VenueName: state.VenueName,
+                    Address: state.Address.RawAddress,
+                    StartUtc: state.StartUtc.ToString("O", CultureInfo.InvariantCulture),
+                    EndUtc: state.EndUtc?.ToString("O", CultureInfo.InvariantCulture),
+                    Timezone: state.TimeZone,
+                    Category: state.Category,
+                    Description: state.Description,
+                    Tags: state.Tags,
                     SourceKind: detail.SourceKind,
                     SourceRef: detail.Id,
-                    ExtractionConfidence: state.Confidence,
+                    ExtractionConfidence: state.ConfidenceScore,
                     GeocodeConfidence: 0.5,
                     TemporalConfidence: 0.8,
-                    EvidenceRefs: state.EvidenceRefs,
-                    ExternalSourceId: state.ExternalSourceId,
+                    EvidenceRefs: state.Provenance.EvidenceRefs,
+                    ExternalSourceId: state.ExternalReferences.FirstOrDefault()?.ReferenceId,
                     Attributes: new Dictionary<string, string?>
                     {
                         ["lat"] = state.Latitude.ToString(CultureInfo.InvariantCulture),
@@ -73,11 +64,11 @@ public sealed class InMemoryEntityResolutionRepository(
                     RecordType: "event",
                     CanonicalEventId: detail.Id,
                     Candidate: projected,
-                    SourceRefs: state.SourceRefs,
-                    EvidenceRefs: state.EvidenceRefs,
+                    SourceRefs: state.Provenance.SourceRefs,
+                    EvidenceRefs: state.Provenance.EvidenceRefs,
                     ReviewRefs: [],
-                    ExistingConfidence: state.Confidence,
-                    UpdatedAtUtc: ParseUpdatedAt(GetField(state.Fields, "StartUtc"), detail.StartUtc),
+                    ExistingConfidence: state.ConfidenceScore,
+                    UpdatedAtUtc: state.UpdatedAtUtc,
                     IsCandidateRecord: false,
                     IsExistingEventRecord: true));
             }
@@ -160,14 +151,14 @@ public sealed class InMemoryEntityResolutionRepository(
         {
             var currentState = GetOrCreateCanonicalState(detail);
             var beforeSnapshot = ToSnapshot(currentState);
-            var beforeFields = CloneFields(currentState.Fields);
+            var beforeFields = BuildFields(currentState);
             var existingEntries = _provenanceByCanonicalEventId.TryGetValue(command.Plan.CanonicalEventId, out var entries)
                 ? entries
                 : [];
 
             var nextState = ApplyPlan(currentState, command.Plan);
             var afterSnapshot = ToSnapshot(nextState);
-            var afterFields = CloneFields(nextState.Fields);
+            var afterFields = BuildFields(nextState);
 
             var provenanceEntry = provenanceService.CreateAppendOnlyEntry(new ProvenanceBuildCommand(
                 ResolutionId: command.ResolutionId,
@@ -223,142 +214,136 @@ public sealed class InMemoryEntityResolutionRepository(
             candidate.ExternalSourceId,
             candidate.Attributes);
 
-    private CanonicalEventState GetOrCreateCanonicalState(EventDetailDto detail)
+    private EventAggregate GetOrCreateCanonicalState(EventDetailDto detail)
     {
         if (_canonicalStates.TryGetValue(detail.Id, out var existing))
         {
             return existing;
         }
 
-        var created = new CanonicalEventState(
+        var created = new EventAggregate(
             CanonicalEventId: detail.Id,
-            Fields: BuildFields(
-                detail.Title,
-                detail.VenueName,
-                detail.Address,
-                detail.StartUtc.ToString("O", CultureInfo.InvariantCulture),
-                detail.EndUtc?.ToString("O", CultureInfo.InvariantCulture),
-                detail.Timezone,
-                detail.Category,
-                detail.Description,
-                JoinTags(detail.Tags)),
+            SourceEventIds: [detail.Id],
+            ExternalReferences: [new ExternalEventReference("snapshot", detail.SourceKind, detail.Id)],
+            Title: detail.Title,
+            Description: detail.Description,
+            Tags: detail.Tags,
+            Category: detail.Category,
+            VenueName: detail.VenueName,
+            Address: new EventAddress(
+                AddressLine1: detail.Address,
+                City: string.Empty,
+                State: null,
+                PostalCode: null,
+                Country: "US",
+                RawAddress: detail.Address),
             Latitude: detail.Lat,
             Longitude: detail.Lng,
-            Confidence: detail.Confidence,
-            SourceRefs: [$"{detail.SourceKind}:{detail.Id}"],
-            EvidenceRefs: [],
-            IsApproved: detail.Status.Equals("APPROVED", StringComparison.OrdinalIgnoreCase),
-            ExternalSourceId: detail.Id);
+            TimeZone: detail.Timezone,
+            StartUtc: detail.StartUtc,
+            EndUtc: detail.EndUtc,
+            LocalStartDisplay: null,
+            LocalEndDisplay: null,
+            EventStatus: EventLifecycleStatusMapper.FromStorage(detail.Status),
+            PublishStatus: detail.Status.Equals("PUBLISHED", StringComparison.OrdinalIgnoreCase)
+                ? EventPublishStatus.Published
+                : EventPublishStatus.EligibilityPending,
+            ModerationStatus: detail.Status.Equals("REJECTED", StringComparison.OrdinalIgnoreCase)
+                ? EventModerationStatus.Rejected
+                : EventModerationStatus.Unreviewed,
+            RiskLevel: detail.Confidence >= 0.8 ? EventRiskLevel.Low : EventRiskLevel.Medium,
+            ConfidenceScore: detail.Confidence,
+            Provenance: new EventProvenanceMetadata(
+                PrimarySourceKind: detail.SourceKind,
+                PrimarySourceRef: detail.Id,
+                EvidenceRefs: [],
+                FirstObservedAtUtc: detail.StartUtc,
+                LastObservedAtUtc: detail.StartUtc,
+                SourceRefs: [$"{detail.SourceKind}:{detail.Id}"]),
+            CreatedAtUtc: detail.StartUtc,
+            UpdatedAtUtc: detail.StartUtc,
+            Version: 1,
+            MergeLineage: new EventMergeLineage(null, [], [], null, null));
+
+        created.Validate();
 
         _canonicalStates[detail.Id] = created;
         return created;
     }
 
-    private static CanonicalEventState ApplyPlan(CanonicalEventState currentState, MergePlan plan)
+    private static EventAggregate ApplyPlan(EventAggregate currentState, MergePlan plan)
     {
-        var updatedFields = CloneFields(currentState.Fields);
-        SetIfProvided(updatedFields, "Title", plan.Title);
-        SetIfProvided(updatedFields, "VenueName", plan.VenueName);
-        SetIfProvided(updatedFields, "Address", plan.Address);
-        SetIfProvided(updatedFields, "StartUtc", plan.StartUtc);
-        SetIfProvided(updatedFields, "EndUtc", plan.EndUtc);
-        SetIfProvided(updatedFields, "Timezone", plan.Timezone);
-        SetIfProvided(updatedFields, "Category", plan.Category);
-        SetIfProvided(updatedFields, "Description", plan.Description);
-        if (plan.Tags.Length > 0)
-        {
-            updatedFields["Tags"] = JoinTags(plan.Tags);
-        }
+        var startUtc = !string.IsNullOrWhiteSpace(plan.StartUtc) && DateTimeOffset.TryParse(plan.StartUtc, out var parsedStart)
+            ? parsedStart
+            : currentState.StartUtc;
+        var endUtc = !string.IsNullOrWhiteSpace(plan.EndUtc) && DateTimeOffset.TryParse(plan.EndUtc, out var parsedEnd)
+            ? parsedEnd
+            : currentState.EndUtc;
 
-        return currentState with
+        var updated = currentState with
         {
-            Fields = updatedFields,
-            Confidence = Math.Max(currentState.Confidence, plan.MergedConfidence),
-            SourceRefs = MergeDistinct(currentState.SourceRefs, plan.UnionedSourceRefs),
-            EvidenceRefs = MergeDistinct(currentState.EvidenceRefs, plan.UnionedEvidenceRefs),
+            Title = string.IsNullOrWhiteSpace(plan.Title) ? currentState.Title : plan.Title,
+            Description = string.IsNullOrWhiteSpace(plan.Description) ? currentState.Description : plan.Description,
+            Category = string.IsNullOrWhiteSpace(plan.Category) ? currentState.Category : plan.Category,
+            Tags = plan.Tags.Length == 0 ? currentState.Tags : plan.Tags,
+            VenueName = string.IsNullOrWhiteSpace(plan.VenueName) ? currentState.VenueName : plan.VenueName,
+            Address = string.IsNullOrWhiteSpace(plan.Address)
+                ? currentState.Address
+                : currentState.Address with { AddressLine1 = plan.Address, RawAddress = plan.Address },
+            StartUtc = startUtc,
+            EndUtc = endUtc,
+            TimeZone = string.IsNullOrWhiteSpace(plan.Timezone) ? currentState.TimeZone : plan.Timezone,
+            ConfidenceScore = Math.Max(currentState.ConfidenceScore, plan.MergedConfidence),
+            Provenance = currentState.Provenance with
+            {
+                SourceRefs = MergeDistinct(currentState.Provenance.SourceRefs, plan.UnionedSourceRefs),
+                EvidenceRefs = MergeDistinct(currentState.Provenance.EvidenceRefs, plan.UnionedEvidenceRefs),
+            },
+            UpdatedAtUtc = DateTimeOffset.UtcNow,
+            Version = currentState.Version + 1,
         };
+
+        updated.Validate();
+        return updated;
     }
 
-    private static EventAggregateSnapshot ToSnapshot(CanonicalEventState state)
+    private static EventAggregateSnapshot ToSnapshot(EventAggregate state)
         => new(
             CanonicalEventId: state.CanonicalEventId,
-            Title: GetField(state.Fields, "Title"),
-            VenueName: GetField(state.Fields, "VenueName"),
-            Address: GetField(state.Fields, "Address"),
+            Title: state.Title,
+            VenueName: state.VenueName,
+            Address: state.Address.RawAddress,
             Latitude: state.Latitude,
             Longitude: state.Longitude,
-            StartUtc: GetField(state.Fields, "StartUtc"),
-            EndUtc: GetField(state.Fields, "EndUtc"),
-            Timezone: GetField(state.Fields, "Timezone"),
-            Category: GetField(state.Fields, "Category"),
-            Confidence: state.Confidence,
-            SourceRefs: state.SourceRefs,
-            EvidenceRefs: state.EvidenceRefs,
-            IsApproved: state.IsApproved,
-            ExternalSourceId: state.ExternalSourceId);
+            StartUtc: state.StartUtc.ToString("O", CultureInfo.InvariantCulture),
+            EndUtc: state.EndUtc?.ToString("O", CultureInfo.InvariantCulture),
+            Timezone: state.TimeZone,
+            Category: state.Category,
+            Confidence: state.ConfidenceScore,
+            SourceRefs: state.Provenance.SourceRefs,
+            EvidenceRefs: state.Provenance.EvidenceRefs,
+            IsApproved: state.EventStatus is EventLifecycleStatus.Approved or EventLifecycleStatus.Published,
+            ExternalSourceId: state.ExternalReferences.FirstOrDefault()?.ReferenceId);
 
-    private static Dictionary<string, string?> BuildFields(
-        string? title,
-        string? venueName,
-        string? address,
-        string? startUtc,
-        string? endUtc,
-        string? timezone,
-        string? category,
-        string? description,
-        string? tags)
-        => new(StringComparer.Ordinal)
+    private static IReadOnlyDictionary<string, string?> BuildFields(EventAggregate state)
+        => new Dictionary<string, string?>(StringComparer.Ordinal)
         {
-            ["Title"] = title,
-            ["VenueName"] = venueName,
-            ["Address"] = address,
-            ["StartUtc"] = startUtc,
-            ["EndUtc"] = endUtc,
-            ["Timezone"] = timezone,
-            ["Category"] = category,
-            ["Description"] = description,
-            ["Tags"] = tags,
+            ["Title"] = state.Title,
+            ["VenueName"] = state.VenueName,
+            ["Address"] = state.Address.RawAddress,
+            ["StartUtc"] = state.StartUtc.ToString("O", CultureInfo.InvariantCulture),
+            ["EndUtc"] = state.EndUtc?.ToString("O", CultureInfo.InvariantCulture),
+            ["Timezone"] = state.TimeZone,
+            ["Category"] = state.Category,
+            ["Description"] = state.Description,
+            ["Tags"] = state.Tags.Length == 0 ? null : string.Join(',', state.Tags),
         };
-
-    private static Dictionary<string, string?> CloneFields(IReadOnlyDictionary<string, string?> fields)
-        => fields.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
-
-    private static string? GetField(IReadOnlyDictionary<string, string?> fields, string key)
-        => fields.TryGetValue(key, out var value) ? value : null;
-
-    private static void SetIfProvided(IDictionary<string, string?> fields, string key, string? value)
-    {
-        if (!string.IsNullOrWhiteSpace(value))
-        {
-            fields[key] = value;
-        }
-    }
-
-    private static string[] SplitTags(string? tags)
-        => string.IsNullOrWhiteSpace(tags)
-            ? []
-            : tags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-    private static string? JoinTags(IEnumerable<string> tags)
-    {
-        var values = tags
-            .Where(tag => !string.IsNullOrWhiteSpace(tag))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
-        return values.Length == 0 ? null : string.Join(',', values);
-    }
 
     private static string[] MergeDistinct(IEnumerable<string> left, IEnumerable<string> right)
         => left.Concat(right)
             .Where(value => !string.IsNullOrWhiteSpace(value))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
-
-    private static DateTimeOffset ParseUpdatedAt(string? value, DateTimeOffset fallback)
-        => DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var parsed)
-            ? parsed
-            : fallback;
 
     private static string BuildMergeReason(MergeCommitCommand command)
     {
@@ -398,38 +383,39 @@ public sealed class EfEntityResolutionRepository(WeUpDbContext db, IProvenanceSe
         var events = await eventQuery.ToListAsync(ct);
         foreach (var entity in events)
         {
+            var aggregate = entity.ToCanonicalAggregate();
             records.Add(new ResolutionComparisonRecord(
-                RecordId: entity.Id.ToString("N"),
+                RecordId: aggregate.CanonicalEventId,
                 RecordType: "event",
-                CanonicalEventId: entity.Id.ToString("N"),
+                CanonicalEventId: aggregate.CanonicalEventId,
                 Candidate: new NormalizedEventCandidate(
-                    Title: entity.CanonicalTitle,
-                    VenueName: entity.VenueName,
-                    Address: entity.AddressRaw,
-                    StartUtc: entity.StartUtc.ToString("O", CultureInfo.InvariantCulture),
-                    EndUtc: entity.EndUtc?.ToString("O", CultureInfo.InvariantCulture),
-                    Timezone: entity.Timezone,
-                    Category: entity.Category,
-                    Description: entity.CanonicalDescription,
+                    Title: aggregate.Title,
+                    VenueName: aggregate.VenueName,
+                    Address: aggregate.Address.RawAddress,
+                    StartUtc: aggregate.StartUtc.ToString("O", CultureInfo.InvariantCulture),
+                    EndUtc: aggregate.EndUtc?.ToString("O", CultureInfo.InvariantCulture),
+                    Timezone: aggregate.TimeZone,
+                    Category: aggregate.Category,
+                    Description: aggregate.Description,
                     Tags: string.IsNullOrWhiteSpace(entity.TagsCsv)
                         ? []
                         : entity.TagsCsv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
                     SourceKind: "existing_event",
-                    SourceRef: entity.Id.ToString("N"),
-                    ExtractionConfidence: entity.Confidence,
+                    SourceRef: aggregate.CanonicalEventId,
+                    ExtractionConfidence: aggregate.ConfidenceScore,
                     GeocodeConfidence: 0.8,
                     TemporalConfidence: 0.8,
-                    EvidenceRefs: [],
-                    ExternalSourceId: entity.Id.ToString("N"),
+                    EvidenceRefs: aggregate.Provenance.EvidenceRefs,
+                    ExternalSourceId: aggregate.CanonicalEventId,
                     Attributes: new Dictionary<string, string?>
                     {
-                        ["lat"] = entity.Latitude.ToString(CultureInfo.InvariantCulture),
-                        ["lng"] = entity.Longitude.ToString(CultureInfo.InvariantCulture),
+                        ["lat"] = aggregate.Latitude.ToString(CultureInfo.InvariantCulture),
+                        ["lng"] = aggregate.Longitude.ToString(CultureInfo.InvariantCulture),
                     }),
-                SourceRefs: entity.Sources.Select(s => s.SourceRef).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
-                EvidenceRefs: [],
+                SourceRefs: aggregate.Provenance.SourceRefs,
+                EvidenceRefs: aggregate.Provenance.EvidenceRefs,
                 ReviewRefs: entity.Reviews.Select(r => r.Id.ToString("N")).ToArray(),
-                ExistingConfidence: entity.Confidence,
+                ExistingConfidence: aggregate.ConfidenceScore,
                 UpdatedAtUtc: entity.UpdatedAt,
                 IsCandidateRecord: false,
                 IsExistingEventRecord: true));
@@ -539,19 +525,19 @@ public sealed class EfEntityResolutionRepository(WeUpDbContext db, IProvenanceSe
 
     public async Task<MergeCommitResult> CommitMergeAsync(MergeCommitCommand command, CancellationToken ct = default)
     {
-        if (!Guid.TryParse(command.Plan.CanonicalEventId, out var eventId))
+        EventEntity? entity;
+        if (Guid.TryParse(command.Plan.CanonicalEventId, out var eventId))
         {
-            return new MergeCommitResult(
-                Success: false,
-                RequiresManualReview: true,
-                Message: "Canonical event ID is invalid.",
-                CanonicalEventId: command.Plan.CanonicalEventId,
-                AuditTrail: ["Merge commit blocked: invalid canonical event ID."]);
+            entity = await db.Events
+                .Include(e => e.Sources)
+                .FirstOrDefaultAsync(e => e.Id == eventId, ct);
         }
-
-        var entity = await db.Events
-            .Include(e => e.Sources)
-            .FirstOrDefaultAsync(e => e.Id == eventId, ct);
+        else
+        {
+            entity = await db.Events
+                .Include(e => e.Sources)
+                .FirstOrDefaultAsync(e => e.PublicId == command.Plan.CanonicalEventId, ct);
+        }
 
         if (entity is null)
         {
@@ -735,40 +721,24 @@ public sealed class EfEntityResolutionRepository(WeUpDbContext db, IProvenanceSe
             candidate.Attributes);
 
     private static EventAggregateSnapshot ToSnapshot(EventEntity entity)
-        => new(
-            CanonicalEventId: entity.Id.ToString("N"),
-            Title: entity.CanonicalTitle,
-            VenueName: entity.VenueName,
-            Address: entity.AddressRaw,
-            Latitude: entity.Latitude,
-            Longitude: entity.Longitude,
-            StartUtc: entity.StartUtc.ToString("O", CultureInfo.InvariantCulture),
-            EndUtc: entity.EndUtc?.ToString("O", CultureInfo.InvariantCulture),
-            Timezone: entity.Timezone,
-            Category: entity.Category,
-            Confidence: entity.Confidence,
-            SourceRefs: entity.Sources.Select(source => source.SourceRef).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
-            EvidenceRefs: entity.Sources
-                .Where(source => source.SourceKind.Equals("evidence_ref", StringComparison.OrdinalIgnoreCase))
-                .Select(source => source.SourceRef)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray(),
-            IsApproved: entity.Status.Equals("APPROVED", StringComparison.OrdinalIgnoreCase),
-            ExternalSourceId: entity.PublicId);
+        => entity.ToAggregateSnapshot();
 
     private static IReadOnlyDictionary<string, string?> BuildFields(EventEntity entity)
-        => new Dictionary<string, string?>(StringComparer.Ordinal)
+    {
+        var aggregate = entity.ToCanonicalAggregate();
+        return new Dictionary<string, string?>(StringComparer.Ordinal)
         {
-            ["Title"] = entity.CanonicalTitle,
-            ["VenueName"] = entity.VenueName,
-            ["Address"] = entity.AddressRaw,
-            ["StartUtc"] = entity.StartUtc.ToString("O", CultureInfo.InvariantCulture),
-            ["EndUtc"] = entity.EndUtc?.ToString("O", CultureInfo.InvariantCulture),
-            ["Timezone"] = entity.Timezone,
-            ["Category"] = entity.Category,
-            ["Description"] = entity.CanonicalDescription,
+            ["Title"] = aggregate.Title,
+            ["VenueName"] = aggregate.VenueName,
+            ["Address"] = aggregate.Address.RawAddress,
+            ["StartUtc"] = aggregate.StartUtc.ToString("O", CultureInfo.InvariantCulture),
+            ["EndUtc"] = aggregate.EndUtc?.ToString("O", CultureInfo.InvariantCulture),
+            ["Timezone"] = aggregate.TimeZone,
+            ["Category"] = aggregate.Category,
+            ["Description"] = aggregate.Description,
             ["Tags"] = entity.TagsCsv,
         };
+    }
 
     private static string BuildMergeReason(MergeCommitCommand command)
     {

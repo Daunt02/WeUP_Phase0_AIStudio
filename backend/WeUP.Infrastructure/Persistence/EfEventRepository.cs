@@ -48,7 +48,8 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
             .Include(e => e.Media)
             .ToListAsync(ct);
 
-        var events = entities.Select(e => ToMapCard(e)).ToArray();
+        var aggregates = entities.Select(entity => entity.ToCanonicalAggregate()).ToArray();
+        var events = aggregates.Select(ToMapCard).ToArray();
         var clusters = BuildViewportClusters(events);
         return new MapFeedResponse(events, events.Length, clusters, "bounding_box");
     }
@@ -88,7 +89,10 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
             .Include(e => e.Media)
             .ToListAsync(ct);
 
-        var items = entities.Select(e => ToCalendar(e)).ToArray();
+        var items = entities
+            .Select(entity => entity.ToCanonicalAggregate())
+            .Select(ToCalendar)
+            .ToArray();
         return new CalendarFeedResponse(items, totalCount, page, pageSize, (page - 1) * pageSize + items.Length < totalCount);
     }
 
@@ -105,7 +109,8 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
             .FirstOrDefaultAsync(e => e.PublicId == eventId, ct);
 
         if (entity is null) return new EventDetailResponse(null);
-        return new EventDetailResponse(ToDetail(entity));
+        var aggregate = entity.ToCanonicalAggregate();
+        return new EventDetailResponse(ToDetail(aggregate, entity));
     }
 
     // ---------------------------------------------------------------------------
@@ -122,7 +127,7 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
         {
             Id = id,
             PublicId = publicId,
-            Status = "DRAFT",
+            Status = EventLifecycleStatusMapper.ToStorage(EventLifecycleStatus.Draft),
             CanonicalTitle = request.Title,
             CanonicalDescription = request.Description,
             Category = request.Category,
@@ -189,7 +194,11 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
             return false;
         }
 
-        entity.Status = newStatus;
+        var aggregate = entity.ToCanonicalAggregate();
+        var nextStatus = EventLifecycleStatusMapper.FromStorage(newStatus);
+        aggregate.EnsureCanTransitionTo(nextStatus);
+
+        entity.Status = EventLifecycleStatusMapper.ToStorage(nextStatus);
         entity.UpdatedAt = DateTimeOffset.UtcNow;
         await db.SaveChangesAsync(ct);
         return true;
@@ -199,45 +208,45 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
     // Projections
     // ---------------------------------------------------------------------------
 
-    private static EventMapCardDto ToMapCard(EventEntity e) => new(
-        e.PublicId,
-        e.CanonicalTitle,
+    private static EventMapCardDto ToMapCard(EventAggregate e) => new(
+        e.CanonicalEventId,
+        e.Title,
         e.VenueName,
         e.Category,
         e.Latitude,
         e.Longitude,
-        PrimaryThumbnail(e),
-        e.Status,
-        e.Confidence);
+        null,
+        EventLifecycleStatusMapper.ToStorage(e.EventStatus),
+        e.ConfidenceScore);
 
-    private static EventCalendarDto ToCalendar(EventEntity e) => new(
-        e.PublicId,
-        e.CanonicalTitle,
+    private static EventCalendarDto ToCalendar(EventAggregate e) => new(
+        e.CanonicalEventId,
+        e.Title,
         e.VenueName,
         e.Category,
         e.StartUtc,
         e.EndUtc,
-        e.Timezone,
-        PrimaryThumbnail(e),
-        e.Status);
+        e.TimeZone,
+        null,
+        EventLifecycleStatusMapper.ToStorage(e.EventStatus));
 
-    private static EventDetailDto ToDetail(EventEntity e) => new(
-        e.PublicId,
-        e.CanonicalTitle,
-        e.CanonicalDescription,
+    private static EventDetailDto ToDetail(EventAggregate e, EventEntity sourceEntity) => new(
+        e.CanonicalEventId,
+        e.Title,
+        e.Description,
         e.VenueName,
-        $"{e.AddressLine1}, {e.AddressCity}".TrimEnd(' ', ','),
+        e.Address.RawAddress,
         e.Latitude,
         e.Longitude,
         e.Category,
         e.StartUtc,
         e.EndUtc,
-        e.Timezone,
-        e.Media.Select(m => new MediaRefDto(m.Url, m.Kind)).ToArray(),
-        string.IsNullOrEmpty(e.TagsCsv) ? [] : e.TagsCsv.Split(',', StringSplitOptions.RemoveEmptyEntries),
-        e.Status,
-        e.Confidence,
-        e.Sources.FirstOrDefault()?.SourceKind ?? "unknown");
+        e.TimeZone,
+        sourceEntity.Media.Select(m => new MediaRefDto(m.Url, m.Kind)).ToArray(),
+        string.IsNullOrEmpty(sourceEntity.TagsCsv) ? [] : sourceEntity.TagsCsv.Split(',', StringSplitOptions.RemoveEmptyEntries),
+        EventLifecycleStatusMapper.ToStorage(e.EventStatus),
+        e.ConfidenceScore,
+        e.Provenance.PrimarySourceKind);
 
     private static string? PrimaryThumbnail(EventEntity e)
     {

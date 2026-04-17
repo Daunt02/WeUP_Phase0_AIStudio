@@ -1,6 +1,7 @@
 using System.Globalization;
 using WeUP.Contracts.Events;
 using WeUP.Domain.Events;
+using WeUP.Domain.Moderation;
 using WeUP.Infrastructure.Seed;
 
 namespace WeUP.Infrastructure.Persistence;
@@ -173,6 +174,15 @@ public sealed class StubEventRepository : IEventRepository, IEventSubmissionRepo
                 return Task.FromResult(false);
             }
 
+            var detail = _details.FirstOrDefault(item => item.Id.Equals(eventId, StringComparison.OrdinalIgnoreCase));
+            if (detail is not null)
+            {
+                var aggregate = BuildAggregate(detail, _eventStatuses[eventId]);
+                var nextLifecycle = EventLifecycleStatusMapper.FromStorage(newStatus);
+                aggregate.EnsureCanTransitionTo(nextLifecycle);
+                newStatus = EventLifecycleStatusMapper.ToStorage(nextLifecycle);
+            }
+
             _eventStatuses[eventId] = newStatus;
 
             _mapCards = _mapCards
@@ -191,6 +201,54 @@ public sealed class StubEventRepository : IEventRepository, IEventSubmissionRepo
 
     private static DateTimeOffset ParseDate(string value) =>
         DateTimeOffset.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+
+    private static EventAggregate BuildAggregate(EventDetailDto detail, string status)
+    {
+        var lifecycle = EventLifecycleStatusMapper.FromStorage(status);
+
+        var aggregate = new EventAggregate(
+            CanonicalEventId: detail.Id,
+            SourceEventIds: [detail.Id],
+            ExternalReferences: [new ExternalEventReference("seed", detail.SourceKind, detail.Id)],
+            Title: detail.Title,
+            Description: detail.Description,
+            Tags: detail.Tags,
+            Category: detail.Category,
+            VenueName: detail.VenueName,
+            Address: new EventAddress(
+                AddressLine1: detail.Address,
+                City: string.Empty,
+                State: null,
+                PostalCode: null,
+                Country: "US",
+                RawAddress: detail.Address),
+            Latitude: detail.Lat,
+            Longitude: detail.Lng,
+            TimeZone: detail.Timezone,
+            StartUtc: detail.StartUtc,
+            EndUtc: detail.EndUtc,
+            LocalStartDisplay: null,
+            LocalEndDisplay: null,
+            EventStatus: lifecycle,
+            PublishStatus: lifecycle == EventLifecycleStatus.Published ? EventPublishStatus.Published : EventPublishStatus.EligibilityPending,
+            ModerationStatus: lifecycle == EventLifecycleStatus.Rejected ? EventModerationStatus.Rejected : EventModerationStatus.Unreviewed,
+            RiskLevel: detail.Confidence >= 0.8 ? EventRiskLevel.Low : EventRiskLevel.Medium,
+            ConfidenceScore: detail.Confidence,
+            Provenance: new EventProvenanceMetadata(
+                PrimarySourceKind: detail.SourceKind,
+                PrimarySourceRef: detail.Id,
+                EvidenceRefs: [],
+                FirstObservedAtUtc: detail.StartUtc,
+                LastObservedAtUtc: detail.StartUtc,
+                SourceRefs: [detail.Id]),
+            CreatedAtUtc: detail.StartUtc,
+            UpdatedAtUtc: detail.StartUtc,
+            Version: 1,
+            MergeLineage: new EventMergeLineage(null, [], [], null, null));
+
+        aggregate.Validate();
+        return aggregate;
+    }
 
     private bool MatchesLocality(string eventId, LocalityFilterRequest? locality, string? districtCode)
     {

@@ -1,0 +1,282 @@
+using WeUP.Domain.Moderation;
+
+namespace WeUP.Domain.Events;
+
+/// <summary>
+/// Canonical lifecycle status for EventAggregate.
+/// </summary>
+public enum EventLifecycleStatus
+{
+    Draft = 0,
+    Candidate = 1,
+    Reviewed = 2,
+    Approved = 3,
+    Rejected = 4,
+    Published = 5,
+    Cancelled = 6,
+    Archived = 7,
+}
+
+/// <summary>
+/// Publishability state. This is separate from lifecycle to keep publication
+/// gating explicit and auditable.
+/// </summary>
+public enum EventPublishStatus
+{
+    NotEligible = 0,
+    EligibilityPending = 1,
+    Eligible = 2,
+    Published = 3,
+    Unpublished = 4,
+    Archived = 5,
+}
+
+/// <summary>
+/// Moderation review state for the canonical event.
+/// </summary>
+public enum EventModerationStatus
+{
+    Unreviewed = 0,
+    InReview = 1,
+    Approved = 2,
+    Rejected = 3,
+}
+
+/// <summary>
+/// Normalized address and location fields owned by the canonical aggregate.
+/// </summary>
+public sealed record EventAddress(
+    string AddressLine1,
+    string City,
+    string? State,
+    string? PostalCode,
+    string Country,
+    string RawAddress,
+    string? MarketCode = null,
+    string? DistrictCode = null,
+    string? NeighborhoodCode = null);
+
+/// <summary>
+/// External reference used to link canonical events back to ingestion systems,
+/// partner systems, or manual submission channels.
+/// </summary>
+public sealed record ExternalEventReference(
+    string ReferenceType,
+    string SourceSystem,
+    string ReferenceId,
+    string? Url = null,
+    IReadOnlyDictionary<string, string?>? Metadata = null);
+
+/// <summary>
+/// Provenance metadata attached to the canonical event for auditability.
+/// </summary>
+public sealed record EventProvenanceMetadata(
+    string PrimarySourceKind,
+    string PrimarySourceRef,
+    string[] EvidenceRefs,
+    DateTimeOffset FirstObservedAtUtc,
+    DateTimeOffset LastObservedAtUtc,
+    string[] SourceRefs,
+    IReadOnlyDictionary<string, string?>? Metadata = null);
+
+/// <summary>
+/// Merge lineage metadata for deduplication and merge history chaining.
+/// </summary>
+public sealed record EventMergeLineage(
+    string? ParentCanonicalEventId,
+    string[] MergedCanonicalEventIds,
+    string[] AppliedMergePlanIds,
+    DateTimeOffset? LastMergedAtUtc,
+    string? LastMergedBy);
+
+/// <summary>
+/// Canonical event aggregate (v1.0): the authoritative backend source of truth
+/// for event identity, lifecycle, moderation state, temporal state, spatial
+/// state, provenance, and publish eligibility.
+///
+/// UI convenience fields:
+/// - LocalStartDisplay
+/// - LocalEndDisplay
+/// These are rendering helpers only. Domain logic must use StartUtc/EndUtc.
+/// </summary>
+public sealed record EventAggregate(
+    string CanonicalEventId,
+    string[] SourceEventIds,
+    ExternalEventReference[] ExternalReferences,
+    string Title,
+    string? Description,
+    string[] Tags,
+    string Category,
+    string VenueName,
+    EventAddress Address,
+    double Latitude,
+    double Longitude,
+    string TimeZone,
+    DateTimeOffset StartUtc,
+    DateTimeOffset? EndUtc,
+    string? LocalStartDisplay,
+    string? LocalEndDisplay,
+    EventLifecycleStatus EventStatus,
+    EventPublishStatus PublishStatus,
+    EventModerationStatus ModerationStatus,
+    EventRiskLevel RiskLevel,
+    double ConfidenceScore,
+    EventProvenanceMetadata Provenance,
+    DateTimeOffset CreatedAtUtc,
+    DateTimeOffset UpdatedAtUtc,
+    int Version,
+    EventMergeLineage MergeLineage)
+{
+    private static readonly IReadOnlyDictionary<EventLifecycleStatus, EventLifecycleStatus[]> AllowedTransitions =
+        new Dictionary<EventLifecycleStatus, EventLifecycleStatus[]>
+        {
+            [EventLifecycleStatus.Draft] = [EventLifecycleStatus.Candidate, EventLifecycleStatus.Archived],
+            [EventLifecycleStatus.Candidate] = [EventLifecycleStatus.Reviewed, EventLifecycleStatus.Rejected, EventLifecycleStatus.Cancelled],
+            [EventLifecycleStatus.Reviewed] = [EventLifecycleStatus.Approved, EventLifecycleStatus.Rejected, EventLifecycleStatus.Candidate],
+            [EventLifecycleStatus.Approved] = [EventLifecycleStatus.Published, EventLifecycleStatus.Cancelled, EventLifecycleStatus.Archived],
+            [EventLifecycleStatus.Rejected] = [EventLifecycleStatus.Candidate, EventLifecycleStatus.Archived],
+            [EventLifecycleStatus.Published] = [EventLifecycleStatus.Cancelled, EventLifecycleStatus.Archived],
+            [EventLifecycleStatus.Cancelled] = [EventLifecycleStatus.Published, EventLifecycleStatus.Archived],
+            [EventLifecycleStatus.Archived] = [],
+        };
+
+    /// <summary>
+    /// Validate aggregate invariants for MVP/Phase 0 canonical contract.
+    /// </summary>
+    public void Validate()
+    {
+        if (string.IsNullOrWhiteSpace(CanonicalEventId))
+            throw new InvalidOperationException("CanonicalEventId is required.");
+        if (string.IsNullOrWhiteSpace(Title))
+            throw new InvalidOperationException("Title is required.");
+        if (string.IsNullOrWhiteSpace(VenueName))
+            throw new InvalidOperationException("VenueName is required.");
+        if (string.IsNullOrWhiteSpace(Category))
+            throw new InvalidOperationException("Category is required.");
+        if (Tags is null)
+            throw new InvalidOperationException("Tags must be non-null (empty array is allowed).");
+        if (string.IsNullOrWhiteSpace(TimeZone))
+            throw new InvalidOperationException("TimeZone is required.");
+        if (Address is null)
+            throw new InvalidOperationException("Address is required.");
+        if (string.IsNullOrWhiteSpace(Address.AddressLine1) || string.IsNullOrWhiteSpace(Address.RawAddress))
+            throw new InvalidOperationException("Address line and raw address are required.");
+        if (double.IsNaN(Latitude) || Latitude < -90 || Latitude > 90)
+            throw new InvalidOperationException("Latitude must be within [-90, 90].");
+        if (double.IsNaN(Longitude) || Longitude < -180 || Longitude > 180)
+            throw new InvalidOperationException("Longitude must be within [-180, 180].");
+        if (EndUtc.HasValue && EndUtc.Value < StartUtc)
+            throw new InvalidOperationException("EndUtc cannot be earlier than StartUtc.");
+        if (double.IsNaN(ConfidenceScore) || ConfidenceScore < 0 || ConfidenceScore > 1)
+            throw new InvalidOperationException("ConfidenceScore must be within [0, 1].");
+        if (Version <= 0)
+            throw new InvalidOperationException("Version must be >= 1.");
+        if (Provenance is null)
+            throw new InvalidOperationException("Provenance metadata is required.");
+
+        ValidateStatusConsistency();
+    }
+
+    /// <summary>
+    /// Validate lifecycle status transition.
+    /// </summary>
+    public void EnsureCanTransitionTo(EventLifecycleStatus nextStatus)
+    {
+        if (EventStatus == nextStatus)
+            return;
+
+        if (!AllowedTransitions.TryGetValue(EventStatus, out var allowed) || !allowed.Contains(nextStatus))
+        {
+            throw new InvalidOperationException(
+                $"Invalid lifecycle transition: {EventStatus} -> {nextStatus}.");
+        }
+    }
+
+    /// <summary>
+    /// Apply a validated lifecycle transition and bump aggregate version.
+    /// </summary>
+    public EventAggregate TransitionTo(EventLifecycleStatus nextStatus, DateTimeOffset transitionAtUtc)
+    {
+        EnsureCanTransitionTo(nextStatus);
+
+        var nextPublishStatus = nextStatus switch
+        {
+            EventLifecycleStatus.Published => EventPublishStatus.Published,
+            EventLifecycleStatus.Archived => EventPublishStatus.Archived,
+            EventLifecycleStatus.Rejected => EventPublishStatus.NotEligible,
+            EventLifecycleStatus.Cancelled => EventPublishStatus.Unpublished,
+            EventLifecycleStatus.Approved => PublishStatus is EventPublishStatus.Published ? EventPublishStatus.Published : EventPublishStatus.Eligible,
+            _ => PublishStatus,
+        };
+
+        var nextModerationStatus = nextStatus switch
+        {
+            EventLifecycleStatus.Reviewed => EventModerationStatus.InReview,
+            EventLifecycleStatus.Approved => EventModerationStatus.Approved,
+            EventLifecycleStatus.Rejected => EventModerationStatus.Rejected,
+            _ => ModerationStatus,
+        };
+
+        var updated = this with
+        {
+            EventStatus = nextStatus,
+            PublishStatus = nextPublishStatus,
+            ModerationStatus = nextModerationStatus,
+            UpdatedAtUtc = transitionAtUtc,
+            Version = Version + 1,
+        };
+
+        updated.Validate();
+        return updated;
+    }
+
+    private void ValidateStatusConsistency()
+    {
+        if (EventStatus == EventLifecycleStatus.Published && PublishStatus != EventPublishStatus.Published)
+            throw new InvalidOperationException("Published events must have PublishStatus=Published.");
+
+        if (PublishStatus == EventPublishStatus.Published && EventStatus != EventLifecycleStatus.Published)
+            throw new InvalidOperationException("PublishStatus=Published requires EventStatus=Published.");
+
+        if (EventStatus == EventLifecycleStatus.Rejected && ModerationStatus != EventModerationStatus.Rejected)
+            throw new InvalidOperationException("Rejected events must have ModerationStatus=Rejected.");
+
+        if (ModerationStatus == EventModerationStatus.Rejected && EventStatus == EventLifecycleStatus.Published)
+            throw new InvalidOperationException("Rejected events cannot be Published.");
+    }
+}
+
+/// <summary>
+/// String/status mapping helpers for legacy storage fields and contracts.
+/// </summary>
+public static class EventLifecycleStatusMapper
+{
+    public static EventLifecycleStatus FromStorage(string? status)
+        => (status ?? string.Empty).Trim().ToUpperInvariant() switch
+        {
+            "DRAFT" => EventLifecycleStatus.Draft,
+            "INGESTED" => EventLifecycleStatus.Candidate,
+            "NEEDS_REVIEW" => EventLifecycleStatus.Candidate,
+            "REVIEWED" => EventLifecycleStatus.Reviewed,
+            "APPROVED" => EventLifecycleStatus.Approved,
+            "REJECTED" => EventLifecycleStatus.Rejected,
+            "PUBLISHED" => EventLifecycleStatus.Published,
+            "CANCELLED" => EventLifecycleStatus.Cancelled,
+            "ARCHIVED" => EventLifecycleStatus.Archived,
+            _ => EventLifecycleStatus.Candidate,
+        };
+
+    public static string ToStorage(EventLifecycleStatus status)
+        => status switch
+        {
+            EventLifecycleStatus.Draft => "DRAFT",
+            EventLifecycleStatus.Candidate => "NEEDS_REVIEW",
+            EventLifecycleStatus.Reviewed => "REVIEWED",
+            EventLifecycleStatus.Approved => "APPROVED",
+            EventLifecycleStatus.Rejected => "REJECTED",
+            EventLifecycleStatus.Published => "PUBLISHED",
+            EventLifecycleStatus.Cancelled => "CANCELLED",
+            EventLifecycleStatus.Archived => "ARCHIVED",
+            _ => "NEEDS_REVIEW",
+        };
+}
