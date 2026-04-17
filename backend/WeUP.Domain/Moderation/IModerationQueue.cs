@@ -15,16 +15,16 @@ public sealed class ModerationQueueItem
     public string ItemId { get; init; } = Guid.NewGuid().ToString("N");
     public ModerationItemKind Kind { get; init; }
     public ModerationItemStatus Status { get; set; } = ModerationItemStatus.Open;
-    public CandidateSnapshotDto? Candidate { get; init; }
+    public CandidateSnapshotDto? Candidate { get; set; }
     public ProvenanceSummaryDto Provenance { get; init; } = null!;
-    public ConfidenceSummaryDto Confidence { get; init; } = null!;
-    public DedupeSummaryDto? DedupeMatch { get; init; }
-    public IngestionJobSummaryDto? IngestionJob { get; init; }
-    public string[] ReviewReasons { get; init; } = [];
+    public ConfidenceSummaryDto Confidence { get; set; } = null!;
+    public DedupeSummaryDto? DedupeMatch { get; set; }
+    public IngestionJobSummaryDto? IngestionJob { get; set; }
+    public string[] ReviewReasons { get; set; } = [];
     public string? AssignedReviewerId { get; set; }
     public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
-    public string? LinkedEventId { get; init; }
+    public string? LinkedEventId { get; set; }
 
     // Review action history — immutable entries appended only
     private readonly List<ReviewHistoryEntry> _history = [];

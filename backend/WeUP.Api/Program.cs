@@ -173,6 +173,11 @@ builder.Services.AddScoped<IModerationEvidenceService, ModerationEvidenceService
 builder.Services.AddSingleton<IConfidenceScoringService, ConfidenceScoringService>();
 builder.Services.AddSingleton<IRiskScoringService, RiskScoringService>();
 builder.Services.AddSingleton<IPublishEligibilityService, PublishEligibilityService>();
+builder.Services.AddScoped<IModerationActionHandler, ApproveHandler>();
+builder.Services.AddScoped<IModerationActionHandler, RejectHandler>();
+builder.Services.AddScoped<IModerationActionHandler, EditHandler>();
+builder.Services.AddScoped<IModerationActionHandler, MergeHandler>();
+builder.Services.AddScoped<IModerationActionService, ModerationActionService>();
 builder.Services.AddScoped<ReviewActionService>();
 builder.Services.AddScoped<IReviewActionService>(sp => sp.GetRequiredService<ReviewActionService>());
 builder.Services.AddScoped<IReviewDecisionService, ReviewDecisionService>();
