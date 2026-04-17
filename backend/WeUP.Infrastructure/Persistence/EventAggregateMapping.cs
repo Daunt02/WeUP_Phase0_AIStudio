@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using WeUP.Domain.Dedupe;
 using WeUP.Domain.Events;
 using WeUP.Domain.Moderation;
@@ -8,6 +9,8 @@ namespace WeUP.Infrastructure.Persistence;
 
 internal static class EventAggregateMapping
 {
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+
     public static EventAggregate ToCanonicalAggregate(this EventEntity entity)
     {
         var lifecycle = EventLifecycleStatusMapper.FromStorage(entity.Status);
@@ -124,11 +127,24 @@ internal static class EventAggregateMapping
             Provenance: provenance,
             CreatedAtUtc: entity.CreatedAt,
             UpdatedAtUtc: entity.UpdatedAt,
-            Version: 1,
-            MergeLineage: lineage);
+            Version: Math.Max(1, entity.AggregateVersion),
+            MergeLineage: lineage,
+            ConcurrencyToken: string.IsNullOrWhiteSpace(entity.ConcurrencyToken)
+                ? $"{entity.PublicId}:v{Math.Max(1, entity.AggregateVersion)}"
+                : entity.ConcurrencyToken,
+            ChangeHistory: ParseChangeHistory(entity.ChangeHistoryJson));
 
         aggregate.Validate();
         return aggregate;
+    }
+
+    public static string? ToChangeHistoryJson(this EventAggregate aggregate)
+    {
+        var history = aggregate.EffectiveChangeHistory;
+        if (history.Length == 0)
+            return null;
+
+        return JsonSerializer.Serialize(history, JsonOptions);
     }
 
     public static EventAggregateSnapshot ToAggregateSnapshot(this EventEntity entity)
@@ -163,6 +179,21 @@ internal static class EventAggregateMapping
         catch
         {
             return utc.ToString("yyyy-MM-dd HH:mm 'UTC'", CultureInfo.InvariantCulture);
+        }
+    }
+
+    private static EventStateChangeEntry[] ParseChangeHistory(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+            return [];
+
+        try
+        {
+            return JsonSerializer.Deserialize<EventStateChangeEntry[]>(json, JsonOptions) ?? [];
+        }
+        catch
+        {
+            return [];
         }
     }
 }

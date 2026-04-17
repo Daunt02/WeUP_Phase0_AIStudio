@@ -242,6 +242,8 @@ public sealed class EventDtoMappingTests
         Assert.Equal("PUBLISHED", dto.Status);
         Assert.Equal(0.92, dto.Confidence);
         Assert.Equal("manual submission", dto.SourceKind);
+        Assert.Equal(3, dto.Version);
+        Assert.NotNull(dto.ConcurrencyToken);
         Assert.Single(dto.MediaRefs);
         Assert.Equal("https://cdn.test/img.jpg", dto.MediaRefs[0].Url);
     }
@@ -306,6 +308,8 @@ public sealed class EventDtoMappingTests
         Assert.Equal("Medium", dto.RiskLevel);
         Assert.Equal(0.92, dto.ConfidenceScore);
         Assert.Equal(3, dto.Version);
+        Assert.NotNull(dto.ConcurrencyToken);
+        Assert.False(dto.HasPendingReview);
     }
 
     [Fact]

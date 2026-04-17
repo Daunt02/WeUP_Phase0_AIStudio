@@ -116,7 +116,10 @@ public static class EventDtoMapper
             Tags: aggregate.Tags,
             Status: SerializeLifecycleStatus(aggregate.EventStatus),
             Confidence: aggregate.ConfidenceScore,
-            SourceKind: sourceKindLabel);
+            SourceKind: sourceKindLabel,
+            Version: aggregate.Version,
+            LastChangeType: aggregate.LatestChange?.ChangeType.ToString(),
+            ConcurrencyToken: aggregate.EffectiveConcurrencyToken);
     }
 
     // -----------------------------------------------------------------------
@@ -146,6 +149,9 @@ public static class EventDtoMapper
             ConfidenceScore: aggregate.ConfidenceScore,
             Version: aggregate.Version,
             UpdatedAtUtc: aggregate.UpdatedAtUtc,
+                LastChangeType: aggregate.LatestChange?.ChangeType.ToString(),
+                HasPendingReview: aggregate.LatestChange?.RequiresModerationReview == true,
+                ConcurrencyToken: aggregate.EffectiveConcurrencyToken,
             MergeLineage: ToMergeLineageSummary(aggregate.MergeLineage));
     }
 

@@ -90,6 +90,104 @@ public sealed record EventMergeLineage(
     string? LastMergedBy);
 
 /// <summary>
+/// Canonical classification of a state evolution event for frontend and audit consumers.
+/// </summary>
+public enum EventVersionChangeType
+{
+    MinorMetadataUpdate = 0,
+    MaterialEventChange = 1,
+    StatusTransition = 2,
+    MergeLineageUpdate = 3,
+}
+
+/// <summary>
+/// Domain-level reason code for deterministic version increment semantics.
+/// </summary>
+public enum EventVersionReason
+{
+    MinorMetadataUpdate = 0,
+    ContentEdit = 1,
+    TimeEdit = 2,
+    VenueLocationEdit = 3,
+    ModerationDecision = 4,
+    PublishStatusChange = 5,
+    MergeApplied = 6,
+    Cancelled = 7,
+    Rescheduled = 8,
+}
+
+/// <summary>
+/// Minimal snapshot of canonical state before/after each versioned change.
+/// </summary>
+public sealed record EventStateSnapshot(
+    string Title,
+    string? Description,
+    string[] Tags,
+    string Category,
+    string VenueName,
+    EventAddress Address,
+    double Latitude,
+    double Longitude,
+    string TimeZone,
+    DateTimeOffset StartUtc,
+    DateTimeOffset? EndUtc,
+    EventLifecycleStatus EventStatus,
+    EventPublishStatus PublishStatus,
+    EventModerationStatus ModerationStatus,
+    EventRiskLevel RiskLevel,
+    double ConfidenceScore,
+    EventMergeLineage MergeLineage,
+    EventProvenanceMetadata Provenance);
+
+/// <summary>
+/// Immutable audit entry representing one canonical version step.
+/// </summary>
+public sealed record EventStateChangeEntry(
+    int FromVersion,
+    int ToVersion,
+    DateTimeOffset ChangedAtUtc,
+    string ChangedBy,
+    EventVersionReason Reason,
+    EventVersionChangeType ChangeType,
+    string[] ChangedFields,
+    bool RequiresModerationReview,
+    EventStateSnapshot Before,
+    EventStateSnapshot After,
+    string? Notes = null);
+
+/// <summary>
+/// Audited mutation request. All update paths must use this contract.
+/// </summary>
+public sealed record EventAggregateUpdateRequest(
+    int ExpectedVersion,
+    DateTimeOffset ChangedAtUtc,
+    string ChangedBy,
+    EventVersionReason Reason,
+    string[] ChangedFields,
+    bool RequiresModerationReview = false,
+    string? Notes = null,
+    string? Title = null,
+    string? Description = null,
+    string[]? Tags = null,
+    string? Category = null,
+    string? VenueName = null,
+    EventAddress? Address = null,
+    double? Latitude = null,
+    double? Longitude = null,
+    string? TimeZone = null,
+    DateTimeOffset? StartUtc = null,
+    DateTimeOffset? EndUtc = null,
+    string? LocalStartDisplay = null,
+    string? LocalEndDisplay = null,
+    EventLifecycleStatus? EventStatus = null,
+    EventPublishStatus? PublishStatus = null,
+    EventModerationStatus? ModerationStatus = null,
+    EventRiskLevel? RiskLevel = null,
+    double? ConfidenceScore = null,
+    EventProvenanceMetadata? Provenance = null,
+    EventMergeLineage? MergeLineage = null);
+
+/// <summary>
 /// Canonical event aggregate (v1.0): the authoritative backend source of truth
 /// for event identity, lifecycle, moderation state, temporal state, spatial
 /// state, provenance, and publish eligibility.
@@ -125,8 +223,12 @@ public sealed record EventAggregate(
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset UpdatedAtUtc,
     int Version,
-    EventMergeLineage MergeLineage)
+    EventMergeLineage MergeLineage,
+    string? ConcurrencyToken = null,
+    EventStateChangeEntry[]? ChangeHistory = null)
 {
+    private const int MaxChangeHistoryEntries = 100;
+
     private static readonly IReadOnlyDictionary<EventLifecycleStatus, EventLifecycleStatus[]> AllowedTransitions =
         new Dictionary<EventLifecycleStatus, EventLifecycleStatus[]>
         {
@@ -139,6 +241,13 @@ public sealed record EventAggregate(
             [EventLifecycleStatus.Cancelled] = [EventLifecycleStatus.Published, EventLifecycleStatus.Archived],
             [EventLifecycleStatus.Archived] = [],
         };
+
+    public string EffectiveConcurrencyToken =>
+        string.IsNullOrWhiteSpace(ConcurrencyToken) ? $"{CanonicalEventId}:v{Version}" : ConcurrencyToken;
+
+    public EventStateChangeEntry[] EffectiveChangeHistory => ChangeHistory ?? [];
+
+    public EventStateChangeEntry? LatestChange => EffectiveChangeHistory.Length == 0 ? null : EffectiveChangeHistory[^1];
 
     /// <summary>
     /// Validate aggregate invariants for MVP/Phase 0 canonical contract.
@@ -171,10 +280,134 @@ public sealed record EventAggregate(
             throw new InvalidOperationException("ConfidenceScore must be within [0, 1].");
         if (Version <= 0)
             throw new InvalidOperationException("Version must be >= 1.");
+        if (string.IsNullOrWhiteSpace(EffectiveConcurrencyToken))
+            throw new InvalidOperationException("ConcurrencyToken is required.");
         if (Provenance is null)
             throw new InvalidOperationException("Provenance metadata is required.");
 
         ValidateStatusConsistency();
+    }
+
+    /// <summary>
+    /// Guard for optimistic concurrency.
+    /// </summary>
+    public void EnsureExpectedVersion(int expectedVersion)
+    {
+        if (expectedVersion != Version)
+        {
+            throw new InvalidOperationException(
+                $"Version mismatch for {CanonicalEventId}. Expected={expectedVersion}, Actual={Version}.");
+        }
+    }
+
+    /// <summary>
+    /// Apply an auditable update request with deterministic version increment semantics.
+    /// </summary>
+    public EventAggregate ApplyUpdate(EventAggregateUpdateRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        EnsureExpectedVersion(request.ExpectedVersion);
+
+        if (string.IsNullOrWhiteSpace(request.ChangedBy))
+            throw new InvalidOperationException("ChangedBy is required.");
+
+        if (request.ChangedFields is null || request.ChangedFields.Length == 0)
+            throw new InvalidOperationException("ChangedFields must contain at least one field name.");
+
+        var before = CaptureSnapshot();
+
+        var next = this with
+        {
+            Title = request.Title ?? Title,
+            Description = request.Description ?? Description,
+            Tags = request.Tags ?? Tags,
+            Category = request.Category ?? Category,
+            VenueName = request.VenueName ?? VenueName,
+            Address = request.Address ?? Address,
+            Latitude = request.Latitude ?? Latitude,
+            Longitude = request.Longitude ?? Longitude,
+            TimeZone = request.TimeZone ?? TimeZone,
+            StartUtc = request.StartUtc ?? StartUtc,
+            EndUtc = request.EndUtc ?? EndUtc,
+            LocalStartDisplay = request.LocalStartDisplay ?? LocalStartDisplay,
+            LocalEndDisplay = request.LocalEndDisplay ?? LocalEndDisplay,
+            EventStatus = request.EventStatus ?? EventStatus,
+            PublishStatus = request.PublishStatus ?? PublishStatus,
+            ModerationStatus = request.ModerationStatus ?? ModerationStatus,
+            RiskLevel = request.RiskLevel ?? RiskLevel,
+            ConfidenceScore = request.ConfidenceScore ?? ConfidenceScore,
+            Provenance = request.Provenance ?? Provenance,
+            MergeLineage = request.MergeLineage ?? MergeLineage,
+        };
+
+        if (request.Reason == EventVersionReason.Cancelled)
+        {
+            next = next with
+            {
+                EventStatus = EventLifecycleStatus.Cancelled,
+                PublishStatus = EventPublishStatus.Unpublished,
+            };
+        }
+
+        if (request.Reason == EventVersionReason.Rescheduled)
+        {
+            var startChanged = request.StartUtc.HasValue && request.StartUtc.Value != StartUtc;
+            var endChanged = request.EndUtc != EndUtc;
+            if (!startChanged && !endChanged)
+            {
+                throw new InvalidOperationException("Rescheduled updates require StartUtc or EndUtc change.");
+            }
+        }
+
+        if (request.RequiresModerationReview)
+        {
+            next = next with
+            {
+                ModerationStatus = EventModerationStatus.InReview,
+                EventStatus = next.EventStatus == EventLifecycleStatus.Published
+                    ? EventLifecycleStatus.Reviewed
+                    : next.EventStatus,
+                PublishStatus = next.PublishStatus == EventPublishStatus.Published
+                    ? EventPublishStatus.Unpublished
+                    : next.PublishStatus,
+            };
+        }
+
+        if (next.CanonicalEventId != CanonicalEventId)
+            throw new InvalidOperationException("CanonicalEventId is immutable.");
+
+        if (next.CreatedAtUtc != CreatedAtUtc)
+            throw new InvalidOperationException("CreatedAtUtc is immutable.");
+
+        var after = next.CaptureSnapshot();
+        if (SnapshotsEqual(before, after))
+            return this;
+
+        var changeType = ClassifyChangeType(request.Reason);
+        var nextVersion = Version + 1;
+        var history = AppendHistory(new EventStateChangeEntry(
+            FromVersion: Version,
+            ToVersion: nextVersion,
+            ChangedAtUtc: request.ChangedAtUtc,
+            ChangedBy: request.ChangedBy,
+            Reason: request.Reason,
+            ChangeType: changeType,
+            ChangedFields: request.ChangedFields.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
+            RequiresModerationReview: request.RequiresModerationReview,
+            Before: before,
+            After: after,
+            Notes: request.Notes));
+
+        var updated = next with
+        {
+            UpdatedAtUtc = request.ChangedAtUtc,
+            Version = nextVersion,
+            ConcurrencyToken = GenerateConcurrencyToken(nextVersion, request.ChangedAtUtc),
+            ChangeHistory = history,
+        };
+
+        updated.Validate();
+        return updated;
     }
 
     /// <summary>
@@ -196,6 +429,16 @@ public sealed record EventAggregate(
     /// Apply a validated lifecycle transition and bump aggregate version.
     /// </summary>
     public EventAggregate TransitionTo(EventLifecycleStatus nextStatus, DateTimeOffset transitionAtUtc)
+        => TransitionTo(nextStatus, transitionAtUtc, Version, "system");
+
+    /// <summary>
+    /// Apply a validated lifecycle transition with optimistic concurrency and audit entry.
+    /// </summary>
+    public EventAggregate TransitionTo(
+        EventLifecycleStatus nextStatus,
+        DateTimeOffset transitionAtUtc,
+        int expectedVersion,
+        string changedBy)
     {
         EnsureCanTransitionTo(nextStatus);
 
@@ -217,17 +460,15 @@ public sealed record EventAggregate(
             _ => ModerationStatus,
         };
 
-        var updated = this with
-        {
-            EventStatus = nextStatus,
-            PublishStatus = nextPublishStatus,
-            ModerationStatus = nextModerationStatus,
-            UpdatedAtUtc = transitionAtUtc,
-            Version = Version + 1,
-        };
-
-        updated.Validate();
-        return updated;
+        return ApplyUpdate(new EventAggregateUpdateRequest(
+            ExpectedVersion: expectedVersion,
+            ChangedAtUtc: transitionAtUtc,
+            ChangedBy: changedBy,
+            Reason: EventVersionReason.ModerationDecision,
+            ChangedFields: [nameof(EventStatus), nameof(PublishStatus), nameof(ModerationStatus)],
+            EventStatus: nextStatus,
+            PublishStatus: nextPublishStatus,
+            ModerationStatus: nextModerationStatus));
     }
 
     private void ValidateStatusConsistency()
@@ -244,6 +485,75 @@ public sealed record EventAggregate(
         if (ModerationStatus == EventModerationStatus.Rejected && EventStatus == EventLifecycleStatus.Published)
             throw new InvalidOperationException("Rejected events cannot be Published.");
     }
+
+    private EventStateSnapshot CaptureSnapshot()
+        => new(
+            Title,
+            Description,
+            Tags,
+            Category,
+            VenueName,
+            Address,
+            Latitude,
+            Longitude,
+            TimeZone,
+            StartUtc,
+            EndUtc,
+            EventStatus,
+            PublishStatus,
+            ModerationStatus,
+            RiskLevel,
+            ConfidenceScore,
+            MergeLineage,
+            Provenance);
+
+    private static bool SnapshotsEqual(EventStateSnapshot left, EventStateSnapshot right)
+    {
+        return left.Title == right.Title &&
+               left.Description == right.Description &&
+               left.Category == right.Category &&
+               left.VenueName == right.VenueName &&
+               left.Address == right.Address &&
+               left.Latitude.Equals(right.Latitude) &&
+               left.Longitude.Equals(right.Longitude) &&
+               left.TimeZone == right.TimeZone &&
+               left.StartUtc == right.StartUtc &&
+               left.EndUtc == right.EndUtc &&
+               left.EventStatus == right.EventStatus &&
+               left.PublishStatus == right.PublishStatus &&
+               left.ModerationStatus == right.ModerationStatus &&
+               left.RiskLevel == right.RiskLevel &&
+               left.ConfidenceScore.Equals(right.ConfidenceScore) &&
+               left.MergeLineage == right.MergeLineage &&
+               left.Provenance == right.Provenance &&
+               left.Tags.SequenceEqual(right.Tags, StringComparer.Ordinal);
+    }
+
+    private EventStateChangeEntry[] AppendHistory(EventStateChangeEntry entry)
+    {
+        var combined = EffectiveChangeHistory
+            .Concat([entry])
+            .OrderBy(change => change.ToVersion)
+            .ToArray();
+
+        if (combined.Length <= MaxChangeHistoryEntries)
+            return combined;
+
+        return combined[^MaxChangeHistoryEntries..];
+    }
+
+    private string GenerateConcurrencyToken(int nextVersion, DateTimeOffset changedAtUtc)
+        => $"{CanonicalEventId}:v{nextVersion}:{changedAtUtc.ToUnixTimeMilliseconds()}";
+
+    private static EventVersionChangeType ClassifyChangeType(EventVersionReason reason)
+        => reason switch
+        {
+            EventVersionReason.MinorMetadataUpdate => EventVersionChangeType.MinorMetadataUpdate,
+            EventVersionReason.ModerationDecision => EventVersionChangeType.StatusTransition,
+            EventVersionReason.PublishStatusChange => EventVersionChangeType.StatusTransition,
+            EventVersionReason.MergeApplied => EventVersionChangeType.MergeLineageUpdate,
+            _ => EventVersionChangeType.MaterialEventChange,
+        };
 }
 
 /// <summary>

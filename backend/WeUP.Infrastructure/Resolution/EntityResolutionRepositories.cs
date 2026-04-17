@@ -280,31 +280,66 @@ public sealed class InMemoryEntityResolutionRepository(
             ? parsedEnd
             : currentState.EndUtc;
 
-        var updated = currentState with
+        var changedFields = new List<string>();
+        if (!string.IsNullOrWhiteSpace(plan.Title) && !string.Equals(plan.Title, currentState.Title, StringComparison.Ordinal))
+            changedFields.Add(nameof(EventAggregate.Title));
+        if (!string.IsNullOrWhiteSpace(plan.Description) && !string.Equals(plan.Description, currentState.Description, StringComparison.Ordinal))
+            changedFields.Add(nameof(EventAggregate.Description));
+        if (!string.IsNullOrWhiteSpace(plan.Category) && !string.Equals(plan.Category, currentState.Category, StringComparison.Ordinal))
+            changedFields.Add(nameof(EventAggregate.Category));
+        if (plan.Tags.Length > 0 && !plan.Tags.SequenceEqual(currentState.Tags, StringComparer.Ordinal))
+            changedFields.Add(nameof(EventAggregate.Tags));
+        if (!string.IsNullOrWhiteSpace(plan.VenueName) && !string.Equals(plan.VenueName, currentState.VenueName, StringComparison.Ordinal))
+            changedFields.Add(nameof(EventAggregate.VenueName));
+        if (!string.IsNullOrWhiteSpace(plan.Address) && !string.Equals(plan.Address, currentState.Address.RawAddress, StringComparison.Ordinal))
+            changedFields.Add(nameof(EventAggregate.Address));
+        if (startUtc != currentState.StartUtc || endUtc != currentState.EndUtc)
+            changedFields.Add(nameof(EventAggregate.StartUtc));
+        if (!string.IsNullOrWhiteSpace(plan.Timezone) && !string.Equals(plan.Timezone, currentState.TimeZone, StringComparison.Ordinal))
+            changedFields.Add(nameof(EventAggregate.TimeZone));
+        if (Math.Max(currentState.ConfidenceScore, plan.MergedConfidence) != currentState.ConfidenceScore)
+            changedFields.Add(nameof(EventAggregate.ConfidenceScore));
+
+        changedFields.Add(nameof(EventAggregate.Provenance));
+        changedFields.Add(nameof(EventAggregate.MergeLineage));
+
+        var updatedProvenance = currentState.Provenance with
         {
-            Title = string.IsNullOrWhiteSpace(plan.Title) ? currentState.Title : plan.Title,
-            Description = string.IsNullOrWhiteSpace(plan.Description) ? currentState.Description : plan.Description,
-            Category = string.IsNullOrWhiteSpace(plan.Category) ? currentState.Category : plan.Category,
-            Tags = plan.Tags.Length == 0 ? currentState.Tags : plan.Tags,
-            VenueName = string.IsNullOrWhiteSpace(plan.VenueName) ? currentState.VenueName : plan.VenueName,
-            Address = string.IsNullOrWhiteSpace(plan.Address)
-                ? currentState.Address
-                : currentState.Address with { AddressLine1 = plan.Address, RawAddress = plan.Address },
-            StartUtc = startUtc,
-            EndUtc = endUtc,
-            TimeZone = string.IsNullOrWhiteSpace(plan.Timezone) ? currentState.TimeZone : plan.Timezone,
-            ConfidenceScore = Math.Max(currentState.ConfidenceScore, plan.MergedConfidence),
-            Provenance = currentState.Provenance with
-            {
-                SourceRefs = MergeDistinct(currentState.Provenance.SourceRefs, plan.UnionedSourceRefs),
-                EvidenceRefs = MergeDistinct(currentState.Provenance.EvidenceRefs, plan.UnionedEvidenceRefs),
-            },
-            UpdatedAtUtc = DateTimeOffset.UtcNow,
-            Version = currentState.Version + 1,
+            SourceRefs = MergeDistinct(currentState.Provenance.SourceRefs, plan.UnionedSourceRefs),
+            EvidenceRefs = MergeDistinct(currentState.Provenance.EvidenceRefs, plan.UnionedEvidenceRefs),
+            LastObservedAtUtc = DateTimeOffset.UtcNow,
         };
 
-        updated.Validate();
-        return updated;
+        var updatedMergeLineage = currentState.MergeLineage with
+        {
+            MergedCanonicalEventIds = MergeDistinct(currentState.MergeLineage.MergedCanonicalEventIds, plan.UnionedSourceRefs),
+            AppliedMergePlanIds = MergeDistinct(currentState.MergeLineage.AppliedMergePlanIds, [$"{plan.CanonicalEventId}:{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}"]),
+            LastMergedAtUtc = DateTimeOffset.UtcNow,
+            LastMergedBy = "entity-resolution",
+        };
+
+        return currentState.ApplyUpdate(new EventAggregateUpdateRequest(
+            ExpectedVersion: currentState.Version,
+            ChangedAtUtc: DateTimeOffset.UtcNow,
+            ChangedBy: "entity-resolution",
+            Reason: EventVersionReason.MergeApplied,
+            ChangedFields: changedFields.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
+            RequiresModerationReview: true,
+            Notes: "Merge plan applied to canonical aggregate.",
+            Title: string.IsNullOrWhiteSpace(plan.Title) ? null : plan.Title,
+            Description: string.IsNullOrWhiteSpace(plan.Description) ? null : plan.Description,
+            Category: string.IsNullOrWhiteSpace(plan.Category) ? null : plan.Category,
+            Tags: plan.Tags.Length == 0 ? null : plan.Tags,
+            VenueName: string.IsNullOrWhiteSpace(plan.VenueName) ? null : plan.VenueName,
+            Address: string.IsNullOrWhiteSpace(plan.Address)
+                ? null
+                : currentState.Address with { AddressLine1 = plan.Address, RawAddress = plan.Address },
+            StartUtc: startUtc,
+            EndUtc: endUtc,
+            TimeZone: string.IsNullOrWhiteSpace(plan.Timezone) ? null : plan.Timezone,
+            ConfidenceScore: Math.Max(currentState.ConfidenceScore, plan.MergedConfidence),
+            Provenance: updatedProvenance,
+            MergeLineage: updatedMergeLineage));
     }
 
     private static EventAggregateSnapshot ToSnapshot(EventAggregate state)

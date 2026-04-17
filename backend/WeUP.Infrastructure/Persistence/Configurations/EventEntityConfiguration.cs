@@ -26,12 +26,16 @@ public sealed class EventEntityConfiguration : IEntityTypeConfiguration<EventEnt
         builder.Property(e => e.MarketCode).HasMaxLength(64);
         builder.Property(e => e.DistrictCode).HasMaxLength(128);
         builder.Property(e => e.NeighborhoodCode).HasMaxLength(128);
+        builder.Property(e => e.AggregateVersion).IsRequired().HasDefaultValue(1);
+        builder.Property(e => e.ConcurrencyToken).HasMaxLength(128).IsRequired().IsConcurrencyToken();
+        builder.Property(e => e.ChangeHistoryJson).HasColumnType("jsonb");
         builder.Property(e => e.Timezone).HasMaxLength(64).IsRequired();
         builder.Property(e => e.CreatedBy).HasMaxLength(128);
 
         // Indexes for Phase 0 query patterns
         builder.HasIndex(e => e.Status);                                      // status filter
         builder.HasIndex(e => e.PublicId).IsUnique();                         // stable external API id
+        builder.HasIndex(e => new { e.PublicId, e.AggregateVersion });        // optimistic write guard
         builder.HasIndex(e => e.StartUtc);                                    // date-window queries
         builder.HasIndex(e => new { e.StartUtc, e.Status });                  // calendar feed
         builder.HasIndex(e => new { e.Latitude, e.Longitude });               // spatial filter (pre-PostGIS)

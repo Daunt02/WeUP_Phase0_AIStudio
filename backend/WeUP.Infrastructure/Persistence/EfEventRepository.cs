@@ -150,6 +150,9 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
             CreatedAt = now,
             UpdatedAt = now,
             CreatedBy = userId,
+            AggregateVersion = 1,
+            ConcurrencyToken = $"{publicId}:v1:{now.ToUnixTimeMilliseconds()}",
+            ChangeHistoryJson = null,
         };
 
         entity.Sources.Add(new EventSourceEntity
@@ -200,10 +203,24 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
         var nextStatus = EventLifecycleStatusMapper.FromStorage(newStatus);
         aggregate.EnsureCanTransitionTo(nextStatus);
 
-        entity.Status = EventLifecycleStatusMapper.ToStorage(nextStatus);
-        entity.UpdatedAt = DateTimeOffset.UtcNow;
-        await db.SaveChangesAsync(ct);
-        return true;
+        var now = DateTimeOffset.UtcNow;
+        var updated = aggregate.TransitionTo(nextStatus, now, aggregate.Version, "lifecycle.repository");
+
+        entity.Status = EventLifecycleStatusMapper.ToStorage(updated.EventStatus);
+        entity.UpdatedAt = updated.UpdatedAtUtc;
+        entity.AggregateVersion = updated.Version;
+        entity.ConcurrencyToken = updated.EffectiveConcurrencyToken;
+        entity.ChangeHistoryJson = updated.ToChangeHistoryJson();
+
+        try
+        {
+            await db.SaveChangesAsync(ct);
+            return true;
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return false;
+        }
     }
 
     public async Task<EventAggregate?> GetAggregateAsync(string eventId, CancellationToken ct = default)
@@ -260,7 +277,10 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
             e.StartUtc, e.EndUtc, e.TimeZone,
             media, tags,
             EventLifecycleStatusMapper.ToStorage(e.EventStatus),
-            e.ConfidenceScore, e.Provenance.PrimarySourceKind);
+            e.ConfidenceScore, e.Provenance.PrimarySourceKind,
+            e.Version,
+            e.LatestChange?.ChangeType.ToString(),
+            e.EffectiveConcurrencyToken);
     }
 
     private static string? PrimaryThumbnail(EventEntity e)

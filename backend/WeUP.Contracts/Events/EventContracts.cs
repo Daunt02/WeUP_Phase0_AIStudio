@@ -144,7 +144,13 @@ public record EventDetailDto(
     /// <remarks>Serialized as uppercase string (e.g. "PUBLISHED").</remarks>
     string Status,
     double Confidence,
-    string SourceKind);
+    string SourceKind,
+    /// <summary>Canonical aggregate version for optimistic client behavior.</summary>
+    int Version = 1,
+    /// <summary>Last classified change type (MinorMetadataUpdate, MaterialEventChange, StatusTransition, MergeLineageUpdate).</summary>
+    string? LastChangeType = null,
+    /// <summary>Concurrency token for conditional update calls.</summary>
+    string? ConcurrencyToken = null);
 
 public record MediaRefDto(string Url, string Kind);
 
@@ -181,6 +187,12 @@ public record EventModerationDto(
     /// <summary>Version of the canonical aggregate — used for optimistic concurrency checks.</summary>
     int Version,
     DateTimeOffset UpdatedAtUtc,
+    /// <summary>Latest classified state change type.</summary>
+    string? LastChangeType,
+    /// <summary>True when last applied change requires moderator confirmation before publish.</summary>
+    bool HasPendingReview,
+    /// <summary>Concurrency token suitable for conditional mutation requests.</summary>
+    string? ConcurrencyToken,
     /// <summary>Merge lineage summary for deduplication audit. Null if not merged.</summary>
     EventMergeLineageSummaryDto? MergeLineage);
 

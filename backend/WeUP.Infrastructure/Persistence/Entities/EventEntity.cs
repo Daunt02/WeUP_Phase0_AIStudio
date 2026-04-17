@@ -51,6 +51,9 @@ public sealed class EventEntity
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
     public string? CreatedBy { get; set; }
+    public int AggregateVersion { get; set; } = 1;
+    public string ConcurrencyToken { get; set; } = Guid.NewGuid().ToString("N");
+    public string? ChangeHistoryJson { get; set; }
 
     // Navigation
     public ICollection<EventSourceEntity> Sources { get; set; } = [];
