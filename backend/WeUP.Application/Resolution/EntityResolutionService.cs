@@ -566,6 +566,12 @@ public sealed class EntityResolutionService(
         return provenanceService.GetMergeHistory(entries);
     }
 
+    public async Task<EventEvolutionHistoryEntry[]> GetEvolutionHistoryAsync(string canonicalEventId, CancellationToken ct = default)
+    {
+        var entries = await repository.GetProvenanceAsync(canonicalEventId, ct);
+        return provenanceService.GetEvolutionHistory(entries, canonicalEventId);
+    }
+
     private static ResolutionDecision BuildDecision(
         string resolutionId,
         NormalizedEventCandidate candidate,

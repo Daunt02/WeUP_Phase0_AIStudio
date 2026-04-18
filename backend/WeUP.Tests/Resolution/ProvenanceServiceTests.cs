@@ -118,6 +118,35 @@ public sealed class ProvenanceServiceTests
         Assert.Contains("Title", entry.MergeHistory.ChangedFields);
     }
 
+    [Fact]
+    public void GetEvolutionHistory_ProjectsStructuredMergeEvolution()
+    {
+        var first = _service.CreateAppendOnlyEntry(CreateCommand(
+            resolutionId: "resolution-evo-1",
+            beforeTitle: "Title A",
+            afterTitle: "Title B",
+            candidateSourceRef: "candidate-evo-1",
+            mergedAtUtc: DateTimeOffset.Parse("2026-04-17T10:00:00Z")));
+
+        var second = _service.CreateAppendOnlyEntry(CreateCommand(
+            resolutionId: "resolution-evo-2",
+            beforeTitle: "Title B",
+            afterTitle: "Title C",
+            candidateSourceRef: "candidate-evo-2",
+            mergedAtUtc: DateTimeOffset.Parse("2026-04-17T11:00:00Z"),
+            existingEntries: [first]));
+
+        var entries = _service.Append([first], second);
+        var evolution = _service.GetEvolutionHistory(entries, "event-1");
+
+        Assert.Equal(2, evolution.Length);
+        Assert.All(evolution, item => Assert.Equal("event-1", item.CanonicalEventId));
+        Assert.Equal("resolution-evo-1", evolution[0].MergeId);
+        Assert.Equal("resolution-evo-2", evolution[1].MergeId);
+        Assert.All(evolution, item => Assert.Equal("TitleUpdate", item.EvolutionType));
+        Assert.All(evolution, item => Assert.Contains("Title", item.ChangedFields));
+    }
+
     private static ProvenanceBuildCommand CreateCommand(
         string resolutionId,
         string beforeTitle,

@@ -150,6 +150,99 @@ public sealed class EventAggregateVersioningTests
         Assert.Equal(rescheduled.StartUtc, cancelled.EffectiveChangeHistory[0].After.StartUtc);
     }
 
+    [Fact]
+    public void RepeatedMergeUpdates_PreserveIdentityAndLineageIntegrity()
+    {
+        var aggregate = BuildAggregate();
+        var firstMergeAt = DateTimeOffset.UtcNow;
+
+        var firstMerge = aggregate.ApplyUpdate(new EventAggregateUpdateRequest(
+            ExpectedVersion: aggregate.Version,
+            ChangedAtUtc: firstMergeAt,
+            ChangedBy: "resolver-1",
+            Reason: EventVersionReason.MergeApplied,
+            ChangedFields: [nameof(EventAggregate.MergeLineage), nameof(EventAggregate.Provenance)],
+            RequiresModerationReview: true,
+            MergeLineage: aggregate.MergeLineage with
+            {
+                AppliedMergePlanIds = ["merge-001"],
+                MergedSourceRefs = ["source:seed", "source:candidate-1"],
+                LastMergedAtUtc = firstMergeAt,
+                LastMergedBy = "resolver-1",
+                MergeRecords =
+                [
+                    new EventMergeRecord(
+                        MergeId: "merge-001",
+                        MergedAtUtc: firstMergeAt,
+                        MergeReason: "Duplicate evidence confirmed.",
+                        MergeActor: "resolver-1",
+                        MergeOrigin: "entity_resolution_pipeline",
+                        MergeConfidence: 0.91,
+                        CandidateIds: ["candidate-1"],
+                        SourceReferences:
+                        [
+                            new EventMergeSourceReference("source:seed", "manual_submission", "canonical_provenance", 0.82),
+                            new EventMergeSourceReference("source:candidate-1", "flyer_ocr", "incoming_candidate", 0.91),
+                        ],
+                        MergeRationale: ["Title and temporal evidence matched."],
+                        RequiresManualReview: false),
+                ],
+            },
+            Provenance: aggregate.Provenance with
+            {
+                SourceRefs = ["source:seed", "source:candidate-1"],
+            }));
+
+        var secondMergeAt = firstMergeAt.AddMinutes(7);
+        var secondMerge = firstMerge.ApplyUpdate(new EventAggregateUpdateRequest(
+            ExpectedVersion: firstMerge.Version,
+            ChangedAtUtc: secondMergeAt,
+            ChangedBy: "resolver-2",
+            Reason: EventVersionReason.MergeApplied,
+            ChangedFields: [nameof(EventAggregate.MergeLineage), nameof(EventAggregate.Provenance)],
+            RequiresModerationReview: true,
+            MergeLineage: firstMerge.MergeLineage with
+            {
+                AppliedMergePlanIds = ["merge-001", "merge-002"],
+                MergedSourceRefs = ["source:seed", "source:candidate-1", "source:candidate-2"],
+                LastMergedAtUtc = secondMergeAt,
+                LastMergedBy = "resolver-2",
+                MergeRecords = firstMerge.MergeLineage.EffectiveMergeRecords
+                    .Concat([
+                        new EventMergeRecord(
+                            MergeId: "merge-002",
+                            MergedAtUtc: secondMergeAt,
+                            MergeReason: "Venue correction from higher-confidence source.",
+                            MergeActor: "resolver-2",
+                            MergeOrigin: "entity_resolution_pipeline",
+                            MergeConfidence: 0.94,
+                            CandidateIds: ["candidate-2"],
+                            SourceReferences:
+                            [
+                                new EventMergeSourceReference("source:seed", "manual_submission", "canonical_provenance", 0.82),
+                                new EventMergeSourceReference("source:candidate-2", "partner_feed", "incoming_candidate", 0.94),
+                            ],
+                            MergeRationale: ["Incoming venue confidence exceeded canonical confidence."],
+                            RequiresManualReview: false)
+                    ])
+                    .ToArray(),
+            },
+            Provenance: firstMerge.Provenance with
+            {
+                SourceRefs = ["source:seed", "source:candidate-1", "source:candidate-2"],
+            }));
+
+        Assert.Equal(aggregate.CanonicalEventId, secondMerge.CanonicalEventId);
+        Assert.Equal(3, secondMerge.Version);
+        Assert.Equal(2, secondMerge.MergeLineage.EffectiveMergeRecords.Length);
+        Assert.Equal("merge-001", secondMerge.MergeLineage.EffectiveMergeRecords[0].MergeId);
+        Assert.Equal("merge-002", secondMerge.MergeLineage.EffectiveMergeRecords[1].MergeId);
+        Assert.Contains("source:candidate-1", secondMerge.Provenance.SourceRefs);
+        Assert.Contains("source:candidate-2", secondMerge.Provenance.SourceRefs);
+        Assert.Equal(EventEvolutionType.MergeApplied, secondMerge.EffectiveChangeHistory[0].EvolutionType);
+        Assert.Equal(EventEvolutionType.MergeApplied, secondMerge.EffectiveChangeHistory[1].EvolutionType);
+    }
+
     private static EventAggregate BuildAggregate(
         EventLifecycleStatus status = EventLifecycleStatus.Reviewed,
         EventPublishStatus publishStatus = EventPublishStatus.EligibilityPending)

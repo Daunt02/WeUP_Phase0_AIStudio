@@ -217,12 +217,16 @@ public static class EventDtoMapper
 
     private static EventMergeLineageSummaryDto? ToMergeLineageSummary(EventMergeLineage lineage)
     {
-        if (lineage.ParentCanonicalEventId is null && lineage.MergedCanonicalEventIds.Length == 0)
+        var mergedCount = Math.Max(
+            lineage.MergedCanonicalEventIds.Length,
+            Math.Max(lineage.EffectiveMergedSourceRefs.Length, lineage.EffectiveMergeRecords.Length));
+
+        if (lineage.ParentCanonicalEventId is null && mergedCount == 0)
             return null;
 
         return new EventMergeLineageSummaryDto(
             ParentCanonicalEventId: lineage.ParentCanonicalEventId,
-            MergedEventCount: lineage.MergedCanonicalEventIds.Length,
+            MergedEventCount: mergedCount,
             LastMergedAtUtc: lineage.LastMergedAtUtc);
     }
 

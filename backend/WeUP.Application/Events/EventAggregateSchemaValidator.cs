@@ -162,6 +162,26 @@ public static class EventAggregateSchemaValidator
 
         // Merge lineage
         v.RequireNotNull("MergeLineage", aggregate.MergeLineage);
+        if (aggregate.MergeLineage is not null)
+        {
+            foreach (var mergeRecord in aggregate.MergeLineage.EffectiveMergeRecords)
+            {
+                if (string.IsNullOrWhiteSpace(mergeRecord.MergeId))
+                    v.Add("MergeLineage.MergeRecords.MergeId", "REQUIRED_FIELD_EMPTY", "MergeLineage merge record MergeId is required.");
+                if (string.IsNullOrWhiteSpace(mergeRecord.MergeReason))
+                    v.Add("MergeLineage.MergeRecords.MergeReason", "REQUIRED_FIELD_EMPTY", "MergeLineage merge record MergeReason is required.");
+                if (string.IsNullOrWhiteSpace(mergeRecord.MergeActor))
+                    v.Add("MergeLineage.MergeRecords.MergeActor", "REQUIRED_FIELD_EMPTY", "MergeLineage merge record MergeActor is required.");
+
+                foreach (var sourceReference in mergeRecord.SourceReferences ?? [])
+                {
+                    if (string.IsNullOrWhiteSpace(sourceReference.SourceRef))
+                        v.Add("MergeLineage.MergeRecords.SourceReferences.SourceRef", "REQUIRED_FIELD_EMPTY", "Merge source reference SourceRef is required.");
+                    if (string.IsNullOrWhiteSpace(sourceReference.SourceKind))
+                        v.Add("MergeLineage.MergeRecords.SourceReferences.SourceKind", "REQUIRED_FIELD_EMPTY", "Merge source reference SourceKind is required.");
+                }
+            }
+        }
 
         return v.Build();
     }

@@ -121,6 +121,32 @@ public sealed class ProvenanceService : IProvenanceService
             .ToArray();
     }
 
+    public EventEvolutionHistoryEntry[] GetEvolutionHistory(ProvenanceEntry[] entries, string canonicalEventId)
+    {
+        ArgumentNullException.ThrowIfNull(entries);
+
+        return entries
+            .OrderBy(entry => entry.SequenceNumber)
+            .ThenBy(entry => entry.RecordedAtUtc)
+            .Select(entry =>
+            {
+                var changedFields = entry.MergeHistory.ChangedFields;
+                var evolutionType = ClassifyEvolutionType(changedFields, entry.MergeHistory.MergeReason);
+                var requiresManualReview = entry.MergeHistory.MergeReason.Contains("manual review", StringComparison.OrdinalIgnoreCase);
+
+                return new EventEvolutionHistoryEntry(
+                    CanonicalEventId: canonicalEventId,
+                    MergeId: entry.MergeHistory.MergeId,
+                    EvolutionType: evolutionType,
+                    ChangedFields: changedFields,
+                    OccurredAtUtc: entry.MergeHistory.MergedAtUtc,
+                    Actor: entry.MergeHistory.MergeActor,
+                    Reason: entry.MergeHistory.MergeReason,
+                    RequiresManualReview: requiresManualReview);
+            })
+            .ToArray();
+    }
+
     private static FieldLineage? BuildFieldLineage(
         string fieldName,
         ProvenanceBuildCommand command,
@@ -280,4 +306,25 @@ public sealed class ProvenanceService : IProvenanceService
             .Where(value => !string.IsNullOrWhiteSpace(value))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
+
+    private static string ClassifyEvolutionType(string[] changedFields, string mergeReason)
+    {
+        if (changedFields.Any(field => field.Equals("Title", StringComparison.OrdinalIgnoreCase)))
+            return "TitleUpdate";
+
+        if (changedFields.Any(field => field.Equals("VenueName", StringComparison.OrdinalIgnoreCase) || field.Equals("Address", StringComparison.OrdinalIgnoreCase)))
+            return "VenueCorrection";
+
+        if (changedFields.Any(field =>
+                field.Equals("StartUtc", StringComparison.OrdinalIgnoreCase) ||
+                field.Equals("EndUtc", StringComparison.OrdinalIgnoreCase) ||
+                field.Equals("Timezone", StringComparison.OrdinalIgnoreCase)))
+        {
+            return mergeReason.Contains("resched", StringComparison.OrdinalIgnoreCase)
+                ? "Reschedule"
+                : "TimeCorrection";
+        }
+
+        return "MergeApplied";
+    }
 }

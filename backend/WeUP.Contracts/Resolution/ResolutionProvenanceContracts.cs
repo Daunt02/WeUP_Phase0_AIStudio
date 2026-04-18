@@ -45,6 +45,22 @@ public sealed record MergeHistoryEntry(
     string MergeReason);
 
 /// <summary>
+/// Structured evolution entry projected for moderation/admin review.
+///
+/// This projection is derived from immutable merge history and field lineage.
+/// It is intentionally normalized for operational dashboards and audits.
+/// </summary>
+public sealed record EventEvolutionHistoryEntry(
+    string CanonicalEventId,
+    string MergeId,
+    string EvolutionType,
+    string[] ChangedFields,
+    DateTimeOffset OccurredAtUtc,
+    string Actor,
+    string Reason,
+    bool RequiresManualReview);
+
+/// <summary>
 /// Immutable provenance envelope for one canonical merge append.
 ///
 /// Append-only guarantee:

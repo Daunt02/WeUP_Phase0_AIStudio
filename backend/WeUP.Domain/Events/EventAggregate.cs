@@ -80,6 +80,32 @@ public sealed record EventProvenanceMetadata(
     IReadOnlyDictionary<string, string?>? Metadata = null);
 
 /// <summary>
+/// Structured source reference for a merge operation.
+/// </summary>
+public sealed record EventMergeSourceReference(
+    string SourceRef,
+    string SourceKind,
+    string Origin,
+    double? Confidence = null,
+    string? Rationale = null,
+    string? ExternalSourceId = null);
+
+/// <summary>
+/// Immutable merge entry appended to canonical merge lineage history.
+/// </summary>
+public sealed record EventMergeRecord(
+    string MergeId,
+    DateTimeOffset MergedAtUtc,
+    string MergeReason,
+    string MergeActor,
+    string MergeOrigin,
+    double? MergeConfidence,
+    string[] CandidateIds,
+    EventMergeSourceReference[] SourceReferences,
+    string[] MergeRationale,
+    bool RequiresManualReview);
+
+/// <summary>
 /// Merge lineage metadata for deduplication and merge history chaining.
 /// </summary>
 public sealed record EventMergeLineage(
@@ -87,7 +113,14 @@ public sealed record EventMergeLineage(
     string[] MergedCanonicalEventIds,
     string[] AppliedMergePlanIds,
     DateTimeOffset? LastMergedAtUtc,
-    string? LastMergedBy);
+    string? LastMergedBy,
+    string[]? MergedSourceRefs = null,
+    EventMergeRecord[]? MergeRecords = null)
+{
+    public string[] EffectiveMergedSourceRefs => MergedSourceRefs ?? [];
+
+    public EventMergeRecord[] EffectiveMergeRecords => MergeRecords ?? [];
+}
 
 /// <summary>
 /// Canonical classification of a state evolution event for frontend and audit consumers.
@@ -114,6 +147,24 @@ public enum EventVersionReason
     MergeApplied = 6,
     Cancelled = 7,
     Rescheduled = 8,
+}
+
+/// <summary>
+/// Structured evolution classification for canonical event history.
+/// </summary>
+public enum EventEvolutionType
+{
+    TitleUpdate = 0,
+    VenueCorrection = 1,
+    TimeCorrection = 2,
+    Reschedule = 3,
+    Cancellation = 4,
+    ModerationOverride = 5,
+    Publish = 6,
+    Unpublish = 7,
+    MergeApplied = 8,
+    DemergeReview = 9,
+    Other = 10,
 }
 
 /// <summary>
@@ -153,7 +204,8 @@ public sealed record EventStateChangeEntry(
     bool RequiresModerationReview,
     EventStateSnapshot Before,
     EventStateSnapshot After,
-    string? Notes = null);
+    string? Notes = null,
+    EventEvolutionType EvolutionType = EventEvolutionType.Other);
 
 /// <summary>
 /// Audited mutation request. All update paths must use this contract.
@@ -322,6 +374,27 @@ public sealed record EventAggregate(
         if (MergeLineage is null)
             throw new InvalidOperationException("MergeLineage is required.");
 
+        foreach (var mergeRecord in MergeLineage.EffectiveMergeRecords)
+        {
+            if (string.IsNullOrWhiteSpace(mergeRecord.MergeId))
+                throw new InvalidOperationException("MergeLineage.MergeRecords[].MergeId is required.");
+            if (string.IsNullOrWhiteSpace(mergeRecord.MergeReason))
+                throw new InvalidOperationException("MergeLineage.MergeRecords[].MergeReason is required.");
+            if (string.IsNullOrWhiteSpace(mergeRecord.MergeActor))
+                throw new InvalidOperationException("MergeLineage.MergeRecords[].MergeActor is required.");
+            if (string.IsNullOrWhiteSpace(mergeRecord.MergeOrigin))
+                throw new InvalidOperationException("MergeLineage.MergeRecords[].MergeOrigin is required.");
+            foreach (var sourceReference in mergeRecord.SourceReferences ?? [])
+            {
+                if (string.IsNullOrWhiteSpace(sourceReference.SourceRef))
+                    throw new InvalidOperationException("MergeLineage.MergeRecords[].SourceReferences[].SourceRef is required.");
+                if (string.IsNullOrWhiteSpace(sourceReference.SourceKind))
+                    throw new InvalidOperationException("MergeLineage.MergeRecords[].SourceReferences[].SourceKind is required.");
+                if (string.IsNullOrWhiteSpace(sourceReference.Origin))
+                    throw new InvalidOperationException("MergeLineage.MergeRecords[].SourceReferences[].Origin is required.");
+            }
+        }
+
         ValidateStatusConsistency();
     }
 
@@ -421,6 +494,7 @@ public sealed record EventAggregate(
             return this;
 
         var changeType = ClassifyChangeType(request.Reason);
+        var evolutionType = ClassifyEvolutionType(request, before, after);
         var nextVersion = Version + 1;
         var history = AppendHistory(new EventStateChangeEntry(
             FromVersion: Version,
@@ -433,7 +507,8 @@ public sealed record EventAggregate(
             RequiresModerationReview: request.RequiresModerationReview,
             Before: before,
             After: after,
-            Notes: request.Notes));
+            Notes: request.Notes,
+            EvolutionType: evolutionType));
 
         var updated = next with
         {
@@ -591,6 +666,46 @@ public sealed record EventAggregate(
             EventVersionReason.MergeApplied => EventVersionChangeType.MergeLineageUpdate,
             _ => EventVersionChangeType.MaterialEventChange,
         };
+
+    private static EventEvolutionType ClassifyEvolutionType(
+        EventAggregateUpdateRequest request,
+        EventStateSnapshot before,
+        EventStateSnapshot after)
+    {
+        switch (request.Reason)
+        {
+            case EventVersionReason.MergeApplied:
+                return EventEvolutionType.MergeApplied;
+            case EventVersionReason.Rescheduled:
+                return EventEvolutionType.Reschedule;
+            case EventVersionReason.Cancelled:
+                return EventEvolutionType.Cancellation;
+            case EventVersionReason.ModerationDecision:
+                return EventEvolutionType.ModerationOverride;
+            case EventVersionReason.PublishStatusChange:
+                return after.PublishStatus == EventPublishStatus.Published
+                    ? EventEvolutionType.Publish
+                    : EventEvolutionType.Unpublish;
+            case EventVersionReason.TimeEdit:
+                return EventEvolutionType.TimeCorrection;
+            case EventVersionReason.VenueLocationEdit:
+                return EventEvolutionType.VenueCorrection;
+            case EventVersionReason.ContentEdit:
+                if (ChangedField(request, nameof(EventAggregate.Title)) || before.Title != after.Title)
+                    return EventEvolutionType.TitleUpdate;
+                if (ChangedField(request, nameof(EventAggregate.VenueName)) || ChangedField(request, nameof(EventAggregate.Address)))
+                    return EventEvolutionType.VenueCorrection;
+                if (ChangedField(request, nameof(EventAggregate.StartUtc)) || ChangedField(request, nameof(EventAggregate.EndUtc)) || before.StartUtc != after.StartUtc || before.EndUtc != after.EndUtc)
+                    return EventEvolutionType.TimeCorrection;
+                return EventEvolutionType.Other;
+            default:
+                return EventEvolutionType.Other;
+        }
+    }
+
+    private static bool ChangedField(EventAggregateUpdateRequest request, string fieldName)
+        => request.ChangedFields.Any(
+            changedField => changedField.Equals(fieldName, StringComparison.OrdinalIgnoreCase));
 }
 
 /// <summary>

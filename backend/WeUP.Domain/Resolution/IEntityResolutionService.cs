@@ -67,6 +67,7 @@ public interface IEntityResolutionService
     Task<ProvenanceEntry[]> GetProvenanceAsync(string canonicalEventId, CancellationToken ct = default);
     Task<FieldLineage[]> GetFieldLineageAsync(string canonicalEventId, string? fieldName = null, CancellationToken ct = default);
     Task<MergeHistoryEntry[]> GetMergeHistoryAsync(string canonicalEventId, CancellationToken ct = default);
+    Task<EventEvolutionHistoryEntry[]> GetEvolutionHistoryAsync(string canonicalEventId, CancellationToken ct = default);
 }
 
 public interface IEntityResolutionRepository

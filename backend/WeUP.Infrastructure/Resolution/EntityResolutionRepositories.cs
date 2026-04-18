@@ -156,7 +156,8 @@ public sealed class InMemoryEntityResolutionRepository(
                 ? entries
                 : [];
 
-            var nextState = ApplyPlan(currentState, command.Plan);
+            var mergeReason = BuildMergeReason(command);
+            var nextState = ApplyPlan(currentState, command.Plan, command, command.RequestedAtUtc, mergeReason);
             var afterSnapshot = ToSnapshot(nextState);
             var afterFields = BuildFields(nextState);
 
@@ -173,7 +174,7 @@ public sealed class InMemoryEntityResolutionRepository(
                 CandidateIds: [command.Candidate.SourceRef],
                 EvidenceBundleRefs: command.EvidenceBundleRefs ?? [],
                 MergeActor: string.IsNullOrWhiteSpace(command.RequestedBy) ? "system:entity-resolution" : command.RequestedBy,
-                MergeReason: BuildMergeReason(command),
+                MergeReason: mergeReason,
                 MergedAtUtc: command.RequestedAtUtc));
 
             appendedEntries = provenanceService.Append(existingEntries, provenanceEntry);
@@ -271,7 +272,12 @@ public sealed class InMemoryEntityResolutionRepository(
         return created;
     }
 
-    private static EventAggregate ApplyPlan(EventAggregate currentState, MergePlan plan)
+    private static EventAggregate ApplyPlan(
+        EventAggregate currentState,
+        MergePlan plan,
+        MergeCommitCommand command,
+        DateTimeOffset changedAtUtc,
+        string mergeReason)
     {
         var startUtc = !string.IsNullOrWhiteSpace(plan.StartUtc) && DateTimeOffset.TryParse(plan.StartUtc, out var parsedStart)
             ? parsedStart
@@ -307,25 +313,66 @@ public sealed class InMemoryEntityResolutionRepository(
         {
             SourceRefs = MergeDistinct(currentState.Provenance.SourceRefs, plan.UnionedSourceRefs),
             EvidenceRefs = MergeDistinct(currentState.Provenance.EvidenceRefs, plan.UnionedEvidenceRefs),
-            LastObservedAtUtc = DateTimeOffset.UtcNow,
+            LastObservedAtUtc = changedAtUtc,
         };
+
+        var mergeId = string.IsNullOrWhiteSpace(command.ResolutionId)
+            ? $"merge:{currentState.CanonicalEventId}:{changedAtUtc.ToUnixTimeMilliseconds()}"
+            : command.ResolutionId;
+
+        var sourceReferences = plan.UnionedSourceRefs
+            .Select(sourceRef => new EventMergeSourceReference(
+                SourceRef: sourceRef,
+                SourceKind: sourceRef.Equals(command.Candidate.SourceRef, StringComparison.OrdinalIgnoreCase)
+                    ? command.Candidate.SourceKind
+                    : "resolution_source",
+                Origin: sourceRef.Equals(command.Candidate.SourceRef, StringComparison.OrdinalIgnoreCase)
+                    ? "incoming_candidate"
+                    : "canonical_provenance",
+                Confidence: sourceRef.Equals(command.Candidate.SourceRef, StringComparison.OrdinalIgnoreCase)
+                    ? command.Candidate.ExtractionConfidence
+                    : currentState.ConfidenceScore,
+                Rationale: sourceRef.Equals(command.Candidate.SourceRef, StringComparison.OrdinalIgnoreCase)
+                    ? "Merged incoming candidate source reference."
+                    : "Preserved existing canonical source reference.",
+                ExternalSourceId: sourceRef.Equals(command.Candidate.SourceRef, StringComparison.OrdinalIgnoreCase)
+                    ? command.Candidate.ExternalSourceId
+                    : null))
+            .ToArray();
+
+        var mergeRecord = new EventMergeRecord(
+            MergeId: mergeId,
+            MergedAtUtc: changedAtUtc,
+            MergeReason: mergeReason,
+            MergeActor: string.IsNullOrWhiteSpace(command.RequestedBy) ? "system:entity-resolution" : command.RequestedBy,
+            MergeOrigin: "entity_resolution_pipeline",
+            MergeConfidence: plan.MergedConfidence,
+            CandidateIds: [command.Candidate.SourceRef],
+            SourceReferences: sourceReferences,
+            MergeRationale: plan.MergeRationale,
+            RequiresManualReview: !plan.AutoMergeAllowed || plan.ManualReviewReasons.Length > 0);
 
         var updatedMergeLineage = currentState.MergeLineage with
         {
-            MergedCanonicalEventIds = MergeDistinct(currentState.MergeLineage.MergedCanonicalEventIds, plan.UnionedSourceRefs),
-            AppliedMergePlanIds = MergeDistinct(currentState.MergeLineage.AppliedMergePlanIds, [$"{plan.CanonicalEventId}:{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}"]),
-            LastMergedAtUtc = DateTimeOffset.UtcNow,
-            LastMergedBy = "entity-resolution",
+            AppliedMergePlanIds = MergeDistinct(currentState.MergeLineage.AppliedMergePlanIds, [mergeId]),
+            MergedSourceRefs = MergeDistinct(currentState.MergeLineage.EffectiveMergedSourceRefs, plan.UnionedSourceRefs),
+            MergeRecords = currentState.MergeLineage.EffectiveMergeRecords
+                .Concat([mergeRecord])
+                .OrderBy(entry => entry.MergedAtUtc)
+                .ThenBy(entry => entry.MergeId, StringComparer.Ordinal)
+                .ToArray(),
+            LastMergedAtUtc = changedAtUtc,
+            LastMergedBy = mergeRecord.MergeActor,
         };
 
         return currentState.ApplyUpdate(new EventAggregateUpdateRequest(
             ExpectedVersion: currentState.Version,
-            ChangedAtUtc: DateTimeOffset.UtcNow,
-            ChangedBy: "entity-resolution",
+            ChangedAtUtc: changedAtUtc,
+            ChangedBy: mergeRecord.MergeActor,
             Reason: EventVersionReason.MergeApplied,
             ChangedFields: changedFields.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
             RequiresModerationReview: true,
-            Notes: "Merge plan applied to canonical aggregate.",
+            Notes: mergeReason,
             Title: string.IsNullOrWhiteSpace(plan.Title) ? null : plan.Title,
             Description: string.IsNullOrWhiteSpace(plan.Description) ? null : plan.Description,
             Category: string.IsNullOrWhiteSpace(plan.Category) ? null : plan.Category,

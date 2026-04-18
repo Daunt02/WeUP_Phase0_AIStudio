@@ -46,4 +46,6 @@ public interface IProvenanceService
     FieldLineage[] GetFieldLineage(ProvenanceEntry[] entries, string? fieldName = null);
 
     MergeHistoryEntry[] GetMergeHistory(ProvenanceEntry[] entries);
+
+    EventEvolutionHistoryEntry[] GetEvolutionHistory(ProvenanceEntry[] entries, string canonicalEventId);
 }
