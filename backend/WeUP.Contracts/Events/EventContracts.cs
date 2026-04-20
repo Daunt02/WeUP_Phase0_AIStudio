@@ -108,9 +108,37 @@ public record EventMapFeedQueryDto(
     string[]? Categories,
     bool IncludeSavedOnly = false);
 
+/// <summary>
+/// Optional cluster aggregate for the canonical map feed.
+/// EventIds always reference canonical events and never replace event identity.
+/// </summary>
+public record EventMapFeedClusterDto(
+    string ClusterId,
+    double CenterLat,
+    double CenterLng,
+    int Count,
+    string[] EventIds,
+    int SavedCount);
+
+/// <summary>
+/// Density-control metadata shared with the client map renderer.
+/// Clustering activation remains deterministic for the same filtered payload.
+/// </summary>
+public record EventMapDensityControlDto(
+    bool ClusteringEnabled,
+    int ActivationVisibleEventCountThreshold,
+    double ActivationMaxZoomInclusive,
+    int ClusterRadiusPixels,
+    int ClusterMaxZoomInclusive,
+    bool SelectedMarkerBypassEnabled,
+    string ExpansionBehavior);
+
 public record EventMapFeedV1ResponseDto(
     EventMapItemDto[] Events,
-    int TotalCount);
+    int TotalCount,
+    EventMapFeedClusterDto[] Clusters,
+    EventMapDensityControlDto DensityControl,
+    string ClusterStrategy = "client_v1");
 
 // ---------------------------------------------------------------------------
 // Calendar feed

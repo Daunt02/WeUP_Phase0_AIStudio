@@ -13,6 +13,14 @@ namespace WeUP.Api.Endpoints;
 
 public static class EventEndpoints
 {
+    private const int V1ClusterActivationVisibleEventCountThreshold = 24;
+    private const double V1ClusterActivationMaxZoomInclusive = 13.5;
+    private const int V1ClusterRadiusPixels = 56;
+    private const int V1ClusterMaxZoomInclusive = 15;
+    private const int V1ClusterQuantizationPrecision = 3;
+    private const string V1ClusterStrategy = "client_v1";
+    private const string V1ClusterExpansionBehavior = "zoom_or_expand";
+
     public static void MapEventEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/events").WithTags("Events");
@@ -80,7 +88,7 @@ public static class EventEndpoints
             var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
             if (query.IncludeSavedOnly && string.IsNullOrWhiteSpace(userId))
             {
-                return Results.Ok(new EventMapFeedV1ResponseDto(Array.Empty<EventMapItemDto>(), 0));
+                return Results.Ok(BuildV1MapFeedResponse(Array.Empty<EventMapItemDto>()));
             }
 
             var mapRequest = new MapFeedRequest(
@@ -122,7 +130,7 @@ public static class EventEndpoints
                     .ToArray();
             }
 
-            return Results.Ok(new EventMapFeedV1ResponseDto(visible, visible.Length));
+            return Results.Ok(BuildV1MapFeedResponse(visible));
         })
         .WithName("GetEventMapFeedV1")
         .Produces<EventMapFeedV1ResponseDto>()
@@ -164,7 +172,8 @@ public static class EventEndpoints
             operation.Summary = "Get canonical map marker feed (v1).";
             operation.Description =
                 "Returns public map markers using canonical eventIds and contract-bound marker states. " +
-                "Low-confidence-hidden markers are excluded from this public response.";
+                "Low-confidence-hidden markers are excluded from this public response. " +
+                "Cluster metadata is additive and does not replace canonical event identity.";
 
             return operation;
         });
@@ -390,5 +399,52 @@ public static class EventEndpoints
         }
 
         return "default";
+    }
+
+    private static EventMapFeedV1ResponseDto BuildV1MapFeedResponse(EventMapItemDto[] visible)
+    {
+        return new EventMapFeedV1ResponseDto(
+            Events: visible,
+            TotalCount: visible.Length,
+            Clusters: BuildV1Clusters(visible),
+            DensityControl: BuildV1DensityControl(visible.Length),
+            ClusterStrategy: V1ClusterStrategy);
+    }
+
+    private static EventMapFeedClusterDto[] BuildV1Clusters(EventMapItemDto[] visible)
+    {
+        if (visible.Length == 0)
+        {
+            return Array.Empty<EventMapFeedClusterDto>();
+        }
+
+        // Density invariant: cluster grouping is deterministic for a stable filtered payload.
+        return visible
+            .GroupBy(item =>
+                $"{Math.Round(item.Latitude, V1ClusterQuantizationPrecision):F3}:" +
+                $"{Math.Round(item.Longitude, V1ClusterQuantizationPrecision):F3}")
+            .Select(group => new EventMapFeedClusterDto(
+                ClusterId: group.Key,
+                CenterLat: group.Average(item => item.Latitude),
+                CenterLng: group.Average(item => item.Longitude),
+                Count: group.Count(),
+                EventIds: group.Select(item => item.EventId).OrderBy(id => id, StringComparer.Ordinal).ToArray(),
+                SavedCount: group.Count(item => item.SavedByCurrentUser)))
+            .Where(cluster => cluster.Count > 1)
+            .OrderByDescending(cluster => cluster.Count)
+            .ThenBy(cluster => cluster.ClusterId, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static EventMapDensityControlDto BuildV1DensityControl(int visibleEventCount)
+    {
+        return new EventMapDensityControlDto(
+            ClusteringEnabled: visibleEventCount >= V1ClusterActivationVisibleEventCountThreshold,
+            ActivationVisibleEventCountThreshold: V1ClusterActivationVisibleEventCountThreshold,
+            ActivationMaxZoomInclusive: V1ClusterActivationMaxZoomInclusive,
+            ClusterRadiusPixels: V1ClusterRadiusPixels,
+            ClusterMaxZoomInclusive: V1ClusterMaxZoomInclusive,
+            SelectedMarkerBypassEnabled: true,
+            ExpansionBehavior: V1ClusterExpansionBehavior);
     }
 }

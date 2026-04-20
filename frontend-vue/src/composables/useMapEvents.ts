@@ -1,13 +1,31 @@
 import { computed, ref } from "vue";
 import type {
+  EventMapClusterStrategy,
+  EventMapDensityControlDto,
+  EventMapFeedClusterDto,
   EventMapFeedQueryDto,
   EventMapItemDto,
   EventMapMarkerViewModel,
 } from "../contracts/map-feed.contracts";
 import { fetchEventMapFeed } from "../services/mapFeedService";
 
+const DEFAULT_DENSITY_CONTROL: EventMapDensityControlDto = {
+  clusteringEnabled: false,
+  activationVisibleEventCountThreshold: 24,
+  activationMaxZoomInclusive: 13.5,
+  clusterRadiusPixels: 56,
+  clusterMaxZoomInclusive: 15,
+  selectedMarkerBypassEnabled: true,
+  expansionBehavior: "zoom_or_expand",
+};
+
 export function useMapEvents() {
   const events = ref<EventMapItemDto[]>([]);
+  const clusters = ref<EventMapFeedClusterDto[]>([]);
+  const densityControl = ref<EventMapDensityControlDto>(
+    DEFAULT_DENSITY_CONTROL,
+  );
+  const clusterStrategy = ref<EventMapClusterStrategy>("client_v1");
   const isLoading = ref(false);
   const error = ref<string | null>(null);
   const selectedEventId = ref<string | null>(null);
@@ -41,6 +59,9 @@ export function useMapEvents() {
     try {
       const payload = await fetchEventMapFeed(query);
       events.value = payload.events ?? [];
+      clusters.value = payload.clusters ?? [];
+      densityControl.value = payload.densityControl ?? DEFAULT_DENSITY_CONTROL;
+      clusterStrategy.value = payload.clusterStrategy ?? "client_v1";
 
       if (selectedEventId.value) {
         const stillExists = events.value.some(
@@ -52,6 +73,9 @@ export function useMapEvents() {
       }
     } catch (e) {
       events.value = [];
+      clusters.value = [];
+      densityControl.value = DEFAULT_DENSITY_CONTROL;
+      clusterStrategy.value = "client_v1";
       error.value =
         e instanceof Error ? e.message : "Failed to load map events.";
     } finally {
@@ -73,6 +97,9 @@ export function useMapEvents() {
 
   return {
     events,
+    clusters,
+    densityControl,
+    clusterStrategy,
     visibleEvents,
     markers,
     isLoading,

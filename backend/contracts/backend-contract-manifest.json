@@ -53,7 +53,30 @@
       "timeWindowPreset",
       "toUtc"
     ],
-    "EventMapFeedV1ResponseDto": ["events", "totalCount"],
+    "EventMapFeedClusterDto": [
+      "centerLat",
+      "centerLng",
+      "clusterId",
+      "count",
+      "eventIds",
+      "savedCount"
+    ],
+    "EventMapDensityControlDto": [
+      "activationMaxZoomInclusive",
+      "activationVisibleEventCountThreshold",
+      "clusterMaxZoomInclusive",
+      "clusterRadiusPixels",
+      "clusteringEnabled",
+      "expansionBehavior",
+      "selectedMarkerBypassEnabled"
+    ],
+    "EventMapFeedV1ResponseDto": [
+      "clusterStrategy",
+      "clusters",
+      "densityControl",
+      "events",
+      "totalCount"
+    ],
     "CalendarFeedRequest": [
       "categories",
       "districtCode",

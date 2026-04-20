@@ -24,6 +24,8 @@ public sealed class ContractManifestTests
             [nameof(MapFeedResponse)] = GetJsonPropertyNames<MapFeedResponse>(),
             [nameof(EventMapItemDto)] = GetJsonPropertyNames<EventMapItemDto>(),
             [nameof(EventMapFeedQueryDto)] = GetJsonPropertyNames<EventMapFeedQueryDto>(),
+            [nameof(EventMapFeedClusterDto)] = GetJsonPropertyNames<EventMapFeedClusterDto>(),
+            [nameof(EventMapDensityControlDto)] = GetJsonPropertyNames<EventMapDensityControlDto>(),
             [nameof(EventMapFeedV1ResponseDto)] = GetJsonPropertyNames<EventMapFeedV1ResponseDto>(),
             [nameof(CalendarFeedRequest)] = GetJsonPropertyNames<CalendarFeedRequest>(),
             [nameof(EventCalendarDto)] = GetJsonPropertyNames<EventCalendarDto>(),

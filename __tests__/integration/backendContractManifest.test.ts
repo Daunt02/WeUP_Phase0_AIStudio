@@ -15,6 +15,11 @@ import type {
 } from "@/domains/event/projections";
 import type { DraftSubmissionRequest } from "@/features/world/runtimeTypes";
 import type {
+  EventMapDensityControlDto,
+  EventMapFeedClusterDto,
+  EventMapFeedV1ResponseDto,
+} from "@/domains/event/apiContracts";
+import type {
   SavedEventDto,
   SavedEventsResponse,
   SaveEventResponse,
@@ -71,6 +76,29 @@ describe("backend contract manifest", () => {
     eventIds: ["evt-sf-midnight-groove"],
   };
 
+  const mapFeedCluster: EventMapFeedClusterDto = {
+    clusterId: "37.768:-122.421",
+    centerLat: 37.76809,
+    centerLng: -122.42112,
+    count: 3,
+    eventIds: [
+      "evt-sf-midnight-groove",
+      "evt-sf-rooftop-signals",
+      "evt-sf-after-hours-atelier",
+    ],
+    savedCount: 1,
+  };
+
+  const densityControl: EventMapDensityControlDto = {
+    clusteringEnabled: true,
+    activationVisibleEventCountThreshold: 24,
+    activationMaxZoomInclusive: 13.5,
+    clusterRadiusPixels: 56,
+    clusterMaxZoomInclusive: 15,
+    selectedMarkerBypassEnabled: true,
+    expansionBehavior: "zoom_or_expand",
+  };
+
   const calendarItem: EventCalendarProjection = {
     id: "evt-sf-midnight-groove",
     title: "Midnight Groove Assembly",
@@ -100,6 +128,13 @@ describe("backend contract manifest", () => {
     status: "PUBLISHED",
     confidence: 0.96,
     sourceKind: "manual_submission",
+  };
+
+  const detailDto = {
+    ...detailProjection,
+    version: 3,
+    lastChangeType: "MaterialEventChange",
+    concurrencyToken: "evt-sf-midnight-groove:v3:1712966400000",
   };
 
   it("matches the selected frontend API shapes", () => {
@@ -133,6 +168,28 @@ describe("backend contract manifest", () => {
       totalCount: 1,
       clusters: [mapCluster],
       queryMode: "bounding_box",
+    };
+
+    const mapFeedV1Response: EventMapFeedV1ResponseDto = {
+      events: [
+        {
+          eventId: "evt-sf-midnight-groove",
+          title: "Midnight Groove Assembly",
+          startUtc: "2026-04-12T04:00:00Z",
+          endUtc: "2026-04-12T08:00:00Z",
+          latitude: 37.76809,
+          longitude: -122.42112,
+          venueName: "Public Works",
+          district: "mission",
+          primaryCategory: "nightlife",
+          savedByCurrentUser: false,
+          markerState: "default",
+        },
+      ],
+      totalCount: 1,
+      clusters: [mapFeedCluster],
+      densityControl,
+      clusterStrategy: "client_v1",
     };
 
     const calendarFeedResponse: CalendarFeedResponse = {
@@ -227,7 +284,10 @@ describe("backend contract manifest", () => {
     expectKeys("EventMapCardDto", mapCard);
     expectKeys("LocalityFilterRequest", localityFilter);
     expectKeys("EventMapClusterDto", mapCluster);
+    expectKeys("EventMapFeedClusterDto", mapFeedCluster);
+    expectKeys("EventMapDensityControlDto", densityControl);
     expectKeys("MapFeedResponse", mapFeedResponse);
+    expectKeys("EventMapFeedV1ResponseDto", mapFeedV1Response);
     expectKeys("CalendarFeedRequest", {
       categories: calendarFeedRequest.filters?.categories,
       districtCode: calendarFeedRequest.filters?.districtCode,
@@ -241,7 +301,7 @@ describe("backend contract manifest", () => {
     expectKeys("EventCalendarDto", calendarItem);
     expectKeys("CalendarFeedResponse", calendarFeedResponse);
     expectKeys("MediaRefDto", detailProjection.mediaRefs[0]);
-    expectKeys("EventDetailDto", detailProjection);
+    expectKeys("EventDetailDto", detailDto);
     expectKeys("EventDetailResponse", eventDetailResponse);
     expectKeys("DraftSubmissionRequest", draftSubmissionRequest);
     expectKeys("SavedEventDto", savedEvent);

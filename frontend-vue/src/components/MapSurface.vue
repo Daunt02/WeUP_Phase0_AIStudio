@@ -43,19 +43,34 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import mapboxgl, { type GeoJSONSource } from "mapbox-gl";
+import type { FeatureCollection, Point } from "geojson";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 import type {
+  EventMapDensityControlDto,
+  EventMapFeedClusterDto,
   EventMapFeedQueryDto,
   EventMapMarkerViewModel,
 } from "../contracts/map-feed.contracts";
 import { useMapEvents } from "../composables/useMapEvents";
 
-const MAP_SOURCE_ID = "weup-events";
-const MAP_LAYER_ID = "weup-event-markers";
+const POINT_SOURCE_ID = "weup-events-points";
+const CLUSTER_SOURCE_ID = "weup-events-clustered";
+const SELECTED_SOURCE_ID = "weup-events-selected";
+const SERVER_CLUSTER_SOURCE_ID = "weup-events-server-clusters";
+
+const PLAIN_MARKER_LAYER_ID = "weup-event-markers";
+const CLIENT_SINGLE_LAYER_ID = "weup-event-markers-client-single";
+const CLIENT_CLUSTER_LAYER_ID = "weup-event-clusters";
+const CLIENT_CLUSTER_COUNT_LAYER_ID = "weup-event-cluster-count";
+const SERVER_CLUSTER_LAYER_ID = "weup-event-server-clusters";
+const SERVER_CLUSTER_COUNT_LAYER_ID = "weup-event-server-cluster-count";
+const SELECTED_MARKER_LAYER_ID = "weup-selected-event-marker";
 
 const mapContainer = ref<HTMLElement | null>(null);
 const map = ref<any>(null);
+const currentZoom = ref(11);
+const clusterSourceConfigKey = ref<string | null>(null);
 
 const timeWindowPreset =
   ref<EventMapFeedQueryDto["timeWindowPreset"]>("next7days");
@@ -73,6 +88,9 @@ const presetOptions: {
 
 const {
   markers,
+  clusters,
+  densityControl,
+  clusterStrategy,
   isLoading,
   error,
   selectedEventId,
@@ -88,11 +106,49 @@ const emits = defineEmits<{
   (event: "event-selected", eventId: string): void;
 }>();
 
+type MarkerFeatureProperties = {
+  eventId: string;
+  title: string;
+  venueName: string;
+  markerState: EventMapMarkerViewModel["markerState"];
+  effectiveMarkerState: EventMapMarkerViewModel["effectiveMarkerState"];
+};
+
+type ServerClusterFeatureProperties = {
+  clusterId: string;
+  count: number;
+  savedCount: number;
+  eventIdsJson: string;
+};
+
+type ClusterSource = GeoJSONSource & {
+  getClusterExpansionZoom: (
+    clusterId: number,
+    callback: (error: Error | null, zoom: number) => void,
+  ) => void;
+  getClusterLeaves: (
+    clusterId: number,
+    limit: number,
+    offset: number,
+    callback: (error: Error | null, leaves: Array<any>) => void,
+  ) => void;
+};
+
+type ResolvedServerCluster = {
+  clusterId: string;
+  centerLat: number;
+  centerLng: number;
+  count: number;
+  eventIds: string[];
+  savedCount: number;
+};
+
 function toBboxString(currentMap: any): string {
   const bounds = currentMap.getBounds();
   if (!bounds) {
     throw new Error("Map bounds are unavailable.");
   }
+
   // Contract invariant: bbox is minLng,minLat,maxLng,maxLat.
   return [
     bounds.getWest(),
@@ -104,7 +160,7 @@ function toBboxString(currentMap: any): string {
 
 function toFeatureCollection(
   items: EventMapMarkerViewModel[],
-): GeoJSON.FeatureCollection<GeoJSON.Point> {
+): FeatureCollection<Point, MarkerFeatureProperties> {
   return {
     type: "FeatureCollection",
     features: items.map((item) => ({
@@ -125,57 +181,546 @@ function toFeatureCollection(
   };
 }
 
-function ensureLayer(currentMap: any): void {
-  if (!currentMap.getSource(MAP_SOURCE_ID)) {
-    currentMap.addSource(MAP_SOURCE_ID, {
+function toServerClusterFeatureCollection(
+  items: ResolvedServerCluster[],
+): FeatureCollection<Point, ServerClusterFeatureProperties> {
+  return {
+    type: "FeatureCollection",
+    features: items.map((item) => ({
+      type: "Feature",
+      id: item.clusterId,
+      geometry: {
+        type: "Point",
+        coordinates: [item.centerLng, item.centerLat],
+      },
+      properties: {
+        clusterId: item.clusterId,
+        count: item.count,
+        savedCount: item.savedCount,
+        eventIdsJson: JSON.stringify(item.eventIds),
+      },
+    })),
+  };
+}
+
+function getClusterSourceConfigKey(control: EventMapDensityControlDto): string {
+  return [control.clusterRadiusPixels, control.clusterMaxZoomInclusive].join(
+    ":",
+  );
+}
+
+function removeLayerIfExists(currentMap: any, layerId: string): void {
+  if (currentMap.getLayer(layerId)) {
+    currentMap.removeLayer(layerId);
+  }
+}
+
+function removeSourceIfExists(currentMap: any, sourceId: string): void {
+  if (currentMap.getSource(sourceId)) {
+    currentMap.removeSource(sourceId);
+  }
+}
+
+function markerCirclePaint(): Record<string, unknown> {
+  return {
+    "circle-radius": [
+      "case",
+      ["==", ["get", "effectiveMarkerState"], "saved"],
+      7,
+      6,
+    ],
+    "circle-color": [
+      "case",
+      ["==", ["get", "effectiveMarkerState"], "saved"],
+      "#C44536",
+      "#2563EB",
+    ],
+    "circle-stroke-color": "#FFFFFF",
+    "circle-stroke-width": 1.5,
+  };
+}
+
+function ensureSources(currentMap: any): void {
+  if (!currentMap.getSource(POINT_SOURCE_ID)) {
+    currentMap.addSource(POINT_SOURCE_ID, {
       type: "geojson",
       data: toFeatureCollection([]),
     });
   }
 
-  if (!currentMap.getLayer(MAP_LAYER_ID)) {
+  if (!currentMap.getSource(SELECTED_SOURCE_ID)) {
+    currentMap.addSource(SELECTED_SOURCE_ID, {
+      type: "geojson",
+      data: toFeatureCollection([]),
+    });
+  }
+
+  if (!currentMap.getSource(SERVER_CLUSTER_SOURCE_ID)) {
+    currentMap.addSource(SERVER_CLUSTER_SOURCE_ID, {
+      type: "geojson",
+      data: toServerClusterFeatureCollection([]),
+    });
+  }
+
+  const nextConfigKey = getClusterSourceConfigKey(densityControl.value);
+  if (clusterSourceConfigKey.value !== nextConfigKey) {
+    removeLayerIfExists(currentMap, CLIENT_CLUSTER_COUNT_LAYER_ID);
+    removeLayerIfExists(currentMap, CLIENT_CLUSTER_LAYER_ID);
+    removeLayerIfExists(currentMap, CLIENT_SINGLE_LAYER_ID);
+    removeSourceIfExists(currentMap, CLUSTER_SOURCE_ID);
+    clusterSourceConfigKey.value = null;
+  }
+
+  if (!currentMap.getSource(CLUSTER_SOURCE_ID)) {
+    currentMap.addSource(CLUSTER_SOURCE_ID, {
+      type: "geojson",
+      data: toFeatureCollection([]),
+      cluster: true,
+      clusterMaxZoom: densityControl.value.clusterMaxZoomInclusive,
+      clusterRadius: densityControl.value.clusterRadiusPixels,
+      clusterProperties: {
+        savedCount: [
+          "+",
+          ["case", ["==", ["get", "effectiveMarkerState"], "saved"], 1, 0],
+        ],
+      },
+    });
+    clusterSourceConfigKey.value = nextConfigKey;
+  }
+}
+
+function ensureLayers(currentMap: any): void {
+  if (!currentMap.getLayer(PLAIN_MARKER_LAYER_ID)) {
     currentMap.addLayer({
-      id: MAP_LAYER_ID,
+      id: PLAIN_MARKER_LAYER_ID,
       type: "circle",
-      source: MAP_SOURCE_ID,
+      source: POINT_SOURCE_ID,
+      paint: markerCirclePaint(),
+    });
+  }
+
+  if (!currentMap.getLayer(CLIENT_CLUSTER_LAYER_ID)) {
+    currentMap.addLayer({
+      id: CLIENT_CLUSTER_LAYER_ID,
+      type: "circle",
+      source: CLUSTER_SOURCE_ID,
+      filter: ["has", "point_count"],
       paint: {
         "circle-radius": [
-          "case",
-          ["==", ["get", "effectiveMarkerState"], "selected"],
-          9,
-          ["==", ["get", "effectiveMarkerState"], "saved"],
-          7,
-          6,
+          "step",
+          ["get", "point_count"],
+          18,
+          8,
+          24,
+          20,
+          32,
+          40,
+          42,
         ],
         "circle-color": [
           "case",
-          ["==", ["get", "effectiveMarkerState"], "selected"],
-          "#0B6E4F",
-          ["==", ["get", "effectiveMarkerState"], "saved"],
+          [">", ["coalesce", ["get", "savedCount"], 0], 0],
           "#C44536",
-          "#2563EB",
+          "#0F766E",
         ],
         "circle-stroke-color": "#FFFFFF",
-        "circle-stroke-width": 1.5,
+        "circle-stroke-width": 2,
+      },
+    });
+  }
+
+  if (!currentMap.getLayer(CLIENT_CLUSTER_COUNT_LAYER_ID)) {
+    currentMap.addLayer({
+      id: CLIENT_CLUSTER_COUNT_LAYER_ID,
+      type: "symbol",
+      source: CLUSTER_SOURCE_ID,
+      filter: ["has", "point_count"],
+      layout: {
+        "text-field": ["get", "point_count_abbreviated"],
+        "text-size": 12,
+        "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+      },
+      paint: {
+        "text-color": "#FFFFFF",
+      },
+    });
+  }
+
+  if (!currentMap.getLayer(CLIENT_SINGLE_LAYER_ID)) {
+    currentMap.addLayer({
+      id: CLIENT_SINGLE_LAYER_ID,
+      type: "circle",
+      source: CLUSTER_SOURCE_ID,
+      filter: ["!", ["has", "point_count"]],
+      paint: markerCirclePaint(),
+    });
+  }
+
+  if (!currentMap.getLayer(SERVER_CLUSTER_LAYER_ID)) {
+    currentMap.addLayer({
+      id: SERVER_CLUSTER_LAYER_ID,
+      type: "circle",
+      source: SERVER_CLUSTER_SOURCE_ID,
+      paint: {
+        "circle-radius": ["step", ["get", "count"], 18, 8, 24, 20, 32, 40, 42],
+        "circle-color": [
+          "case",
+          [">", ["coalesce", ["get", "savedCount"], 0], 0],
+          "#C44536",
+          "#0F766E",
+        ],
+        "circle-stroke-color": "#FFFFFF",
+        "circle-stroke-width": 2,
+      },
+    });
+  }
+
+  if (!currentMap.getLayer(SERVER_CLUSTER_COUNT_LAYER_ID)) {
+    currentMap.addLayer({
+      id: SERVER_CLUSTER_COUNT_LAYER_ID,
+      type: "symbol",
+      source: SERVER_CLUSTER_SOURCE_ID,
+      layout: {
+        "text-field": ["to-string", ["get", "count"]],
+        "text-size": 12,
+        "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+      },
+      paint: {
+        "text-color": "#FFFFFF",
+      },
+    });
+  }
+
+  if (!currentMap.getLayer(SELECTED_MARKER_LAYER_ID)) {
+    currentMap.addLayer({
+      id: SELECTED_MARKER_LAYER_ID,
+      type: "circle",
+      source: SELECTED_SOURCE_ID,
+      paint: {
+        "circle-radius": 10,
+        "circle-color": "#0B6E4F",
+        "circle-stroke-color": "#FFFFFF",
+        "circle-stroke-width": 2,
       },
     });
   }
 }
 
-function updateMapSource(items: EventMapMarkerViewModel[]): void {
+function setSourceData(sourceId: string, data: FeatureCollection<Point>): void {
   const currentMap = map.value;
   if (!currentMap) {
     return;
   }
 
-  const source = currentMap.getSource(MAP_SOURCE_ID) as
-    | GeoJSONSource
+  const source = currentMap.getSource(sourceId) as GeoJSONSource | undefined;
+  if (!source) {
+    return;
+  }
+
+  source.setData(data);
+}
+
+function setLayerVisibility(
+  currentMap: any,
+  layerId: string,
+  visible: boolean,
+): void {
+  if (!currentMap.getLayer(layerId)) {
+    return;
+  }
+
+  currentMap.setLayoutProperty(
+    layerId,
+    "visibility",
+    visible ? "visible" : "none",
+  );
+}
+
+function isDensityClusteringActive(
+  control: EventMapDensityControlDto,
+): boolean {
+  return (
+    control.clusteringEnabled &&
+    currentZoom.value <= control.activationMaxZoomInclusive
+  );
+}
+
+function resolveServerClusters(
+  items: EventMapFeedClusterDto[],
+  allMarkers: EventMapMarkerViewModel[],
+  selectedId: string | null,
+): ResolvedServerCluster[] {
+  const markersById = new Map(
+    allMarkers.map((marker: EventMapMarkerViewModel) => [
+      marker.eventId,
+      marker,
+    ]),
+  );
+
+  return items
+    .map((cluster: EventMapFeedClusterDto) => {
+      const memberMarkers = cluster.eventIds
+        .filter((eventId: string) => eventId !== selectedId)
+        .map((eventId: string) => markersById.get(eventId))
+        .filter(
+          (marker): marker is EventMapMarkerViewModel => marker !== undefined,
+        );
+
+      if (memberMarkers.length <= 1) {
+        return null;
+      }
+
+      return {
+        clusterId: cluster.clusterId,
+        centerLat:
+          memberMarkers.reduce((sum, marker) => sum + marker.latitude, 0) /
+          memberMarkers.length,
+        centerLng:
+          memberMarkers.reduce((sum, marker) => sum + marker.longitude, 0) /
+          memberMarkers.length,
+        count: memberMarkers.length,
+        eventIds: memberMarkers.map((marker) => marker.eventId),
+        savedCount: memberMarkers.filter((marker) => marker.savedByCurrentUser)
+          .length,
+      } satisfies ResolvedServerCluster;
+    })
+    .filter((cluster): cluster is ResolvedServerCluster => cluster !== null);
+}
+
+function updateMapRendering(): void {
+  const currentMap = map.value;
+  if (!currentMap || !currentMap.isStyleLoaded()) {
+    return;
+  }
+
+  ensureSources(currentMap);
+  ensureLayers(currentMap);
+
+  const selectedId = selectedEventId.value;
+  const selectedMarker =
+    selectedId === null
+      ? null
+      : (markers.value.find((marker) => marker.eventId === selectedId) ?? null);
+
+  const shouldUseDensityClusters = isDensityClusteringActive(
+    densityControl.value,
+  );
+  const serverClustersToRender =
+    clusterStrategy.value === "server_v1" && shouldUseDensityClusters
+      ? resolveServerClusters(clusters.value, markers.value, selectedId)
+      : [];
+  const shouldUseServerClusters = serverClustersToRender.length > 0;
+  const shouldUseClientClusters =
+    clusterStrategy.value === "client_v1" && shouldUseDensityClusters;
+
+  const serverClusteredIds = new Set(
+    serverClustersToRender.flatMap((cluster) => cluster.eventIds),
+  );
+
+  const unselectedMarkers = markers.value.filter((marker) => {
+    if (marker.eventId === selectedId) {
+      return false;
+    }
+
+    if (shouldUseServerClusters && serverClusteredIds.has(marker.eventId)) {
+      return false;
+    }
+
+    return true;
+  });
+
+  // Identity invariant: the selected event is rendered from its own source so
+  // density recomputation never hides the active canonical event.
+  setSourceData(POINT_SOURCE_ID, toFeatureCollection(unselectedMarkers));
+  setSourceData(CLUSTER_SOURCE_ID, toFeatureCollection(unselectedMarkers));
+  setSourceData(
+    SELECTED_SOURCE_ID,
+    toFeatureCollection(selectedMarker ? [selectedMarker] : []),
+  );
+  setSourceData(
+    SERVER_CLUSTER_SOURCE_ID,
+    toServerClusterFeatureCollection(serverClustersToRender),
+  );
+
+  setLayerVisibility(
+    currentMap,
+    PLAIN_MARKER_LAYER_ID,
+    !shouldUseClientClusters && !shouldUseServerClusters,
+  );
+  setLayerVisibility(
+    currentMap,
+    CLIENT_SINGLE_LAYER_ID,
+    shouldUseClientClusters,
+  );
+  setLayerVisibility(
+    currentMap,
+    CLIENT_CLUSTER_LAYER_ID,
+    shouldUseClientClusters,
+  );
+  setLayerVisibility(
+    currentMap,
+    CLIENT_CLUSTER_COUNT_LAYER_ID,
+    shouldUseClientClusters,
+  );
+  setLayerVisibility(
+    currentMap,
+    SERVER_CLUSTER_LAYER_ID,
+    shouldUseServerClusters,
+  );
+  setLayerVisibility(
+    currentMap,
+    SERVER_CLUSTER_COUNT_LAYER_ID,
+    shouldUseServerClusters,
+  );
+  setLayerVisibility(
+    currentMap,
+    SELECTED_MARKER_LAYER_ID,
+    selectedMarker !== null,
+  );
+}
+
+function emitSelection(eventId: string): void {
+  selectByEventId(eventId);
+  emits("event-selected", eventId);
+}
+
+function onSingleMarkerClick(evt: any): void {
+  const eventId = evt.features?.[0]?.properties?.eventId as string | undefined;
+  if (!eventId) {
+    return;
+  }
+
+  // Selection invariant: resolve marker interaction using canonical eventId only.
+  emitSelection(eventId);
+}
+
+function fitMapToEvents(
+  items: EventMapMarkerViewModel[],
+  fallbackCenter?: [number, number],
+): void {
+  const currentMap = map.value;
+  if (!currentMap) {
+    return;
+  }
+
+  if (items.length === 0) {
+    if (fallbackCenter) {
+      currentMap.easeTo({
+        center: fallbackCenter,
+        zoom: Math.min(
+          densityControl.value.clusterMaxZoomInclusive + 1,
+          currentMap.getZoom() + 1,
+        ),
+      });
+    }
+    return;
+  }
+
+  if (items.length === 1) {
+    currentMap.easeTo({
+      center: [items[0].longitude, items[0].latitude],
+      zoom: Math.min(
+        densityControl.value.clusterMaxZoomInclusive + 1,
+        currentMap.getZoom() + 1.5,
+      ),
+    });
+    return;
+  }
+
+  const bounds = new mapboxgl.LngLatBounds();
+  for (const item of items) {
+    bounds.extend([item.longitude, item.latitude]);
+  }
+
+  currentMap.fitBounds(bounds, {
+    padding: 72,
+    maxZoom: densityControl.value.clusterMaxZoomInclusive + 1,
+  });
+}
+
+function onClientClusterClick(evt: any): void {
+  const currentMap = map.value;
+  if (!currentMap) {
+    return;
+  }
+
+  const clusterId = evt.features?.[0]?.properties?.cluster_id as
+    | number
+    | undefined;
+  const coordinates = evt.features?.[0]?.geometry?.coordinates as
+    | [number, number]
+    | undefined;
+
+  if (clusterId === undefined || !coordinates) {
+    return;
+  }
+
+  const source = currentMap.getSource(CLUSTER_SOURCE_ID) as
+    | ClusterSource
     | undefined;
   if (!source) {
     return;
   }
 
-  source.setData(toFeatureCollection(items));
+  // Expansion rule: prefer the deterministic cluster expansion zoom, then fall
+  // back to fitting cluster leaves when the source is already at that zoom.
+  source.getClusterExpansionZoom(clusterId, (error, expansionZoom) => {
+    if (error || typeof expansionZoom !== "number") {
+      return;
+    }
+
+    if (expansionZoom > currentMap.getZoom() + 0.25) {
+      currentMap.easeTo({ center: coordinates, zoom: expansionZoom });
+      return;
+    }
+
+    source.getClusterLeaves(clusterId, 25, 0, (leavesError, leaves) => {
+      if (leavesError || !Array.isArray(leaves)) {
+        currentMap.easeTo({
+          center: coordinates,
+          zoom: Math.min(
+            densityControl.value.clusterMaxZoomInclusive + 1,
+            currentMap.getZoom() + 1,
+          ),
+        });
+        return;
+      }
+
+      const leafEventIds = leaves
+        .map((leaf) => leaf?.properties?.eventId as string | undefined)
+        .filter((eventId): eventId is string => Boolean(eventId));
+      const memberMarkers = markers.value.filter((marker) =>
+        leafEventIds.includes(marker.eventId),
+      );
+      fitMapToEvents(memberMarkers, coordinates);
+    });
+  });
+}
+
+function onServerClusterClick(evt: any): void {
+  const properties = evt.features?.[0]?.properties as
+    | ServerClusterFeatureProperties
+    | undefined;
+  const coordinates = evt.features?.[0]?.geometry?.coordinates as
+    | [number, number]
+    | undefined;
+
+  if (!properties) {
+    return;
+  }
+
+  let eventIds: string[] = [];
+  try {
+    eventIds = JSON.parse(properties.eventIdsJson) as string[];
+  } catch {
+    eventIds = [];
+  }
+
+  const memberMarkers = markers.value.filter((marker) =>
+    eventIds.includes(marker.eventId),
+  );
+
+  fitMapToEvents(memberMarkers, coordinates);
 }
 
 async function refreshFromCurrentViewport(): Promise<void> {
@@ -191,26 +736,6 @@ async function refreshFromCurrentViewport(): Promise<void> {
   };
 
   await loadEvents(query);
-}
-
-function onMapMarkerClick(evt: any): void {
-  const currentMap = map.value;
-  if (!currentMap) {
-    return;
-  }
-
-  const features = currentMap.queryRenderedFeatures(evt.point, {
-    layers: [MAP_LAYER_ID],
-  });
-
-  const eventId = features[0]?.properties?.eventId as string | undefined;
-  if (!eventId) {
-    return;
-  }
-
-  // Selection invariant: resolve marker interaction using canonical eventId only.
-  selectByEventId(eventId);
-  emits("event-selected", eventId);
 }
 
 onMounted(async () => {
@@ -233,26 +758,40 @@ onMounted(async () => {
   );
 
   currentMap.on("load", async () => {
-    ensureLayer(currentMap);
+    currentZoom.value = currentMap.getZoom();
+    ensureSources(currentMap);
+    ensureLayers(currentMap);
+    updateMapRendering();
     await refreshFromCurrentViewport();
   });
 
-  currentMap.on("click", MAP_LAYER_ID, onMapMarkerClick);
+  currentMap.on("click", PLAIN_MARKER_LAYER_ID, onSingleMarkerClick);
+  currentMap.on("click", CLIENT_SINGLE_LAYER_ID, onSingleMarkerClick);
+  currentMap.on("click", SELECTED_MARKER_LAYER_ID, onSingleMarkerClick);
+  currentMap.on("click", CLIENT_CLUSTER_LAYER_ID, onClientClusterClick);
+  currentMap.on("click", SERVER_CLUSTER_LAYER_ID, onServerClusterClick);
 
   currentMap.on("moveend", async () => {
+    currentZoom.value = currentMap.getZoom();
+    updateMapRendering();
     await refreshFromCurrentViewport();
+  });
+
+  currentMap.on("zoomend", () => {
+    currentZoom.value = currentMap.getZoom();
+    updateMapRendering();
   });
 
   map.value = currentMap;
 });
 
-watch(markers, (nextMarkers: EventMapMarkerViewModel[]) => {
-  updateMapSource(nextMarkers);
-});
-
-watch(selectedEventId, () => {
-  updateMapSource(markers.value);
-});
+watch(
+  [markers, clusters, densityControl, clusterStrategy, selectedEventId],
+  () => {
+    updateMapRendering();
+  },
+  { deep: true },
+);
 
 onBeforeUnmount(() => {
   const currentMap = map.value;

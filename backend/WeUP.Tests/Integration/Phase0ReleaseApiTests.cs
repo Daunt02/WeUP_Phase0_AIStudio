@@ -134,6 +134,11 @@ public sealed class Phase0ReleaseApiTests : IClassFixture<Phase0ReleaseApiTests.
         Assert.NotNull(payload);
         Assert.NotEmpty(payload!.Events);
         Assert.All(payload.Events, evt => Assert.False(string.IsNullOrWhiteSpace(evt.EventId)));
+        Assert.NotNull(payload.Clusters);
+        Assert.NotNull(payload.DensityControl);
+        Assert.Equal("client_v1", payload.ClusterStrategy);
+        Assert.True(payload.DensityControl.SelectedMarkerBypassEnabled);
+        Assert.Equal("zoom_or_expand", payload.DensityControl.ExpansionBehavior);
 
         var uniqueEventIds = payload.Events.Select(evt => evt.EventId).Distinct().ToArray();
         Assert.Equal(payload.Events.Length, uniqueEventIds.Length);
@@ -143,9 +148,9 @@ public sealed class Phase0ReleaseApiTests : IClassFixture<Phase0ReleaseApiTests.
         Assert.True(saved.SavedByCurrentUser);
         Assert.Equal("saved", saved.MarkerState);
 
-        var nonSaved = payload.Events.First(evt => evt.EventId != "evt-sf-rooftop-signals");
-        Assert.False(nonSaved.SavedByCurrentUser);
-        Assert.Equal("default", nonSaved.MarkerState);
+        Assert.All(
+            payload.Events.Where(evt => !evt.SavedByCurrentUser),
+            evt => Assert.Equal("default", evt.MarkerState));
     }
 
     [Fact]
@@ -167,7 +172,10 @@ public sealed class Phase0ReleaseApiTests : IClassFixture<Phase0ReleaseApiTests.
         Assert.NotEmpty(payload!.Events);
         Assert.All(payload.Events, evt => Assert.True(evt.SavedByCurrentUser));
         Assert.All(payload.Events, evt => Assert.Equal("saved", evt.MarkerState));
-        Assert.All(payload.Events, evt => Assert.Equal("evt-sf-rooftop-signals", evt.EventId));
+        Assert.Equal(payload.Events.Length, payload.Events.Select(evt => evt.EventId).Distinct().Count());
+        Assert.NotNull(payload.Clusters);
+        Assert.NotNull(payload.DensityControl);
+        Assert.True(payload.DensityControl.SelectedMarkerBypassEnabled);
     }
 
     private static string BuildMapFeedV1Path(
