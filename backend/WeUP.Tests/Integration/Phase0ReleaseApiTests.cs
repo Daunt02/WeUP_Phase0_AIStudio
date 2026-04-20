@@ -93,25 +93,34 @@ public sealed class Phase0ReleaseApiTests : IClassFixture<Phase0ReleaseApiTests.
     public async Task MapFeedV1_Returns422_ForInvalidBboxShape()
     {
         var response = await _client.GetAsync(
-            "/api/events/map-feed/v1?bbox=-122.52,37.70,-122.37&timeWindowPreset=weekend");
+            "/api/events/map-feed/v1?bbox=-122.52,37.70,-122.37&preset=thisWeekend&timezone=America/Chicago");
 
         Assert.Equal((HttpStatusCode)422, response.StatusCode);
     }
 
     [Fact]
-    public async Task MapFeedV1_Returns422_WhenNoTemporalWindowProvided()
+    public async Task MapFeedV1_Returns422_WhenTimezoneIsMissing()
     {
         var response = await _client.GetAsync(
-            "/api/events/map-feed/v1?bbox=-122.52,37.70,-122.37,37.85");
+            "/api/events/map-feed/v1?bbox=-122.52,37.70,-122.37,37.85&preset=now");
 
         Assert.Equal((HttpStatusCode)422, response.StatusCode);
     }
 
     [Fact]
-    public async Task MapFeedV1_Returns422_ForInvalidAbsoluteWindowRange()
+    public async Task MapFeedV1_Returns422_ForInvalidCustomWindowRange()
     {
         var response = await _client.GetAsync(
-            "/api/events/map-feed/v1?bbox=-122.52,37.70,-122.37,37.85&fromUtc=2026-04-13T00:00:00Z&toUtc=2026-04-11T00:00:00Z");
+            "/api/events/map-feed/v1?bbox=-122.52,37.70,-122.37,37.85&preset=custom&timezone=America/Chicago&customStartUtc=2026-04-13T00:00:00Z&customEndUtc=2026-04-11T00:00:00Z");
+
+        Assert.Equal((HttpStatusCode)422, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task MapFeedV1_Returns422_ForCustomPresetWithoutBounds()
+    {
+        var response = await _client.GetAsync(
+            "/api/events/map-feed/v1?bbox=-122.52,37.70,-122.37,37.85&preset=custom&timezone=America/Chicago");
 
         Assert.Equal((HttpStatusCode)422, response.StatusCode);
     }
@@ -124,8 +133,10 @@ public sealed class Phase0ReleaseApiTests : IClassFixture<Phase0ReleaseApiTests.
         var response = await _client.GetAsync(
             BuildMapFeedV1Path(
                 "-122.52,37.70,-122.37,37.85",
-                fromUtc: "2026-04-11T00:00:00Z",
-                toUtc: "2026-04-13T00:00:00Z",
+                preset: "custom",
+                timezone: "America/Los_Angeles",
+                customStartUtc: "2026-04-11T00:00:00Z",
+                customEndUtc: "2026-04-13T00:00:00Z",
                 includeSavedOnly: false));
 
         response.EnsureSuccessStatusCode();
@@ -161,8 +172,10 @@ public sealed class Phase0ReleaseApiTests : IClassFixture<Phase0ReleaseApiTests.
         var response = await _client.GetAsync(
             BuildMapFeedV1Path(
                 "-122.52,37.70,-122.37,37.85",
-                fromUtc: "2026-04-11T00:00:00Z",
-                toUtc: "2026-04-13T00:00:00Z",
+                preset: "custom",
+                timezone: "America/Los_Angeles",
+                customStartUtc: "2026-04-11T00:00:00Z",
+                customEndUtc: "2026-04-13T00:00:00Z",
                 includeSavedOnly: true));
 
         response.EnsureSuccessStatusCode();
@@ -180,26 +193,26 @@ public sealed class Phase0ReleaseApiTests : IClassFixture<Phase0ReleaseApiTests.
 
     private static string BuildMapFeedV1Path(
         string bbox,
-        string? timeWindowPreset = null,
-        string? fromUtc = null,
-        string? toUtc = null,
+        string preset = "now",
+        string timezone = "America/Chicago",
+        string? customStartUtc = null,
+        string? customEndUtc = null,
         bool includeSavedOnly = false)
     {
-        var query = $"bbox={Uri.EscapeDataString(bbox)}&includeSavedOnly={includeSavedOnly.ToString().ToLowerInvariant()}";
+        var query =
+            $"bbox={Uri.EscapeDataString(bbox)}" +
+            $"&preset={Uri.EscapeDataString(preset)}" +
+            $"&timezone={Uri.EscapeDataString(timezone)}" +
+            $"&includeSavedOnly={includeSavedOnly.ToString().ToLowerInvariant()}";
 
-        if (!string.IsNullOrWhiteSpace(timeWindowPreset))
+        if (!string.IsNullOrWhiteSpace(customStartUtc))
         {
-            query += $"&timeWindowPreset={Uri.EscapeDataString(timeWindowPreset)}";
+            query += $"&customStartUtc={Uri.EscapeDataString(customStartUtc)}";
         }
 
-        if (!string.IsNullOrWhiteSpace(fromUtc))
+        if (!string.IsNullOrWhiteSpace(customEndUtc))
         {
-            query += $"&fromUtc={Uri.EscapeDataString(fromUtc)}";
-        }
-
-        if (!string.IsNullOrWhiteSpace(toUtc))
-        {
-            query += $"&toUtc={Uri.EscapeDataString(toUtc)}";
+            query += $"&customEndUtc={Uri.EscapeDataString(customEndUtc)}";
         }
 
         return $"/api/events/map-feed/v1?{query}";

@@ -10,17 +10,15 @@ function buildMapFeedQueryString(query: EventMapFeedQueryDto): string {
   const params = new URLSearchParams();
 
   params.set("bbox", query.bbox);
+  params.set("preset", query.preset);
+  params.set("timezone", query.timezone);
 
-  if (query.timeWindowPreset) {
-    params.set("timeWindowPreset", query.timeWindowPreset);
+  if (query.customStartUtc) {
+    params.set("customStartUtc", query.customStartUtc);
   }
 
-  if (query.fromUtc) {
-    params.set("fromUtc", query.fromUtc);
-  }
-
-  if (query.toUtc) {
-    params.set("toUtc", query.toUtc);
+  if (query.customEndUtc) {
+    params.set("customEndUtc", query.customEndUtc);
   }
 
   if (query.district) {
@@ -44,8 +42,20 @@ function ensureQueryContract(query: EventMapFeedQueryDto): void {
     );
   }
 
-  if (!query.timeWindowPreset && (!query.fromUtc || !query.toUtc)) {
-    throw new Error("Provide timeWindowPreset or both fromUtc and toUtc.");
+  if (!query.timezone.trim()) {
+    throw new Error("EventMapFeedQueryDto.timezone is required.");
+  }
+
+  if (query.preset === "custom") {
+    if (!query.customStartUtc || !query.customEndUtc) {
+      throw new Error(
+        "Provide customStartUtc and customEndUtc when preset=custom.",
+      );
+    }
+
+    if (query.customStartUtc >= query.customEndUtc) {
+      throw new Error("customStartUtc must be earlier than customEndUtc.");
+    }
   }
 }
 

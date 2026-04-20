@@ -96,17 +96,34 @@ public record EventMapItemDto(
     string MarkerState);
 
 /// <summary>
+/// Canonical temporal presets for map discovery and calendar overlays.
+/// The backend owns preset expansion so the frontend never derives time windows independently.
+/// </summary>
+public enum TimeWindowPreset
+{
+    Now,
+    Tonight,
+    Tomorrow,
+    ThisWeekend,
+    Custom,
+}
+
+/// <summary>
 /// Query contract for GET /api/events/map-feed/v1.
 /// Bbox format: "minLng,minLat,maxLng,maxLat".
+/// Timezone is required for all requests so preset expansion and downstream calendar overlays stay aligned.
 /// </summary>
-public record EventMapFeedQueryDto(
-    string Bbox,
-    string? TimeWindowPreset,
-    DateTimeOffset? FromUtc,
-    DateTimeOffset? ToUtc,
-    string? District,
-    string[]? Categories,
-    bool IncludeSavedOnly = false);
+public sealed record EventMapFeedQueryDto
+{
+    public string Bbox { get; init; } = string.Empty;
+    public TimeWindowPreset Preset { get; init; } = TimeWindowPreset.Now;
+    public string Timezone { get; init; } = string.Empty;
+    public DateTimeOffset? CustomStartUtc { get; init; }
+    public DateTimeOffset? CustomEndUtc { get; init; }
+    public string? District { get; init; }
+    public string[]? Categories { get; init; }
+    public bool IncludeSavedOnly { get; init; }
+}
 
 /// <summary>
 /// Optional cluster aggregate for the canonical map feed.

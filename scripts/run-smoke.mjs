@@ -43,6 +43,16 @@ const loginResponse = await expectOk("auth login", () =>
 const auth = await loginResponse.json();
 const authHeader = { Authorization: `Bearer ${auth.token}` };
 
+const moderatorLoginResponse = await expectOk("moderator auth login", () =>
+  fetch(`${baseUrl}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: "moderator+phase0@weup.test" }),
+  }),
+);
+const moderatorAuth = await moderatorLoginResponse.json();
+const moderatorAuthHeader = { Authorization: `Bearer ${moderatorAuth.token}` };
+
 await expectOk("auth me", () =>
   fetch(`${baseUrl}/auth/me`, { headers: authHeader }),
 );
@@ -69,7 +79,9 @@ await expectOk("save endpoint", () =>
   }),
 );
 await expectOk("moderation queue", () =>
-  fetch(`${baseUrl}/api/moderation/queue?pageSize=5`),
+  fetch(`${baseUrl}/api/moderation/queue?pageSize=5`, {
+    headers: moderatorAuthHeader,
+  }),
 );
 
 console.log(`[smoke] Passed against ${baseUrl}`);

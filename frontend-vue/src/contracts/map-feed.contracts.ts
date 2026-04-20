@@ -1,3 +1,5 @@
+import type { TimeWindowFilterDto } from "./time-window.contracts";
+
 export type EventMapMarkerState =
   | "default"
   | "selected"
@@ -52,11 +54,8 @@ export interface EventMapFeedV1ResponseDto {
 }
 
 /** Backend query contract: WeUP.Contracts.Events.EventMapFeedQueryDto */
-export interface EventMapFeedQueryDto {
+export interface EventMapFeedQueryDto extends TimeWindowFilterDto {
   readonly bbox: string;
-  readonly timeWindowPreset?: "today" | "tonight" | "weekend" | "next7days";
-  readonly fromUtc?: string;
-  readonly toUtc?: string;
   readonly district?: string;
   readonly categories?: string[];
   readonly includeSavedOnly?: boolean;

@@ -277,7 +277,7 @@ else
 
 builder.Services.AddScoped<IEventDuplicateDetector, DeterministicEventDuplicateDetector>();
 builder.Services.AddScoped<IMergePlanner, DeterministicMergePlanner>();
-builder.Services.AddScoped<IProvenanceService, ProvenanceService>();
+builder.Services.AddSingleton<IProvenanceService, ProvenanceService>();
 builder.Services.AddScoped<IEntityResolutionService, EntityResolutionService>();
 builder.Services.AddSingleton<Phase0SeedLoader>();
 builder.Services.AddSingleton<Phase0SeedService>();
@@ -399,7 +399,8 @@ if (enableSeedOnStartup)
 // Seed flyer assets from /seed/flyers/ directory (dev only)
 if (app.Environment.IsDevelopment())
 {
-    var flyerStore = app.Services.GetRequiredService<IFlyerAssetStore>();
+    await using var flyerScope = app.Services.CreateAsyncScope();
+    var flyerStore = flyerScope.ServiceProvider.GetRequiredService<IFlyerAssetStore>();
     var seedService = new WeUP.Infrastructure.Media.FlyerSeedService(flyerStore);
     // Try /flyers/ at project root first (real Houston flyers), fall back to seed/flyers/
     var rootFlyersDir = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "flyers");

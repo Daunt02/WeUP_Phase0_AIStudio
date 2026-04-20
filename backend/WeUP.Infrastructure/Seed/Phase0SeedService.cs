@@ -60,7 +60,8 @@ public sealed class Phase0SeedService(
             return;
         }
 
-        var db = services.GetService<WeUpDbContext>();
+        await using var scope = services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetService<WeUpDbContext>();
         if (db is null)
         {
             return;

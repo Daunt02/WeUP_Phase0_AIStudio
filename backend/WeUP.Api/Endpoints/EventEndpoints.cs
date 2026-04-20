@@ -7,6 +7,7 @@ using WeUP.Contracts.Events;
 using WeUP.Contracts.Ingestion;
 using WeUP.Domain.Events;
 using WeUP.Domain.Moderation;
+using WeUP.Domain.Temporal;
 using WeUP.Domain.Users;
 
 namespace WeUP.Api.Endpoints;
@@ -41,29 +42,42 @@ public static class EventEndpoints
         .Produces<MapFeedResponse>()
         .ProducesValidationProblem();
 
-        // GET /api/events/map-feed/v1?bbox=minLng,minLat,maxLng,maxLat&timeWindowPreset=next7days
+        // GET /api/events/map-feed/v1?bbox=minLng,minLat,maxLng,maxLat&preset=tomorrow&timezone=America/Chicago
         group.MapGet("/map-feed/v1", async (
             HttpContext ctx,
             IEventRepository repo,
             ITokenService tokens,
             ISaveRepository saves,
             string bbox,
-            string? timeWindowPreset,
-            DateTimeOffset? fromUtc,
-            DateTimeOffset? toUtc,
+            string preset,
+            string? timezone,
+            DateTimeOffset? customStartUtc,
+            DateTimeOffset? customEndUtc,
             string? district,
             string[]? categories,
             bool? includeSavedOnly,
             CancellationToken ct) =>
         {
-            var query = new EventMapFeedQueryDto(
-                Bbox: bbox,
-                TimeWindowPreset: timeWindowPreset,
-                FromUtc: fromUtc,
-                ToUtc: toUtc,
-                District: district,
-                Categories: categories,
-                IncludeSavedOnly: includeSavedOnly ?? false);
+            if (!Enum.TryParse<WeUP.Contracts.Events.TimeWindowPreset>(preset, ignoreCase: true, out var boundPreset))
+            {
+                return Results.ValidationProblem(
+                    new Dictionary<string, string[]> { ["preset"] = ["Unsupported preset. Allowed values: now, tonight, tomorrow, thisWeekend, custom."] },
+                    statusCode: 422);
+            }
+
+            // Backend query binding example: bind raw query parameters once, then hydrate the
+            // canonical DTO so map feed logic and downstream calendar overlays share one shape.
+            var query = new EventMapFeedQueryDto
+            {
+                Bbox = bbox,
+                Preset = boundPreset,
+                Timezone = timezone ?? string.Empty,
+                CustomStartUtc = customStartUtc,
+                CustomEndUtc = customEndUtc,
+                District = district,
+                Categories = categories,
+                IncludeSavedOnly = includeSavedOnly ?? false,
+            };
 
             if (!TryParseBbox(query.Bbox, out var bounds, out var bboxError))
             {
@@ -78,12 +92,23 @@ public static class EventEndpoints
                 return bboxValidation;
             }
 
-            if (!TryResolveWindow(query.TimeWindowPreset, query.FromUtc, query.ToUtc, out var window, out var windowError))
+            if (!TimeWindowPresetMapper.TryGetTimeWindow(
+                (WeUP.Domain.Temporal.TimeWindowPreset)query.Preset,
+                query.Timezone,
+                out var resolvedWindow,
+                out var windowError,
+                customStartUtc: query.CustomStartUtc,
+                customEndUtc: query.CustomEndUtc))
             {
                 return Results.ValidationProblem(
                     new Dictionary<string, string[]> { ["timeWindow"] = [windowError] },
                     statusCode: 422);
             }
+
+            var window = new TimeWindowRequest(
+                resolvedWindow.StartUtc,
+                resolvedWindow.EndUtc,
+                resolvedWindow.Timezone);
 
             var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
             if (query.IncludeSavedOnly && string.IsNullOrWhiteSpace(userId))
@@ -144,23 +169,30 @@ public static class EventEndpoints
                 bboxParameter.Example = new OpenApiString("-122.52,37.70,-122.37,37.85");
             }
 
-            var presetParameter = operation.Parameters.FirstOrDefault(p => p.Name == "timeWindowPreset");
+            var presetParameter = operation.Parameters.FirstOrDefault(p => p.Name == "preset");
             if (presetParameter is not null)
             {
-                presetParameter.Description = "Named time window preset. Allowed: today, tonight, weekend, next7days.";
-                presetParameter.Example = new OpenApiString("weekend");
+                presetParameter.Description = "Canonical time window preset. Allowed: now, tonight, tomorrow, thisWeekend, custom.";
+                presetParameter.Example = new OpenApiString("thisWeekend");
             }
 
-            var fromUtcParameter = operation.Parameters.FirstOrDefault(p => p.Name == "fromUtc");
-            if (fromUtcParameter is not null)
+            var timezoneParameter = operation.Parameters.FirstOrDefault(p => p.Name == "timezone");
+            if (timezoneParameter is not null)
             {
-                fromUtcParameter.Example = new OpenApiString("2026-04-11T00:00:00Z");
+                timezoneParameter.Description = "Required IANA or Windows timezone identifier used to resolve preset boundaries.";
+                timezoneParameter.Example = new OpenApiString("America/Chicago");
             }
 
-            var toUtcParameter = operation.Parameters.FirstOrDefault(p => p.Name == "toUtc");
-            if (toUtcParameter is not null)
+            var customStartUtcParameter = operation.Parameters.FirstOrDefault(p => p.Name == "customStartUtc");
+            if (customStartUtcParameter is not null)
             {
-                toUtcParameter.Example = new OpenApiString("2026-04-13T00:00:00Z");
+                customStartUtcParameter.Example = new OpenApiString("2026-04-11T00:00:00Z");
+            }
+
+            var customEndUtcParameter = operation.Parameters.FirstOrDefault(p => p.Name == "customEndUtc");
+            if (customEndUtcParameter is not null)
+            {
+                customEndUtcParameter.Example = new OpenApiString("2026-04-13T00:00:00Z");
             }
 
             var includeSavedOnlyParameter = operation.Parameters.FirstOrDefault(p => p.Name == "includeSavedOnly");
@@ -172,6 +204,7 @@ public static class EventEndpoints
             operation.Summary = "Get canonical map marker feed (v1).";
             operation.Description =
                 "Returns public map markers using canonical eventIds and contract-bound marker states. " +
+                "Temporal presets resolve on the server using the supplied timezone so map and calendar overlays share one contract. " +
                 "Low-confidence-hidden markers are excluded from this public response. " +
                 "Cluster metadata is additive and does not replace canonical event identity.";
 
@@ -303,64 +336,6 @@ public static class EventEndpoints
 
         bounds = new GeoBoundingBox(minLat, maxLat, minLng, maxLng);
         return true;
-    }
-
-    private static bool TryResolveWindow(
-        string? preset,
-        DateTimeOffset? fromUtc,
-        DateTimeOffset? toUtc,
-        out TimeWindowRequest window,
-        out string error)
-    {
-        var now = DateTimeOffset.UtcNow;
-        error = "";
-
-        if (!string.IsNullOrWhiteSpace(preset))
-        {
-            var key = preset.Trim().ToLowerInvariant();
-            window = key switch
-            {
-                "today" => new TimeWindowRequest(now.Date, now.Date.AddDays(1), "UTC"),
-                "tonight" => new TimeWindowRequest(now.Date.AddHours(18), now.Date.AddDays(1).AddHours(6), "UTC"),
-                "weekend" => ResolveWeekendWindow(now),
-                "next7days" => new TimeWindowRequest(now, now.AddDays(7), "UTC"),
-                _ => new TimeWindowRequest(now, now, "UTC")
-            };
-
-            if (key is "today" or "tonight" or "weekend" or "next7days")
-            {
-                return true;
-            }
-
-            error = "Unsupported timeWindowPreset. Allowed values: today, tonight, weekend, next7days.";
-            return false;
-        }
-
-        if (fromUtc.HasValue && toUtc.HasValue)
-        {
-            if (fromUtc.Value >= toUtc.Value)
-            {
-                window = new TimeWindowRequest(now, now, "UTC");
-                error = "fromUtc must be earlier than toUtc.";
-                return false;
-            }
-
-            window = new TimeWindowRequest(fromUtc.Value, toUtc.Value, "UTC");
-            return true;
-        }
-
-        window = new TimeWindowRequest(now, now, "UTC");
-        error = "Provide either timeWindowPreset or both fromUtc and toUtc.";
-        return false;
-    }
-
-    private static TimeWindowRequest ResolveWeekendWindow(DateTimeOffset now)
-    {
-        var utcDate = now.UtcDateTime.Date;
-        var daysUntilSaturday = ((int)DayOfWeek.Saturday - (int)utcDate.DayOfWeek + 7) % 7;
-        var saturday = utcDate.AddDays(daysUntilSaturday);
-        var monday = saturday.AddDays(2);
-        return new TimeWindowRequest(saturday, monday, "UTC");
     }
 
     private static async Task<HashSet<string>> ResolveSavedEventIdsAsync(

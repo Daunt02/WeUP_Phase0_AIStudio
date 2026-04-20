@@ -1,18 +1,20 @@
 <template>
   <q-card flat bordered class="map-surface">
     <q-card-section class="controls-row">
-      <q-btn-toggle
-        v-model="timeWindowPreset"
-        unelevated
-        toggle-color="primary"
-        :options="presetOptions"
-      />
-      <q-toggle v-model="includeSavedOnly" label="Saved only" color="primary" />
-      <q-btn
-        color="primary"
-        :loading="isLoading"
-        label="Refresh"
-        @click="refreshFromCurrentViewport"
+      <MapTimeFilterPanel
+        :preset="preset"
+        :timezone="timezone"
+        :custom-start-local="customStartLocal"
+        :custom-end-local="customEndLocal"
+        :include-saved-only="includeSavedOnly"
+        :is-loading="isLoading"
+        :validation-error="validationError"
+        @update:preset="preset = $event"
+        @update:timezone="timezone = $event"
+        @update:custom-start-local="customStartLocal = $event"
+        @update:custom-end-local="customEndLocal = $event"
+        @update:include-saved-only="includeSavedOnly = $event"
+        @refresh="refreshFromCurrentViewport"
       />
     </q-card-section>
 
@@ -46,12 +48,14 @@ import mapboxgl, { type GeoJSONSource } from "mapbox-gl";
 import type { FeatureCollection, Point } from "geojson";
 import "mapbox-gl/dist/mapbox-gl.css";
 
+import MapTimeFilterPanel from "./MapTimeFilterPanel.vue";
 import type {
   EventMapDensityControlDto,
   EventMapFeedClusterDto,
   EventMapFeedQueryDto,
   EventMapMarkerViewModel,
 } from "../contracts/map-feed.contracts";
+import { useMapFeedFilters } from "../composables/useMapFeedFilters";
 import { useMapEvents } from "../composables/useMapEvents";
 
 const props = withDefaults(
@@ -83,19 +87,16 @@ const map = ref<any>(null);
 const currentZoom = ref(11);
 const clusterSourceConfigKey = ref<string | null>(null);
 
-const timeWindowPreset =
-  ref<EventMapFeedQueryDto["timeWindowPreset"]>("next7days");
-const includeSavedOnly = ref(false);
-
-const presetOptions: {
-  label: string;
-  value: NonNullable<EventMapFeedQueryDto["timeWindowPreset"]>;
-}[] = [
-  { label: "Today", value: "today" },
-  { label: "Tonight", value: "tonight" },
-  { label: "Weekend", value: "weekend" },
-  { label: "7 Days", value: "next7days" },
-];
+const {
+  preset,
+  timezone,
+  customStartLocal,
+  customEndLocal,
+  includeSavedOnly,
+  validationError,
+  requestSignature,
+  buildMapFeedQuery,
+} = useMapFeedFilters();
 
 const {
   markers,
@@ -743,11 +744,13 @@ async function refreshFromCurrentViewport(): Promise<void> {
     return;
   }
 
-  const query: EventMapFeedQueryDto = {
-    bbox: toBboxString(currentMap),
-    timeWindowPreset: timeWindowPreset.value,
-    includeSavedOnly: includeSavedOnly.value,
-  };
+  if (validationError.value) {
+    return;
+  }
+
+  const query: EventMapFeedQueryDto = buildMapFeedQuery(
+    toBboxString(currentMap),
+  );
 
   await loadEvents(query);
 }
@@ -838,6 +841,12 @@ watch(
   },
   { deep: true },
 );
+
+watch(requestSignature, async () => {
+  // Filter changes always produce one canonical request payload. Reload from the
+  // current viewport only after that payload is valid.
+  await refreshFromCurrentViewport();
+});
 
 onBeforeUnmount(() => {
   const currentMap = map.value;

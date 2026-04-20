@@ -29,6 +29,7 @@ export function useMapEvents() {
   const isLoading = ref(false);
   const error = ref<string | null>(null);
   const selectedEventId = ref<string | null>(null);
+  let latestRequestId = 0;
 
   const visibleEvents = computed(() => {
     return events.value.filter(
@@ -53,16 +54,23 @@ export function useMapEvents() {
   });
 
   async function loadEvents(query: EventMapFeedQueryDto): Promise<void> {
+    const requestId = ++latestRequestId;
     isLoading.value = true;
     error.value = null;
 
     try {
       const payload = await fetchEventMapFeed(query);
+      if (requestId !== latestRequestId) {
+        return;
+      }
+
       events.value = payload.events ?? [];
       clusters.value = payload.clusters ?? [];
       densityControl.value = payload.densityControl ?? DEFAULT_DENSITY_CONTROL;
       clusterStrategy.value = payload.clusterStrategy ?? "client_v1";
 
+      // Selection persists only if the latest successful payload still contains
+      // the canonical eventId. Failed or stale requests must not clear selection.
       if (selectedEventId.value) {
         const stillExists = events.value.some(
           (event: EventMapItemDto) => event.eventId === selectedEventId.value,
@@ -72,14 +80,16 @@ export function useMapEvents() {
         }
       }
     } catch (e) {
-      events.value = [];
-      clusters.value = [];
-      densityControl.value = DEFAULT_DENSITY_CONTROL;
-      clusterStrategy.value = "client_v1";
+      if (requestId !== latestRequestId) {
+        return;
+      }
+
       error.value =
         e instanceof Error ? e.message : "Failed to load map events.";
     } finally {
-      isLoading.value = false;
+      if (requestId === latestRequestId) {
+        isLoading.value = false;
+      }
     }
   }
 

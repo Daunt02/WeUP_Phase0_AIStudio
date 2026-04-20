@@ -47,11 +47,12 @@
     "EventMapFeedQueryDto": [
       "bbox",
       "categories",
+      "customEndUtc",
+      "customStartUtc",
       "district",
-      "fromUtc",
       "includeSavedOnly",
-      "timeWindowPreset",
-      "toUtc"
+      "preset",
+      "timezone"
     ],
     "EventMapFeedClusterDto": [
       "centerLat",
