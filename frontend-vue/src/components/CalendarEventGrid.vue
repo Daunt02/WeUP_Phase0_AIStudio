@@ -8,56 +8,85 @@
       <q-spinner-dots size="36px" color="primary" />
     </q-inner-loading>
 
-    <div v-if="!isLoading && grouped.length === 0" class="empty-state">
+    <div
+      v-if="!isLoading && layout.dayBuckets.length === 0"
+      class="empty-state"
+    >
       No events in this map window for the selected temporal preset.
     </div>
 
     <div v-else class="group-list">
-      <section v-for="group in grouped" :key="group.dateKey" class="day-group">
-        <div class="day-header">{{ group.displayLabel }}</div>
+      <section
+        v-for="day in layout.dayBuckets"
+        :key="day.dayKey"
+        class="day-group"
+      >
+        <div class="day-header">
+          <span>{{ day.displayLabel }}</span>
+          <q-badge color="blue-grey-2" text-color="blue-grey-10" rounded>
+            {{ day.totalCount }}
+          </q-badge>
+        </div>
 
-        <q-list bordered separator class="event-list">
-          <q-item
-            v-for="item in group.items"
-            :key="item.eventId"
-            clickable
-            :active="item.eventId === selectedEventId"
-            active-class="event-active"
-            @click="$emit('select-event', item.eventId)"
+        <div class="bucket-list">
+          <article
+            v-for="bucket in day.buckets"
+            :key="bucket.bucketKey"
+            class="time-bucket"
+            :class="`density-${bucket.densityLevel}`"
           >
-            <q-item-section>
-              <q-item-label class="event-title">{{ item.title }}</q-item-label>
-              <q-item-label caption>
-                {{ formatTime(item.startUtc) }}
-                <span v-if="item.endUtc"> - {{ formatTime(item.endUtc) }}</span>
-                • {{ item.venueName }}
-              </q-item-label>
-              <q-item-label caption>
-                {{ item.primaryCategory }}
-                <span v-if="item.district"> • {{ item.district }}</span>
-              </q-item-label>
-            </q-item-section>
-            <q-item-section side>
-              <q-chip
-                v-if="item.savedByCurrentUser"
-                dense
-                square
-                color="red-1"
-                text-color="red-9"
-              >
-                Saved
-              </q-chip>
-            </q-item-section>
-          </q-item>
-        </q-list>
+            <div class="bucket-header">
+              <div class="bucket-time">{{ bucket.displayLabel }}</div>
+              <div class="bucket-meta">
+                <span>{{ bucket.visibleCount }} visible</span>
+                <span v-if="bucket.overflowCount > 0">
+                  • +{{ bucket.overflowCount }} overflow</span
+                >
+              </div>
+            </div>
+
+            <div class="masonry-grid" :style="gridStyle(bucket)">
+              <CalendarEventCard
+                v-for="event in bucket.visibleEvents"
+                :key="event.eventId"
+                :event="event"
+                :is-selected="event.eventId === selectedEventId"
+                @select-event="$emit('select-event', $event)"
+              />
+            </div>
+
+            <div v-if="bucket.overflowEvents.length > 0" class="overflow-panel">
+              <div class="overflow-title">
+                Dense period: {{ bucket.overflowCount }} more events kept in
+                overflow to preserve click target clarity.
+              </div>
+              <div class="overflow-list">
+                <q-btn
+                  v-for="overflowEvent in bucket.overflowEvents"
+                  :key="overflowEvent.eventId"
+                  dense
+                  unelevated
+                  color="grey-2"
+                  text-color="grey-9"
+                  class="overflow-chip"
+                  :label="overflowEvent.source.title"
+                  @click="$emit('select-event', overflowEvent.eventId)"
+                />
+              </div>
+            </div>
+          </article>
+        </div>
       </section>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
 import type { CalendarEventItemDto } from "../contracts/calendar-overlay.contracts";
+import type { CalendarTimeBucket } from "../composables/useCalendarMasonryLayout";
+import { computeCalendarMasonryLayout } from "../composables/useCalendarMasonryLayout";
+import { computed } from "vue";
+import CalendarEventCard from "./CalendarEventCard.vue";
 
 const props = defineProps<{
   items: CalendarEventItemDto[];
@@ -70,61 +99,26 @@ defineEmits<{
   (event: "select-event", eventId: string): void;
 }>();
 
-type GroupedItems = {
-  dateKey: string;
-  displayLabel: string;
-  items: CalendarEventItemDto[];
-};
-
-function toDateKey(isoUtc: string): string {
-  return isoUtc.slice(0, 10);
-}
-
-function toDateLabel(isoUtc: string): string {
-  const date = new Date(isoUtc);
-  return new Intl.DateTimeFormat(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  }).format(date);
-}
-
-function formatTime(isoUtc: string): string {
-  const date = new Date(isoUtc);
-  return new Intl.DateTimeFormat(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(date);
-}
-
-const grouped = computed<GroupedItems[]>(() => {
-  const buckets = new Map<string, GroupedItems>();
-
-  for (const item of props.items) {
-    const dateKey = toDateKey(item.startUtc);
-    const existing = buckets.get(dateKey);
-
-    if (existing) {
-      existing.items.push(item);
-      continue;
-    }
-
-    buckets.set(dateKey, {
-      dateKey,
-      displayLabel: toDateLabel(item.startUtc),
-      items: [item],
-    });
-  }
-
-  return [...buckets.values()]
-    .sort((left, right) => left.dateKey.localeCompare(right.dateKey))
-    .map((group) => ({
-      ...group,
-      items: [...group.items].sort((left, right) =>
-        left.startUtc.localeCompare(right.startUtc),
-      ),
-    }));
+const layout = computed(() => {
+  return computeCalendarMasonryLayout(props.items, {
+    bucketMinutes: 60,
+    maxColumnsPerBucket: 4,
+    denseThreshold: 8,
+    overloadedThreshold: 12,
+    maxVisibleInDenseBucket: 8,
+    maxVisibleInOverloadedBucket: 6,
+  });
 });
+
+function gridStyle(bucket: CalendarTimeBucket): Record<string, string> {
+  const visibleColumns = bucket.visibleEvents.reduce((max, event) => {
+    return Math.max(max, event.columnIndex + 1);
+  }, 1);
+
+  return {
+    gridTemplateColumns: `repeat(${visibleColumns}, minmax(0, 1fr))`,
+  };
+}
 </script>
 
 <style scoped>
@@ -143,31 +137,90 @@ const grouped = computed<GroupedItems[]>(() => {
 .day-group {
   background: rgba(255, 255, 255, 0.92);
   border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 8px 10px;
   font-weight: 700;
   color: #0f172a;
   border-bottom: 1px solid rgba(15, 23, 42, 0.08);
 }
 
-.event-list {
-  border: none;
+.bucket-list {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
 }
 
-.event-title {
-  font-weight: 600;
+.time-bucket {
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 10px;
+  background: rgba(248, 250, 252, 0.9);
+  padding: 8px;
+  display: grid;
+  gap: 8px;
 }
 
-.event-active {
-  background: rgba(37, 99, 235, 0.12);
+.time-bucket.density-dense,
+.time-bucket.density-overloaded {
+  border-color: rgba(30, 64, 175, 0.3);
 }
 
 .error-banner {
   margin-bottom: 8px;
   background: #fee2e2;
   color: #7f1d1d;
+}
+
+.bucket-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.bucket-time {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.bucket-meta {
+  font-size: 11px;
+  color: #475569;
+}
+
+.masonry-grid {
+  display: grid;
+  grid-auto-rows: 7px;
+  gap: 8px;
+}
+
+.overflow-panel {
+  border-top: 1px dashed rgba(15, 23, 42, 0.18);
+  padding-top: 8px;
+  display: grid;
+  gap: 6px;
+}
+
+.overflow-title {
+  font-size: 11px;
+  color: #334155;
+}
+
+.overflow-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.overflow-chip {
+  text-transform: none;
+  max-width: 240px;
 }
 
 .empty-state {
