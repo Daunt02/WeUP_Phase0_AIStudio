@@ -31,6 +31,29 @@
       "eventIds"
     ],
     "MapFeedResponse": ["clusters", "events", "queryMode", "totalCount"],
+    "EventMapItemDto": [
+      "district",
+      "endUtc",
+      "eventId",
+      "latitude",
+      "longitude",
+      "markerState",
+      "primaryCategory",
+      "savedByCurrentUser",
+      "startUtc",
+      "title",
+      "venueName"
+    ],
+    "EventMapFeedQueryDto": [
+      "bbox",
+      "categories",
+      "district",
+      "fromUtc",
+      "includeSavedOnly",
+      "timeWindowPreset",
+      "toUtc"
+    ],
+    "EventMapFeedV1ResponseDto": ["events", "totalCount"],
     "CalendarFeedRequest": [
       "categories",
       "districtCode",

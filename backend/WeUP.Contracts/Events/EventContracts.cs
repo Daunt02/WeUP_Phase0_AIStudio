@@ -63,6 +63,56 @@ public record EventMapClusterDto(
     string[] EventIds);
 
 // ---------------------------------------------------------------------------
+// Map feed v1 (canonical map discovery surface)
+// ---------------------------------------------------------------------------
+
+/// <summary>
+/// Marker state returned by the canonical map feed.
+/// Client selection state must still resolve by canonical eventId.
+/// </summary>
+public enum EventMapMarkerState
+{
+    Default,
+    Selected,
+    Saved,
+    LowConfidenceHidden
+}
+
+/// <summary>
+/// Canonical map item DTO for the public map surface.
+/// This is a transport contract only and must not leak domain/EF internals.
+/// </summary>
+public record EventMapItemDto(
+    string EventId,
+    string Title,
+    DateTimeOffset StartUtc,
+    DateTimeOffset? EndUtc,
+    double Latitude,
+    double Longitude,
+    string VenueName,
+    string? District,
+    string PrimaryCategory,
+    bool SavedByCurrentUser,
+    string MarkerState);
+
+/// <summary>
+/// Query contract for GET /api/events/map-feed/v1.
+/// Bbox format: "minLng,minLat,maxLng,maxLat".
+/// </summary>
+public record EventMapFeedQueryDto(
+    string Bbox,
+    string? TimeWindowPreset,
+    DateTimeOffset? FromUtc,
+    DateTimeOffset? ToUtc,
+    string? District,
+    string[]? Categories,
+    bool IncludeSavedOnly = false);
+
+public record EventMapFeedV1ResponseDto(
+    EventMapItemDto[] Events,
+    int TotalCount);
+
+// ---------------------------------------------------------------------------
 // Calendar feed
 // ---------------------------------------------------------------------------
 

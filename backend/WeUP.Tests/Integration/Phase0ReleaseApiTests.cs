@@ -89,6 +89,114 @@ public sealed class Phase0ReleaseApiTests : IClassFixture<Phase0ReleaseApiTests.
         approve.EnsureSuccessStatusCode();
     }
 
+    [Fact]
+    public async Task MapFeedV1_Returns422_ForInvalidBboxShape()
+    {
+        var response = await _client.GetAsync(
+            "/api/events/map-feed/v1?bbox=-122.52,37.70,-122.37&timeWindowPreset=weekend");
+
+        Assert.Equal((HttpStatusCode)422, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task MapFeedV1_Returns422_WhenNoTemporalWindowProvided()
+    {
+        var response = await _client.GetAsync(
+            "/api/events/map-feed/v1?bbox=-122.52,37.70,-122.37,37.85");
+
+        Assert.Equal((HttpStatusCode)422, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task MapFeedV1_Returns422_ForInvalidAbsoluteWindowRange()
+    {
+        var response = await _client.GetAsync(
+            "/api/events/map-feed/v1?bbox=-122.52,37.70,-122.37,37.85&fromUtc=2026-04-13T00:00:00Z&toUtc=2026-04-11T00:00:00Z");
+
+        Assert.Equal((HttpStatusCode)422, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task MapFeedV1_ReturnsDeterministicMarkerStates_WithSavedInvariant()
+    {
+        await AuthenticateAsync("camille+phase0@weup.test");
+
+        var response = await _client.GetAsync(
+            BuildMapFeedV1Path(
+                "-122.52,37.70,-122.37,37.85",
+                fromUtc: "2026-04-11T00:00:00Z",
+                toUtc: "2026-04-13T00:00:00Z",
+                includeSavedOnly: false));
+
+        response.EnsureSuccessStatusCode();
+
+        var payload = await response.Content.ReadFromJsonAsync<EventMapFeedV1ResponseDto>();
+        Assert.NotNull(payload);
+        Assert.NotEmpty(payload!.Events);
+        Assert.All(payload.Events, evt => Assert.False(string.IsNullOrWhiteSpace(evt.EventId)));
+
+        var uniqueEventIds = payload.Events.Select(evt => evt.EventId).Distinct().ToArray();
+        Assert.Equal(payload.Events.Length, uniqueEventIds.Length);
+        Assert.DoesNotContain(payload.Events, evt => evt.MarkerState == "low-confidence-hidden");
+
+        var saved = payload.Events.Single(evt => evt.EventId == "evt-sf-rooftop-signals");
+        Assert.True(saved.SavedByCurrentUser);
+        Assert.Equal("saved", saved.MarkerState);
+
+        var nonSaved = payload.Events.First(evt => evt.EventId != "evt-sf-rooftop-signals");
+        Assert.False(nonSaved.SavedByCurrentUser);
+        Assert.Equal("default", nonSaved.MarkerState);
+    }
+
+    [Fact]
+    public async Task MapFeedV1_IncludeSavedOnly_ReturnsOnlySavedEvents()
+    {
+        await AuthenticateAsync("camille+phase0@weup.test");
+
+        var response = await _client.GetAsync(
+            BuildMapFeedV1Path(
+                "-122.52,37.70,-122.37,37.85",
+                fromUtc: "2026-04-11T00:00:00Z",
+                toUtc: "2026-04-13T00:00:00Z",
+                includeSavedOnly: true));
+
+        response.EnsureSuccessStatusCode();
+
+        var payload = await response.Content.ReadFromJsonAsync<EventMapFeedV1ResponseDto>();
+        Assert.NotNull(payload);
+        Assert.NotEmpty(payload!.Events);
+        Assert.All(payload.Events, evt => Assert.True(evt.SavedByCurrentUser));
+        Assert.All(payload.Events, evt => Assert.Equal("saved", evt.MarkerState));
+        Assert.All(payload.Events, evt => Assert.Equal("evt-sf-rooftop-signals", evt.EventId));
+    }
+
+    private static string BuildMapFeedV1Path(
+        string bbox,
+        string? timeWindowPreset = null,
+        string? fromUtc = null,
+        string? toUtc = null,
+        bool includeSavedOnly = false)
+    {
+        var query = $"bbox={Uri.EscapeDataString(bbox)}&includeSavedOnly={includeSavedOnly.ToString().ToLowerInvariant()}";
+
+        if (!string.IsNullOrWhiteSpace(timeWindowPreset))
+        {
+            query += $"&timeWindowPreset={Uri.EscapeDataString(timeWindowPreset)}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(fromUtc))
+        {
+            query += $"&fromUtc={Uri.EscapeDataString(fromUtc)}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(toUtc))
+        {
+            query += $"&toUtc={Uri.EscapeDataString(toUtc)}";
+        }
+
+        return $"/api/events/map-feed/v1?{query}";
+    }
+
     private async Task AuthenticateAsync(string email)
     {
         var login = await _client.PostAsJsonAsync("/auth/login", new LoginRequest(email));

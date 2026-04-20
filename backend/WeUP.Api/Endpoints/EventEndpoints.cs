@@ -1,9 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Models;
+using System.Globalization;
 using WeUP.Application.Events;
 using WeUP.Contracts.Events;
 using WeUP.Contracts.Ingestion;
 using WeUP.Domain.Events;
 using WeUP.Domain.Moderation;
+using WeUP.Domain.Users;
 
 namespace WeUP.Api.Endpoints;
 
@@ -28,6 +32,142 @@ public static class EventEndpoints
         .WithName("GetEventMapFeed")
         .Produces<MapFeedResponse>()
         .ProducesValidationProblem();
+
+        // GET /api/events/map-feed/v1?bbox=minLng,minLat,maxLng,maxLat&timeWindowPreset=next7days
+        group.MapGet("/map-feed/v1", async (
+            HttpContext ctx,
+            IEventRepository repo,
+            ITokenService tokens,
+            ISaveRepository saves,
+            string bbox,
+            string? timeWindowPreset,
+            DateTimeOffset? fromUtc,
+            DateTimeOffset? toUtc,
+            string? district,
+            string[]? categories,
+            bool? includeSavedOnly,
+            CancellationToken ct) =>
+        {
+            var query = new EventMapFeedQueryDto(
+                Bbox: bbox,
+                TimeWindowPreset: timeWindowPreset,
+                FromUtc: fromUtc,
+                ToUtc: toUtc,
+                District: district,
+                Categories: categories,
+                IncludeSavedOnly: includeSavedOnly ?? false);
+
+            if (!TryParseBbox(query.Bbox, out var bounds, out var bboxError))
+            {
+                return Results.ValidationProblem(
+                    new Dictionary<string, string[]> { ["bbox"] = [bboxError] },
+                    statusCode: 422);
+            }
+
+            var bboxValidation = ValidateBoundingBox(bounds);
+            if (bboxValidation is not null)
+            {
+                return bboxValidation;
+            }
+
+            if (!TryResolveWindow(query.TimeWindowPreset, query.FromUtc, query.ToUtc, out var window, out var windowError))
+            {
+                return Results.ValidationProblem(
+                    new Dictionary<string, string[]> { ["timeWindow"] = [windowError] },
+                    statusCode: 422);
+            }
+
+            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            if (query.IncludeSavedOnly && string.IsNullOrWhiteSpace(userId))
+            {
+                return Results.Ok(new EventMapFeedV1ResponseDto(Array.Empty<EventMapItemDto>(), 0));
+            }
+
+            var mapRequest = new MapFeedRequest(
+                Bounds: bounds,
+                Window: window,
+                Categories: query.Categories,
+                DistrictCode: query.District,
+                MinConfidence: 0.0,
+                Sort: "start_time_asc");
+
+            var mapResponse = await repo.GetMapFeedAsync(mapRequest, ct);
+            var savedEventIds = await ResolveSavedEventIdsAsync(userId, saves, ct);
+
+            // Invariant: low-confidence markers are never rendered in the public map surface.
+            var visibleCards = mapResponse.Events
+                .Where(card => ResolveMarkerState(card, savedEventIds) != "low-confidence-hidden")
+                .ToArray();
+
+            var detailSnapshots = await Task.WhenAll(
+                visibleCards.Select(async card => new
+                {
+                    card.Id,
+                    Detail = (await repo.GetEventDetailAsync(card.Id, ct)).Event
+                }));
+
+            var detailsById = detailSnapshots
+                .Where(item => item.Detail is not null)
+                .ToDictionary(item => item.Id, item => item.Detail!, StringComparer.OrdinalIgnoreCase);
+
+            var visible = visibleCards
+                .Where(card => detailsById.ContainsKey(card.Id))
+                .Select(card => ToV1MapItem(card, detailsById[card.Id], savedEventIds))
+                .ToArray();
+
+            if (query.IncludeSavedOnly)
+            {
+                visible = visible
+                    .Where(item => item.SavedByCurrentUser)
+                    .ToArray();
+            }
+
+            return Results.Ok(new EventMapFeedV1ResponseDto(visible, visible.Length));
+        })
+        .WithName("GetEventMapFeedV1")
+        .Produces<EventMapFeedV1ResponseDto>()
+        .ProducesValidationProblem()
+        .WithOpenApi(operation =>
+        {
+            var bboxParameter = operation.Parameters.FirstOrDefault(p => p.Name == "bbox");
+            if (bboxParameter is not null)
+            {
+                bboxParameter.Description = "Bounding box as minLng,minLat,maxLng,maxLat.";
+                bboxParameter.Example = new OpenApiString("-122.52,37.70,-122.37,37.85");
+            }
+
+            var presetParameter = operation.Parameters.FirstOrDefault(p => p.Name == "timeWindowPreset");
+            if (presetParameter is not null)
+            {
+                presetParameter.Description = "Named time window preset. Allowed: today, tonight, weekend, next7days.";
+                presetParameter.Example = new OpenApiString("weekend");
+            }
+
+            var fromUtcParameter = operation.Parameters.FirstOrDefault(p => p.Name == "fromUtc");
+            if (fromUtcParameter is not null)
+            {
+                fromUtcParameter.Example = new OpenApiString("2026-04-11T00:00:00Z");
+            }
+
+            var toUtcParameter = operation.Parameters.FirstOrDefault(p => p.Name == "toUtc");
+            if (toUtcParameter is not null)
+            {
+                toUtcParameter.Example = new OpenApiString("2026-04-13T00:00:00Z");
+            }
+
+            var includeSavedOnlyParameter = operation.Parameters.FirstOrDefault(p => p.Name == "includeSavedOnly");
+            if (includeSavedOnlyParameter is not null)
+            {
+                includeSavedOnlyParameter.Example = new OpenApiBoolean(false);
+            }
+
+            operation.Summary = "Get canonical map marker feed (v1).";
+            operation.Description =
+                "Returns public map markers using canonical eventIds and contract-bound marker states. " +
+                "Low-confidence-hidden markers are excluded from this public response.";
+
+            return operation;
+        });
 
         // POST /api/events/calendar
         group.MapPost("/calendar", async (
@@ -109,5 +249,146 @@ public static class EventEndpoints
         return Results.ValidationProblem(
             errors.ToDictionary(e => "bounds", e => new[] { e }),
             statusCode: 422);
+    }
+
+    private static bool TryParseBbox(string raw, out GeoBoundingBox bounds, out string error)
+    {
+        bounds = new GeoBoundingBox(0, 0, 0, 0);
+        error = "";
+
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            error = "bbox is required and must use format 'minLng,minLat,maxLng,maxLat'.";
+            return false;
+        }
+
+        var tokens = raw.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        if (tokens.Length != 4)
+        {
+            error = "bbox must include exactly 4 comma-separated numeric values: minLng,minLat,maxLng,maxLat.";
+            return false;
+        }
+
+        if (!double.TryParse(tokens[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var minLng) ||
+            !double.TryParse(tokens[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var minLat) ||
+            !double.TryParse(tokens[2], NumberStyles.Float, CultureInfo.InvariantCulture, out var maxLng) ||
+            !double.TryParse(tokens[3], NumberStyles.Float, CultureInfo.InvariantCulture, out var maxLat))
+        {
+            error = "bbox values must be valid numbers in format minLng,minLat,maxLng,maxLat.";
+            return false;
+        }
+
+        bounds = new GeoBoundingBox(minLat, maxLat, minLng, maxLng);
+        return true;
+    }
+
+    private static bool TryResolveWindow(
+        string? preset,
+        DateTimeOffset? fromUtc,
+        DateTimeOffset? toUtc,
+        out TimeWindowRequest window,
+        out string error)
+    {
+        var now = DateTimeOffset.UtcNow;
+        error = "";
+
+        if (!string.IsNullOrWhiteSpace(preset))
+        {
+            var key = preset.Trim().ToLowerInvariant();
+            window = key switch
+            {
+                "today" => new TimeWindowRequest(now.Date, now.Date.AddDays(1), "UTC"),
+                "tonight" => new TimeWindowRequest(now.Date.AddHours(18), now.Date.AddDays(1).AddHours(6), "UTC"),
+                "weekend" => ResolveWeekendWindow(now),
+                "next7days" => new TimeWindowRequest(now, now.AddDays(7), "UTC"),
+                _ => new TimeWindowRequest(now, now, "UTC")
+            };
+
+            if (key is "today" or "tonight" or "weekend" or "next7days")
+            {
+                return true;
+            }
+
+            error = "Unsupported timeWindowPreset. Allowed values: today, tonight, weekend, next7days.";
+            return false;
+        }
+
+        if (fromUtc.HasValue && toUtc.HasValue)
+        {
+            if (fromUtc.Value >= toUtc.Value)
+            {
+                window = new TimeWindowRequest(now, now, "UTC");
+                error = "fromUtc must be earlier than toUtc.";
+                return false;
+            }
+
+            window = new TimeWindowRequest(fromUtc.Value, toUtc.Value, "UTC");
+            return true;
+        }
+
+        window = new TimeWindowRequest(now, now, "UTC");
+        error = "Provide either timeWindowPreset or both fromUtc and toUtc.";
+        return false;
+    }
+
+    private static TimeWindowRequest ResolveWeekendWindow(DateTimeOffset now)
+    {
+        var utcDate = now.UtcDateTime.Date;
+        var daysUntilSaturday = ((int)DayOfWeek.Saturday - (int)utcDate.DayOfWeek + 7) % 7;
+        var saturday = utcDate.AddDays(daysUntilSaturday);
+        var monday = saturday.AddDays(2);
+        return new TimeWindowRequest(saturday, monday, "UTC");
+    }
+
+    private static async Task<HashSet<string>> ResolveSavedEventIdsAsync(
+        string? userId,
+        ISaveRepository saves,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        var saved = await saves.GetSavesAsync(userId, page: 1, pageSize: 5000, ct);
+        return saved.Items
+            .Select(item => item.EventId)
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static EventMapItemDto ToV1MapItem(
+        EventMapCardDto card,
+        EventDetailDto detail,
+        HashSet<string> savedEventIds)
+    {
+        var isSaved = savedEventIds.Contains(card.Id);
+        return new EventMapItemDto(
+            EventId: card.Id,
+            Title: card.Title,
+            StartUtc: detail.StartUtc,
+            EndUtc: detail.EndUtc,
+            Latitude: card.Lat,
+            Longitude: card.Lng,
+            VenueName: card.VenueName,
+            District: null,
+            PrimaryCategory: detail.Category,
+            SavedByCurrentUser: isSaved,
+            MarkerState: ResolveMarkerState(card, savedEventIds));
+    }
+
+    private static string ResolveMarkerState(EventMapCardDto card, HashSet<string> savedEventIds)
+    {
+        if (card.Confidence < 0.35)
+        {
+            return "low-confidence-hidden";
+        }
+
+        if (savedEventIds.Contains(card.Id))
+        {
+            return "saved";
+        }
+
+        return "default";
     }
 }

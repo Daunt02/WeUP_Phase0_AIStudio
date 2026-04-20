@@ -42,6 +42,50 @@ export interface EventMapCardDto {
 }
 
 // ---------------------------------------------------------------------------
+// Canonical map feed v1 DTOs (FRONTEND-SAFE)
+// Endpoint: GET /api/events/map-feed/v1
+// ---------------------------------------------------------------------------
+
+export type EventMapMarkerState =
+  | "default"
+  | "selected"
+  | "saved"
+  | "low-confidence-hidden";
+
+export interface EventMapItemDto {
+  /** Canonical event identity used as the single source for marker selection. */
+  readonly eventId: string;
+  readonly title: string;
+  /** ISO 8601 UTC. */
+  readonly startUtc: string;
+  /** ISO 8601 UTC. null when no explicit end time exists. */
+  readonly endUtc: string | null;
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly venueName: string;
+  readonly district: string | null;
+  readonly primaryCategory: string;
+  readonly savedByCurrentUser: boolean;
+  readonly markerState: EventMapMarkerState;
+}
+
+export interface EventMapFeedQueryDto {
+  /** Comma-separated format: minLng,minLat,maxLng,maxLat */
+  readonly bbox: string;
+  readonly timeWindowPreset?: "today" | "tonight" | "weekend" | "next7days";
+  readonly fromUtc?: string;
+  readonly toUtc?: string;
+  readonly district?: string;
+  readonly categories?: string[];
+  readonly includeSavedOnly?: boolean;
+}
+
+export interface EventMapFeedV1ResponseDto {
+  readonly events: EventMapItemDto[];
+  readonly totalCount: number;
+}
+
+// ---------------------------------------------------------------------------
 // Calendar card DTO (FRONTEND-SAFE)
 // Endpoint: POST /api/events/calendar → CalendarFeedResponse.items[]
 // ---------------------------------------------------------------------------

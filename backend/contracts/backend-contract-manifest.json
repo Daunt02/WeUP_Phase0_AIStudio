@@ -31,6 +31,29 @@
       "eventIds"
     ],
     "MapFeedResponse": ["clusters", "events", "queryMode", "totalCount"],
+    "EventMapItemDto": [
+      "district",
+      "endUtc",
+      "eventId",
+      "latitude",
+      "longitude",
+      "markerState",
+      "primaryCategory",
+      "savedByCurrentUser",
+      "startUtc",
+      "title",
+      "venueName"
+    ],
+    "EventMapFeedQueryDto": [
+      "bbox",
+      "categories",
+      "district",
+      "fromUtc",
+      "includeSavedOnly",
+      "timeWindowPreset",
+      "toUtc"
+    ],
+    "EventMapFeedV1ResponseDto": ["events", "totalCount"],
     "CalendarFeedRequest": [
       "categories",
       "districtCode",
@@ -74,10 +97,12 @@
     "EventDetailDto": [
       "address",
       "category",
+      "concurrencyToken",
       "confidence",
       "description",
       "endUtc",
       "id",
+      "lastChangeType",
       "lat",
       "lng",
       "mediaRefs",
@@ -87,14 +112,18 @@
       "tags",
       "timezone",
       "title",
-      "venueName"
+      "venueName",
+      "version"
     ],
     "EventDetailResponse": ["event"],
     "EventModerationDto": [
       "canonicalEventId",
       "category",
+      "concurrencyToken",
       "confidenceScore",
       "endUtc",
+      "hasPendingReview",
+      "lastChangeType",
       "lifecycleStatus",
       "mergeLineage",
       "moderationStatus",
@@ -122,12 +151,7 @@
       "notes",
       "recommendedAction"
     ],
-    "PublishBlockerSummaryDto": [
-      "code",
-      "field",
-      "isHardBlock",
-      "message"
-    ],
+    "PublishBlockerSummaryDto": ["code", "field", "isHardBlock", "message"],
     "EligibilityConfidenceSummaryDto": [
       "aggregate",
       "band",
