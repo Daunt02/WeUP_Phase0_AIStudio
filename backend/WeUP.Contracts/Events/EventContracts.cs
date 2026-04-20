@@ -203,6 +203,15 @@ public record EventCalendarCardDto(
 // Event detail
 // ---------------------------------------------------------------------------
 
+public record EventDetailProvenanceSummaryDto(
+    string PrimarySourceKind,
+    int SourceCount,
+    /// <remarks>ISO 8601 UTC. Serialize as "yyyy-MM-ddTHH:mm:ssZ".</remarks>
+    DateTimeOffset FirstObservedAtUtc,
+    /// <remarks>ISO 8601 UTC. Serialize as "yyyy-MM-ddTHH:mm:ssZ".</remarks>
+    DateTimeOffset LastObservedAtUtc,
+    string SummaryLabel);
+
 public record EventDetailDto(
     string Id,
     string Title,
@@ -212,17 +221,21 @@ public record EventDetailDto(
     double Lat,
     double Lng,
     string Category,
+    string[] Categories,
     /// <remarks>ISO 8601 UTC. Serialize as "yyyy-MM-ddTHH:mm:ssZ".</remarks>
     DateTimeOffset StartUtc,
     DateTimeOffset? EndUtc,
     /// <remarks>IANA timezone identifier.</remarks>
     string Timezone,
+    string? FlyerImageUrl,
     MediaRefDto[] MediaRefs,
     string[] Tags,
     /// <remarks>Serialized as uppercase string (e.g. "PUBLISHED").</remarks>
     string Status,
     double Confidence,
     string SourceKind,
+    EventDetailProvenanceSummaryDto ProvenanceSummary,
+    bool SavedByCurrentUser = false,
     /// <summary>Canonical aggregate version for optimistic client behavior.</summary>
     int Version = 1,
     /// <summary>Last classified change type (MinorMetadataUpdate, MaterialEventChange, StatusTransition, MergeLineageUpdate).</summary>

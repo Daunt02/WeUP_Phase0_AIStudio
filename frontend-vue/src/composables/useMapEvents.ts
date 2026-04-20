@@ -95,6 +95,26 @@ export function useMapEvents() {
     selectedEventId.value = exists ? eventId : null;
   }
 
+  function setSavedStateByEventId(eventId: string, saved: boolean): void {
+    let didUpdate = false;
+
+    events.value = events.value.map((event: EventMapItemDto) => {
+      if (event.eventId !== eventId) {
+        return event;
+      }
+
+      didUpdate = true;
+      return {
+        ...event,
+        savedByCurrentUser: saved,
+      };
+    });
+
+    if (!didUpdate) {
+      return;
+    }
+  }
+
   return {
     events,
     clusters,
@@ -107,5 +127,6 @@ export function useMapEvents() {
     selectedEventId,
     loadEvents,
     selectByEventId,
+    setSavedStateByEventId,
   };
 }

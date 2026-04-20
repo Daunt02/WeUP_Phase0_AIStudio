@@ -63,23 +63,33 @@ public sealed class StubEventRepository : IEventRepository, IEventSubmissionRepo
             {
                 var venue = venueById[evt.VenueId];
                 var marketTimezone = dataset.Markets.First(m => m.Code.Equals(venue.MarketCode, StringComparison.OrdinalIgnoreCase)).Timezone;
-                return new EventDetailDto(
-                    evt.EventId,
-                    evt.Title,
-                    evt.Description,
-                    venue.Name,
-                    venue.Address,
-                    venue.Latitude,
-                    venue.Longitude,
-                    evt.Category,
+                var provenanceSummary = new EventDetailProvenanceSummaryDto(
+                    evt.SourceKind,
+                    1,
                     ParseDate(evt.StartsAtUtc),
-                    ParseDate(evt.EndsAtUtc),
-                    marketTimezone,
-                    [new MediaRefDto(evt.ImageUrl, "image")],
-                    evt.Tags,
-                    evt.Status,
-                    evt.Confidence,
-                    evt.SourceKind);
+                    ParseDate(evt.StartsAtUtc),
+                    $"Normalized from {evt.SourceKind.Replace('_', ' ')}.");
+
+                return new EventDetailDto(
+                    Id: evt.EventId,
+                    Title: evt.Title,
+                    Description: evt.Description,
+                    VenueName: venue.Name,
+                    Address: venue.Address,
+                    Lat: venue.Latitude,
+                    Lng: venue.Longitude,
+                    Category: evt.Category,
+                    Categories: [evt.Category],
+                    StartUtc: ParseDate(evt.StartsAtUtc),
+                    EndUtc: ParseDate(evt.EndsAtUtc),
+                    Timezone: marketTimezone,
+                    FlyerImageUrl: evt.ImageUrl,
+                    MediaRefs: [new MediaRefDto(evt.ImageUrl, "image")],
+                    Tags: evt.Tags,
+                    Status: evt.Status,
+                    Confidence: evt.Confidence,
+                    SourceKind: evt.SourceKind,
+                    ProvenanceSummary: provenanceSummary);
             }).ToArray();
 
             _eventStatuses.Clear();

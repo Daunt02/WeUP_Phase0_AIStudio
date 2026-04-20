@@ -100,6 +100,15 @@ public static class EventDtoMapper
     {
         ArgumentNullException.ThrowIfNull(aggregate);
         ArgumentNullException.ThrowIfNull(mediaRefs);
+        var provenanceSummary = new EventDetailProvenanceSummaryDto(
+            PrimarySourceKind: aggregate.Provenance.PrimarySourceKind,
+            SourceCount: Math.Max(1, aggregate.Provenance.SourceRefs.Length),
+            FirstObservedAtUtc: aggregate.Provenance.FirstObservedAtUtc,
+            LastObservedAtUtc: aggregate.Provenance.LastObservedAtUtc,
+            SummaryLabel: Math.Max(1, aggregate.Provenance.SourceRefs.Length) == 1
+                ? $"Normalized from {sourceKindLabel}."
+                : $"Normalized from {Math.Max(1, aggregate.Provenance.SourceRefs.Length)} sources with {sourceKindLabel} as the primary provenance.");
+
         return new EventDetailDto(
             Id: aggregate.CanonicalEventId,
             Title: aggregate.Title,
@@ -109,14 +118,17 @@ public static class EventDtoMapper
             Lat: aggregate.Latitude,
             Lng: aggregate.Longitude,
             Category: aggregate.Category,
+            Categories: [aggregate.Category],
             StartUtc: aggregate.StartUtc,
             EndUtc: aggregate.EndUtc,
             Timezone: aggregate.TimeZone,
+            FlyerImageUrl: mediaRefs.FirstOrDefault(media => media.Kind is "poster" or "image")?.Url,
             MediaRefs: mediaRefs,
             Tags: aggregate.Tags,
             Status: SerializeLifecycleStatus(aggregate.EventStatus),
             Confidence: aggregate.ConfidenceScore,
             SourceKind: sourceKindLabel,
+            ProvenanceSummary: provenanceSummary,
             Version: aggregate.Version,
             LastChangeType: aggregate.LatestChange?.ChangeType.ToString(),
             ConcurrencyToken: aggregate.EffectiveConcurrencyToken);

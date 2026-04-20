@@ -103,14 +103,34 @@ public sealed class EventAggregateSchemaValidatorTests
         string status = "PUBLISHED",
         int version = 1,
         string? lastChangeType = null) =>
-        new("evt-001", "Test Event", "A description", "Test Venue",
-            "123 Main St, Houston TX", 29.76, -95.36, "nightlife",
-            DateTimeOffset.UtcNow.AddDays(1),
-            DateTimeOffset.UtcNow.AddDays(1).AddHours(4),
-            "America/Chicago",
-            [new MediaRefDto("https://cdn.test/img.jpg", "image")],
-            ["jazz"], status, 0.88, "manual submission",
-            version, lastChangeType, "evt-001:v1");
+        new(
+            Id: "evt-001",
+            Title: "Test Event",
+            Description: "A description",
+            VenueName: "Test Venue",
+            Address: "123 Main St, Houston TX",
+            Lat: 29.76,
+            Lng: -95.36,
+            Category: "nightlife",
+            Categories: ["nightlife"],
+            StartUtc: DateTimeOffset.UtcNow.AddDays(1),
+            EndUtc: DateTimeOffset.UtcNow.AddDays(1).AddHours(4),
+            Timezone: "America/Chicago",
+            FlyerImageUrl: "https://cdn.test/img.jpg",
+            MediaRefs: [new MediaRefDto("https://cdn.test/img.jpg", "image")],
+            Tags: ["jazz"],
+            Status: status,
+            Confidence: 0.88,
+            SourceKind: "manual submission",
+            ProvenanceSummary: new EventDetailProvenanceSummaryDto(
+                PrimarySourceKind: "manual submission",
+                SourceCount: 1,
+                FirstObservedAtUtc: DateTimeOffset.UtcNow.AddDays(-1),
+                LastObservedAtUtc: DateTimeOffset.UtcNow,
+                SummaryLabel: "Normalized from manual submission."),
+            Version: version,
+            LastChangeType: lastChangeType,
+            ConcurrencyToken: "evt-001:v1");
 
     private static EventModerationDto BuildValidModerationDto(
         int version = 1,

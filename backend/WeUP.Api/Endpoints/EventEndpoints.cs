@@ -193,10 +193,24 @@ public static class EventEndpoints
         // GET /api/events/{id}
         group.MapGet("/{id}", async (
             string id,
+            HttpContext ctx,
             IEventRepository repo,
+            ITokenService tokens,
+            ISaveRepository saves,
             CancellationToken ct) =>
         {
             var response = await repo.GetEventDetailAsync(id, ct);
+            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+
+            if (response.Event is not null && !string.IsNullOrWhiteSpace(userId))
+            {
+                var savedByCurrentUser = await saves.IsEventSavedAsync(userId, id, ct);
+                response = new EventDetailResponse(response.Event with
+                {
+                    SavedByCurrentUser = savedByCurrentUser,
+                });
+            }
+
             return response.Event is null
                 ? Results.NotFound(new ProblemDetails { Title = "Event not found", Status = 404 })
                 : Results.Ok(response);

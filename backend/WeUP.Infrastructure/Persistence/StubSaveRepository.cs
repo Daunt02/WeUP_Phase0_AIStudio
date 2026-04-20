@@ -66,6 +66,14 @@ public sealed class StubSaveRepository : ISaveRepository
         return Task.FromResult(new SavedEventsResponse(items, total, page, pageSize, false));
     }
 
+    public Task<bool> IsEventSavedAsync(string userId, string eventId, CancellationToken ct = default)
+    {
+        lock (_gate)
+        {
+            return Task.FromResult(_saves.ContainsKey((userId, eventId)));
+        }
+    }
+
     public Task<SaveEventResponse> SaveEventAsync(string userId, string eventId, CancellationToken ct = default)
     {
         lock (_gate)

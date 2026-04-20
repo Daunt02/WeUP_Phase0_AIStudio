@@ -264,23 +264,56 @@ public sealed class EfEventRepository(WeUpDbContext db) : IEventRepository, IEve
     private static EventDetailDto ToDetail(EventAggregate e, EventEntity sourceEntity)
     {
         var media = sourceEntity.Media.Select(m => new MediaRefDto(m.Url, m.Kind)).ToArray();
+        var flyerImageUrl = sourceEntity.Media
+            .FirstOrDefault(m => m.Kind == "poster")?.Url
+            ?? sourceEntity.Media.FirstOrDefault(m => m.Kind == "image")?.Url;
         var tags = string.IsNullOrEmpty(sourceEntity.TagsCsv)
             ? Array.Empty<string>()
             : sourceEntity.TagsCsv.Split(',', StringSplitOptions.RemoveEmptyEntries);
         var addressParts = new[] { e.Address.AddressLine1, e.Address.City, e.Address.State }
             .Where(p => !string.IsNullOrWhiteSpace(p));
         var address = string.Join(", ", addressParts);
+        var provenanceSummary = new EventDetailProvenanceSummaryDto(
+            e.Provenance.PrimarySourceKind,
+            Math.Max(1, e.Provenance.SourceRefs.Distinct(StringComparer.OrdinalIgnoreCase).Count()),
+            e.Provenance.FirstObservedAtUtc,
+            e.Provenance.LastObservedAtUtc,
+            BuildPublicProvenanceSummary(e));
+
         return new EventDetailDto(
-            e.CanonicalEventId, e.Title, e.Description, e.VenueName,
-            address,
-            e.Latitude, e.Longitude, e.Category,
-            e.StartUtc, e.EndUtc, e.TimeZone,
-            media, tags,
-            EventLifecycleStatusMapper.ToStorage(e.EventStatus),
-            e.ConfidenceScore, e.Provenance.PrimarySourceKind,
-            e.Version,
-            e.LatestChange?.ChangeType.ToString(),
-            e.EffectiveConcurrencyToken);
+            Id: e.CanonicalEventId,
+            Title: e.Title,
+            Description: e.Description,
+            VenueName: e.VenueName,
+            Address: address,
+            Lat: e.Latitude,
+            Lng: e.Longitude,
+            Category: e.Category,
+            Categories: [e.Category],
+            StartUtc: e.StartUtc,
+            EndUtc: e.EndUtc,
+            Timezone: e.TimeZone,
+            FlyerImageUrl: flyerImageUrl,
+            MediaRefs: media,
+            Tags: tags,
+            Status: EventLifecycleStatusMapper.ToStorage(e.EventStatus),
+            Confidence: e.ConfidenceScore,
+            SourceKind: e.Provenance.PrimarySourceKind,
+            ProvenanceSummary: provenanceSummary,
+            Version: e.Version,
+            LastChangeType: e.LatestChange?.ChangeType.ToString(),
+            ConcurrencyToken: e.EffectiveConcurrencyToken);
+    }
+
+    private static string BuildPublicProvenanceSummary(EventAggregate aggregate)
+    {
+        var sourceCount = Math.Max(
+            1,
+            aggregate.Provenance.SourceRefs.Distinct(StringComparer.OrdinalIgnoreCase).Count());
+
+        return sourceCount == 1
+            ? $"Normalized from {aggregate.Provenance.PrimarySourceKind.Replace('_', ' ')}."
+            : $"Normalized from {sourceCount} sources with {aggregate.Provenance.PrimarySourceKind.Replace('_', ' ')} as the primary provenance.";
     }
 
     private static string? PrimaryThumbnail(EventEntity e)

@@ -71,6 +71,27 @@ public sealed class EfSaveRepository(WeUpDbContext db) : ISaveRepository
             (clampedPage - 1) * clampedSize + items.Count < totalCount);
     }
 
+    public async Task<bool> IsEventSavedAsync(string userId, string eventId, CancellationToken ct = default)
+    {
+        var userGuid = await db.UserProfiles
+            .AsNoTracking()
+            .Where(u => u.PublicId == userId)
+            .Select(u => (Guid?)u.Id)
+            .FirstOrDefaultAsync(ct);
+
+        if (userGuid is null)
+        {
+            return false;
+        }
+
+        return await db.SavedEvents
+            .AsNoTracking()
+            .Include(s => s.Event)
+            .AnyAsync(
+                s => s.UserId == userGuid.Value && s.Event.PublicId == eventId,
+                ct);
+    }
+
     public async Task<SaveEventResponse> SaveEventAsync(string userId, string eventId, CancellationToken ct = default)
     {
         var user = await db.UserProfiles.FirstOrDefaultAsync(u => u.PublicId == userId, ct);

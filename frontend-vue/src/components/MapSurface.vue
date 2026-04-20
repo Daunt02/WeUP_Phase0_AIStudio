@@ -54,6 +54,17 @@ import type {
 } from "../contracts/map-feed.contracts";
 import { useMapEvents } from "../composables/useMapEvents";
 
+const props = withDefaults(
+  defineProps<{
+    selectedEventId?: string | null;
+    selectedEventSavedState?: boolean | null;
+  }>(),
+  {
+    selectedEventId: null,
+    selectedEventSavedState: null,
+  },
+);
+
 const POINT_SOURCE_ID = "weup-events-points";
 const CLUSTER_SOURCE_ID = "weup-events-clustered";
 const SELECTED_SOURCE_ID = "weup-events-selected";
@@ -96,6 +107,7 @@ const {
   selectedEventId,
   loadEvents,
   selectByEventId,
+  setSavedStateByEventId,
 } = useMapEvents();
 
 const token =
@@ -104,6 +116,7 @@ const tokenMissing = computed(() => token.trim().length === 0);
 
 const emits = defineEmits<{
   (event: "event-selected", eventId: string): void;
+  (event: "update:selectedEventId", eventId: string | null): void;
 }>();
 
 type MarkerFeatureProperties = {
@@ -581,6 +594,7 @@ function updateMapRendering(): void {
 
 function emitSelection(eventId: string): void {
   selectByEventId(eventId);
+  emits("update:selectedEventId", eventId);
   emits("event-selected", eventId);
 }
 
@@ -784,6 +798,38 @@ onMounted(async () => {
 
   map.value = currentMap;
 });
+
+watch(
+  () => props.selectedEventId,
+  (eventId) => {
+    if (eventId !== selectedEventId.value) {
+      selectByEventId(eventId ?? null);
+    }
+  },
+  { immediate: true },
+);
+
+watch(selectedEventId, (eventId) => {
+  // The map owns hit-testing, but the parent owns the canonical selection
+  // state. When a refresh removes the selected event, propagate the null up.
+  if (eventId === null && props.selectedEventId !== null) {
+    emits("update:selectedEventId", null);
+  }
+});
+
+watch(
+  [() => props.selectedEventId, () => props.selectedEventSavedState],
+  ([eventId, savedState]) => {
+    if (eventId === null || savedState === null) {
+      return;
+    }
+
+    // Save actions should reflect in the map marker state immediately instead
+    // of waiting for the next viewport refresh to round-trip through the API.
+    setSavedStateByEventId(eventId, savedState);
+  },
+  { immediate: true },
+);
 
 watch(
   [markers, clusters, densityControl, clusterStrategy, selectedEventId],

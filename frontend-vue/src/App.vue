@@ -8,17 +8,87 @@
 
     <q-page-container>
       <q-page class="map-page">
-        <MapSurface @event-selected="onEventSelected" />
+        <MapSurface
+          v-model:selected-event-id="selectedEventId"
+          :selected-event-saved-state="selectedEventSavedState"
+        />
+
+        <EventDetailModal
+          :model-value="isOpen"
+          :event="eventDetail"
+          :is-loading="isLoading"
+          :is-save-pending="isSavePending"
+          :error="error"
+          @update:model-value="onModalVisibilityChange"
+          @toggle-save="toggleSavedState"
+          @share="showSharePlaceholder"
+        />
       </q-page>
     </q-page-container>
   </q-layout>
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
+import { useQuasar } from "quasar";
+import EventDetailModal from "./components/EventDetailModal.vue";
 import MapSurface from "./components/MapSurface.vue";
+import { useEventDetailModal } from "./composables/useEventDetailModal";
+import { shareEventDetail } from "./services/eventDetailService";
 
-function onEventSelected(eventId: string): void {
-  console.info("Selected canonical eventId", eventId);
+const $q = useQuasar();
+
+const {
+  selectedEventId,
+  eventDetail,
+  isOpen,
+  isLoading,
+  isSavePending,
+  error,
+  closeModal,
+  toggleSavedState,
+} = useEventDetailModal();
+
+const selectedEventSavedState = computed(() => {
+  return eventDetail.value?.savedByCurrentUser ?? null;
+});
+
+function onModalVisibilityChange(isVisible: boolean): void {
+  // Closing the dialog clears the shared selection so the map returns to its
+  // default interaction state without a stranded highlighted marker.
+  if (!isVisible) {
+    closeModal();
+  }
+}
+
+async function showSharePlaceholder(): Promise<void> {
+  if (!eventDetail.value) {
+    return;
+  }
+
+  try {
+    const result = await shareEventDetail(eventDetail.value);
+
+    if (result === "dismissed") {
+      return;
+    }
+
+    $q.notify({
+      type: result === "shared" ? "positive" : "info",
+      message:
+        result === "shared"
+          ? "Event shared."
+          : result === "copied"
+            ? "Share link copied to clipboard."
+            : "Opened an email share draft.",
+    });
+  } catch (cause) {
+    $q.notify({
+      type: "negative",
+      message:
+        cause instanceof Error ? cause.message : "Failed to share event.",
+    });
+  }
 }
 </script>
 
