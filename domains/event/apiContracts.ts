@@ -92,12 +92,29 @@ export interface EventMapDensityControlDto {
   readonly expansionBehavior: EventMapClusterExpansionBehavior;
 }
 
+/**
+ * Canonical temporal presets for map discovery and calendar overlays.
+ * These values must mirror WeUP.Contracts.Events.TimeWindowPreset exactly.
+ */
+export enum TimeWindowPreset {
+  Now = "now",
+  Tonight = "tonight",
+  Tomorrow = "tomorrow",
+  ThisWeekend = "thisWeekend",
+  Custom = "custom",
+}
+
 export interface EventMapFeedQueryDto {
   /** Comma-separated format: minLng,minLat,maxLng,maxLat */
   readonly bbox: string;
-  readonly timeWindowPreset?: "today" | "tonight" | "weekend" | "next7days";
-  readonly fromUtc?: string;
-  readonly toUtc?: string;
+  /** Backend-resolved preset identity for deterministic map/calendar window parity. */
+  readonly preset: TimeWindowPreset;
+  /** Required IANA or Windows timezone identifier used by backend preset expansion. */
+  readonly timezone: string;
+  /** Required when preset=custom. Must be earlier than customEndUtc. */
+  readonly customStartUtc?: string;
+  /** Required when preset=custom. Must be later than customStartUtc. */
+  readonly customEndUtc?: string;
   readonly district?: string;
   readonly categories?: string[];
   readonly includeSavedOnly?: boolean;
