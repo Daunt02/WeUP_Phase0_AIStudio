@@ -8,10 +8,23 @@
 
     <q-page-container>
       <q-page class="map-page">
-        <MapSurface
-          v-model:selected-event-id="selectedEventId"
-          :selected-event-saved-state="selectedEventSavedState"
-        />
+        <div class="map-stack">
+          <MapSurface
+            v-model:selected-event-id="selectedEventId"
+            :selected-event-saved-state="selectedEventSavedState"
+            @map-feed-query-updated="onMapFeedQueryUpdated"
+            @map-items-updated="onMapItemsUpdated"
+          />
+
+          <CalendarOverlayShell
+            :layer="calendarLayer"
+            :overlay-height="calendarOverlayHeight"
+            :selected-event-id="selectedEventId"
+            :items="calendarItems"
+            @set-layer="setCalendarLayer"
+            @select-event="selectCalendarEvent"
+          />
+        </div>
 
         <EventDetailModal
           :model-value="isOpen"
@@ -29,11 +42,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useQuasar } from "quasar";
+import CalendarOverlayShell from "./components/CalendarOverlayShell.vue";
 import EventDetailModal from "./components/EventDetailModal.vue";
 import MapSurface from "./components/MapSurface.vue";
+import { useCalendarOverlayState } from "./composables/useCalendarOverlayState";
 import { useEventDetailModal } from "./composables/useEventDetailModal";
+import type {
+  EventMapFeedQueryDto,
+  EventMapItemDto,
+} from "./contracts/map-feed.contracts";
 import { shareEventDetail } from "./services/eventDetailService";
 
 const $q = useQuasar();
@@ -52,6 +71,39 @@ const {
 const selectedEventSavedState = computed(() => {
   return eventDetail.value?.savedByCurrentUser ?? null;
 });
+
+const latestMapFeedQuery = ref<EventMapFeedQueryDto | null>(null);
+const latestMapItems = ref<EventMapItemDto[]>([]);
+
+const {
+  layer: calendarLayer,
+  overlayHeight: calendarOverlayHeight,
+  setLayer: setCalendarLayer,
+  selectEvent: selectCalendarEvent,
+  buildCalendarFeedQuery,
+  projectMapItemsToCalendarItems,
+} = useCalendarOverlayState(selectedEventId);
+
+const calendarFeedQuery = computed(() =>
+  buildCalendarFeedQuery(latestMapFeedQuery.value),
+);
+
+const calendarItems = computed(() => {
+  // Calendar is an alternate temporal projection of the same canonical map set.
+  // No route transition and no contract fork are allowed in this mapping path.
+  if (!calendarFeedQuery.value) {
+    return [];
+  }
+  return projectMapItemsToCalendarItems(latestMapItems.value);
+});
+
+function onMapFeedQueryUpdated(query: EventMapFeedQueryDto): void {
+  latestMapFeedQuery.value = query;
+}
+
+function onMapItemsUpdated(items: EventMapItemDto[]): void {
+  latestMapItems.value = items;
+}
 
 function onModalVisibilityChange(isVisible: boolean): void {
   // Closing the dialog clears the shared selection so the map returns to its
@@ -106,6 +158,11 @@ async function showSharePlaceholder(): Promise<void> {
 .map-page {
   height: calc(100vh - 50px);
   padding: 12px;
+}
+
+.map-stack {
+  position: relative;
+  height: 100%;
 }
 
 @media (max-width: 768px) {

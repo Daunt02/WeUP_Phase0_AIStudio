@@ -15,10 +15,14 @@ import type {
 } from "@/domains/event/projections";
 import type { DraftSubmissionRequest } from "@/features/world/runtimeTypes";
 import type {
+  CalendarEventItemDto,
+  EventCalendarFeedV1ResponseDto,
+  EventCalendarFeedQueryDto,
   EventMapDensityControlDto,
   EventMapFeedClusterDto,
   EventMapFeedV1ResponseDto,
 } from "@/domains/event/apiContracts";
+import { TimeWindowPreset } from "@/domains/event/apiContracts";
 import type {
   SavedEventDto,
   SavedEventsResponse,
@@ -109,6 +113,37 @@ describe("backend contract manifest", () => {
     timezone: "America/Los_Angeles",
     thumbnailUrl: "https://example.test/flyer.jpg",
     status: "PUBLISHED",
+  };
+
+  const calendarFeedV1Query: EventCalendarFeedQueryDto = {
+    bbox: "-122.52,37.70,-122.37,37.85",
+    preset: TimeWindowPreset.Now,
+    timezone: "America/Los_Angeles",
+    customStartUtc: undefined,
+    customEndUtc: undefined,
+    district: undefined,
+    categories: undefined,
+    includeSavedOnly: false,
+  };
+
+  const calendarOverlayItem: CalendarEventItemDto = {
+    eventId: "evt-sf-midnight-groove",
+    title: "Midnight Groove Assembly",
+    startUtc: "2026-04-12T04:00:00Z",
+    endUtc: "2026-04-12T08:00:00Z",
+    timezone: "America/Los_Angeles",
+    venueName: "Public Works",
+    district: "mission",
+    primaryCategory: "nightlife",
+    savedByCurrentUser: false,
+    markerState: "default",
+    thumbnailUrl: "https://example.test/flyer.jpg",
+  };
+
+  const calendarFeedV1Response: EventCalendarFeedV1ResponseDto = {
+    items: [calendarOverlayItem],
+    totalCount: 1,
+    projection: "temporal_grid_v1",
   };
 
   const detailProjection: EventDetailProjection = {
@@ -288,6 +323,9 @@ describe("backend contract manifest", () => {
     expectKeys("EventMapDensityControlDto", densityControl);
     expectKeys("MapFeedResponse", mapFeedResponse);
     expectKeys("EventMapFeedV1ResponseDto", mapFeedV1Response);
+    expectKeys("EventCalendarFeedQueryDto", calendarFeedV1Query);
+    expectKeys("CalendarEventItemDto", calendarOverlayItem);
+    expectKeys("EventCalendarFeedV1ResponseDto", calendarFeedV1Response);
     expectKeys("CalendarFeedRequest", {
       categories: calendarFeedRequest.filters?.categories,
       districtCode: calendarFeedRequest.filters?.districtCode,

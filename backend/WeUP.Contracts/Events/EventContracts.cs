@@ -158,6 +158,50 @@ public record EventMapFeedV1ResponseDto(
     string ClusterStrategy = "client_v1");
 
 // ---------------------------------------------------------------------------
+// Calendar feed v1 (canonical temporal overlay projection)
+// ---------------------------------------------------------------------------
+
+/// <summary>
+/// Query contract for GET /api/events/calendar-feed/v1.
+/// This mirrors EventMapFeedQueryDto so map and calendar remain alternate
+/// projections of the same canonical event set and temporal window.
+/// </summary>
+public sealed record EventCalendarFeedQueryDto
+{
+    public string Bbox { get; init; } = string.Empty;
+    public TimeWindowPreset Preset { get; init; } = TimeWindowPreset.Now;
+    public string Timezone { get; init; } = string.Empty;
+    public DateTimeOffset? CustomStartUtc { get; init; }
+    public DateTimeOffset? CustomEndUtc { get; init; }
+    public string? District { get; init; }
+    public string[]? Categories { get; init; }
+    public bool IncludeSavedOnly { get; init; }
+}
+
+/// <summary>
+/// Calendar overlay item DTO.
+/// Event identity and shared attributes must remain contract-compatible with
+/// EventMapItemDto to prevent map/calendar divergence.
+/// </summary>
+public record CalendarEventItemDto(
+    string EventId,
+    string Title,
+    DateTimeOffset StartUtc,
+    DateTimeOffset? EndUtc,
+    string Timezone,
+    string VenueName,
+    string? District,
+    string PrimaryCategory,
+    bool SavedByCurrentUser,
+    string MarkerState,
+    string? ThumbnailUrl);
+
+public record EventCalendarFeedV1ResponseDto(
+    CalendarEventItemDto[] Items,
+    int TotalCount,
+    string Projection = "temporal_grid_v1");
+
+// ---------------------------------------------------------------------------
 // Calendar feed
 // ---------------------------------------------------------------------------
 

@@ -53,6 +53,7 @@ import type {
   EventMapDensityControlDto,
   EventMapFeedClusterDto,
   EventMapFeedQueryDto,
+  EventMapItemDto,
   EventMapMarkerViewModel,
 } from "../contracts/map-feed.contracts";
 import { useMapFeedFilters } from "../composables/useMapFeedFilters";
@@ -99,6 +100,7 @@ const {
 } = useMapFeedFilters();
 
 const {
+  events,
   markers,
   clusters,
   densityControl,
@@ -118,6 +120,8 @@ const tokenMissing = computed(() => token.trim().length === 0);
 const emits = defineEmits<{
   (event: "event-selected", eventId: string): void;
   (event: "update:selectedEventId", eventId: string | null): void;
+  (event: "map-feed-query-updated", query: EventMapFeedQueryDto): void;
+  (event: "map-items-updated", items: EventMapItemDto[]): void;
 }>();
 
 type MarkerFeatureProperties = {
@@ -752,6 +756,8 @@ async function refreshFromCurrentViewport(): Promise<void> {
     toBboxString(currentMap),
   );
 
+  emits("map-feed-query-updated", query);
+
   await loadEvents(query);
 }
 
@@ -832,6 +838,15 @@ watch(
     setSavedStateByEventId(eventId, savedState);
   },
   { immediate: true },
+);
+
+watch(
+  events,
+  (nextItems) => {
+    // Calendar overlay is a temporal projection of these same canonical events.
+    emits("map-items-updated", nextItems);
+  },
+  { deep: true, immediate: true },
 );
 
 watch(

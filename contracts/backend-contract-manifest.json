@@ -78,6 +78,30 @@
       "events",
       "totalCount"
     ],
+    "EventCalendarFeedQueryDto": [
+      "bbox",
+      "categories",
+      "customEndUtc",
+      "customStartUtc",
+      "district",
+      "includeSavedOnly",
+      "preset",
+      "timezone"
+    ],
+    "CalendarEventItemDto": [
+      "district",
+      "endUtc",
+      "eventId",
+      "markerState",
+      "primaryCategory",
+      "savedByCurrentUser",
+      "startUtc",
+      "thumbnailUrl",
+      "timezone",
+      "title",
+      "venueName"
+    ],
+    "EventCalendarFeedV1ResponseDto": ["items", "projection", "totalCount"],
     "CalendarFeedRequest": [
       "categories",
       "districtCode",

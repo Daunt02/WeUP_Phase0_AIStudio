@@ -129,6 +129,52 @@ export interface EventMapFeedV1ResponseDto {
 }
 
 // ---------------------------------------------------------------------------
+// Calendar feed v1 (canonical temporal projection of map events)
+// Endpoint: GET /api/events/calendar-feed/v1
+// ---------------------------------------------------------------------------
+
+/**
+ * Calendar feed query for the overlay layer.
+ * Must stay field-compatible with EventMapFeedQueryDto so map and calendar
+ * project the same canonical event set and temporal window.
+ */
+export interface EventCalendarFeedQueryDto {
+  /** Comma-separated format: minLng,minLat,maxLng,maxLat */
+  readonly bbox: string;
+  readonly preset: TimeWindowPreset;
+  readonly timezone: string;
+  readonly customStartUtc?: string;
+  readonly customEndUtc?: string;
+  readonly district?: string;
+  readonly categories?: string[];
+  readonly includeSavedOnly?: boolean;
+}
+
+/**
+ * Calendar item for overlay grid/timeline rendering.
+ * eventId and shared fields mirror EventMapItemDto to preserve identity parity.
+ */
+export interface CalendarEventItemDto {
+  readonly eventId: string;
+  readonly title: string;
+  readonly startUtc: string;
+  readonly endUtc: string | null;
+  readonly timezone: string;
+  readonly venueName: string;
+  readonly district: string | null;
+  readonly primaryCategory: string;
+  readonly savedByCurrentUser: boolean;
+  readonly markerState: EventMapMarkerState;
+  readonly thumbnailUrl: string | null;
+}
+
+export interface EventCalendarFeedV1ResponseDto {
+  readonly items: CalendarEventItemDto[];
+  readonly totalCount: number;
+  readonly projection: "temporal_grid_v1";
+}
+
+// ---------------------------------------------------------------------------
 // Calendar card DTO (FRONTEND-SAFE)
 // Endpoint: POST /api/events/calendar → CalendarFeedResponse.items[]
 // ---------------------------------------------------------------------------
