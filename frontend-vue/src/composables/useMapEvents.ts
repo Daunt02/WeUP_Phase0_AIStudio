@@ -1,4 +1,4 @@
-import { computed, ref } from "vue";
+import { computed, ref, type Ref } from "vue";
 import type {
   EventMapClusterStrategy,
   EventMapDensityControlDto,
@@ -19,7 +19,7 @@ const DEFAULT_DENSITY_CONTROL: EventMapDensityControlDto = {
   expansionBehavior: "zoom_or_expand",
 };
 
-export function useMapEvents() {
+export function useMapEvents(selectedEventId: Ref<string | null>) {
   const events = ref<EventMapItemDto[]>([]);
   const clusters = ref<EventMapFeedClusterDto[]>([]);
   const densityControl = ref<EventMapDensityControlDto>(
@@ -28,7 +28,6 @@ export function useMapEvents() {
   const clusterStrategy = ref<EventMapClusterStrategy>("client_v1");
   const isLoading = ref(false);
   const error = ref<string | null>(null);
-  const selectedEventId = ref<string | null>(null);
   let latestRequestId = 0;
 
   const visibleEvents = computed(() => {
@@ -68,17 +67,6 @@ export function useMapEvents() {
       clusters.value = payload.clusters ?? [];
       densityControl.value = payload.densityControl ?? DEFAULT_DENSITY_CONTROL;
       clusterStrategy.value = payload.clusterStrategy ?? "client_v1";
-
-      // Selection persists only if the latest successful payload still contains
-      // the canonical eventId. Failed or stale requests must not clear selection.
-      if (selectedEventId.value) {
-        const stillExists = events.value.some(
-          (event: EventMapItemDto) => event.eventId === selectedEventId.value,
-        );
-        if (!stillExists) {
-          selectedEventId.value = null;
-        }
-      }
     } catch (e) {
       if (requestId !== latestRequestId) {
         return;
@@ -91,18 +79,6 @@ export function useMapEvents() {
         isLoading.value = false;
       }
     }
-  }
-
-  function selectByEventId(eventId: string | null): void {
-    if (!eventId) {
-      selectedEventId.value = null;
-      return;
-    }
-
-    const exists = events.value.some(
-      (event: EventMapItemDto) => event.eventId === eventId,
-    );
-    selectedEventId.value = exists ? eventId : null;
   }
 
   function setSavedStateByEventId(eventId: string, saved: boolean): void {
@@ -134,9 +110,7 @@ export function useMapEvents() {
     markers,
     isLoading,
     error,
-    selectedEventId,
     loadEvents,
-    selectByEventId,
     setSavedStateByEventId,
   };
 }

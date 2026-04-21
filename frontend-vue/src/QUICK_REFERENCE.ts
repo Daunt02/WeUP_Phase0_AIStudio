@@ -390,4 +390,123 @@ QUESTIONS?
    - Check browser DevTools Network tab: see actual API requests
 */
 
+// ============================================================================
+// M6-P28 — SYNC CALENDAR OVERLAY WITH MAP STATE v1.0
+// ============================================================================
+
+/*
+┌─ useDiscoveryState() ────────────────────────────────────────────────────┐
+│  Single source of truth for map ↔ calendar state synchronization.        │
+│  Call ONCE in App.vue. Pass state down as props; receive actions via emit.│
+│                                                                            │
+│  FILE:  src/composables/useDiscoveryState.ts                              │
+│  GUIDE: src/composables/DISCOVERY_STATE_INTEGRATION_EXAMPLE.ts            │
+│                                                                            │
+│ READONLY STATE (observe, never write directly):                            │
+│   discovery.selectedEventId.value ......... string | null                 │
+│   discovery.overlayMode.value ............. CalendarOverlayLayerState     │
+│   discovery.latestMapFeedQuery.value ...... EventMapFeedQueryDto | null   │
+│   discovery.visibleEventIds.value ......... ReadonlySet<string>           │
+│                                                                            │
+│ COMPUTED:                                                                  │
+│   discovery.isEventSelected.value ......... boolean                       │
+│   discovery.isOverlayOpen.value ........... boolean                       │
+│   discovery.overlayHeight.value ........... string (CSS)                  │
+│   discovery.activeFilters.value ........... DiscoveryFilterState          │
+│   discovery.calendarFeedQuery.value ....... EventMapFeedQueryDto | null   │
+│   discovery.stateSummary.value ............ DiscoveryStateSummary         │
+│                                                                            │
+│ SELECTION ACTIONS:                                                         │
+│   discovery.selectEvent(eventId) .......... map click OR calendar tap     │
+│   discovery.clearSelection() .............. modal close, window shift     │
+│                                                                            │
+│ FILTER ACTIONS:                                                            │
+│   discovery.applyFilters({ district?, categories?, includeSavedOnly? })   │
+│   discovery.clearFilters()                                                 │
+│                                                                            │
+│ OVERLAY ACTIONS:                                                           │
+│   discovery.setOverlayMode(layer) ......... explicit transition           │
+│   discovery.closeOverlay()                                                 │
+│   discovery.openPartialOverlay()                                           │
+│   discovery.expandOverlay()                                                │
+│                                                                            │
+│ MAP SURFACE REPORTING (call from MapSurface after each feed load):        │
+│   discovery.reportVisibleEvents(events[]) . scope-validate selection      │
+│   discovery.reportMapFeedQuery(query) ..... keep calendar in sync         │
+│                                                                            │
+│ TEMPORAL INTEGRATION:                                                      │
+│   discovery.onTemporalWindowShift() ....... eager selection eviction      │
+└────────────────────────────────────────────────────────────────────────────┘
+*/
+
+// ─── Synchronization rules (quick table) ─────────────────────────────────────
+/*
+TRIGGER                            ACTION                        OVERLAY
+────────────────────────────────────────────────────────────────────────────
+Marker click                       selectEvent(id)               → event-selected
+Calendar card tap                  selectEvent(id)               → event-selected
+EventDetailModal closed            clearSelection()              → partial|expanded
+Temporal preset/step changed       onTemporalWindowShift()       → partial|expanded
+Feed reload removes event          reportVisibleEvents(events)   → partial|expanded (if evicted)
+District/category filter applied   applyFilters(partial)         unchanged (deferred)
+*/
+
+// ─── Anti-loop protections (summary) ─────────────────────────────────────────
+/*
+1. selectedEventId is module-level; components read via prop, write via action.
+   Neither MapSurface nor CalendarOverlayShell own the ref.
+
+2. The _overlayMode watcher writes _lastNonSelectedOverlay (different ref).
+   Nothing watches _lastNonSelectedOverlay and writes _overlayMode back.
+
+3. selectEvent() is idempotent: early-exits if the same ID is already active.
+   Prevents redundant overlay transitions on map re-renders.
+
+4. reportVisibleEvents() writes _visibleEventIds THEN conditionally calls
+   clearSelection(). clearSelection() writes _selectedEventId (different ref).
+   No circular watcher chain.
+
+5. calendarFeedQuery is a pure computed derived from _latestMapFeedQuery +
+   filter refs. It never triggers a write back to _latestMapFeedQuery.
+*/
+
+// ─── Minimal App.vue wiring ───────────────────────────────────────────────────
+/*
+const discovery = useDiscoveryState();
+const temporal  = useTemporalNavigation({ debounceMs: 300 });
+
+// Bridge temporal shifts into discovery selection eviction
+watch(temporal.requestSignature, (_next, prev) => {
+  if (prev !== undefined && temporal.shouldClearSelectedEventOnWindowShift()) {
+    discovery.onTemporalWindowShift();
+  }
+});
+
+// Map query combining temporal + discovery filters
+function buildMapQuery(bbox: string) {
+  return { ...temporal.buildMapFeedQuery(bbox), ...discovery.activeFilters.value };
+}
+
+// Template:
+//  <MapSurface
+//    :selected-event-id="discovery.selectedEventId.value"
+//    :active-filters="discovery.activeFilters.value"
+//    @marker-click="discovery.selectEvent"
+//    @map-feed-query-updated="discovery.reportMapFeedQuery"
+//    @map-items-updated="discovery.reportVisibleEvents"
+//  />
+//  <CalendarOverlayShell
+//    :layer="discovery.overlayMode.value"
+//    :overlay-height="discovery.overlayHeight.value"
+//    :selected-event-id="discovery.selectedEventId.value"
+//    :calendar-feed-query="discovery.calendarFeedQuery.value"
+//    @set-layer="discovery.setOverlayMode"
+//    @select-event="discovery.selectEvent"
+//  />
+//  <EventDetailModal
+//    :model-value="discovery.isEventSelected.value"
+//    @update:model-value="(v) => !v && discovery.clearSelection()"
+//  />
+*/
+
 export {};

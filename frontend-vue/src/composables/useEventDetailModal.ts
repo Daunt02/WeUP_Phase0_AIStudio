@@ -1,4 +1,4 @@
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, type Ref } from "vue";
 import type { EventDetailDto } from "../contracts/event-detail.contracts";
 import {
   fetchEventDetail,
@@ -6,8 +6,9 @@ import {
   unsaveEvent,
 } from "../services/eventDetailService";
 
-export function useEventDetailModal() {
-  const selectedEventId = ref<string | null>(null);
+export function useEventDetailModal(
+  selectedEventId: Ref<string | null> = ref<string | null>(null),
+) {
   const eventDetail = ref<EventDetailDto | null>(null);
   const isLoading = ref(false);
   const isSavePending = ref(false);

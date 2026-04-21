@@ -10,19 +10,22 @@
       <q-page class="map-page">
         <div class="map-stack">
           <MapSurface
-            v-model:selected-event-id="selectedEventId"
+            :selected-event-id="discovery.selectedEventId.value"
             :selected-event-saved-state="selectedEventSavedState"
-            @map-feed-query-updated="onMapFeedQueryUpdated"
+            :active-filters="discovery.activeFilters.value"
+            @update:selected-event-id="onMapSelectedEventChanged"
+            @filters-updated="onMapFiltersUpdated"
+            @map-feed-query-updated="discovery.reportMapFeedQuery"
             @map-items-updated="onMapItemsUpdated"
           />
 
           <CalendarOverlayShell
-            :layer="calendarLayer"
-            :overlay-height="calendarOverlayHeight"
-            :selected-event-id="selectedEventId"
+            :layer="discovery.overlayMode.value"
+            :overlay-height="discovery.overlayHeight.value"
+            :selected-event-id="discovery.selectedEventId.value"
             :items="calendarItems"
-            @set-layer="setCalendarLayer"
-            @select-event="selectCalendarEvent"
+            @set-layer="discovery.setOverlayMode"
+            @select-event="discovery.selectEvent"
           />
         </div>
 
@@ -47,18 +50,33 @@ import { useQuasar } from "quasar";
 import CalendarOverlayShell from "./components/CalendarOverlayShell.vue";
 import EventDetailModal from "./components/EventDetailModal.vue";
 import MapSurface from "./components/MapSurface.vue";
-import { useCalendarOverlayState } from "./composables/useCalendarOverlayState";
+import {
+  useDiscoveryState,
+  type DiscoveryFilterState,
+} from "./composables/useDiscoveryState";
 import { useEventDetailModal } from "./composables/useEventDetailModal";
-import type {
-  EventMapFeedQueryDto,
-  EventMapItemDto,
-} from "./contracts/map-feed.contracts";
+import type { EventMapItemDto } from "./contracts/map-feed.contracts";
 import { shareEventDetail } from "./services/eventDetailService";
 
 const $q = useQuasar();
 
+const discovery = useDiscoveryState();
+
+const selectedEventIdModel = computed<string | null>({
+  get() {
+    return discovery.selectedEventId.value;
+  },
+  set(eventId) {
+    if (eventId) {
+      discovery.selectEvent(eventId);
+      return;
+    }
+
+    discovery.clearSelection();
+  },
+});
+
 const {
-  selectedEventId,
   eventDetail,
   isOpen,
   isLoading,
@@ -66,43 +84,64 @@ const {
   error,
   closeModal,
   toggleSavedState,
-} = useEventDetailModal();
+} = useEventDetailModal(selectedEventIdModel);
 
 const selectedEventSavedState = computed(() => {
   return eventDetail.value?.savedByCurrentUser ?? null;
 });
 
-const latestMapFeedQuery = ref<EventMapFeedQueryDto | null>(null);
-const latestMapItems = ref<EventMapItemDto[]>([]);
-
-const {
-  layer: calendarLayer,
-  overlayHeight: calendarOverlayHeight,
-  setLayer: setCalendarLayer,
-  selectEvent: selectCalendarEvent,
-  buildCalendarFeedQuery,
-  projectMapItemsToCalendarItems,
-} = useCalendarOverlayState(selectedEventId);
-
-const calendarFeedQuery = computed(() =>
-  buildCalendarFeedQuery(latestMapFeedQuery.value),
-);
+const mapItemsState = ref<EventMapItemDto[]>([]);
 
 const calendarItems = computed(() => {
   // Calendar is an alternate temporal projection of the same canonical map set.
   // No route transition and no contract fork are allowed in this mapping path.
-  if (!calendarFeedQuery.value) {
+  if (!discovery.calendarFeedQuery.value) {
     return [];
   }
-  return projectMapItemsToCalendarItems(latestMapItems.value);
+  return [...discovery.visibleEventIds.value]
+    .map(
+      (eventId) =>
+        latestVisibleMapItems.value.find((item) => item.eventId === eventId) ??
+        null,
+    )
+    .filter((item): item is EventMapItemDto => item !== null)
+    .map((item) => ({
+      eventId: item.eventId,
+      title: item.title,
+      startUtc: item.startUtc,
+      endUtc: item.endUtc,
+      timezone: discovery.activeTemporalFilter.value?.timezone ?? "UTC",
+      venueName: item.venueName,
+      district: item.district,
+      primaryCategory: item.primaryCategory,
+      savedByCurrentUser: item.savedByCurrentUser,
+      markerState: item.markerState,
+      thumbnailUrl: null,
+    }))
+    .sort((left, right) => left.startUtc.localeCompare(right.startUtc));
 });
 
-function onMapFeedQueryUpdated(query: EventMapFeedQueryDto): void {
-  latestMapFeedQuery.value = query;
+const latestVisibleMapItems = computed<EventMapItemDto[]>(() => {
+  const visibleIds = discovery.visibleEventIds.value;
+  return mapItemsState.value.filter((item) => visibleIds.has(item.eventId));
+});
+
+function onMapSelectedEventChanged(eventId: string | null): void {
+  if (eventId) {
+    discovery.selectEvent(eventId);
+    return;
+  }
+
+  discovery.clearSelection();
+}
+
+function onMapFiltersUpdated(partial: Partial<DiscoveryFilterState>): void {
+  discovery.applyFilters(partial);
 }
 
 function onMapItemsUpdated(items: EventMapItemDto[]): void {
-  latestMapItems.value = items;
+  mapItemsState.value = items;
+  discovery.reportVisibleEvents(items);
 }
 
 function onModalVisibilityChange(isVisible: boolean): void {

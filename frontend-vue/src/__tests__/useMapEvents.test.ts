@@ -1,7 +1,11 @@
+import { ref } from "vue";
 import { describe, expect, it, vi } from "vitest";
 
 import { useMapEvents } from "../composables/useMapEvents";
-import type { EventMapFeedQueryDto } from "../contracts/map-feed.contracts";
+import type {
+  EventMapFeedQueryDto,
+  EventMapFeedV1ResponseDto,
+} from "../contracts/map-feed.contracts";
 import { TimeWindowPreset } from "../contracts/time-window.contracts";
 import { fetchEventMapFeed } from "../services/mapFeedService";
 
@@ -63,10 +67,8 @@ describe("useMapEvents", () => {
       },
       clusterStrategy: "client_v1" as const,
     };
-    const slow = createDeferred({
-      ...slowPayload,
-    });
-    const fast = Promise.resolve({
+    const slow = createDeferred<EventMapFeedV1ResponseDto>();
+    const fast: Promise<EventMapFeedV1ResponseDto> = Promise.resolve({
       events: [
         {
           eventId: "evt-new",
@@ -99,7 +101,8 @@ describe("useMapEvents", () => {
     fetchMock.mockImplementationOnce(() => slow.promise);
     fetchMock.mockImplementationOnce(() => fast);
 
-    const mapEvents = useMapEvents();
+    const selectedEventId = ref<string | null>(null);
+    const mapEvents = useMapEvents(selectedEventId);
 
     const slowRequest = mapEvents.loadEvents(
       buildQuery(TimeWindowPreset.Tonight),
@@ -117,7 +120,7 @@ describe("useMapEvents", () => {
     expect(mapEvents.error.value).toBeNull();
   });
 
-  it("clears selection only after the latest successful payload drops the event", async () => {
+  it("derives marker selection from the external selected-event owner", async () => {
     const fetchMock = vi.mocked(fetchEventMapFeed);
 
     fetchMock.mockResolvedValueOnce({
@@ -166,14 +169,16 @@ describe("useMapEvents", () => {
       clusterStrategy: "client_v1" as const,
     });
 
-    const mapEvents = useMapEvents();
+    const selectedEventId = ref<string | null>(null);
+    const mapEvents = useMapEvents(selectedEventId);
     await mapEvents.loadEvents(buildQuery(TimeWindowPreset.Now));
-    mapEvents.selectByEventId("evt-selected");
+    selectedEventId.value = "evt-selected";
 
-    expect(mapEvents.selectedEventId.value).toBe("evt-selected");
+    expect(mapEvents.markers.value[0]?.effectiveMarkerState).toBe("selected");
 
     await mapEvents.loadEvents(buildQuery(TimeWindowPreset.Custom));
 
-    expect(mapEvents.selectedEventId.value).toBeNull();
+    expect(selectedEventId.value).toBe("evt-selected");
+    expect(mapEvents.events.value).toEqual([]);
   });
 });

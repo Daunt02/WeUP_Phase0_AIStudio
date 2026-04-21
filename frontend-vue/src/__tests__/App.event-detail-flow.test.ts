@@ -32,8 +32,16 @@ vi.mock("../components/MapSurface.vue", () => ({
         type: Boolean,
         default: null,
       },
+      activeFilters: {
+        type: Object,
+        default: null,
+      },
     },
-    emits: ["update:selectedEventId"],
+    emits: [
+      "update:selectedEventId",
+      "map-feed-query-updated",
+      "map-items-updated",
+    ],
     template: `
       <div>
         <button
@@ -44,6 +52,43 @@ vi.mock("../components/MapSurface.vue", () => ({
         </button>
         <div data-testid="map-selected-id">{{ selectedEventId ?? 'none' }}</div>
         <div data-testid="map-saved-state">{{ selectedEventSavedState === null ? 'none' : String(selectedEventSavedState) }}</div>
+      </div>
+    `,
+  }),
+}));
+
+vi.mock("../components/CalendarOverlayShell.vue", () => ({
+  default: defineComponent({
+    name: "CalendarOverlayShellStub",
+    props: {
+      layer: {
+        type: String,
+        required: true,
+      },
+      overlayHeight: {
+        type: String,
+        required: true,
+      },
+      selectedEventId: {
+        type: String,
+        default: null,
+      },
+      items: {
+        type: Array,
+        default: () => [],
+      },
+    },
+    emits: ["select-event", "set-layer"],
+    template: `
+      <div>
+        <button
+          data-testid="calendar-click"
+          @click="$emit('select-event', 'evt-cal-002')"
+        >
+          select calendar event
+        </button>
+        <div data-testid="calendar-selected-id">{{ selectedEventId ?? 'none' }}</div>
+        <div data-testid="calendar-layer">{{ layer }}</div>
       </div>
     `,
   }),
@@ -98,6 +143,7 @@ vi.mock("../services/eventDetailService", () => ({
 }));
 
 import App from "../App.vue";
+import { resetDiscoveryStateForTests } from "../composables/useDiscoveryState";
 
 const SlotStub = defineComponent({
   template: "<div><slot /></div>",
@@ -120,15 +166,17 @@ function mountApp() {
 
 describe("App event detail interaction flow", () => {
   beforeEach(() => {
+    resetDiscoveryStateForTests();
     notify.mockReset();
     fetchEventDetail.mockReset();
     saveEvent.mockReset();
     unsaveEvent.mockReset();
 
-    fetchEventDetail.mockResolvedValue({
+    fetchEventDetail.mockImplementation(async (eventId: string) => ({
       event: {
-        id: "evt-map-001",
-        title: "Midnight Groove",
+        id: eventId,
+        title:
+          eventId === "evt-cal-002" ? "Sunrise Session" : "Midnight Groove",
         description: "Canonical event detail.",
         venueName: "Warehouse 9",
         address: "100 Main St, Houston, TX",
@@ -155,9 +203,9 @@ describe("App event detail interaction flow", () => {
         savedByCurrentUser: false,
         version: 1,
         lastChangeType: null,
-        concurrencyToken: "evt-map-001:v1",
+        concurrencyToken: `${eventId}:v1`,
       },
-    });
+    }));
 
     saveEvent.mockResolvedValue({
       eventId: "evt-map-001",
@@ -209,5 +257,32 @@ describe("App event detail interaction flow", () => {
 
     expect(saveEvent).toHaveBeenCalledWith("evt-map-001");
     expect(wrapper.get('[data-testid="map-saved-state"]').text()).toBe("true");
+  });
+
+  it("routes calendar selection through the same shared selected-event state", async () => {
+    const wrapper = mountApp();
+
+    expect(wrapper.get('[data-testid="calendar-selected-id"]').text()).toBe(
+      "none",
+    );
+    expect(wrapper.get('[data-testid="calendar-layer"]').text()).toBe("closed");
+
+    await wrapper.get('[data-testid="calendar-click"]').trigger("click");
+    await flushPromises();
+
+    expect(fetchEventDetail).toHaveBeenCalledWith("evt-cal-002");
+    expect(wrapper.get('[data-testid="map-selected-id"]').text()).toBe(
+      "evt-cal-002",
+    );
+    expect(wrapper.get('[data-testid="calendar-selected-id"]').text()).toBe(
+      "evt-cal-002",
+    );
+    expect(wrapper.get('[data-testid="calendar-layer"]').text()).toBe(
+      "event-selected",
+    );
+    expect(wrapper.get('[data-testid="modal-open"]').text()).toBe("true");
+    expect(wrapper.get('[data-testid="modal-title"]').text()).toBe(
+      "Sunrise Session",
+    );
   });
 });

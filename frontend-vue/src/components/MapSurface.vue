@@ -56,6 +56,7 @@ import type {
   EventMapItemDto,
   EventMapMarkerViewModel,
 } from "../contracts/map-feed.contracts";
+import type { DiscoveryFilterState } from "../composables/useDiscoveryState";
 import { useMapFeedFilters } from "../composables/useMapFeedFilters";
 import { useMapEvents } from "../composables/useMapEvents";
 
@@ -63,6 +64,7 @@ const props = withDefaults(
   defineProps<{
     selectedEventId?: string | null;
     selectedEventSavedState?: boolean | null;
+    activeFilters?: DiscoveryFilterState;
   }>(),
   {
     selectedEventId: null,
@@ -107,11 +109,17 @@ const {
   clusterStrategy,
   isLoading,
   error,
-  selectedEventId,
   loadEvents,
-  selectByEventId,
   setSavedStateByEventId,
-} = useMapEvents();
+} = useMapEvents(computed(() => props.selectedEventId ?? null));
+
+const selectedEventId = computed(() => props.selectedEventId ?? null);
+const resolvedActiveFilters = computed<DiscoveryFilterState>(() => ({
+  district: props.activeFilters?.district,
+  categories: props.activeFilters?.categories,
+  includeSavedOnly:
+    props.activeFilters?.includeSavedOnly ?? includeSavedOnly.value,
+}));
 
 const token =
   (import.meta.env.VITE_MAPBOX_ACCESS_TOKEN as string | undefined) ?? "";
@@ -122,6 +130,7 @@ const emits = defineEmits<{
   (event: "update:selectedEventId", eventId: string | null): void;
   (event: "map-feed-query-updated", query: EventMapFeedQueryDto): void;
   (event: "map-items-updated", items: EventMapItemDto[]): void;
+  (event: "filters-updated", filters: Partial<DiscoveryFilterState>): void;
 }>();
 
 type MarkerFeatureProperties = {
@@ -598,7 +607,6 @@ function updateMapRendering(): void {
 }
 
 function emitSelection(eventId: string): void {
-  selectByEventId(eventId);
   emits("update:selectedEventId", eventId);
   emits("event-selected", eventId);
 }
@@ -752,9 +760,15 @@ async function refreshFromCurrentViewport(): Promise<void> {
     return;
   }
 
-  const query: EventMapFeedQueryDto = buildMapFeedQuery(
+  const baseQuery: EventMapFeedQueryDto = buildMapFeedQuery(
     toBboxString(currentMap),
   );
+  const query: EventMapFeedQueryDto = {
+    ...baseQuery,
+    district: resolvedActiveFilters.value.district,
+    categories: resolvedActiveFilters.value.categories,
+    includeSavedOnly: resolvedActiveFilters.value.includeSavedOnly,
+  };
 
   emits("map-feed-query-updated", query);
 
@@ -809,21 +823,26 @@ onMounted(async () => {
 });
 
 watch(
-  () => props.selectedEventId,
-  (eventId) => {
-    if (eventId !== selectedEventId.value) {
-      selectByEventId(eventId ?? null);
+  () => props.activeFilters?.includeSavedOnly,
+  (nextIncludeSavedOnly) => {
+    if (
+      typeof nextIncludeSavedOnly === "boolean" &&
+      nextIncludeSavedOnly !== includeSavedOnly.value
+    ) {
+      includeSavedOnly.value = nextIncludeSavedOnly;
     }
   },
   { immediate: true },
 );
 
-watch(selectedEventId, (eventId) => {
-  // The map owns hit-testing, but the parent owns the canonical selection
-  // state. When a refresh removes the selected event, propagate the null up.
-  if (eventId === null && props.selectedEventId !== null) {
-    emits("update:selectedEventId", null);
+watch(includeSavedOnly, (nextIncludeSavedOnly, previousIncludeSavedOnly) => {
+  if (nextIncludeSavedOnly === previousIncludeSavedOnly) {
+    return;
   }
+
+  // Anti-loop: this emits a change upward; the parent writes the shared store,
+  // then the prop sync above mirrors it back only when the value actually differs.
+  emits("filters-updated", { includeSavedOnly: nextIncludeSavedOnly });
 });
 
 watch(
@@ -845,6 +864,13 @@ watch(
   (nextItems) => {
     // Calendar overlay is a temporal projection of these same canonical events.
     emits("map-items-updated", nextItems);
+
+    if (
+      props.selectedEventId !== null &&
+      !nextItems.some((item) => item.eventId === props.selectedEventId)
+    ) {
+      emits("update:selectedEventId", null);
+    }
   },
   { deep: true, immediate: true },
 );
