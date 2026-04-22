@@ -6,69 +6,12 @@ import {
   saveEvent,
   unsaveEvent,
 } from "../services/eventDetailService";
-
-const ANONYMOUS_SAVED_EVENTS_KEY = "weup.saved-events.anon.v1";
+import { useAnonymousLocalPersistence } from "./useAnonymousLocalPersistence";
 
 type SavedStateCache = Record<string, SavedStateDto>;
 
 function normalizeEventId(eventId: string): string {
   return eventId.trim();
-}
-
-function readAnonymousSavedIds(): string[] {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  try {
-    const raw = window.localStorage.getItem(ANONYMOUS_SAVED_EVENTS_KEY);
-    if (!raw) {
-      return [];
-    }
-
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    const ids = parsed
-      .map((entry) =>
-        typeof entry === "string" ? normalizeEventId(entry) : "",
-      )
-      .filter((entry) => entry.length > 0);
-
-    return Array.from(new Set(ids));
-  } catch {
-    return [];
-  }
-}
-
-function writeAnonymousSavedIds(eventIds: string[]): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  const normalized = Array.from(
-    new Set(
-      eventIds
-        .map((eventId) => normalizeEventId(eventId))
-        .filter((eventId) => eventId.length > 0),
-    ),
-  );
-
-  try {
-    if (normalized.length === 0) {
-      window.localStorage.removeItem(ANONYMOUS_SAVED_EVENTS_KEY);
-      return;
-    }
-
-    window.localStorage.setItem(
-      ANONYMOUS_SAVED_EVENTS_KEY,
-      JSON.stringify(normalized),
-    );
-  } catch {
-    // Local persistence failures should not crash event detail interaction.
-  }
 }
 
 function buildAnonymousSavedState(
@@ -84,6 +27,8 @@ function buildAnonymousSavedState(
 }
 
 export function useSavedEventState() {
+  const anonymousLocalPersistence = useAnonymousLocalPersistence();
+
   const savedStateByEventId = ref<SavedStateCache>({});
   const pendingByEventId = ref<Record<string, boolean>>({});
 
@@ -133,7 +78,9 @@ export function useSavedEventState() {
       return remote;
     } catch (cause) {
       if (cause instanceof ApiRequestError && cause.status === 401) {
-        const localSaved = readAnonymousSavedIds().includes(normalizedEventId);
+        const localSaved = anonymousLocalPersistence
+          .getSavedState()
+          .savedEventIds.includes(normalizedEventId);
         const anonymousState = buildAnonymousSavedState(
           normalizedEventId,
           localSaved,
@@ -172,16 +119,11 @@ export function useSavedEventState() {
       let resolvedState: SavedStateDto;
 
       if (previousState.sessionKind === "anonymous") {
-        const localIds = readAnonymousSavedIds();
-        const localSet = new Set(localIds);
-
         if (targetSaved) {
-          localSet.add(normalizedEventId);
+          anonymousLocalPersistence.addSavedEventId(normalizedEventId);
         } else {
-          localSet.delete(normalizedEventId);
+          anonymousLocalPersistence.removeSavedEventId(normalizedEventId);
         }
-
-        writeAnonymousSavedIds(Array.from(localSet));
         resolvedState = buildAnonymousSavedState(
           normalizedEventId,
           targetSaved,
@@ -200,16 +142,11 @@ export function useSavedEventState() {
           };
         } catch (cause) {
           if (cause instanceof ApiRequestError && cause.status === 401) {
-            const localIds = readAnonymousSavedIds();
-            const localSet = new Set(localIds);
-
             if (targetSaved) {
-              localSet.add(normalizedEventId);
+              anonymousLocalPersistence.addSavedEventId(normalizedEventId);
             } else {
-              localSet.delete(normalizedEventId);
+              anonymousLocalPersistence.removeSavedEventId(normalizedEventId);
             }
-
-            writeAnonymousSavedIds(Array.from(localSet));
             resolvedState = buildAnonymousSavedState(
               normalizedEventId,
               targetSaved,

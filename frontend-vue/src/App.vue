@@ -56,6 +56,7 @@ import {
   useDiscoveryState,
   type DiscoveryFilterState,
 } from "./composables/useDiscoveryState";
+import { useAnonymousLocalPersistence } from "./composables/useAnonymousLocalPersistence";
 import { useEventDetailModal } from "./composables/useEventDetailModal";
 import { useSavedEventState } from "./composables/useSavedEventState";
 import type {
@@ -67,6 +68,7 @@ import { shareEventDetail } from "./services/eventDetailService";
 const $q = useQuasar();
 
 const discovery = useDiscoveryState();
+const anonymousLocalPersistence = useAnonymousLocalPersistence();
 
 const selectedEventIdModel = computed<string | null>({
   get() {
@@ -203,6 +205,15 @@ function onMapSelectedEventChanged(eventId: string | null): void {
 
 function onMapFiltersUpdated(partial: Partial<DiscoveryFilterState>): void {
   discovery.applyFilters(partial);
+
+  // Anonymous discovery context is convenience state only.
+  // It is never merged into authenticated backend records.
+  if ("district" in partial) {
+    anonymousLocalPersistence.setDiscoveryContext({
+      lastViewedDistrict: partial.district,
+    });
+  }
+
   beginCalendarFilterRefresh();
 }
 
@@ -220,6 +231,23 @@ function onMapFeedQueryUpdated(query: EventMapFeedQueryDto): void {
 
   latestMapFeedQueryState.value = query;
   discovery.reportMapFeedQuery(query);
+
+  // Persist lightweight anonymous context for UX continuity across reloads.
+  // This layer is explicitly non-authoritative and browser-local only.
+  anonymousLocalPersistence.setDiscoveryContext({
+    lastTemporalFilter: {
+      preset: query.preset,
+      timezone: query.timezone,
+      customStartUtc: query.customStartUtc,
+      customEndUtc: query.customEndUtc,
+    },
+    recentMapViewport: {
+      bbox: query.bbox,
+      capturedAtUtc: new Date().toISOString(),
+    },
+    lastViewedDistrict:
+      discovery.activeFilters.value.district ?? query.district ?? undefined,
+  });
 
   if (hadScopeChange) {
     beginCalendarFilterRefresh();
