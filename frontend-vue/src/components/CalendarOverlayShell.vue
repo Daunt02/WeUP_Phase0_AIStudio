@@ -1,5 +1,9 @@
 <template>
-  <div class="overlay-anchor" :class="anchorClass">
+  <div
+    class="overlay-anchor"
+    :class="[anchorClass, `phase-${transitionPhase}`]"
+    :data-transition-phase="transitionPhase"
+  >
     <q-btn
       v-if="layer === 'closed'"
       class="overlay-open-btn"
@@ -21,14 +25,29 @@
         <CalendarTimelineHeader
           :layer="layer"
           :total-count="items.length"
+          :is-filter-refresh-pending="isFilterRefreshPending"
+          :transition-phase="transitionPhase"
           @set-layer="$emit('set-layer', $event)"
         />
+
+        <q-linear-progress
+          v-if="isFilterRefreshPending"
+          indeterminate
+          color="primary"
+          class="refresh-progress"
+        />
+
+        <q-banner v-if="degradedReason" rounded class="degraded-banner">
+          {{ degradedReason }}
+        </q-banner>
 
         <CalendarEventGrid
           :items="items"
           :selected-event-id="selectedEventId"
-          :is-loading="isLoading"
+          :is-loading="isLoading || isFilterRefreshPending"
           :error="error"
+          :transition-phase="transitionPhase"
+          :defer-selection-motion="shouldDeferSelectionMotion"
           @select-event="$emit('select-event', $event)"
         />
       </q-card>
@@ -37,11 +56,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, toRef } from "vue";
 import type {
   CalendarEventItemDto,
   CalendarOverlayLayerState,
 } from "../contracts/calendar-overlay.contracts";
+import { useCalendarTransitionState } from "../composables/useCalendarTransitionState";
 import CalendarEventGrid from "./CalendarEventGrid.vue";
 import CalendarTimelineHeader from "./CalendarTimelineHeader.vue";
 
@@ -52,6 +72,8 @@ const props = defineProps<{
   items: CalendarEventItemDto[];
   isLoading?: boolean;
   error?: string | null;
+  isFilterRefreshPending?: boolean;
+  degradedReason?: string | null;
 }>();
 
 defineEmits<{
@@ -62,6 +84,14 @@ defineEmits<{
 const anchorClass = computed(() => {
   return props.layer === "closed" ? "is-closed" : "is-open";
 });
+
+const { phase, shouldDeferSelectionMotion } = useCalendarTransitionState({
+  layer: toRef(props, "layer"),
+  selectedEventId: toRef(props, "selectedEventId"),
+  isFilterRefreshPending: toRef(props, "isFilterRefreshPending"),
+});
+
+const transitionPhase = computed(() => phase.value);
 </script>
 
 <style scoped>
@@ -101,6 +131,10 @@ const anchorClass = computed(() => {
   border-radius: 14px;
   overflow: hidden;
   box-shadow: 0 20px 44px rgba(15, 23, 42, 0.18);
+  transition:
+    height 180ms ease,
+    opacity 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .overlay-slide-enter-active,
@@ -114,6 +148,37 @@ const anchorClass = computed(() => {
 .overlay-slide-leave-to {
   transform: translateY(20px);
   opacity: 0;
+}
+
+/* Motion remains finite and contextual: no looping keyframes on shell. */
+.overlay-anchor.phase-overlay-open .overlay-card {
+  box-shadow: 0 22px 46px rgba(15, 23, 42, 0.2);
+}
+
+.overlay-anchor.phase-overlay-close .overlay-card {
+  opacity: 0.98;
+}
+
+.overlay-anchor.phase-partial-to-expanded .overlay-card {
+  transition-duration: 160ms;
+}
+
+.refresh-progress {
+  height: 2px;
+}
+
+.degraded-banner {
+  margin: 8px 12px 0;
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay-card,
+  .overlay-slide-enter-active,
+  .overlay-slide-leave-active {
+    transition: none;
+  }
 }
 
 @media (max-width: 768px) {

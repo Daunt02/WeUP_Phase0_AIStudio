@@ -9,6 +9,9 @@
         <div class="count-label">
           {{ totalCount }} events in current map window
         </div>
+        <div v-if="isFilterRefreshPending" class="status-label">
+          Updating temporal/filter projection...
+        </div>
       </div>
     </div>
 
@@ -44,10 +47,13 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { CalendarOverlayLayerState } from "../contracts/calendar-overlay.contracts";
+import type { CalendarTransitionPhase } from "../composables/useCalendarTransitionState";
 
 const props = defineProps<{
   layer: CalendarOverlayLayerState;
   totalCount: number;
+  isFilterRefreshPending?: boolean;
+  transitionPhase?: CalendarTransitionPhase;
 }>();
 
 defineEmits<{
@@ -63,6 +69,9 @@ const stateLabel = computed(() => {
   }
   if (props.layer === "expanded") {
     return "Expanded Overlay";
+  }
+  if (props.transitionPhase === "event-select") {
+    return "Event Focus";
   }
   return "Event Selected";
 });
@@ -101,6 +110,12 @@ const stateLabel = computed(() => {
   text-overflow: ellipsis;
   overflow: hidden;
   max-width: 48vw;
+}
+
+.status-label {
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .actions {

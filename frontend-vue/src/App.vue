@@ -15,7 +15,7 @@
             :active-filters="discovery.activeFilters.value"
             @update:selected-event-id="onMapSelectedEventChanged"
             @filters-updated="onMapFiltersUpdated"
-            @map-feed-query-updated="discovery.reportMapFeedQuery"
+            @map-feed-query-updated="onMapFeedQueryUpdated"
             @map-items-updated="onMapItemsUpdated"
           />
 
@@ -24,6 +24,8 @@
             :overlay-height="discovery.overlayHeight.value"
             :selected-event-id="discovery.selectedEventId.value"
             :items="calendarItems"
+            :is-filter-refresh-pending="isCalendarFilterRefreshPending"
+            :degraded-reason="calendarDegradedReason"
             @set-layer="discovery.setOverlayMode"
             @select-event="discovery.selectEvent"
           />
@@ -45,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, ref } from "vue";
 import { useQuasar } from "quasar";
 import CalendarOverlayShell from "./components/CalendarOverlayShell.vue";
 import EventDetailModal from "./components/EventDetailModal.vue";
@@ -55,7 +57,10 @@ import {
   type DiscoveryFilterState,
 } from "./composables/useDiscoveryState";
 import { useEventDetailModal } from "./composables/useEventDetailModal";
-import type { EventMapItemDto } from "./contracts/map-feed.contracts";
+import type {
+  EventMapFeedQueryDto,
+  EventMapItemDto,
+} from "./contracts/map-feed.contracts";
 import { shareEventDetail } from "./services/eventDetailService";
 
 const $q = useQuasar();
@@ -91,6 +96,61 @@ const selectedEventSavedState = computed(() => {
 });
 
 const mapItemsState = ref<EventMapItemDto[]>([]);
+const isCalendarFilterRefreshPending = ref(false);
+const calendarDegradedReason = ref<string | null>(null);
+const latestMapFeedQueryState = ref<EventMapFeedQueryDto | null>(null);
+let refreshDegradedHandle: ReturnType<typeof setTimeout> | null = null;
+
+function clearRefreshDegradedHandle(): void {
+  if (refreshDegradedHandle) {
+    clearTimeout(refreshDegradedHandle);
+    refreshDegradedHandle = null;
+  }
+}
+
+function beginCalendarFilterRefresh(): void {
+  isCalendarFilterRefreshPending.value = true;
+  clearRefreshDegradedHandle();
+
+  // Stop motion escalation if data response is delayed: degrade to explicit text.
+  refreshDegradedHandle = setTimeout(() => {
+    if (isCalendarFilterRefreshPending.value) {
+      calendarDegradedReason.value =
+        "Calendar refresh is delayed. Showing last stable projection while map data catches up.";
+    }
+  }, 1800);
+}
+
+function settleCalendarFilterRefresh(): void {
+  isCalendarFilterRefreshPending.value = false;
+  calendarDegradedReason.value = null;
+  clearRefreshDegradedHandle();
+}
+
+function hasFilterScopeChange(
+  previous: EventMapFeedQueryDto | null,
+  next: EventMapFeedQueryDto,
+): boolean {
+  if (!previous) {
+    return false;
+  }
+
+  const previousCategories = previous.categories ?? [];
+  const nextCategories = next.categories ?? [];
+
+  return (
+    previous.preset !== next.preset ||
+    previous.timezone !== next.timezone ||
+    previous.customStartUtc !== next.customStartUtc ||
+    previous.customEndUtc !== next.customEndUtc ||
+    previous.district !== next.district ||
+    previous.includeSavedOnly !== next.includeSavedOnly ||
+    previousCategories.length !== nextCategories.length ||
+    previousCategories.some(
+      (category, index) => category !== nextCategories[index],
+    )
+  );
+}
 
 const calendarItems = computed(() => {
   // Calendar is an alternate temporal projection of the same canonical map set.
@@ -137,11 +197,27 @@ function onMapSelectedEventChanged(eventId: string | null): void {
 
 function onMapFiltersUpdated(partial: Partial<DiscoveryFilterState>): void {
   discovery.applyFilters(partial);
+  beginCalendarFilterRefresh();
 }
 
 function onMapItemsUpdated(items: EventMapItemDto[]): void {
   mapItemsState.value = items;
   discovery.reportVisibleEvents(items);
+  settleCalendarFilterRefresh();
+}
+
+function onMapFeedQueryUpdated(query: EventMapFeedQueryDto): void {
+  const hadScopeChange = hasFilterScopeChange(
+    latestMapFeedQueryState.value,
+    query,
+  );
+
+  latestMapFeedQueryState.value = query;
+  discovery.reportMapFeedQuery(query);
+
+  if (hadScopeChange) {
+    beginCalendarFilterRefresh();
+  }
 }
 
 function onModalVisibilityChange(isVisible: boolean): void {
@@ -181,6 +257,10 @@ async function showSharePlaceholder(): Promise<void> {
     });
   }
 }
+
+onBeforeUnmount(() => {
+  clearRefreshDegradedHandle();
+});
 </script>
 
 <style scoped>

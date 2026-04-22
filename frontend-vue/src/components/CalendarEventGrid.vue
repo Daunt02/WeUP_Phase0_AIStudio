@@ -4,8 +4,19 @@
       {{ error }}
     </q-banner>
 
+    <q-banner
+      v-if="degradedReason && !isLoading"
+      rounded
+      class="degraded-banner"
+    >
+      {{ degradedReason }}
+    </q-banner>
+
     <q-inner-loading :showing="isLoading">
-      <q-spinner-dots size="36px" color="primary" />
+      <div class="loading-state">
+        <q-spinner-dots size="36px" color="primary" />
+        <div class="loading-copy">Refreshing calendar projection...</div>
+      </div>
     </q-inner-loading>
 
     <div
@@ -15,7 +26,14 @@
       No events in this map window for the selected temporal preset.
     </div>
 
-    <div v-else class="group-list">
+    <div
+      v-else
+      class="group-list"
+      :class="[
+        `phase-${transitionPhase ?? 'idle'}`,
+        { 'defer-selection-motion': deferSelectionMotion },
+      ]"
+    >
       <section
         v-for="day in layout.dayBuckets"
         :key="day.dayKey"
@@ -84,6 +102,7 @@
 <script setup lang="ts">
 import type { CalendarEventItemDto } from "../contracts/calendar-overlay.contracts";
 import type { CalendarTimeBucket } from "../composables/useCalendarMasonryLayout";
+import type { CalendarTransitionPhase } from "../composables/useCalendarTransitionState";
 import { computeCalendarMasonryLayout } from "../composables/useCalendarMasonryLayout";
 import { computed } from "vue";
 import CalendarEventCard from "./CalendarEventCard.vue";
@@ -93,6 +112,9 @@ const props = defineProps<{
   selectedEventId: string | null;
   isLoading?: boolean;
   error?: string | null;
+  degradedReason?: string | null;
+  transitionPhase?: CalendarTransitionPhase;
+  deferSelectionMotion?: boolean;
 }>();
 
 defineEmits<{
@@ -176,6 +198,23 @@ function gridStyle(bucket: CalendarTimeBucket): Record<string, string> {
   color: #7f1d1d;
 }
 
+.degraded-banner {
+  margin-bottom: 8px;
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.loading-state {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+
+.loading-copy {
+  font-size: 12px;
+  color: #334155;
+}
+
 .bucket-header {
   display: flex;
   align-items: baseline;
@@ -227,5 +266,20 @@ function gridStyle(bucket: CalendarTimeBucket): Record<string, string> {
   text-align: center;
   color: #475569;
   padding: 24px 12px;
+}
+
+/* Keep motion finite: only short opacity shifts to preserve map orientation. */
+.group-list.phase-filter-refresh {
+  opacity: 0.88;
+}
+
+.group-list.defer-selection-motion :deep(.calendar-event-card) {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .group-list {
+    transition: none;
+  }
 }
 </style>
