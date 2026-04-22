@@ -50,7 +50,10 @@ public sealed class ContractManifestTests
             [nameof(SubmitForReviewResponse)] = GetJsonPropertyNames<SubmitForReviewResponse>(),
             [nameof(SavedEventDto)] = GetJsonPropertyNames<SavedEventDto>(),
             [nameof(SavedEventsResponse)] = GetJsonPropertyNames<SavedEventsResponse>(),
-            [nameof(SaveEventResponse)] = GetJsonPropertyNames<SaveEventResponse>(),
+            [nameof(SaveEventRequestDto)] = GetJsonPropertyNames<SaveEventRequestDto>(),
+            [nameof(SaveEventResponseDto)] = GetJsonPropertyNames<SaveEventResponseDto>(),
+            [nameof(UnsaveEventRequestDto)] = GetJsonPropertyNames<UnsaveEventRequestDto>(),
+            [nameof(SavedStateDto)] = GetJsonPropertyNames<SavedStateDto>(),
         };
 
         Assert.Equal(expected.Keys.OrderBy(x => x), manifest.Contracts.Keys.OrderBy(x => x));

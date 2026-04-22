@@ -2,12 +2,14 @@ import { defineComponent, nextTick } from "vue";
 import { mount, flushPromises } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { notify, fetchEventDetail, saveEvent, unsaveEvent } = vi.hoisted(() => ({
-  notify: vi.fn(),
-  fetchEventDetail: vi.fn(),
-  saveEvent: vi.fn(),
-  unsaveEvent: vi.fn(),
-}));
+const { notify, fetchEventDetail, fetchSavedState, saveEvent, unsaveEvent } =
+  vi.hoisted(() => ({
+    notify: vi.fn(),
+    fetchEventDetail: vi.fn(),
+    fetchSavedState: vi.fn(),
+    saveEvent: vi.fn(),
+    unsaveEvent: vi.fn(),
+  }));
 
 vi.mock("quasar", async () => {
   const actual = await vi.importActual<typeof import("quasar")>("quasar");
@@ -137,6 +139,7 @@ vi.mock("../components/EventDetailModal.vue", () => ({
 
 vi.mock("../services/eventDetailService", () => ({
   fetchEventDetail,
+  fetchSavedState,
   saveEvent,
   unsaveEvent,
   shareEventDetail: vi.fn(),
@@ -169,8 +172,16 @@ describe("App event detail interaction flow", () => {
     resetDiscoveryStateForTests();
     notify.mockReset();
     fetchEventDetail.mockReset();
+    fetchSavedState.mockReset();
     saveEvent.mockReset();
     unsaveEvent.mockReset();
+
+    fetchSavedState.mockResolvedValue({
+      eventId: "evt-map-001",
+      saved: false,
+      sessionKind: "authenticated",
+      persistenceSource: "backend",
+    });
 
     fetchEventDetail.mockImplementation(async (eventId: string) => ({
       event: {
@@ -255,7 +266,7 @@ describe("App event detail interaction flow", () => {
     await wrapper.get('[data-testid="toggle-save"]').trigger("click");
     await flushPromises();
 
-    expect(saveEvent).toHaveBeenCalledWith("evt-map-001");
+    expect(saveEvent).toHaveBeenCalledWith({ eventId: "evt-map-001" });
     expect(wrapper.get('[data-testid="map-saved-state"]').text()).toBe("true");
   });
 

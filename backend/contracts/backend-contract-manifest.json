@@ -274,6 +274,9 @@
       "pageSize",
       "totalCount"
     ],
-    "SaveEventResponse": ["eventId", "message", "saved"]
+    "SaveEventRequestDto": ["eventId"],
+    "SaveEventResponseDto": ["eventId", "message", "saved"],
+    "UnsaveEventRequestDto": ["eventId"],
+    "SavedStateDto": ["eventId", "persistenceSource", "saved", "sessionKind"]
   }
 }

@@ -92,12 +92,12 @@ public sealed class EfSaveRepository(WeUpDbContext db) : ISaveRepository
                 ct);
     }
 
-    public async Task<SaveEventResponse> SaveEventAsync(string userId, string eventId, CancellationToken ct = default)
+    public async Task<SaveEventResponseDto> SaveEventAsync(string userId, string eventId, CancellationToken ct = default)
     {
         var user = await db.UserProfiles.FirstOrDefaultAsync(u => u.PublicId == userId, ct);
         var evt = await db.Events.FirstOrDefaultAsync(e => e.PublicId == eventId, ct);
         if (user is null || evt is null)
-            return new SaveEventResponse(eventId, false, "Invalid userId or eventId");
+            return new SaveEventResponseDto(eventId, false, "Invalid userId or eventId");
 
         var exists = await db.SavedEvents
             .AnyAsync(s => s.UserId == user.Id && s.EventId == evt.Id, ct);
@@ -113,15 +113,15 @@ public sealed class EfSaveRepository(WeUpDbContext db) : ISaveRepository
             await db.SaveChangesAsync(ct);
         }
 
-        return new SaveEventResponse(eventId, true, "Saved");
+        return new SaveEventResponseDto(eventId, true, "Saved");
     }
 
-    public async Task<SaveEventResponse> UnsaveEventAsync(string userId, string eventId, CancellationToken ct = default)
+    public async Task<SaveEventResponseDto> UnsaveEventAsync(string userId, string eventId, CancellationToken ct = default)
     {
         var user = await db.UserProfiles.FirstOrDefaultAsync(u => u.PublicId == userId, ct);
         var evt = await db.Events.FirstOrDefaultAsync(e => e.PublicId == eventId, ct);
         if (user is null || evt is null)
-            return new SaveEventResponse(eventId, false, "Invalid userId or eventId");
+            return new SaveEventResponseDto(eventId, false, "Invalid userId or eventId");
 
         var entity = await db.SavedEvents
             .FirstOrDefaultAsync(s => s.UserId == user.Id && s.EventId == evt.Id, ct);
@@ -132,6 +132,6 @@ public sealed class EfSaveRepository(WeUpDbContext db) : ISaveRepository
             await db.SaveChangesAsync(ct);
         }
 
-        return new SaveEventResponse(eventId, false, "Unsaved");
+        return new SaveEventResponseDto(eventId, false, "Unsaved");
     }
 }

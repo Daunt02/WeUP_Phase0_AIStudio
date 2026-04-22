@@ -57,6 +57,7 @@ import {
   type DiscoveryFilterState,
 } from "./composables/useDiscoveryState";
 import { useEventDetailModal } from "./composables/useEventDetailModal";
+import { useSavedEventState } from "./composables/useSavedEventState";
 import type {
   EventMapFeedQueryDto,
   EventMapItemDto,
@@ -81,6 +82,8 @@ const selectedEventIdModel = computed<string | null>({
   },
 });
 
+const savedEventState = useSavedEventState();
+
 const {
   eventDetail,
   isOpen,
@@ -89,7 +92,10 @@ const {
   error,
   closeModal,
   toggleSavedState,
-} = useEventDetailModal(selectedEventIdModel);
+} = useEventDetailModal(selectedEventIdModel, {
+  resolveSavedState: savedEventState.resolveSavedState,
+  mutateSavedState: savedEventState.mutateSavedState,
+});
 
 const selectedEventSavedState = computed(() => {
   return eventDetail.value?.savedByCurrentUser ?? null;

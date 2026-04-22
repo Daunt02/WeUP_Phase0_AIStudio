@@ -1,13 +1,22 @@
 import { computed, ref, watch, type Ref } from "vue";
-import type { EventDetailDto } from "../contracts/event-detail.contracts";
-import {
-  fetchEventDetail,
-  saveEvent,
-  unsaveEvent,
-} from "../services/eventDetailService";
+import type {
+  EventDetailDto,
+  SavedStateDto,
+} from "../contracts/event-detail.contracts";
+import { fetchEventDetail } from "../services/eventDetailService";
+
+interface SavedStateAuthority {
+  resolveSavedState: (eventId: string) => Promise<SavedStateDto>;
+  mutateSavedState: (
+    eventId: string,
+    targetSaved: boolean,
+    applyUiSavedState: (saved: boolean) => void,
+  ) => Promise<SavedStateDto>;
+}
 
 export function useEventDetailModal(
   selectedEventId: Ref<string | null> = ref<string | null>(null),
+  savedStateAuthority?: SavedStateAuthority,
 ) {
   const eventDetail = ref<EventDetailDto | null>(null);
   const isLoading = ref(false);
@@ -56,7 +65,25 @@ export function useEventDetailModal(
           );
         }
 
-        eventDetail.value = response.event;
+        let resolvedDetail = response.event;
+        if (savedStateAuthority) {
+          const savedState =
+            await savedStateAuthority.resolveSavedState(eventId);
+
+          if (
+            requestId !== activeRequestId.value ||
+            selectedEventId.value !== eventId
+          ) {
+            return;
+          }
+
+          resolvedDetail = {
+            ...resolvedDetail,
+            savedByCurrentUser: savedState.saved,
+          };
+        }
+
+        eventDetail.value = resolvedDetail;
       } catch (cause) {
         if (
           requestId !== activeRequestId.value ||
@@ -100,18 +127,32 @@ export function useEventDetailModal(
     error.value = null;
 
     try {
-      const response = detail.savedByCurrentUser
-        ? await unsaveEvent(detail.id)
-        : await saveEvent(detail.id);
+      const targetSavedState = !detail.savedByCurrentUser;
+
+      const applyUiSavedState = (saved: boolean): void => {
+        if (eventDetail.value?.id !== detail.id) {
+          return;
+        }
+
+        eventDetail.value = {
+          ...eventDetail.value,
+          savedByCurrentUser: saved,
+        };
+      };
+
+      if (savedStateAuthority) {
+        await savedStateAuthority.mutateSavedState(
+          detail.id,
+          targetSavedState,
+          applyUiSavedState,
+        );
+      } else {
+        applyUiSavedState(targetSavedState);
+      }
 
       if (eventDetail.value?.id !== detail.id) {
         return;
       }
-
-      eventDetail.value = {
-        ...eventDetail.value,
-        savedByCurrentUser: response.saved,
-      };
     } catch (cause) {
       error.value =
         cause instanceof Error ? cause.message : "Failed to update save state.";

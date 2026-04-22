@@ -40,10 +40,25 @@ export interface SavedEventsResponse {
   hasNextPage: boolean;
 }
 
-export interface SaveEventResponse {
+export interface SaveEventRequestDto {
+  eventId: string;
+}
+
+export interface UnsaveEventRequestDto {
+  eventId: string;
+}
+
+export interface SaveEventResponseDto {
   eventId: string;
   saved: boolean;
   message: string;
+}
+
+export interface SavedStateDto {
+  eventId: string;
+  saved: boolean;
+  sessionKind: string;
+  persistenceSource: string;
 }
 
 export interface SubmissionDto {

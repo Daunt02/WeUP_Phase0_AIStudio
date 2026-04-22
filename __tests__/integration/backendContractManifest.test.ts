@@ -26,10 +26,13 @@ import { TimeWindowPreset } from "@/domains/event/apiContracts";
 import type {
   SavedEventDto,
   SavedEventsResponse,
-  SaveEventResponse,
+  SaveEventRequestDto,
+  SaveEventResponseDto,
+  SavedStateDto,
   SubmissionDto,
   SubmissionListResponse,
   SubmitForReviewResponse,
+  UnsaveEventRequestDto,
 } from "@/services/backendContracts";
 
 function expectKeys(contractName: string, sample: object) {
@@ -269,10 +272,25 @@ describe("backend contract manifest", () => {
       hasNextPage: false,
     };
 
-    const saveEventResponse: SaveEventResponse = {
+    const saveEventRequest: SaveEventRequestDto = {
+      eventId: "evt-sf-midnight-groove",
+    };
+
+    const unsaveEventRequest: UnsaveEventRequestDto = {
+      eventId: "evt-sf-midnight-groove",
+    };
+
+    const saveEventResponse: SaveEventResponseDto = {
       eventId: "evt-sf-midnight-groove",
       saved: true,
       message: "Saved",
+    };
+
+    const savedState: SavedStateDto = {
+      eventId: "evt-sf-midnight-groove",
+      saved: true,
+      sessionKind: "authenticated",
+      persistenceSource: "backend",
     };
 
     const submissionDto: SubmissionDto = {
@@ -344,7 +362,10 @@ describe("backend contract manifest", () => {
     expectKeys("DraftSubmissionRequest", draftSubmissionRequest);
     expectKeys("SavedEventDto", savedEvent);
     expectKeys("SavedEventsResponse", savedEventsResponse);
-    expectKeys("SaveEventResponse", saveEventResponse);
+    expectKeys("SaveEventRequestDto", saveEventRequest);
+    expectKeys("UnsaveEventRequestDto", unsaveEventRequest);
+    expectKeys("SaveEventResponseDto", saveEventResponse);
+    expectKeys("SavedStateDto", savedState);
     expectKeys("SubmissionDto", submissionDto);
     expectKeys("SubmissionListResponse", submissionListResponse);
     expectKeys("SubmitForReviewResponse", submitForReviewResponse);

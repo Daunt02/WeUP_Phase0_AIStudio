@@ -10,7 +10,7 @@ public interface ISaveRepository
     Task<SavedEventsResponse> GetSavesAsync(string userId, int page, int pageSize, CancellationToken ct = default);
     Task<bool> IsEventSavedAsync(string userId, string eventId, CancellationToken ct = default);
     /// <summary>Idempotent — safe to call multiple times.</summary>
-    Task<SaveEventResponse> SaveEventAsync(string userId, string eventId, CancellationToken ct = default);
+    Task<SaveEventResponseDto> SaveEventAsync(string userId, string eventId, CancellationToken ct = default);
     /// <summary>Idempotent — safe to call when event is not saved.</summary>
-    Task<SaveEventResponse> UnsaveEventAsync(string userId, string eventId, CancellationToken ct = default);
+    Task<SaveEventResponseDto> UnsaveEventAsync(string userId, string eventId, CancellationToken ct = default);
 }

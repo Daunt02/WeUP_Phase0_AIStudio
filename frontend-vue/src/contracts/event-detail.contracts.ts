@@ -42,9 +42,30 @@ export interface EventDetailResponse {
   readonly event: EventDetailDto | null;
 }
 
-/** Backend DTO: WeUP.Contracts.Saves.SaveEventResponse */
-export interface SaveEventResponse {
+/** Backend DTO: WeUP.Contracts.Saves.SaveEventRequestDto */
+export interface SaveEventRequestDto {
+  readonly eventId: string;
+}
+
+/** Backend DTO: WeUP.Contracts.Saves.UnsaveEventRequestDto */
+export interface UnsaveEventRequestDto {
+  readonly eventId: string;
+}
+
+/** Backend DTO: WeUP.Contracts.Saves.SaveEventResponseDto */
+export interface SaveEventResponseDto {
   readonly eventId: string;
   readonly saved: boolean;
   readonly message: string;
+}
+
+export type SaveSessionKind = "authenticated" | "anonymous";
+export type SavePersistenceSource = "backend" | "anonymous-local";
+
+/** Backend DTO: WeUP.Contracts.Saves.SavedStateDto */
+export interface SavedStateDto {
+  readonly eventId: string;
+  readonly saved: boolean;
+  readonly sessionKind: SaveSessionKind;
+  readonly persistenceSource: SavePersistenceSource;
 }

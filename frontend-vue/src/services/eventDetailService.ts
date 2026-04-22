@@ -1,7 +1,10 @@
 import type {
   EventDetailDto,
   EventDetailResponse,
-  SaveEventResponse,
+  SaveEventRequestDto,
+  SaveEventResponseDto,
+  SavedStateDto,
+  UnsaveEventRequestDto,
 } from "../contracts/event-detail.contracts";
 
 const API_BASE_URL =
@@ -13,6 +16,24 @@ function buildErrorMessage(
   detail: string,
 ): string {
   return `${operation} failed (${status}). ${detail}`.trim();
+}
+
+export class ApiRequestError extends Error {
+  readonly status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiRequestError";
+    this.status = status;
+  }
+}
+
+function buildJsonHeaders(init?: RequestInit): HeadersInit {
+  return {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    ...(init?.headers ?? {}),
+  };
 }
 
 export type EventShareResult = "shared" | "copied" | "opened" | "dismissed";
@@ -87,8 +108,9 @@ export async function fetchEventDetail(
 
   if (!response.ok) {
     const detail = await response.text().catch(() => "");
-    throw new Error(
+    throw new ApiRequestError(
       buildErrorMessage("Event detail request", response.status, detail),
+      response.status,
     );
   }
 
@@ -96,51 +118,72 @@ export async function fetchEventDetail(
 }
 
 export async function saveEvent(
-  eventId: string,
+  request: SaveEventRequestDto,
   init?: RequestInit,
-): Promise<SaveEventResponse> {
-  const response = await fetch(
-    `${API_BASE_URL}/api/users/me/saves/${encodeURIComponent(eventId)}`,
-    {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        ...(init?.headers ?? {}),
-      },
-      ...init,
-    },
-  );
+): Promise<SaveEventResponseDto> {
+  const response = await fetch(`${API_BASE_URL}/api/users/me/saves`, {
+    method: "POST",
+    headers: buildJsonHeaders(init),
+    body: JSON.stringify(request),
+    ...init,
+  });
 
   if (!response.ok) {
     const detail = await response.text().catch(() => "");
-    throw new Error(buildErrorMessage("Save request", response.status, detail));
-  }
-
-  return (await response.json()) as SaveEventResponse;
-}
-
-export async function unsaveEvent(
-  eventId: string,
-  init?: RequestInit,
-): Promise<SaveEventResponse> {
-  const response = await fetch(
-    `${API_BASE_URL}/api/users/me/saves/${encodeURIComponent(eventId)}`,
-    {
-      method: "DELETE",
-      headers: {
-        Accept: "application/json",
-        ...(init?.headers ?? {}),
-      },
-      ...init,
-    },
-  );
-
-  if (!response.ok) {
-    const detail = await response.text().catch(() => "");
-    throw new Error(
-      buildErrorMessage("Unsave request", response.status, detail),
+    throw new ApiRequestError(
+      buildErrorMessage("Save request", response.status, detail),
+      response.status,
     );
   }
 
-  return (await response.json()) as SaveEventResponse;
+  return (await response.json()) as SaveEventResponseDto;
+}
+
+export async function unsaveEvent(
+  request: UnsaveEventRequestDto,
+  init?: RequestInit,
+): Promise<SaveEventResponseDto> {
+  const response = await fetch(`${API_BASE_URL}/api/users/me/saves/unsave`, {
+    method: "POST",
+    headers: buildJsonHeaders(init),
+    body: JSON.stringify(request),
+    ...init,
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new ApiRequestError(
+      buildErrorMessage("Unsave request", response.status, detail),
+      response.status,
+    );
+  }
+
+  return (await response.json()) as SaveEventResponseDto;
+}
+
+export async function fetchSavedState(
+  eventId: string,
+  init?: RequestInit,
+): Promise<SavedStateDto> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/users/me/saves/${encodeURIComponent(eventId)}/state`,
+    {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        ...(init?.headers ?? {}),
+      },
+      ...init,
+    },
+  );
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new ApiRequestError(
+      buildErrorMessage("Saved state request", response.status, detail),
+      response.status,
+    );
+  }
+
+  return (await response.json()) as SavedStateDto;
 }

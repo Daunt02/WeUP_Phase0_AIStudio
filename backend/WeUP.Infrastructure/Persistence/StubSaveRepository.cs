@@ -74,23 +74,23 @@ public sealed class StubSaveRepository : ISaveRepository
         }
     }
 
-    public Task<SaveEventResponse> SaveEventAsync(string userId, string eventId, CancellationToken ct = default)
+    public Task<SaveEventResponseDto> SaveEventAsync(string userId, string eventId, CancellationToken ct = default)
     {
         lock (_gate)
         {
             _saves[(userId, eventId)] = _seedNow.AddMinutes(_saves.Count + 1);
         }
 
-        return Task.FromResult(new SaveEventResponse(eventId, true, "Saved"));
+        return Task.FromResult(new SaveEventResponseDto(eventId, true, "Saved"));
     }
 
-    public Task<SaveEventResponse> UnsaveEventAsync(string userId, string eventId, CancellationToken ct = default)
+    public Task<SaveEventResponseDto> UnsaveEventAsync(string userId, string eventId, CancellationToken ct = default)
     {
         lock (_gate)
         {
             _saves.Remove((userId, eventId));
         }
 
-        return Task.FromResult(new SaveEventResponse(eventId, false, "Unsaved"));
+        return Task.FromResult(new SaveEventResponseDto(eventId, false, "Unsaved"));
     }
 }
