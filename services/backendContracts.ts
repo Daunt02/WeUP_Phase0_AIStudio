@@ -61,6 +61,66 @@ export interface SavedStateDto {
   persistenceSource: string;
 }
 
+export interface SaveStateLocalTemporalFilterDto {
+  preset: string | null;
+  timezone: string | null;
+  customStartUtc: string | null;
+  customEndUtc: string | null;
+}
+
+export interface SaveStateLocalMapViewportDto {
+  bbox: string | null;
+  capturedAtUtc: string | null;
+}
+
+export interface SaveStateLocalDiscoveryContextDto {
+  lastViewedDistrict: string | null;
+  lastTemporalFilter: SaveStateLocalTemporalFilterDto | null;
+  recentMapViewport: SaveStateLocalMapViewportDto | null;
+  updatedAtUtc: string | null;
+}
+
+export interface SaveStateMigrationRequestDto {
+  localSavedEventIds: string[];
+  localDiscoveryContext: SaveStateLocalDiscoveryContextDto | null;
+  clientMigrationKey: string | null;
+}
+
+export interface SaveStateMigrationCountsDto {
+  receivedLocalSavedCount: number;
+  distinctLocalSavedCount: number;
+  duplicateCollapsedCount: number;
+  migratedCount: number;
+  alreadySavedCount: number;
+  invalidLocalIdCount: number;
+  missingLocalIdCount: number;
+}
+
+export interface SaveStateMigrationItemResultDto {
+  eventId: string;
+  outcome: string;
+  message: string;
+}
+
+export interface SaveStateDiscoveryContextMigrationResultDto {
+  status: string;
+  applied: boolean;
+  message: string;
+  resolvedPreferredTimezone: string | null;
+}
+
+export interface SaveStateMigrationResultDto {
+  status: "completed" | "completed-with-issues";
+  migrationDirection: "anonymous-to-authenticated";
+  ownership: "authenticated-user";
+  clientMigrationKey: string | null;
+  processedAtUtc: string;
+  counts: SaveStateMigrationCountsDto;
+  itemResults: SaveStateMigrationItemResultDto[];
+  retainedLocalSavedEventIds: string[];
+  discoveryContext: SaveStateDiscoveryContextMigrationResultDto;
+}
+
 export interface SubmissionDto {
   submissionId: string;
   submittedByUserId: string;

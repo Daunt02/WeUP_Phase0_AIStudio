@@ -2,7 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getAuthHeader, getCurrentUserProfile } from "@/services/auth";
-import { listSavedEventIds, setSavedEvent } from "@/services/saveService";
+import type { SaveStateMigrationResultDto } from "@/services/backendContracts";
+import {
+  listSavedEventIds,
+  migrateAnonymousSaveState,
+  setSavedEvent,
+} from "@/services/saveService";
 
 const LOCAL_ANON_SAVES_KEY = "weup.saved-events.anon.v1";
 
@@ -14,6 +19,7 @@ export interface SaveAuthorityState {
   loading: boolean;
   syncing: boolean;
   error: string | null;
+  lastMigrationResult: SaveStateMigrationResultDto | null;
 }
 
 function normalizeEventIds(value: unknown): string[] {
@@ -62,6 +68,7 @@ export function useSavedEventsAuthority() {
     loading: true,
     syncing: false,
     error: null,
+    lastMigrationResult: null,
   });
 
   const refresh = useCallback(async () => {
@@ -72,6 +79,7 @@ export function useSavedEventsAuthority() {
         sessionKind: "anonymous",
         savedEventIds: readAnonymousSavedEventIds(),
         loading: false,
+        lastMigrationResult: null,
       }));
       return;
     }
@@ -83,6 +91,7 @@ export function useSavedEventsAuthority() {
         sessionKind: "anonymous",
         savedEventIds: readAnonymousSavedEventIds(),
         loading: false,
+        lastMigrationResult: null,
       }));
       return;
     }
@@ -91,37 +100,33 @@ export function useSavedEventsAuthority() {
       ...current,
       sessionKind: "authenticated",
       loading: true,
+      syncing: true,
       error: null,
     }));
 
     try {
-      const remoteIds = await listSavedEventIds();
-      const remoteSet = new Set(remoteIds);
       const localIds = readAnonymousSavedEventIds();
+      const migrationResult = await migrateAnonymousSaveState({
+        localSavedEventIds: localIds,
+        localDiscoveryContext: null,
+        clientMigrationKey: `save-authority-${Date.now()}`,
+      });
 
-      const migrationCandidates = localIds.filter((id) => !remoteSet.has(id));
-      const failedMigrationIds: string[] = [];
-      const migratedIds: string[] = [];
+      // Only after confirmed migration response do we rewrite local anonymous state.
+      writeAnonymousSavedEventIds(migrationResult.retainedLocalSavedEventIds);
 
-      for (const eventId of migrationCandidates) {
-        try {
-          await setSavedEvent(eventId, true);
-          migratedIds.push(eventId);
-        } catch {
-          failedMigrationIds.push(eventId);
-        }
-      }
-
-      writeAnonymousSavedEventIds(failedMigrationIds);
+      const remoteIds = await listSavedEventIds();
 
       setState((current) => ({
         ...current,
         sessionKind: "authenticated",
-        savedEventIds: Array.from(new Set([...remoteIds, ...migratedIds])),
+        savedEventIds: Array.from(new Set(remoteIds)),
         loading: false,
+        syncing: false,
+        lastMigrationResult: migrationResult,
         error:
-          failedMigrationIds.length > 0
-            ? "Some local saves could not be migrated and will retry later."
+          migrationResult.status === "completed-with-issues"
+            ? "Save migration completed with issues. Check migration result for details."
             : null,
       }));
     } catch (error) {
@@ -130,6 +135,8 @@ export function useSavedEventsAuthority() {
         sessionKind: "anonymous",
         savedEventIds: readAnonymousSavedEventIds(),
         loading: false,
+        syncing: false,
+        lastMigrationResult: null,
         error:
           error instanceof Error
             ? error.message
@@ -146,6 +153,10 @@ export function useSavedEventsAuthority() {
     async (eventId: string) => {
       const normalizedId = eventId.trim();
       if (!normalizedId) return;
+
+      if (state.syncing) {
+        return;
+      }
 
       const headers = getAuthHeader();
       const hasAuthorization = Boolean(headers.Authorization);
@@ -219,6 +230,7 @@ export function useSavedEventsAuthority() {
       loading: state.loading,
       syncing: state.syncing,
       error: state.error,
+      lastMigrationResult: state.lastMigrationResult,
       isSaved,
       toggleSavedEvent,
       refresh,
@@ -230,6 +242,7 @@ export function useSavedEventsAuthority() {
       state.loading,
       state.syncing,
       state.error,
+      state.lastMigrationResult,
       isSaved,
       toggleSavedEvent,
       refresh,

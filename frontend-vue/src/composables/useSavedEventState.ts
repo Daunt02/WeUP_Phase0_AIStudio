@@ -7,6 +7,7 @@ import {
   unsaveEvent,
 } from "../services/eventDetailService";
 import { useAnonymousLocalPersistence } from "./useAnonymousLocalPersistence";
+import { useSaveStateMigration } from "./useSaveStateMigration";
 
 type SavedStateCache = Record<string, SavedStateDto>;
 
@@ -28,6 +29,7 @@ function buildAnonymousSavedState(
 
 export function useSavedEventState() {
   const anonymousLocalPersistence = useAnonymousLocalPersistence();
+  const saveStateMigration = useSaveStateMigration();
 
   const savedStateByEventId = ref<SavedStateCache>({});
   const pendingByEventId = ref<Record<string, boolean>>({});
@@ -104,6 +106,12 @@ export function useSavedEventState() {
       throw new Error("Canonical eventId is required for save-state mutation.");
     }
 
+    if (saveStateMigration.isEventLockedForMigration(normalizedEventId)) {
+      throw new Error(
+        "Save-state migration is in progress for this event. Retry after migration completes.",
+      );
+    }
+
     const previousState = await resolveSavedState(normalizedEventId);
 
     // Optimistic mutation is applied first, but must be reconciled with persistence.
@@ -174,6 +182,7 @@ export function useSavedEventState() {
     savedStateByEventId,
     pendingByEventId,
     hasPendingMutation,
+    isMigrationInFlight: saveStateMigration.isMigrationInFlight,
     getCachedSavedState,
     resolveSavedState,
     mutateSavedState,

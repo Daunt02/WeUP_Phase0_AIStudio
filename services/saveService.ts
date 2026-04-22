@@ -1,6 +1,10 @@
 import { getAuthHeader } from "@/services/auth";
 import { toApiUrl } from "@/services/apiBase";
-import type { SavedEventsResponse } from "@/services/backendContracts";
+import type {
+  SavedEventsResponse,
+  SaveStateMigrationRequestDto,
+  SaveStateMigrationResultDto,
+} from "@/services/backendContracts";
 
 type SavedEventsApiPayload = SavedEventsResponse & {
   Items?: Array<{ eventId?: string }>;
@@ -87,4 +91,31 @@ export async function setSavedEvent(
   if (!response.ok) {
     throw new Error(`Save request failed with status ${response.status}.`);
   }
+}
+
+export async function migrateAnonymousSaveState(
+  request: SaveStateMigrationRequestDto,
+): Promise<SaveStateMigrationResultDto> {
+  const headers = buildAuthHeaders();
+
+  if (!headers.Authorization) {
+    throw new Error("Authenticated save session is required.");
+  }
+
+  const response = await fetch(
+    toApiUrl("/api/users/me/saves/migrate-anonymous-state"),
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify(request),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `Save migration request failed with status ${response.status}.`,
+    );
+  }
+
+  return (await response.json()) as SaveStateMigrationResultDto;
 }

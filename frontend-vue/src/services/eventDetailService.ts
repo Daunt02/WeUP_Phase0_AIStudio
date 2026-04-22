@@ -2,6 +2,8 @@ import type {
   EventDetailDto,
   EventDetailResponse,
   SaveEventRequestDto,
+  SaveStateMigrationRequestDto,
+  SaveStateMigrationResultDto,
   SaveEventResponseDto,
   SavedStateDto,
   UnsaveEventRequestDto,
@@ -186,4 +188,33 @@ export async function fetchSavedState(
   }
 
   return (await response.json()) as SavedStateDto;
+}
+
+export async function migrateAnonymousSaveState(
+  request: SaveStateMigrationRequestDto,
+  init?: RequestInit,
+): Promise<SaveStateMigrationResultDto> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/users/me/saves/migrate-anonymous-state`,
+    {
+      method: "POST",
+      headers: buildJsonHeaders(init),
+      body: JSON.stringify(request),
+      ...init,
+    },
+  );
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new ApiRequestError(
+      buildErrorMessage(
+        "Save-state migration request",
+        response.status,
+        detail,
+      ),
+      response.status,
+    );
+  }
+
+  return (await response.json()) as SaveStateMigrationResultDto;
 }

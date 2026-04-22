@@ -54,6 +54,14 @@ public sealed class ContractManifestTests
             [nameof(SaveEventResponseDto)] = GetJsonPropertyNames<SaveEventResponseDto>(),
             [nameof(UnsaveEventRequestDto)] = GetJsonPropertyNames<UnsaveEventRequestDto>(),
             [nameof(SavedStateDto)] = GetJsonPropertyNames<SavedStateDto>(),
+            [nameof(SaveStateMigrationRequestDto)] = GetJsonPropertyNames<SaveStateMigrationRequestDto>(),
+            [nameof(SaveStateLocalDiscoveryContextDto)] = GetJsonPropertyNames<SaveStateLocalDiscoveryContextDto>(),
+            [nameof(SaveStateLocalTemporalFilterDto)] = GetJsonPropertyNames<SaveStateLocalTemporalFilterDto>(),
+            [nameof(SaveStateLocalMapViewportDto)] = GetJsonPropertyNames<SaveStateLocalMapViewportDto>(),
+            [nameof(SaveStateMigrationCountsDto)] = GetJsonPropertyNames<SaveStateMigrationCountsDto>(),
+            [nameof(SaveStateMigrationItemResultDto)] = GetJsonPropertyNames<SaveStateMigrationItemResultDto>(),
+            [nameof(SaveStateDiscoveryContextMigrationResultDto)] = GetJsonPropertyNames<SaveStateDiscoveryContextMigrationResultDto>(),
+            [nameof(SaveStateMigrationResultDto)] = GetJsonPropertyNames<SaveStateMigrationResultDto>(),
         };
 
         Assert.Equal(expected.Keys.OrderBy(x => x), manifest.Contracts.Keys.OrderBy(x => x));

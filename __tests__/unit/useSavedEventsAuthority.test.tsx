@@ -61,10 +61,43 @@ describe("useSavedEventsAuthority", () => {
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ items: [], hasNextPage: false }),
+        json: async () => ({
+          status: "completed",
+          migrationDirection: "anonymous-to-authenticated",
+          ownership: "authenticated-user",
+          clientMigrationKey: "save-authority-1",
+          processedAtUtc: "2026-04-22T10:00:00Z",
+          counts: {
+            receivedLocalSavedCount: 1,
+            distinctLocalSavedCount: 1,
+            duplicateCollapsedCount: 0,
+            migratedCount: 1,
+            alreadySavedCount: 0,
+            invalidLocalIdCount: 0,
+            missingLocalIdCount: 0,
+          },
+          itemResults: [
+            {
+              eventId: "evt-local-1",
+              outcome: "migrated",
+              message: "Event migrated to authenticated saves.",
+            },
+          ],
+          retainedLocalSavedEventIds: [],
+          discoveryContext: {
+            status: "absent",
+            applied: false,
+            message: "No local discovery context provided.",
+            resolvedPreferredTimezone: null,
+          },
+        }),
       })
       .mockResolvedValueOnce({
         ok: true,
+        json: async () => ({
+          items: [{ eventId: "evt-local-1" }],
+          hasNextPage: false,
+        }),
       });
 
     const { result } = renderHook(() => useSavedEventsAuthority());
@@ -87,8 +120,9 @@ describe("useSavedEventsAuthority", () => {
     );
     expect(global.fetch).toHaveBeenNthCalledWith(
       2,
-      "/api/users/me/saves?page=1&pageSize=100",
+      "/api/users/me/saves/migrate-anonymous-state",
       expect.objectContaining({
+        method: "POST",
         headers: expect.objectContaining({
           Authorization: "Bearer token-123",
         }),
@@ -96,9 +130,8 @@ describe("useSavedEventsAuthority", () => {
     );
     expect(global.fetch).toHaveBeenNthCalledWith(
       3,
-      "/api/users/me/saves/evt-local-1",
+      "/api/users/me/saves?page=1&pageSize=100",
       expect.objectContaining({
-        method: "POST",
         headers: expect.objectContaining({
           Authorization: "Bearer token-123",
         }),

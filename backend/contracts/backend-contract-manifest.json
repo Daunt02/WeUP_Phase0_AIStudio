@@ -277,6 +277,51 @@
     "SaveEventRequestDto": ["eventId"],
     "SaveEventResponseDto": ["eventId", "message", "saved"],
     "UnsaveEventRequestDto": ["eventId"],
-    "SavedStateDto": ["eventId", "persistenceSource", "saved", "sessionKind"]
+    "SavedStateDto": ["eventId", "persistenceSource", "saved", "sessionKind"],
+    "SaveStateMigrationRequestDto": [
+      "clientMigrationKey",
+      "localDiscoveryContext",
+      "localSavedEventIds"
+    ],
+    "SaveStateLocalDiscoveryContextDto": [
+      "lastTemporalFilter",
+      "lastViewedDistrict",
+      "recentMapViewport",
+      "updatedAtUtc"
+    ],
+    "SaveStateLocalTemporalFilterDto": [
+      "customEndUtc",
+      "customStartUtc",
+      "preset",
+      "timezone"
+    ],
+    "SaveStateLocalMapViewportDto": ["bbox", "capturedAtUtc"],
+    "SaveStateMigrationCountsDto": [
+      "alreadySavedCount",
+      "distinctLocalSavedCount",
+      "duplicateCollapsedCount",
+      "invalidLocalIdCount",
+      "migratedCount",
+      "missingLocalIdCount",
+      "receivedLocalSavedCount"
+    ],
+    "SaveStateMigrationItemResultDto": ["eventId", "message", "outcome"],
+    "SaveStateDiscoveryContextMigrationResultDto": [
+      "applied",
+      "message",
+      "resolvedPreferredTimezone",
+      "status"
+    ],
+    "SaveStateMigrationResultDto": [
+      "clientMigrationKey",
+      "counts",
+      "discoveryContext",
+      "itemResults",
+      "migrationDirection",
+      "ownership",
+      "processedAtUtc",
+      "retainedLocalSavedEventIds",
+      "status"
+    ]
   }
 }

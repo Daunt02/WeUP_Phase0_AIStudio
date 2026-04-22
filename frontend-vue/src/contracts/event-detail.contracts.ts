@@ -69,3 +69,69 @@ export interface SavedStateDto {
   readonly sessionKind: SaveSessionKind;
   readonly persistenceSource: SavePersistenceSource;
 }
+
+export type SaveStateMigrationItemOutcome =
+  | "already-saved"
+  | "migrated"
+  | "invalid-local-event-id"
+  | "missing-local-event-id";
+
+export interface SaveStateLocalTemporalFilterDto {
+  readonly preset: string | null;
+  readonly timezone: string | null;
+  readonly customStartUtc: string | null;
+  readonly customEndUtc: string | null;
+}
+
+export interface SaveStateLocalMapViewportDto {
+  readonly bbox: string | null;
+  readonly capturedAtUtc: string | null;
+}
+
+export interface SaveStateLocalDiscoveryContextDto {
+  readonly lastViewedDistrict: string | null;
+  readonly lastTemporalFilter: SaveStateLocalTemporalFilterDto | null;
+  readonly recentMapViewport: SaveStateLocalMapViewportDto | null;
+  readonly updatedAtUtc: string | null;
+}
+
+export interface SaveStateMigrationRequestDto {
+  readonly localSavedEventIds: string[];
+  readonly localDiscoveryContext: SaveStateLocalDiscoveryContextDto | null;
+  readonly clientMigrationKey: string | null;
+}
+
+export interface SaveStateMigrationCountsDto {
+  readonly receivedLocalSavedCount: number;
+  readonly distinctLocalSavedCount: number;
+  readonly duplicateCollapsedCount: number;
+  readonly migratedCount: number;
+  readonly alreadySavedCount: number;
+  readonly invalidLocalIdCount: number;
+  readonly missingLocalIdCount: number;
+}
+
+export interface SaveStateMigrationItemResultDto {
+  readonly eventId: string;
+  readonly outcome: SaveStateMigrationItemOutcome;
+  readonly message: string;
+}
+
+export interface SaveStateDiscoveryContextMigrationResultDto {
+  readonly status: string;
+  readonly applied: boolean;
+  readonly message: string;
+  readonly resolvedPreferredTimezone: string | null;
+}
+
+export interface SaveStateMigrationResultDto {
+  readonly status: "completed" | "completed-with-issues";
+  readonly migrationDirection: "anonymous-to-authenticated";
+  readonly ownership: "authenticated-user";
+  readonly clientMigrationKey: string | null;
+  readonly processedAtUtc: string;
+  readonly counts: SaveStateMigrationCountsDto;
+  readonly itemResults: SaveStateMigrationItemResultDto[];
+  readonly retainedLocalSavedEventIds: string[];
+  readonly discoveryContext: SaveStateDiscoveryContextMigrationResultDto;
+}
