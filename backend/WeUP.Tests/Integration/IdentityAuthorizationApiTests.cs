@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using WeUP.Contracts.Auth;
 using WeUP.Contracts.Events;
 using WeUP.Contracts.Moderation;
+using WeUP.Contracts.Saves;
 using Xunit;
 
 namespace WeUP.Tests.Integration;
@@ -143,6 +144,126 @@ public sealed class IdentityAuthorizationApiTests : IClassFixture<IdentityAuthor
         Assert.Equal(HttpStatusCode.Forbidden, status.StatusCode);
     }
 
+    [Fact]
+    public async Task SaveMigration_CollapsesDuplicates_RetainsInvalidIds_AndReportsIssues()
+    {
+        await ResetSeedAsync();
+        await AuthenticateAsync("camille+phase0@weup.test");
+
+        var seedSave = await _client.PostAsJsonAsync(
+            "/api/users/me/saves",
+            new SaveEventRequestDto("evt-sf-midnight-groove"));
+        Assert.Equal(HttpStatusCode.OK, seedSave.StatusCode);
+
+        var response = await _client.PostAsJsonAsync(
+            "/api/users/me/saves/migrate-anonymous-state",
+            new SaveStateMigrationRequestDto(
+                LocalSavedEventIds:
+                [
+                    "evt-sf-midnight-groove",
+                    " EVT-SF-MIDNIGHT-GROOVE ",
+                    string.Empty,
+                    "evt-not-real"
+                ],
+                LocalDiscoveryContext: new SaveStateLocalDiscoveryContextDto(
+                    LastViewedDistrict: "mission",
+                    LastTemporalFilter: new SaveStateLocalTemporalFilterDto(
+                        Preset: "Tonight",
+                        Timezone: "America/Los_Angeles",
+                        CustomStartUtc: null,
+                        CustomEndUtc: null),
+                    RecentMapViewport: null,
+                    UpdatedAtUtc: "2026-04-22T10:00:00Z"),
+                ClientMigrationKey: "identity-migration-issues"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var result = await response.Content.ReadFromJsonAsync<SaveStateMigrationResultDto>();
+        Assert.NotNull(result);
+        Assert.Equal("completed-with-issues", result!.Status);
+        Assert.Equal("anonymous-to-authenticated", result.MigrationDirection);
+        Assert.Equal("authenticated-user", result.Ownership);
+        Assert.Equal("identity-migration-issues", result.ClientMigrationKey);
+
+        Assert.Equal(4, result.Counts.ReceivedLocalSavedCount);
+        Assert.Equal(2, result.Counts.DistinctLocalSavedCount);
+        Assert.Equal(1, result.Counts.DuplicateCollapsedCount);
+        Assert.Equal(0, result.Counts.MigratedCount);
+        Assert.Equal(1, result.Counts.AlreadySavedCount);
+        Assert.Equal(1, result.Counts.InvalidLocalIdCount);
+        Assert.Equal(1, result.Counts.MissingLocalIdCount);
+
+        Assert.Single(result.RetainedLocalSavedEventIds);
+        Assert.Equal("evt-not-real", result.RetainedLocalSavedEventIds[0]);
+        Assert.Contains(result.ItemResults, item =>
+            item.EventId == "evt-sf-midnight-groove" &&
+            item.Outcome == "already-saved");
+        Assert.Contains(result.ItemResults, item =>
+            item.EventId == "evt-not-real" &&
+            item.Outcome == "invalid-local-event-id");
+        Assert.Contains(result.ItemResults, item =>
+            item.EventId == string.Empty &&
+            item.Outcome == "missing-local-event-id");
+
+        Assert.NotEqual("absent", result.DiscoveryContext.Status);
+        Assert.Equal("America/Los_Angeles", result.DiscoveryContext.ResolvedPreferredTimezone);
+    }
+
+    [Fact]
+    public async Task SaveMigration_IsIdempotent_AndDoesNotCreateDuplicateOwnership()
+    {
+        await ResetSeedAsync();
+        await AuthenticateAsync("camille+phase0@weup.test");
+
+        var request = new SaveStateMigrationRequestDto(
+            LocalSavedEventIds: ["evt-sf-waterfront-jazz"],
+            LocalDiscoveryContext: new SaveStateLocalDiscoveryContextDto(
+                LastViewedDistrict: "soma",
+                LastTemporalFilter: new SaveStateLocalTemporalFilterDto(
+                    Preset: "Tonight",
+                    Timezone: "America/Los_Angeles",
+                    CustomStartUtc: null,
+                    CustomEndUtc: null),
+                RecentMapViewport: null,
+                UpdatedAtUtc: "2026-04-22T11:00:00Z"),
+            ClientMigrationKey: "identity-migration-repeat");
+
+        var firstResponse = await _client.PostAsJsonAsync(
+            "/api/users/me/saves/migrate-anonymous-state",
+            request);
+        Assert.Equal(HttpStatusCode.OK, firstResponse.StatusCode);
+
+        var first = await firstResponse.Content.ReadFromJsonAsync<SaveStateMigrationResultDto>();
+        Assert.NotNull(first);
+        Assert.Equal("completed", first!.Status);
+        Assert.Equal(1, first.Counts.MigratedCount);
+        Assert.Equal(0, first.Counts.AlreadySavedCount);
+        Assert.NotEqual("absent", first.DiscoveryContext.Status);
+
+        var secondResponse = await _client.PostAsJsonAsync(
+            "/api/users/me/saves/migrate-anonymous-state",
+            request);
+        Assert.Equal(HttpStatusCode.OK, secondResponse.StatusCode);
+
+        var second = await secondResponse.Content.ReadFromJsonAsync<SaveStateMigrationResultDto>();
+        Assert.NotNull(second);
+        Assert.Equal("completed", second!.Status);
+        Assert.Equal(0, second.Counts.MigratedCount);
+        Assert.Equal(1, second.Counts.AlreadySavedCount);
+        Assert.Equal("received-not-applied", second.DiscoveryContext.Status);
+        Assert.False(second.DiscoveryContext.Applied);
+        Assert.Equal("America/Los_Angeles", second.DiscoveryContext.ResolvedPreferredTimezone);
+
+        var savesResponse = await _client.GetAsync("/api/users/me/saves?page=1&pageSize=50");
+        Assert.Equal(HttpStatusCode.OK, savesResponse.StatusCode);
+
+        var saves = await savesResponse.Content.ReadFromJsonAsync<SavedEventsResponse>();
+        Assert.NotNull(saves);
+        Assert.Equal(
+            1,
+            saves!.Items.Count(item => item.EventId == "evt-sf-waterfront-jazz"));
+    }
+
     private async Task AuthenticateAsync(string email)
     {
         _client.DefaultRequestHeaders.Authorization = null;
@@ -153,6 +274,14 @@ public sealed class IdentityAuthorizationApiTests : IClassFixture<IdentityAuthor
         var auth = await login.Content.ReadFromJsonAsync<AuthResponse>();
         Assert.NotNull(auth);
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth!.Token);
+    }
+
+    private async Task ResetSeedAsync()
+    {
+        _client.DefaultRequestHeaders.Authorization = null;
+
+        var response = await _client.PostAsync("/internal/seed/reset", content: null);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
     public sealed class IdentityApiFactory : WebApplicationFactory<Program>

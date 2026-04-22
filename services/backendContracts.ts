@@ -61,6 +61,23 @@ export interface SavedStateDto {
   persistenceSource: string;
 }
 
+export type SaveStateMigrationStatus = "completed" | "completed-with-issues";
+
+export type SaveStateMigrationDirection = "anonymous-to-authenticated";
+
+export type SaveStateMigrationOwnership = "authenticated-user";
+
+export type SaveStateMigrationItemOutcome =
+  | "already-saved"
+  | "migrated"
+  | "invalid-local-event-id"
+  | "missing-local-event-id";
+
+export type SaveStateDiscoveryContextMigrationStatus =
+  | "absent"
+  | "received-not-applied"
+  | "applied";
+
 export interface SaveStateLocalTemporalFilterDto {
   preset: string | null;
   timezone: string | null;
@@ -98,21 +115,21 @@ export interface SaveStateMigrationCountsDto {
 
 export interface SaveStateMigrationItemResultDto {
   eventId: string;
-  outcome: string;
+  outcome: SaveStateMigrationItemOutcome;
   message: string;
 }
 
 export interface SaveStateDiscoveryContextMigrationResultDto {
-  status: string;
+  status: SaveStateDiscoveryContextMigrationStatus;
   applied: boolean;
   message: string;
   resolvedPreferredTimezone: string | null;
 }
 
 export interface SaveStateMigrationResultDto {
-  status: "completed" | "completed-with-issues";
-  migrationDirection: "anonymous-to-authenticated";
-  ownership: "authenticated-user";
+  status: SaveStateMigrationStatus;
+  migrationDirection: SaveStateMigrationDirection;
+  ownership: SaveStateMigrationOwnership;
   clientMigrationKey: string | null;
   processedAtUtc: string;
   counts: SaveStateMigrationCountsDto;

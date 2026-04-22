@@ -78,6 +78,13 @@ public sealed class StubSaveRepository : ISaveRepository
     {
         lock (_gate)
         {
+            // Keep stub behavior aligned with EF persistence:
+            // only canonical seeded event ids may enter authenticated ownership.
+            if (!_eventIndex.ContainsKey(eventId))
+            {
+                return Task.FromResult(new SaveEventResponseDto(eventId, false, "Invalid userId or eventId"));
+            }
+
             _saves[(userId, eventId)] = _seedNow.AddMinutes(_saves.Count + 1);
         }
 

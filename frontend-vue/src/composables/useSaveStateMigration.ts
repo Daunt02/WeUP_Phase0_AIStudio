@@ -65,6 +65,8 @@ function buildMigrationRequest(
   discoveryContext: AnonymousDiscoveryContext,
   clientMigrationKey?: string,
 ): SaveStateMigrationRequestDto {
+  // Request shape is normalized before transport so the backend receives
+  // deterministic input for duplicate collapse and idempotent auditing.
   return {
     localSavedEventIds: normalizeDistinctEventIds(savedState.savedEventIds),
     localDiscoveryContext: toDiscoveryContextDto(discoveryContext),
@@ -108,7 +110,8 @@ export function useSaveStateMigration() {
       clientMigrationKey,
     );
 
-    // During migration, lock all local saved IDs to prevent concurrent duplicate toggles.
+    // During migration, lock all candidate IDs so local optimistic toggles cannot
+    // race the one-way ownership transfer into authenticated persistence.
     lockedEventIds.value = [...request.localSavedEventIds];
     isMigrationInFlight.value = true;
     lastError.value = null;
@@ -117,7 +120,8 @@ export function useSaveStateMigration() {
       const result = await migrateAnonymousSaveState(request);
 
       // Local state is only changed after a confirmed migration response.
-      // Any retained IDs are explicitly surfaced by backend conflict handling.
+      // Any retained IDs are explicitly surfaced by backend conflict handling,
+      // which prevents silent partial migration or destructive local cleanup.
       anonymousPersistence.setSavedEventIds(result.retainedLocalSavedEventIds);
       lastResult.value = result;
       return result;
