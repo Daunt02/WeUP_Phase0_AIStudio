@@ -59,6 +59,7 @@ import {
 import { useAnonymousLocalPersistence } from "./composables/useAnonymousLocalPersistence";
 import { useEventDetailModal } from "./composables/useEventDetailModal";
 import { useSavedEventState } from "./composables/useSavedEventState";
+import { useUserContextPreferences } from "./composables/useUserContextPreferences";
 import type {
   EventMapFeedQueryDto,
   EventMapItemDto,
@@ -69,6 +70,7 @@ const $q = useQuasar();
 
 const discovery = useDiscoveryState();
 const anonymousLocalPersistence = useAnonymousLocalPersistence();
+const userContextPreferences = useUserContextPreferences();
 
 const selectedEventIdModel = computed<string | null>({
   get() {
@@ -205,6 +207,9 @@ function onMapSelectedEventChanged(eventId: string | null): void {
 
 function onMapFiltersUpdated(partial: Partial<DiscoveryFilterState>): void {
   discovery.applyFilters(partial);
+  userContextPreferences.updateFromMapDiscoveryFilters(
+    discovery.activeFilters.value,
+  );
 
   // Anonymous discovery context is convenience state only.
   // It is never merged into authenticated backend records.
@@ -220,6 +225,7 @@ function onMapFiltersUpdated(partial: Partial<DiscoveryFilterState>): void {
 function onMapItemsUpdated(items: EventMapItemDto[]): void {
   mapItemsState.value = items;
   discovery.reportVisibleEvents(items);
+  userContextPreferences.updateSavedCountSummaryFromItems(items);
   settleCalendarFilterRefresh();
 }
 
@@ -231,6 +237,8 @@ function onMapFeedQueryUpdated(query: EventMapFeedQueryDto): void {
 
   latestMapFeedQueryState.value = query;
   discovery.reportMapFeedQuery(query);
+  userContextPreferences.updatePreferredTemporalPreset(query.preset);
+  userContextPreferences.updateLastUsedMapStateFromQuery(query);
 
   // Persist lightweight anonymous context for UX continuity across reloads.
   // This layer is explicitly non-authoritative and browser-local only.
