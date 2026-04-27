@@ -44,6 +44,10 @@ public enum EventModerationStatus
 
 /// <summary>
 /// Normalized address and location fields owned by the canonical aggregate.
+/// Spatial taxonomy linkage rules:
+/// - MarketCode is canonical and required once geospatial resolution completes.
+/// - DistrictCode and NeighborhoodCode are canonical taxonomy IDs/slugs, not freeform labels.
+/// - Display labels are projection concerns and must not be persisted as identity keys.
 /// </summary>
 public sealed record EventAddress(
     string AddressLine1,

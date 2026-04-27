@@ -3,6 +3,69 @@
     "GeoBoundingBox": ["maxLat", "maxLng", "minLat", "minLng"],
     "TimeWindowRequest": ["endUtc", "startUtc", "timezone"],
     "LocalityFilterRequest": ["districtCode", "marketCode", "neighborhoodCode"],
+    "GeometryBoundaryRefDto": [
+      "datasetId",
+      "featureId",
+      "hash",
+      "provider",
+      "version"
+    ],
+    "SpatialMarketDto": [
+      "aliasSlugs",
+      "boundaryRef",
+      "displayName",
+      "isActive",
+      "marketId",
+      "slug",
+      "timezone"
+    ],
+    "SpatialDistrictDto": [
+      "boundaryRef",
+      "displayName",
+      "districtId",
+      "isActive",
+      "marketId",
+      "parentDistrictId",
+      "slug",
+      "sortOrder"
+    ],
+    "SpatialNeighborhoodDto": [
+      "boundaryRef",
+      "displayName",
+      "districtId",
+      "isActive",
+      "marketId",
+      "neighborhoodId",
+      "slug",
+      "sortOrder"
+    ],
+    "SpatialEventReferenceDto": [
+      "districtDisplayLabel",
+      "districtId",
+      "marketDisplayLabel",
+      "marketId",
+      "neighborhoodDisplayLabel",
+      "neighborhoodId",
+      "resolutionConfidence",
+      "resolutionSource",
+      "resolvedAtUtc"
+    ],
+    "SpatialFilterDto": [
+      "districtIds",
+      "districtSlugs",
+      "includeDescendants",
+      "marketIds",
+      "marketSlugs",
+      "neighborhoodIds",
+      "neighborhoodSlugs"
+    ],
+    "SpatialTaxonomySnapshotDto": [
+      "districts",
+      "effectiveAtUtc",
+      "markets",
+      "neighborhoods",
+      "taxonomyVersion"
+    ],
     "MapFeedRequest": [
       "bounds",
       "categories",

@@ -1,0 +1,121 @@
+{
+  "taxonomyVersion": "spatial-taxonomy-v1.0.0",
+  "effectiveAtUtc": "2026-04-27T00:00:00Z",
+  "markets": [
+    {
+      "marketId": "mkt-us-tx-hou",
+      "slug": "houston",
+      "displayName": "Houston",
+      "timezone": "America/Chicago",
+      "isActive": true,
+      "aliasSlugs": ["hou", "houston-tx"],
+      "boundaryRef": {
+        "provider": "internal-boundary-catalog",
+        "datasetId": "houston-phase0-boundaries",
+        "featureId": "market-houston",
+        "version": "2026.04.0",
+        "hash": "a1c4f89d"
+      }
+    }
+  ],
+  "districts": [
+    {
+      "districtId": "dst-us-tx-hou-downtown",
+      "marketId": "mkt-us-tx-hou",
+      "slug": "downtown",
+      "displayName": "Downtown",
+      "sortOrder": 10,
+      "isActive": true,
+      "parentDistrictId": null,
+      "boundaryRef": {
+        "provider": "internal-boundary-catalog",
+        "datasetId": "houston-phase0-boundaries",
+        "featureId": "district-downtown",
+        "version": "2026.04.0",
+        "hash": "d20c2134"
+      }
+    },
+    {
+      "districtId": "dst-us-tx-hou-midtown",
+      "marketId": "mkt-us-tx-hou",
+      "slug": "midtown",
+      "displayName": "Midtown",
+      "sortOrder": 20,
+      "isActive": true,
+      "parentDistrictId": null,
+      "boundaryRef": {
+        "provider": "internal-boundary-catalog",
+        "datasetId": "houston-phase0-boundaries",
+        "featureId": "district-midtown",
+        "version": "2026.04.0",
+        "hash": "c84fb728"
+      }
+    },
+    {
+      "districtId": "dst-us-tx-hou-montrose",
+      "marketId": "mkt-us-tx-hou",
+      "slug": "montrose",
+      "displayName": "Montrose",
+      "sortOrder": 30,
+      "isActive": true,
+      "parentDistrictId": null,
+      "boundaryRef": {
+        "provider": "internal-boundary-catalog",
+        "datasetId": "houston-phase0-boundaries",
+        "featureId": "district-montrose",
+        "version": "2026.04.0",
+        "hash": "f114ec44"
+      }
+    }
+  ],
+  "neighborhoods": [
+    {
+      "neighborhoodId": "nbh-us-tx-hou-downtown-market-square",
+      "marketId": "mkt-us-tx-hou",
+      "districtId": "dst-us-tx-hou-downtown",
+      "slug": "market-square",
+      "displayName": "Market Square",
+      "sortOrder": 101,
+      "isActive": true,
+      "boundaryRef": {
+        "provider": "internal-boundary-catalog",
+        "datasetId": "houston-phase0-boundaries",
+        "featureId": "neighborhood-market-square",
+        "version": "2026.04.0",
+        "hash": "7abf1c03"
+      }
+    },
+    {
+      "neighborhoodId": "nbh-us-tx-hou-midtown-mid-main",
+      "marketId": "mkt-us-tx-hou",
+      "districtId": "dst-us-tx-hou-midtown",
+      "slug": "mid-main",
+      "displayName": "Mid Main",
+      "sortOrder": 201,
+      "isActive": true,
+      "boundaryRef": {
+        "provider": "internal-boundary-catalog",
+        "datasetId": "houston-phase0-boundaries",
+        "featureId": "neighborhood-mid-main",
+        "version": "2026.04.0",
+        "hash": "89a75f57"
+      }
+    },
+    {
+      "neighborhoodId": "nbh-us-tx-hou-montrose-lower-westheimer",
+      "marketId": "mkt-us-tx-hou",
+      "districtId": "dst-us-tx-hou-montrose",
+      "slug": "lower-westheimer",
+      "displayName": "Lower Westheimer",
+      "sortOrder": 301,
+      "isActive": true,
+      "boundaryRef": {
+        "provider": "internal-boundary-catalog",
+        "datasetId": "houston-phase0-boundaries",
+        "featureId": "neighborhood-lower-westheimer",
+        "version": "2026.04.0",
+        "hash": "d6d31f9e"
+      }
+    }
+  ]
+}
