@@ -33,6 +33,7 @@ export function useSavedEventState() {
 
   const savedStateByEventId = ref<SavedStateCache>({});
   const pendingByEventId = ref<Record<string, boolean>>({});
+  const mutationRevision = ref(0);
 
   const hasPendingMutation = computed(() => {
     return Object.values(pendingByEventId.value).some(Boolean);
@@ -52,6 +53,34 @@ export function useSavedEventState() {
       ...savedStateByEventId.value,
       [nextState.eventId]: nextState,
     };
+  }
+
+  function primeSavedStates(states: readonly SavedStateDto[]): void {
+    const normalizedStates = states
+      .map((state) => {
+        const normalizedEventId = normalizeEventId(state.eventId);
+        if (!normalizedEventId) {
+          return null;
+        }
+
+        return {
+          ...state,
+          eventId: normalizedEventId,
+        } satisfies SavedStateDto;
+      })
+      .filter((state): state is SavedStateDto => state !== null);
+
+    if (normalizedStates.length === 0) {
+      return;
+    }
+
+    savedStateByEventId.value = normalizedStates.reduce<SavedStateCache>(
+      (cache, state) => {
+        cache[state.eventId] = state;
+        return cache;
+      },
+      { ...savedStateByEventId.value },
+    );
   }
 
   function setPending(eventId: string, pending: boolean): void {
@@ -167,6 +196,7 @@ export function useSavedEventState() {
 
       setSavedStateCache(resolvedState);
       applyUiSavedState(resolvedState.saved);
+      mutationRevision.value += 1;
       return resolvedState;
     } catch (cause) {
       // Roll back optimistic UI when persistence fails.
@@ -181,9 +211,11 @@ export function useSavedEventState() {
   return {
     savedStateByEventId,
     pendingByEventId,
+    mutationRevision,
     hasPendingMutation,
     isMigrationInFlight: saveStateMigration.isMigrationInFlight,
     getCachedSavedState,
+    primeSavedStates,
     resolveSavedState,
     mutateSavedState,
   };

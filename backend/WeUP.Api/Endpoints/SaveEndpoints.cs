@@ -11,6 +11,9 @@ public static class SaveEndpoints
         var group = app.MapGroup("/api/users/me/saves").WithTags("Saves");
 
         // GET /api/users/me/saves
+        // Retrieval invariant:
+        // - Authenticated callers receive canonical normalized event projections.
+        // - Missing/deleted saves remain explicit rows so saved count and panel state do not drift silently.
         group.MapGet("/", async (
             ISaveRepository repo,
             ITokenService tokens,

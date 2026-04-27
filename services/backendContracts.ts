@@ -5,6 +5,7 @@ import type {
   MapFeedResponse,
   TimeWindow,
 } from "@/domains/query/contracts";
+import type { EventMapItemDto } from "@/domains/event/apiContracts";
 import type { DraftSubmissionRequest } from "@/features/world/runtimeTypes";
 
 export type {
@@ -25,11 +26,10 @@ export type SubmissionStatus =
 
 export interface SavedEventDto {
   eventId: string;
-  title: string;
-  venueName: string;
-  startUtc: string;
-  thumbnailUrl: string | null;
   savedAt: string;
+  resolutionStatus: "resolved" | "missing-or-deleted";
+  resolutionMessage: string | null;
+  canonicalEvent: EventMapItemDto | null;
 }
 
 export interface SavedEventsResponse {
@@ -38,6 +38,10 @@ export interface SavedEventsResponse {
   page: number;
   pageSize: number;
   hasNextPage: boolean;
+  resolvedCount: number;
+  missingOrDeletedCount: number;
+  retrievedAtUtc: string;
+  sourceProjection: "canonical-event-map-v1";
 }
 
 export interface SaveEventRequestDto {

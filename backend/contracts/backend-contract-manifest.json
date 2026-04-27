@@ -260,18 +260,21 @@
     "SubmissionListResponse": ["items", "totalCount"],
     "SubmitForReviewResponse": ["message", "status", "submissionId"],
     "SavedEventDto": [
+      "canonicalEvent",
       "eventId",
-      "savedAt",
-      "startUtc",
-      "thumbnailUrl",
-      "title",
-      "venueName"
+      "resolutionMessage",
+      "resolutionStatus",
+      "savedAt"
     ],
     "SavedEventsResponse": [
       "hasNextPage",
       "items",
+      "missingOrDeletedCount",
       "page",
       "pageSize",
+      "resolvedCount",
+      "retrievedAtUtc",
+      "sourceProjection",
       "totalCount"
     ],
     "SaveEventRequestDto": ["eventId"],

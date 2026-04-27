@@ -257,11 +257,22 @@ describe("backend contract manifest", () => {
 
     const savedEvent: SavedEventDto = {
       eventId: "evt-sf-midnight-groove",
-      title: "Midnight Groove Assembly",
-      venueName: "Public Works",
-      startUtc: "2026-04-12T04:00:00Z",
-      thumbnailUrl: "https://example.test/flyer.jpg",
       savedAt: "2026-04-10T22:15:00Z",
+      resolutionStatus: "resolved",
+      resolutionMessage: null,
+      canonicalEvent: {
+        eventId: "evt-sf-midnight-groove",
+        title: "Midnight Groove Assembly",
+        startUtc: "2026-04-12T04:00:00Z",
+        endUtc: "2026-04-12T07:00:00Z",
+        latitude: 37.76809,
+        longitude: -122.42112,
+        venueName: "Public Works",
+        district: "downtown",
+        primaryCategory: "nightlife",
+        savedByCurrentUser: true,
+        markerState: "saved",
+      },
     };
 
     const savedEventsResponse: SavedEventsResponse = {
@@ -270,6 +281,10 @@ describe("backend contract manifest", () => {
       page: 1,
       pageSize: 20,
       hasNextPage: false,
+      resolvedCount: 1,
+      missingOrDeletedCount: 0,
+      retrievedAtUtc: "2026-04-11T18:00:00Z",
+      sourceProjection: "canonical-event-map-v1",
     };
 
     const saveEventRequest: SaveEventRequestDto = {

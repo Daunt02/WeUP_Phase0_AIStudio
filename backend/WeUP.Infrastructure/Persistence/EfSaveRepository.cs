@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using WeUP.Contracts.Events;
 using WeUP.Contracts.Saves;
 using WeUP.Domain.Users;
 using WeUP.Infrastructure.Persistence.Entities;
@@ -20,7 +21,7 @@ public sealed class EfSaveRepository(WeUpDbContext db) : ISaveRepository
             .FirstOrDefaultAsync(ct);
 
         if (userGuid is null)
-            return new SavedEventsResponse([], 0, page, pageSize, false);
+            return new SavedEventsResponse([], 0, page, pageSize, false, 0, 0, DateTimeOffset.UtcNow);
 
         var totalCount = await db.SavedEvents
             .AsNoTracking()
@@ -47,28 +48,50 @@ public sealed class EfSaveRepository(WeUpDbContext db) : ISaveRepository
 
         var eventsById = events.ToDictionary(e => e.Id);
         var items = saves
-            .Where(s => eventsById.ContainsKey(s.EventId))
             .Select(s =>
             {
-                var evt = eventsById[s.EventId];
-                var thumb = evt.Media.FirstOrDefault(m => m.Kind == "poster")
-                         ?? evt.Media.FirstOrDefault(m => m.Kind == "image");
+                if (!eventsById.TryGetValue(s.EventId, out var evt))
+                {
+                    return new SavedEventDto(
+                        EventId: s.EventId.ToString("N"),
+                        SavedAt: s.SavedAt,
+                        ResolutionStatus: "missing-or-deleted",
+                        ResolutionMessage: "Saved reference no longer resolves to an active canonical event.",
+                        CanonicalEvent: null);
+                }
+
                 return new SavedEventDto(
-                    evt.PublicId,
-                    evt.CanonicalTitle,
-                    evt.VenueName,
-                    evt.StartUtc,
-                    thumb?.Url,
-                    s.SavedAt);
+                    EventId: evt.PublicId,
+                    SavedAt: s.SavedAt,
+                    ResolutionStatus: "resolved",
+                    ResolutionMessage: null,
+                    CanonicalEvent: new EventMapItemDto(
+                        EventId: evt.PublicId,
+                        Title: evt.CanonicalTitle,
+                        StartUtc: evt.StartUtc,
+                        EndUtc: evt.EndUtc,
+                        Latitude: evt.Latitude,
+                        Longitude: evt.Longitude,
+                        VenueName: evt.VenueName,
+                        District: evt.DistrictCode,
+                        PrimaryCategory: evt.Category,
+                        SavedByCurrentUser: true,
+                        MarkerState: "saved"));
             })
             .ToList();
+
+        var resolvedCount = items.Count(item => item.CanonicalEvent is not null);
+        var missingOrDeletedCount = items.Count - resolvedCount;
 
         return new SavedEventsResponse(
             [.. items],
             totalCount,
             clampedPage,
             clampedSize,
-            (clampedPage - 1) * clampedSize + items.Count < totalCount);
+            (clampedPage - 1) * clampedSize + items.Count < totalCount,
+            resolvedCount,
+            missingOrDeletedCount,
+            DateTimeOffset.UtcNow);
     }
 
     public async Task<bool> IsEventSavedAsync(string userId, string eventId, CancellationToken ct = default)

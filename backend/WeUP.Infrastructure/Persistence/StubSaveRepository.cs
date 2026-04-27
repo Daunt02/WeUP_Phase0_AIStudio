@@ -11,7 +11,7 @@ public sealed class StubSaveRepository : ISaveRepository
 {
     private readonly object _gate = new();
     private readonly Dictionary<(string UserId, string EventId), DateTimeOffset> _saves = [];
-    private readonly Dictionary<string, (string Title, string VenueName, string? ThumbnailUrl, DateTimeOffset StartUtc)> _eventIndex = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, (string Title, string VenueName, string? District, string Category, double Latitude, double Longitude, DateTimeOffset StartUtc)> _eventIndex = new(StringComparer.OrdinalIgnoreCase);
     private DateTimeOffset _seedNow = DateTimeOffset.Parse("2026-04-11T18:00:00Z");
 
     public void Reset(Phase0SeedDataset dataset)
@@ -24,7 +24,14 @@ public sealed class StubSaveRepository : ISaveRepository
             foreach (var evt in dataset.Events)
             {
                 var venue = venueById[evt.VenueId];
-                _eventIndex[evt.EventId] = (evt.Title, venue.Name, evt.ImageUrl, DateTimeOffset.Parse(evt.StartsAtUtc));
+                _eventIndex[evt.EventId] = (
+                    evt.Title,
+                    venue.Name,
+                    venue.DistrictCode,
+                    evt.Category,
+                    venue.Latitude,
+                    venue.Longitude,
+                    DateTimeOffset.Parse(evt.StartsAtUtc));
             }
 
             _saves.Clear();
@@ -55,15 +62,49 @@ public sealed class StubSaveRepository : ISaveRepository
             .Take(pageSize)
             .Select(s =>
             {
-                var metadata = _eventIndex.TryGetValue(s.Key.EventId, out var value)
-                    ? value
-                    : (s.Key.EventId, "Unknown Venue", (string?)null, _seedNow);
-                return new SavedEventDto(s.Key.EventId, metadata.Item1, metadata.Item2, metadata.Item4, metadata.Item3, s.Value);
+                if (_eventIndex.TryGetValue(s.Key.EventId, out var value))
+                {
+                    return new SavedEventDto(
+                        EventId: s.Key.EventId,
+                        SavedAt: s.Value,
+                        ResolutionStatus: "resolved",
+                        ResolutionMessage: null,
+                        CanonicalEvent: new WeUP.Contracts.Events.EventMapItemDto(
+                            EventId: s.Key.EventId,
+                            Title: value.Title,
+                            StartUtc: value.StartUtc,
+                            EndUtc: null,
+                            Latitude: value.Latitude,
+                            Longitude: value.Longitude,
+                            VenueName: value.VenueName,
+                            District: value.District,
+                            PrimaryCategory: value.Category,
+                            SavedByCurrentUser: true,
+                            MarkerState: "saved"));
+                }
+
+                return new SavedEventDto(
+                    EventId: s.Key.EventId,
+                    SavedAt: s.Value,
+                    ResolutionStatus: "missing-or-deleted",
+                    ResolutionMessage: "Saved reference no longer resolves to an active canonical event.",
+                    CanonicalEvent: null);
             })
             .ToArray();
         }
 
-        return Task.FromResult(new SavedEventsResponse(items, total, page, pageSize, false));
+        var resolvedCount = items.Count(item => item.CanonicalEvent is not null);
+        var missingOrDeletedCount = items.Length - resolvedCount;
+
+        return Task.FromResult(new SavedEventsResponse(
+            items,
+            total,
+            page,
+            pageSize,
+            false,
+            resolvedCount,
+            missingOrDeletedCount,
+            _seedNow));
     }
 
     public Task<bool> IsEventSavedAsync(string userId, string eventId, CancellationToken ct = default)

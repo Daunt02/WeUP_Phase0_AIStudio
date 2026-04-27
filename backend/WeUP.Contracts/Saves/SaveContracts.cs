@@ -1,19 +1,24 @@
+using WeUP.Contracts.Events;
+
 namespace WeUP.Contracts.Saves;
 
 public record SavedEventDto(
     string EventId,
-    string Title,
-    string VenueName,
-    DateTimeOffset StartUtc,
-    string? ThumbnailUrl,
-    DateTimeOffset SavedAt);
+    DateTimeOffset SavedAt,
+    string ResolutionStatus,
+    string? ResolutionMessage,
+    EventMapItemDto? CanonicalEvent);
 
 public record SavedEventsResponse(
     SavedEventDto[] Items,
     int TotalCount,
     int Page,
     int PageSize,
-    bool HasNextPage);
+    bool HasNextPage,
+    int ResolvedCount,
+    int MissingOrDeletedCount,
+    DateTimeOffset RetrievedAtUtc,
+    string SourceProjection = "canonical-event-map-v1");
 
 public record SaveEventRequestDto(
     string EventId);
