@@ -19,6 +19,7 @@ using WeUP.Domain.Analytics;
 using WeUP.Domain.Media;
 using WeUP.Domain.Ocr;
 using WeUP.Domain.Resolution;
+using WeUP.Domain.Temporal;
 using WeUP.Infrastructure.Auth;
 using WeUP.Infrastructure.Flyer;
 using WeUP.Infrastructure.Submissions;
@@ -86,6 +87,8 @@ builder.Services.AddCors(opts =>
 });
 
 // Domain / Application services
+builder.Services.AddSingleton<ITimeWindowResolver, TimeWindowResolver>();
+
 if (runtime.UsesDatabase)
 {
     builder.Services.AddScoped<IEventRepository, EfEventRepository>();

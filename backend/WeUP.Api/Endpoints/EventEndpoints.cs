@@ -46,6 +46,7 @@ public static class EventEndpoints
         group.MapGet("/map-feed/v1", async (
             HttpContext ctx,
             IEventRepository repo,
+            ITimeWindowResolver timeWindowResolver,
             ITokenService tokens,
             ISaveRepository saves,
             string bbox,
@@ -92,7 +93,7 @@ public static class EventEndpoints
                 return bboxValidation;
             }
 
-            if (!TimeWindowPresetMapper.TryGetTimeWindow(
+            if (!timeWindowResolver.TryGetTimeWindow(
                 (WeUP.Domain.Temporal.TimeWindowPreset)query.Preset,
                 query.Timezone,
                 out var resolvedWindow,

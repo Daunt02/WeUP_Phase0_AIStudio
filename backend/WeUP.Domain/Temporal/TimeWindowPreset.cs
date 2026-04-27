@@ -125,20 +125,8 @@ public sealed record ResolvedTimeWindow(
 /// </summary>
 public static class TimeWindowPresetMapper
 {
-    private const int NowWindowHours     = 4;
-    private const int Next24WindowHours  = 24;
-    private const int Next48WindowHours  = 48;
-    private const int CustomRangeMaxDays = 30;
+    private static readonly ITimeWindowResolver Resolver = new TimeWindowResolver();
 
-    // ── Primary API ──────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Resolve a preset to a <see cref="ResolvedTimeWindow"/> carrying both UTC bounds
-    /// and the semantic metadata used to produce them.
-    ///
-    /// <paramref name="referenceTime"/> is the authoritative "now"; pass
-    /// <c>DateTimeOffset.UtcNow</c> for live requests and a fixed instant in tests.
-    /// </summary>
     public static bool TryResolve(
         TimeWindowPreset preset,
         string timezone,
@@ -148,31 +136,16 @@ public static class TimeWindowPresetMapper
         DateTimeOffset? customStartUtc = null,
         DateTimeOffset? customEndUtc   = null)
     {
-        var resolutionInstant = (referenceTime ?? DateTimeOffset.UtcNow).ToUniversalTime();
-        resolved = new ResolvedTimeWindow(
-            resolutionInstant, resolutionInstant, "UTC",
-            preset, string.Empty, resolutionInstant);
-
-        if (!TryGetTimeWindow(preset, timezone, out var window, out error,
-                referenceTime, customStartUtc, customEndUtc))
-            return false;
-
-        resolved = new ResolvedTimeWindow(
-            window.StartUtc,
-            window.EndUtc,
-            window.Timezone,
+        return Resolver.TryResolve(
             preset,
-            GetPresetLabel(preset),
-            resolutionInstant);
-        return true;
+            timezone,
+            out resolved,
+            out error,
+            referenceTime,
+            customStartUtc,
+            customEndUtc);
     }
 
-    // ── Backward-compatible API ───────────────────────────────────────────────
-
-    /// <summary>
-    /// Resolve a preset to a <see cref="TimeWindow"/>.
-    /// Prefer <see cref="TryResolve"/> for new code; it returns richer metadata.
-    /// </summary>
     public static bool TryGetTimeWindow(
         TimeWindowPreset preset,
         string timezone,
@@ -182,207 +155,18 @@ public static class TimeWindowPresetMapper
         DateTimeOffset? customStartUtc = null,
         DateTimeOffset? customEndUtc   = null)
     {
-        error  = string.Empty;
-        window = new TimeWindow(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, "UTC");
-
-        if (string.IsNullOrWhiteSpace(timezone))
-        {
-            error = "timezone is required and must be an IANA or Windows timezone identifier.";
-            return false;
-        }
-
-        // ── CustomRange / Custom (legacy alias) ───────────────────────────────
-        if (preset == TimeWindowPreset.CustomRange || preset == TimeWindowPreset.Custom)
-        {
-            if (!customStartUtc.HasValue || !customEndUtc.HasValue)
-            {
-                error = "customStartUtc and customEndUtc are required when preset=CustomRange.";
-                return false;
-            }
-
-            if (customStartUtc.Value >= customEndUtc.Value)
-            {
-                error = "customStartUtc must be earlier than customEndUtc.";
-                return false;
-            }
-
-            if ((customEndUtc.Value - customStartUtc.Value).TotalDays > CustomRangeMaxDays)
-            {
-                error = $"CustomRange span must not exceed {CustomRangeMaxDays} days.";
-                return false;
-            }
-
-            window = new TimeWindow(
-                customStartUtc.Value.ToUniversalTime(),
-                customEndUtc.Value.ToUniversalTime(),
-                timezone.Trim());
-            return true;
-        }
-
-        if (!TryResolveTimezone(timezone, out var resolvedTimezone, out var contractTimezone))
-        {
-            error = $"Unsupported timezone '{timezone}'. Use a supported IANA or Windows timezone identifier.";
-            return false;
-        }
-
-        var utcReference   = (referenceTime ?? DateTimeOffset.UtcNow).ToUniversalTime();
-        var localReference = TimeZoneInfo.ConvertTime(utcReference, resolvedTimezone);
-
-        // ── UTC-relative rolling presets (no local day boundary) ─────────────
-        if (preset == TimeWindowPreset.Now)
-        {
-            // [ref, ref+4h) — rolling, UTC-relative
-            window = new TimeWindow(utcReference, utcReference.AddHours(NowWindowHours), contractTimezone);
-            return true;
-        }
-
-        if (preset == TimeWindowPreset.Next24Hours)
-        {
-            // [ref, ref+24h) — rolling, UTC-relative
-            window = new TimeWindow(utcReference, utcReference.AddHours(Next24WindowHours), contractTimezone);
-            return true;
-        }
-
-        if (preset == TimeWindowPreset.Next48Hours)
-        {
-            // [ref, ref+48h) — rolling, UTC-relative
-            window = new TimeWindow(utcReference, utcReference.AddHours(Next48WindowHours), contractTimezone);
-            return true;
-        }
-
-        // ── Market-local day-boundary presets ────────────────────────────────
-        DateTime localStart;
-        DateTime localEnd;
-
-        switch (preset)
-        {
-            case TimeWindowPreset.Tonight:
-                // Cross-midnight nightlife window: local 18:00 → local 03:00+1day (9h).
-                // If ref < 03:00, continues the prior evening's window to avoid a gap.
-                (localStart, localEnd) = GetTonightRange(localReference);
-                break;
-
-            case TimeWindowPreset.Tomorrow:
-                // Full next local calendar day: [midnight+1, midnight+2) — always 24h.
-                localStart = localReference.Date.AddDays(1);
-                localEnd   = localStart.AddDays(1);
-                break;
-
-            case TimeWindowPreset.ThisWeekend:
-                // Friday local 18:00 → Monday local 00:00 (54h).
-                // Uses the containing weekend when ref is already inside the window.
-                (localStart, localEnd) = GetThisWeekendRange(localReference);
-                break;
-
-            default:
-                error = $"Unsupported preset '{preset}'.";
-                return false;
-        }
-
-        var startOffset = new DateTimeOffset(localStart, resolvedTimezone.GetUtcOffset(localStart));
-        var endOffset   = new DateTimeOffset(localEnd,   resolvedTimezone.GetUtcOffset(localEnd));
-        window = new TimeWindow(startOffset.ToUniversalTime(), endOffset.ToUniversalTime(), contractTimezone);
-        return true;
+        return Resolver.TryGetTimeWindow(
+            preset,
+            timezone,
+            out window,
+            out error,
+            referenceTime,
+            customStartUtc,
+            customEndUtc);
     }
 
-    // ── Label helper ─────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Returns the canonical UI label for a preset.
-    /// Labels are stable across releases; do not change without a frontend release.
-    /// </summary>
     public static string GetPresetLabel(TimeWindowPreset preset) => preset switch
     {
-        TimeWindowPreset.Now         => "Now",
-        TimeWindowPreset.Tonight     => "Tonight",
-        TimeWindowPreset.Tomorrow    => "Tomorrow",
-        TimeWindowPreset.ThisWeekend => "This Weekend",
-        TimeWindowPreset.Next24Hours => "Next 24 Hours",
-        TimeWindowPreset.Next48Hours => "Next 48 Hours",
-        TimeWindowPreset.Custom      => "Custom",
-        TimeWindowPreset.CustomRange => "Custom",
-        _ => preset.ToString(),
+        _ => Resolver.GetPresetLabel(preset),
     };
-
-    // ── Private helpers ──────────────────────────────────────────────────────
-
-    private static (DateTime startLocal, DateTime endLocal) GetTonightRange(DateTimeOffset localReference)
-    {
-        var todayAtSixPm  = localReference.Date.AddHours(18);
-        var todayAtThreeAm = localReference.Date.AddHours(3);
-
-        // Before 03:00 → still inside the previous evening's window
-        if (localReference.DateTime < todayAtThreeAm)
-        {
-            var priorEvening = localReference.Date.AddDays(-1).AddHours(18);
-            return (priorEvening, localReference.Date.AddHours(3));
-        }
-
-        // 03:00–18:00 or ≥18:00 → tonight's window starts at 18:00
-        return (todayAtSixPm, todayAtSixPm.AddHours(9));
-    }
-
-    private static (DateTime startLocal, DateTime endLocal) GetThisWeekendRange(DateTimeOffset localReference)
-    {
-        var daysSinceFriday          = ((int)localReference.DayOfWeek - (int)DayOfWeek.Friday + 7) % 7;
-        var currentWeekFriday        = localReference.Date.AddDays(-daysSinceFriday).AddHours(18);
-        var currentWeekMondayBoundary = currentWeekFriday.AddHours(54); // Fri 18:00 + 54h = Mon 00:00
-
-        if (localReference.DateTime < currentWeekMondayBoundary)
-        {
-            // Before or inside the current weekend window
-            return (currentWeekFriday, currentWeekMondayBoundary);
-        }
-
-        // Past Monday 00:00 → advance to next weekend
-        var nextWeekFriday = currentWeekFriday.AddDays(7);
-        return (nextWeekFriday, nextWeekFriday.AddHours(54));
-    }
-
-    private static bool TryResolveTimezone(
-        string timezone,
-        out TimeZoneInfo resolvedTimezone,
-        out string contractTimezone)
-    {
-        resolvedTimezone = TimeZoneInfo.Utc;
-        contractTimezone = timezone.Trim();
-
-        if (string.IsNullOrWhiteSpace(contractTimezone))
-            return false;
-
-        try
-        {
-            resolvedTimezone = TimeZoneInfo.FindSystemTimeZoneById(contractTimezone);
-            return true;
-        }
-        catch
-        {
-            // Map common IANA ids → Windows ids for Windows host compatibility
-            var windowsId = contractTimezone.ToLowerInvariant() switch
-            {
-                "america/los_angeles" => "Pacific Standard Time",
-                "america/new_york"    => "Eastern Standard Time",
-                "america/chicago"     => "Central Standard Time",
-                "america/denver"      => "Mountain Standard Time",
-                "america/phoenix"     => "US Mountain Standard Time",
-                "europe/london"       => "GMT Standard Time",
-                "europe/paris"        => "Romance Standard Time",
-                "asia/tokyo"          => "Tokyo Standard Time",
-                _ => null,
-            };
-
-            if (windowsId is null)
-                return false;
-
-            try
-            {
-                resolvedTimezone = TimeZoneInfo.FindSystemTimeZoneById(windowsId);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-    }
 }
