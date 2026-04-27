@@ -52,6 +52,10 @@ public static class EventEndpoints
             string bbox,
             string preset,
             string? timezone,
+            string? marketTimezone,
+            DateTimeOffset? fromUtc,
+            DateTimeOffset? toUtc,
+            DateTimeOffset? referenceInstantUtc,
             DateTimeOffset? customStartUtc,
             DateTimeOffset? customEndUtc,
             string? district,
@@ -62,9 +66,16 @@ public static class EventEndpoints
             if (!Enum.TryParse<WeUP.Contracts.Events.TimeWindowPreset>(preset, ignoreCase: true, out var boundPreset))
             {
                 return Results.ValidationProblem(
-                    new Dictionary<string, string[]> { ["preset"] = ["Unsupported preset. Allowed values: now, tonight, tomorrow, thisWeekend, custom."] },
+                    new Dictionary<string, string[]> { ["preset"] = ["Unsupported preset. Allowed values: now, tonight, tomorrow, thisWeekend, next24Hours, next48Hours, customRange, custom."] },
                     statusCode: 422);
             }
+
+            var canonicalTimezone = string.IsNullOrWhiteSpace(marketTimezone)
+                ? timezone ?? string.Empty
+                : marketTimezone;
+
+            var canonicalFromUtc = customStartUtc ?? fromUtc;
+            var canonicalToUtc = customEndUtc ?? toUtc;
 
             // Backend query binding example: bind raw query parameters once, then hydrate the
             // canonical DTO so map feed logic and downstream calendar overlays share one shape.
@@ -72,9 +83,9 @@ public static class EventEndpoints
             {
                 Bbox = bbox,
                 Preset = boundPreset,
-                Timezone = timezone ?? string.Empty,
-                CustomStartUtc = customStartUtc,
-                CustomEndUtc = customEndUtc,
+                Timezone = canonicalTimezone,
+                CustomStartUtc = canonicalFromUtc,
+                CustomEndUtc = canonicalToUtc,
                 District = district,
                 Categories = categories,
                 IncludeSavedOnly = includeSavedOnly ?? false,
@@ -98,6 +109,7 @@ public static class EventEndpoints
                 query.Timezone,
                 out var resolvedWindow,
                 out var windowError,
+                referenceTime: referenceInstantUtc,
                 customStartUtc: query.CustomStartUtc,
                 customEndUtc: query.CustomEndUtc))
             {
@@ -180,8 +192,36 @@ public static class EventEndpoints
             var timezoneParameter = operation.Parameters.FirstOrDefault(p => p.Name == "timezone");
             if (timezoneParameter is not null)
             {
-                timezoneParameter.Description = "Required IANA or Windows timezone identifier used to resolve preset boundaries.";
+                timezoneParameter.Description = "Legacy alias for marketTimezone. Required when marketTimezone is not provided.";
                 timezoneParameter.Example = new OpenApiString("America/Chicago");
+            }
+
+            var marketTimezoneParameter = operation.Parameters.FirstOrDefault(p => p.Name == "marketTimezone");
+            if (marketTimezoneParameter is not null)
+            {
+                marketTimezoneParameter.Description = "Canonical market timezone identifier used to resolve preset boundaries.";
+                marketTimezoneParameter.Example = new OpenApiString("America/Chicago");
+            }
+
+            var fromUtcParameter = operation.Parameters.FirstOrDefault(p => p.Name == "fromUtc");
+            if (fromUtcParameter is not null)
+            {
+                fromUtcParameter.Description = "Canonical explicit range start (UTC). Used for custom-range queries.";
+                fromUtcParameter.Example = new OpenApiString("2026-04-11T00:00:00Z");
+            }
+
+            var toUtcParameter = operation.Parameters.FirstOrDefault(p => p.Name == "toUtc");
+            if (toUtcParameter is not null)
+            {
+                toUtcParameter.Description = "Canonical explicit range end (UTC). Used for custom-range queries.";
+                toUtcParameter.Example = new OpenApiString("2026-04-13T00:00:00Z");
+            }
+
+            var referenceInstantUtcParameter = operation.Parameters.FirstOrDefault(p => p.Name == "referenceInstantUtc");
+            if (referenceInstantUtcParameter is not null)
+            {
+                referenceInstantUtcParameter.Description = "Optional reference instant for deterministic preset resolution.";
+                referenceInstantUtcParameter.Example = new OpenApiString("2026-04-26T14:30:00Z");
             }
 
             var customStartUtcParameter = operation.Parameters.FirstOrDefault(p => p.Name == "customStartUtc");

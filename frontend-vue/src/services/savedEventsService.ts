@@ -17,10 +17,11 @@ function buildErrorMessage(
 
 function normalizeQuery(
   query: SavedEventsQueryDto = {},
-): Required<SavedEventsQueryDto> {
+): SavedEventsQueryDto & { page: number; pageSize: number } {
   return {
     page: Math.max(1, query.page ?? 1),
     pageSize: Math.min(100, Math.max(1, query.pageSize ?? 50)),
+    temporal: query.temporal,
   };
 }
 
@@ -33,6 +34,26 @@ export async function fetchSavedEvents(
     page: String(normalizedQuery.page),
     pageSize: String(normalizedQuery.pageSize),
   });
+
+  if (normalizedQuery.temporal) {
+    params.set("preset", normalizedQuery.temporal.preset);
+    params.set("marketTimezone", normalizedQuery.temporal.marketTimezone);
+
+    if (normalizedQuery.temporal.fromUtc) {
+      params.set("fromUtc", normalizedQuery.temporal.fromUtc);
+    }
+
+    if (normalizedQuery.temporal.toUtc) {
+      params.set("toUtc", normalizedQuery.temporal.toUtc);
+    }
+
+    if (normalizedQuery.temporal.referenceInstantUtc) {
+      params.set(
+        "referenceInstantUtc",
+        normalizedQuery.temporal.referenceInstantUtc,
+      );
+    }
+  }
 
   const response = await fetch(`${API_BASE_URL}/api/users/me/saves?${params}`, {
     method: "GET",

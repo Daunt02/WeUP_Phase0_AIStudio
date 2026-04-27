@@ -2,23 +2,34 @@ import type {
   EventMapFeedQueryDto,
   EventMapFeedV1ResponseDto,
 } from "../contracts/map-feed.contracts";
+import { isCustomRangePreset } from "../contracts/temporal-query.contracts";
 
 const API_BASE_URL =
   (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "";
 
 function buildMapFeedQueryString(query: EventMapFeedQueryDto): string {
   const params = new URLSearchParams();
+  const marketTimezone = query.marketTimezone ?? query.timezone;
+  const fromUtc = query.fromUtc ?? query.customStartUtc;
+  const toUtc = query.toUtc ?? query.customEndUtc;
 
   params.set("bbox", query.bbox);
   params.set("preset", query.preset);
-  params.set("timezone", query.timezone);
+  params.set("marketTimezone", marketTimezone);
+  params.set("timezone", marketTimezone);
 
-  if (query.customStartUtc) {
-    params.set("customStartUtc", query.customStartUtc);
+  if (fromUtc) {
+    params.set("fromUtc", fromUtc);
+    params.set("customStartUtc", fromUtc);
   }
 
-  if (query.customEndUtc) {
-    params.set("customEndUtc", query.customEndUtc);
+  if (toUtc) {
+    params.set("toUtc", toUtc);
+    params.set("customEndUtc", toUtc);
+  }
+
+  if (query.referenceInstantUtc) {
+    params.set("referenceInstantUtc", query.referenceInstantUtc);
   }
 
   if (query.district) {
@@ -36,25 +47,29 @@ function buildMapFeedQueryString(query: EventMapFeedQueryDto): string {
 }
 
 function ensureQueryContract(query: EventMapFeedQueryDto): void {
+  const marketTimezone = query.marketTimezone ?? query.timezone;
+  const fromUtc = query.fromUtc ?? query.customStartUtc;
+  const toUtc = query.toUtc ?? query.customEndUtc;
+
   if (!query.bbox || query.bbox.split(",").length !== 4) {
     throw new Error(
       "EventMapFeedQueryDto.bbox must be minLng,minLat,maxLng,maxLat.",
     );
   }
 
-  if (!query.timezone.trim()) {
-    throw new Error("EventMapFeedQueryDto.timezone is required.");
+  if (!marketTimezone.trim()) {
+    throw new Error(
+      "TemporalQueryDto.marketTimezone is required (timezone is accepted as a legacy alias).",
+    );
   }
 
-  if (query.preset === "custom") {
-    if (!query.customStartUtc || !query.customEndUtc) {
-      throw new Error(
-        "Provide customStartUtc and customEndUtc when preset=custom.",
-      );
+  if (isCustomRangePreset(query.preset)) {
+    if (!fromUtc || !toUtc) {
+      throw new Error("Provide fromUtc and toUtc when preset is custom range.");
     }
 
-    if (query.customStartUtc >= query.customEndUtc) {
-      throw new Error("customStartUtc must be earlier than customEndUtc.");
+    if (fromUtc >= toUtc) {
+      throw new Error("fromUtc must be earlier than toUtc.");
     }
   }
 }

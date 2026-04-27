@@ -110,6 +110,9 @@ public enum TimeWindowPreset
     Tomorrow,
     ThisWeekend,
     Custom,
+    Next24Hours,
+    Next48Hours,
+    CustomRange,
 }
 
 /// <summary>

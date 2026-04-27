@@ -1,5 +1,6 @@
 import type { SaveSessionKind } from "./event-detail.contracts";
 import type { EventMapItemDto } from "./map-feed.contracts";
+import type { TemporalQueryDto } from "./temporal-query.contracts";
 
 export type SavedEventResolutionStatus = "resolved" | "missing-or-deleted";
 
@@ -28,6 +29,7 @@ export interface SavedEventsResponseDto {
 export interface SavedEventsQueryDto {
   readonly page?: number;
   readonly pageSize?: number;
+  readonly temporal?: TemporalQueryDto;
 }
 
 export interface SavedEventsSurfaceSnapshot {

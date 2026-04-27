@@ -101,6 +101,9 @@ export enum TimeWindowPreset {
   Tonight = "tonight",
   Tomorrow = "tomorrow",
   ThisWeekend = "thisWeekend",
+  Next24Hours = "next24Hours",
+  Next48Hours = "next48Hours",
+  CustomRange = "customRange",
   Custom = "custom",
 }
 

@@ -1,4 +1,5 @@
 import type { TimeWindowFilterDto } from "./time-window.contracts";
+import type { TemporalQueryDto } from "./temporal-query.contracts";
 
 export type EventMapMarkerState =
   | "default"
@@ -56,6 +57,11 @@ export interface EventMapFeedV1ResponseDto {
 /** Backend query contract: WeUP.Contracts.Events.EventMapFeedQueryDto */
 export interface EventMapFeedQueryDto extends TimeWindowFilterDto {
   readonly bbox: string;
+  /** Canonical temporal contract (preferred). Backend keeps preset resolution authority. */
+  readonly marketTimezone?: TemporalQueryDto["marketTimezone"];
+  readonly fromUtc?: TemporalQueryDto["fromUtc"];
+  readonly toUtc?: TemporalQueryDto["toUtc"];
+  readonly referenceInstantUtc?: TemporalQueryDto["referenceInstantUtc"];
   readonly district?: string;
   readonly categories?: string[];
   readonly includeSavedOnly?: boolean;

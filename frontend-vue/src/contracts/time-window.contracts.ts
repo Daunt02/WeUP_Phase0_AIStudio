@@ -1,5 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // M8-P36: Canonical Time Window Semantics v1.0
+// M8-P39: Temporal Contract Synchronization v1.0
 //
 // DESIGN CONTRACT
 //   • The frontend NEVER computes time window bounds.
@@ -79,12 +80,20 @@ export enum TimeWindowPreset {
  */
 export interface TimeWindowFilterDto {
   readonly preset: TimeWindowPreset;
-  /** IANA timezone string, e.g. "America/Chicago". Never empty. */
+  /** Legacy alias. Prefer marketTimezone. */
   readonly timezone: string;
-  /** Required when preset=CustomRange. ISO 8601 UTC string, e.g. "2026-05-01T00:00:00Z". */
+  /** Canonical timezone field used by synchronized temporal contract. */
+  readonly marketTimezone?: string;
+  /** Required when preset=CustomRange. Legacy alias for fromUtc. */
   readonly customStartUtc?: string;
-  /** Required when preset=CustomRange. ISO 8601 UTC string. Must be after customStartUtc. */
+  /** Required when preset=CustomRange. Legacy alias for toUtc. */
   readonly customEndUtc?: string;
+  /** Canonical explicit range start in UTC for custom-range requests. */
+  readonly fromUtc?: string;
+  /** Canonical explicit range end in UTC for custom-range requests. */
+  readonly toUtc?: string;
+  /** Optional deterministic reference instant for preset expansion. */
+  readonly referenceInstantUtc?: string;
 }
 
 /**
@@ -145,6 +154,7 @@ export interface ResolvedTimeWindowDto {
  */
 export interface MapFeedFilterState {
   preset: TimeWindowPreset;
+  /** Legacy alias for marketTimezone. */
   timezone: string;
   customStartLocal: string;
   customEndLocal: string;

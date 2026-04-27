@@ -21,7 +21,7 @@
     />
 
     <q-input
-      v-if="preset === TimeWindowPreset.Custom"
+      v-if="isCustomPreset"
       :model-value="customStartLocal"
       type="datetime-local"
       dense
@@ -31,7 +31,7 @@
     />
 
     <q-input
-      v-if="preset === TimeWindowPreset.Custom"
+      v-if="isCustomPreset"
       :model-value="customEndLocal"
       type="datetime-local"
       dense
@@ -62,17 +62,9 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import { TimeWindowPreset } from "../contracts/time-window.contracts";
-
-defineProps<{
-  preset: TimeWindowPreset;
-  timezone: string;
-  customStartLocal: string;
-  customEndLocal: string;
-  includeSavedOnly: boolean;
-  isLoading: boolean;
-  validationError: string | null;
-}>();
+import { isCustomRangePreset } from "../contracts/temporal-query.contracts";
 
 const emit = defineEmits<{
   (event: "update:preset", value: TimeWindowPreset): void;
@@ -88,8 +80,22 @@ const presetOptions = [
   { label: "Tonight", value: TimeWindowPreset.Tonight },
   { label: "Tomorrow", value: TimeWindowPreset.Tomorrow },
   { label: "This Weekend", value: TimeWindowPreset.ThisWeekend },
-  { label: "Custom", value: TimeWindowPreset.Custom },
+  { label: "Next 24 Hours", value: TimeWindowPreset.Next24Hours },
+  { label: "Next 48 Hours", value: TimeWindowPreset.Next48Hours },
+  { label: "Custom Range", value: TimeWindowPreset.CustomRange },
 ];
+
+const props = defineProps<{
+  preset: TimeWindowPreset;
+  timezone: string;
+  customStartLocal: string;
+  customEndLocal: string;
+  includeSavedOnly: boolean;
+  isLoading: boolean;
+  validationError: string | null;
+}>();
+
+const isCustomPreset = computed(() => isCustomRangePreset(props.preset));
 </script>
 
 <style scoped>

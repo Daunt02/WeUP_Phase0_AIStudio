@@ -5,85 +5,57 @@ import type {
   MapFeedFilterState,
   TimeWindowFilterDto,
 } from "../contracts/time-window.contracts";
-import { TimeWindowPreset } from "../contracts/time-window.contracts";
 import type { EventMapFeedQueryDto } from "../contracts/map-feed.contracts";
+import { useTemporalQueryState } from "./useTemporalQueryState";
+import { isCustomRangePreset } from "../contracts/temporal-query.contracts";
 
 type UseMapFeedFiltersOptions = Partial<MapFeedFilterState>;
 
-function detectTimezone(): string {
-  return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-}
-
-function toUtcIso(localDateTime: string): string | null {
-  if (!localDateTime.trim()) {
-    return null;
-  }
-
-  const parsed = new Date(localDateTime);
-  if (Number.isNaN(parsed.getTime())) {
-    return null;
-  }
-
-  return parsed.toISOString();
-}
-
 export function useMapFeedFilters(options: UseMapFeedFiltersOptions = {}) {
-  const preset = ref(options.preset ?? TimeWindowPreset.Now);
-  const timezone = ref(options.timezone ?? detectTimezone());
-  const customStartLocal = ref(options.customStartLocal ?? "");
-  const customEndLocal = ref(options.customEndLocal ?? "");
+  const temporal = useTemporalQueryState({
+    preset: options.preset,
+    marketTimezone: options.timezone,
+    customStartLocal: options.customStartLocal,
+    customEndLocal: options.customEndLocal,
+  });
+
+  const preset = temporal.preset;
+  const timezone = temporal.marketTimezone;
+  const customStartLocal = temporal.customStartLocal;
+  const customEndLocal = temporal.customEndLocal;
   const includeSavedOnly = ref(options.includeSavedOnly ?? false);
 
-  const customStartUtc = computed(() => toUtcIso(customStartLocal.value));
-  const customEndUtc = computed(() => toUtcIso(customEndLocal.value));
-
-  const validationError = computed<string | null>(() => {
-    if (!timezone.value.trim()) {
-      return "Timezone is required so preset windows resolve identically on the backend and in calendar overlays.";
-    }
-
-    if (preset.value !== TimeWindowPreset.Custom) {
-      return null;
-    }
-
-    if (!customStartLocal.value || !customEndLocal.value) {
-      return "Custom range requires both start and end values before dispatch.";
-    }
-
-    if (!customStartUtc.value || !customEndUtc.value) {
-      return "Custom range values must be valid datetimes.";
-    }
-
-    if (customStartUtc.value >= customEndUtc.value) {
-      return "Custom range start must be earlier than custom range end.";
-    }
-
-    return null;
-  });
+  const validationError = temporal.validationError;
 
   const temporalContract = computed<TimeWindowFilterDto>(() => {
     const baseContract: TimeWindowFilterDto = {
-      preset: preset.value,
-      timezone: timezone.value.trim(),
+      preset: temporal.temporalQuery.value.preset,
+      timezone: temporal.temporalQuery.value.marketTimezone,
+      marketTimezone: temporal.temporalQuery.value.marketTimezone,
+      referenceInstantUtc: temporal.temporalQuery.value.referenceInstantUtc,
     };
 
-    if (preset.value !== TimeWindowPreset.Custom) {
+    if (!isCustomRangePreset(temporal.temporalQuery.value.preset)) {
       return baseContract;
     }
 
     return {
       ...baseContract,
-      customStartUtc: customStartUtc.value ?? undefined,
-      customEndUtc: customEndUtc.value ?? undefined,
+      customStartUtc: temporal.temporalQuery.value.fromUtc,
+      customEndUtc: temporal.temporalQuery.value.toUtc,
+      fromUtc: temporal.temporalQuery.value.fromUtc,
+      toUtc: temporal.temporalQuery.value.toUtc,
     };
   });
 
   const requestSignature = computed(() =>
     JSON.stringify({
-      preset: temporalContract.value.preset,
-      timezone: temporalContract.value.timezone,
-      customStartUtc: temporalContract.value.customStartUtc ?? null,
-      customEndUtc: temporalContract.value.customEndUtc ?? null,
+      preset: temporal.temporalQuery.value.preset,
+      fromUtc: temporal.temporalQuery.value.fromUtc ?? null,
+      toUtc: temporal.temporalQuery.value.toUtc ?? null,
+      marketTimezone: temporal.temporalQuery.value.marketTimezone,
+      referenceInstantUtc:
+        temporal.temporalQuery.value.referenceInstantUtc ?? null,
       includeSavedOnly: includeSavedOnly.value,
     }),
   );
@@ -96,6 +68,10 @@ export function useMapFeedFilters(options: UseMapFeedFiltersOptions = {}) {
     return {
       bbox,
       ...temporalContract.value,
+      marketTimezone: temporal.temporalQuery.value.marketTimezone,
+      fromUtc: temporal.temporalQuery.value.fromUtc,
+      toUtc: temporal.temporalQuery.value.toUtc,
+      referenceInstantUtc: temporal.temporalQuery.value.referenceInstantUtc,
       includeSavedOnly: includeSavedOnly.value,
     };
   }
@@ -110,6 +86,14 @@ export function useMapFeedFilters(options: UseMapFeedFiltersOptions = {}) {
     };
   }
 
+  function toSavedEventsTemporalQuery() {
+    if (validationError.value) {
+      throw new Error(validationError.value);
+    }
+
+    return temporal.temporalQuery.value;
+  }
+
   return {
     preset,
     timezone,
@@ -118,8 +102,10 @@ export function useMapFeedFilters(options: UseMapFeedFiltersOptions = {}) {
     includeSavedOnly,
     validationError,
     temporalContract,
+    temporalQuery: temporal.temporalQuery,
     requestSignature,
     buildMapFeedQuery,
     toCalendarOverlayTemporalQuery,
+    toSavedEventsTemporalQuery,
   };
 }

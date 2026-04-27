@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using WeUP.Contracts.Events;
+using WeUP.Contracts.Temporal;
 
 namespace WeUP.Api.Controllers;
 
@@ -18,35 +19,40 @@ public sealed class EventMapFeedQueryBindingExampleController : ControllerBase
     [HttpGet("map-feed-query-binding")]
     public ActionResult<EventMapFeedQueryDto> GetMapFeedQueryBindingExample(
         [FromQuery] string bbox,
-        [FromQuery] TimeWindowPreset preset,
-        [FromQuery] string timezone,
-        [FromQuery] DateTimeOffset? customStartUtc,
-        [FromQuery] DateTimeOffset? customEndUtc,
+        [FromQuery] TemporalQueryDto temporal,
         [FromQuery] string? district,
         [FromQuery] string[]? categories,
         [FromQuery] bool includeSavedOnly = false)
     {
+        if (string.IsNullOrWhiteSpace(temporal.MarketTimezone))
+        {
+            return BadRequest(new ValidationProblemDetails(new Dictionary<string, string[]>
+            {
+                ["marketTimezone"] = ["marketTimezone is required."],
+            }));
+        }
+
         // Bind raw query params into the canonical contract once so downstream
         // services can apply one shared temporal policy.
         var query = new EventMapFeedQueryDto
         {
             Bbox = bbox,
-            Preset = preset,
-            Timezone = timezone,
-            CustomStartUtc = customStartUtc,
-            CustomEndUtc = customEndUtc,
+            Preset = temporal.Preset,
+            Timezone = temporal.MarketTimezone,
+            CustomStartUtc = temporal.FromUtc,
+            CustomEndUtc = temporal.ToUtc,
             District = district,
             Categories = categories,
             IncludeSavedOnly = includeSavedOnly,
         };
 
-        if (query.Preset == TimeWindowPreset.Custom)
+        if (temporal.IsCustomRange)
         {
             if (query.CustomStartUtc is null || query.CustomEndUtc is null)
             {
                 return BadRequest(new ValidationProblemDetails(new Dictionary<string, string[]>
                 {
-                    ["custom"] = ["customStartUtc and customEndUtc are required when preset=custom."],
+                    ["fromUtc"] = ["fromUtc and toUtc are required when preset is custom range."],
                 }));
             }
 
@@ -54,7 +60,7 @@ public sealed class EventMapFeedQueryBindingExampleController : ControllerBase
             {
                 return BadRequest(new ValidationProblemDetails(new Dictionary<string, string[]>
                 {
-                    ["custom"] = ["customStartUtc must be earlier than customEndUtc."],
+                    ["fromUtc"] = ["fromUtc must be earlier than toUtc."],
                 }));
             }
         }
