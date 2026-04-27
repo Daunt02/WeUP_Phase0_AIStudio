@@ -4,13 +4,14 @@ using WeUP.Contracts.Moderation;
 using WeUP.Domain.Events;
 using WeUP.Domain.Moderation;
 using WeUP.Infrastructure.Moderation;
+using WeUP.Infrastructure.Spatial;
 using Xunit;
 
 namespace WeUP.Tests.Moderation;
 
 public sealed class PublishEligibilityServiceTests
 {
-    private readonly IPublishEligibilityService _service = new PublishEligibilityService(new ConfidenceScoringService());
+    private readonly IPublishEligibilityService _service = new PublishEligibilityService(new ConfidenceScoringService(), new GeoValidationService());
 
     [Fact]
     public void HighConfidenceCleanCandidate_WithPendingReview_IsManualReviewable()

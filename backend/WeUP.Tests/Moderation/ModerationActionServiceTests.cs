@@ -9,6 +9,7 @@ using WeUP.Domain.Moderation;
 using WeUP.Domain.Resolution;
 using WeUP.Infrastructure.Auth;
 using WeUP.Infrastructure.Moderation;
+using WeUP.Infrastructure.Spatial;
 using Xunit;
 
 namespace WeUP.Tests.Moderation;
@@ -107,7 +108,7 @@ public sealed class ModerationActionServiceTests
         await roleRepo.SetRolesAsync("mod-1", [UserRoles.Moderator]);
         var roleResolver = new UserRoleResolver(roleRepo);
 
-        var publishEligibility = new PublishEligibilityService(new ConfidenceScoringService());
+        var publishEligibility = new PublishEligibilityService(new ConfidenceScoringService(), new GeoValidationService());
         var provenanceService = new ProvenanceService();
 
         var handlers = new IModerationActionHandler[]

@@ -1,5 +1,8 @@
+using System.Globalization;
+using WeUP.Contracts.Events;
 using WeUP.Contracts.Ingestion;
 using WeUP.Domain.Moderation;
+using WeUP.Domain.Spatial;
 
 namespace WeUP.Application.Moderation;
 
@@ -73,7 +76,7 @@ internal static class PublishEligibilityPolicies
     }
 }
 
-public sealed class PublishEligibilityService(IConfidenceScoringService scoring) : IPublishEligibilityService
+public sealed class PublishEligibilityService(IConfidenceScoringService scoring, IGeoValidationService geoValidation) : IPublishEligibilityService
 {
     public AutoPublishPolicy GetPolicy() => PublishEligibilityPolicies.Phase0.Policy;
 
@@ -87,7 +90,7 @@ public sealed class PublishEligibilityService(IConfidenceScoringService scoring)
             SourceIntegrityValid: !string.IsNullOrWhiteSpace(candidate.SourceKind) && !string.IsNullOrWhiteSpace(candidate.SourceRef),
             EvidenceChainComplete: candidate.EvidenceRefs is { Length: > 0 },
             VenueResolved: !string.IsNullOrWhiteSpace(candidate.VenueName),
-            GeoValidated: !string.IsNullOrWhiteSpace(candidate.Address) && candidate.GeocodeConfidence >= PublishEligibilityPolicies.Phase0.Policy.MinimumDimensionThreshold,
+            GeoValidated: ValidateCandidateLocation(candidate).IsRenderableOnMap,
             DedupeMatchScore: dedupeMatchScore,
             ReviewConfidence: 0.0,
             ConfidenceOverride: null);
@@ -100,13 +103,26 @@ public sealed class PublishEligibilityService(IConfidenceScoringService scoring)
         var policy = GetPolicy();
         var confidence = context.ConfidenceOverride ??
             scoring.Score(context.Candidate, context.DedupeMatchScore, context.ReviewConfidence);
+        var geoValidationResult = ValidateCandidateLocation(context.Candidate);
+        var effectiveContext = context with
+        {
+            GeoValidated = context.GeoValidated && geoValidationResult.IsRenderableOnMap,
+        };
 
         var blockers = new List<PublishBlocker>();
         var notes = new List<string>();
+        if (!geoValidationResult.IsRenderableOnMap)
+        {
+            notes.Add($"geo.{geoValidationResult.Category.ToString().ToLowerInvariant()}:{string.Join(",", geoValidationResult.Issues.Select(issue => issue.Code))}");
+        }
+        else if (geoValidationResult.Issues.Any(issue => issue.Code == "MISSING_ADDRESS"))
+        {
+            notes.Add("geo.valid:missing-address");
+        }
 
-        var completeness = EvaluateFieldCompleteness(context, blockers);
-        ApplyConfidenceRules(context, confidence, policy, blockers, notes);
-        ApplyStateRules(context, blockers);
+        var completeness = EvaluateFieldCompleteness(effectiveContext, blockers);
+        ApplyConfidenceRules(effectiveContext, confidence, policy, blockers, notes);
+        ApplyStateRules(effectiveContext, blockers);
 
         var confidenceDecision = BuildConfidenceDecision(confidence, policy, blockers, notes);
         var hasHardBlockers = blockers.Any(b => b.IsHardBlock);
@@ -137,6 +153,36 @@ public sealed class PublishEligibilityService(IConfidenceScoringService scoring)
             FieldCompletenessSummary: completeness,
             Policy: policy,
             Notes: notes.ToArray());
+    }
+
+    private GeoValidationResult ValidateCandidateLocation(NormalizedEventCandidate candidate)
+    {
+        var latitude = TryGetCoordinate(candidate.Attributes, "latitude", "lat");
+        var longitude = TryGetCoordinate(candidate.Attributes, "longitude", "lng", "lon");
+        return geoValidation.ValidateEventCoordinates(latitude, longitude, candidate.GeocodeConfidence, candidate.Address);
+    }
+
+    private static double? TryGetCoordinate(IReadOnlyDictionary<string, string?>? attributes, params string[] keys)
+    {
+        if (attributes is null)
+        {
+            return null;
+        }
+
+        foreach (var key in keys)
+        {
+            if (!attributes.TryGetValue(key, out var raw) || string.IsNullOrWhiteSpace(raw))
+            {
+                continue;
+            }
+
+            if (double.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
+            {
+                return value;
+            }
+        }
+
+        return null;
     }
 
     private static FieldCompletenessResult EvaluateFieldCompleteness(

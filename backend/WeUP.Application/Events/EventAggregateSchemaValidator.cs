@@ -132,12 +132,7 @@ public static class EventAggregateSchemaValidator
         }
 
         // Geo
-        if (double.IsNaN(aggregate.Latitude) || aggregate.Latitude < -90 || aggregate.Latitude > 90)
-            v.Add("Latitude", "INVALID_LATITUDE", $"Latitude must be in [-90, 90], got {aggregate.Latitude}.");
-        if (double.IsNaN(aggregate.Longitude) || aggregate.Longitude < -180 || aggregate.Longitude > 180)
-            v.Add("Longitude", "INVALID_LONGITUDE", $"Longitude must be in [-180, 180], got {aggregate.Longitude}.");
-        if (aggregate.Latitude == 0 && aggregate.Longitude == 0)
-            v.Add("Latitude", "NULL_ISLAND_COORDINATES", "Coordinates (0, 0) indicate an unresolved null-island location.");
+        v.RequireGeoPoint("Latitude", "Longitude", aggregate.Latitude, aggregate.Longitude);
 
         // Confidence
         if (double.IsNaN(aggregate.ConfidenceScore) || aggregate.ConfidenceScore < 0 || aggregate.ConfidenceScore > 1)
@@ -204,9 +199,7 @@ public static class EventAggregateSchemaValidator
         v.RequireNonEmpty("Title", dto.Title);
         v.RequireNonEmpty("VenueName", dto.VenueName);
         v.RequireNonEmpty("Category", dto.Category);
-        v.RequireLatitude("Lat", dto.Lat);
-        v.RequireLongitude("Lng", dto.Lng);
-        v.WarnNullIsland("Lat", dto.Lat, dto.Lng);
+        v.RequireGeoPoint("Lat", "Lng", dto.Lat, dto.Lng);
         v.RequireEnumValue("Status", dto.Status, ValidFrontendStatuses.ToDictionary(_ => _, _ => true).Keys.ToHashSet(StringComparer.Ordinal));
         v.RequireConfidence("Confidence", dto.Confidence);
         return v.Build();
@@ -259,9 +252,7 @@ public static class EventAggregateSchemaValidator
         v.RequireNonEmpty("VenueName", dto.VenueName);
         v.RequireNonEmpty("Category", dto.Category);
         v.RequireNonEmpty("Address", dto.Address);
-        v.RequireLatitude("Lat", dto.Lat);
-        v.RequireLongitude("Lng", dto.Lng);
-        v.WarnNullIsland("Lat", dto.Lat, dto.Lng);
+        v.RequireGeoPoint("Lat", "Lng", dto.Lat, dto.Lng);
         if (dto.StartUtc == default)
             v.Add("StartUtc", "INVALID_STARTUTC", "StartUtc must not be DateTimeOffset.MinValue.");
         if (dto.EndUtc.HasValue && dto.EndUtc.Value < dto.StartUtc)
@@ -376,29 +367,31 @@ public static class EventAggregateSchemaValidator
                 Add(field, "REQUIRED_NOT_NULL", $"{field} must be non-null (empty collection is allowed).");
         }
 
-        public void RequireLatitude(string field, double value)
+        public void RequireGeoPoint(string latitudeField, string longitudeField, double latitude, double longitude)
         {
-            if (double.IsNaN(value) || value < -90 || value > 90)
-                Add(field, "INVALID_LATITUDE", $"{field} must be in [-90, 90], got {value}.");
-        }
+            var validation = GeoValidationRules.ValidatePoint(latitude, longitude);
+            foreach (var issue in validation.Issues)
+            {
+                if (issue.Code == "MISSING_ADDRESS")
+                {
+                    continue;
+                }
 
-        public void RequireLongitude(string field, double value)
-        {
-            if (double.IsNaN(value) || value < -180 || value > 180)
-                Add(field, "INVALID_LONGITUDE", $"{field} must be in [-180, 180], got {value}.");
+                var field = issue.Field switch
+                {
+                    "latitude" => latitudeField,
+                    "longitude" => longitudeField,
+                    _ => latitudeField,
+                };
+
+                Add(field, issue.Code, issue.Message);
+            }
         }
 
         public void RequireConfidence(string field, double value)
         {
             if (double.IsNaN(value) || value < 0 || value > 1)
                 Add(field, "INVALID_CONFIDENCE", $"{field} must be in [0, 1], got {value}.");
-        }
-
-        public void WarnNullIsland(string latField, double lat, double lng)
-        {
-            if (lat == 0 && lng == 0)
-                Add(latField, "NULL_ISLAND_COORDINATES",
-                    $"Coordinates ({latField}=0, Lng=0) indicate an unresolved null-island location.");
         }
 
         public void RequireEnumValue(string field, string? value, HashSet<string> validValues)

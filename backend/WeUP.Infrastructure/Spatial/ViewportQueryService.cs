@@ -14,16 +14,19 @@ namespace WeUP.Infrastructure.Spatial;
 public class ViewportQueryService : IViewportQueryService
 {
     private readonly IEventRepository _eventRepository;
+    private readonly IGeoValidationService _geoValidation;
     private readonly ILogger<ViewportQueryService> _logger;
 
     private readonly Dictionary<string, District> _districtRegistry;
 
     public ViewportQueryService(
         IEventRepository eventRepository,
+        IGeoValidationService geoValidation,
         Phase0SeedLoader seedLoader,
         ILogger<ViewportQueryService> logger)
     {
         _eventRepository = eventRepository;
+        _geoValidation = geoValidation;
         _logger = logger;
         _districtRegistry = BuildDistrictRegistry(seedLoader.Load());
     }
@@ -33,7 +36,11 @@ public class ViewportQueryService : IViewportQueryService
         CancellationToken ct = default)
     {
         // Validate the bounding box
-        request.Bounds.Validate();
+        var boundsValidation = _geoValidation.ValidateBoundingBox(request.Bounds);
+        if (!boundsValidation.IsValid)
+        {
+            throw new InvalidOperationException(boundsValidation.Issues[0].Message);
+        }
 
         _logger.LogInformation(
             "Viewport query: bounds=[{MinLat},{MaxLat},{MinLng},{MaxLng}] locality.market={Market} locality.district={District} locality.neighborhood={Neighborhood}",
@@ -50,6 +57,7 @@ public class ViewportQueryService : IViewportQueryService
 
         // Filter events within the bounding box
         var eventsInViewport = allEventsResponse.Events
+            .Where(e => _geoValidation.ValidateEventCoordinates(e.Lat, e.Lng, e.Confidence).IsRenderableOnMap)
             .Where(e => request.Bounds.Contains(e.Lat, e.Lng))
             .ToArray();
 
@@ -118,6 +126,11 @@ public class ViewportQueryService : IViewportQueryService
         string marketCode,
         CancellationToken ct = default)
     {
+        if (!_geoValidation.ValidateViewportCoordinate(latitude, longitude).IsValid)
+        {
+            return null;
+        }
+
         var districts = await GetDistrictsForMarketAsync(marketCode, ct);
 
         // Find the most specific (deepest) district containing the point

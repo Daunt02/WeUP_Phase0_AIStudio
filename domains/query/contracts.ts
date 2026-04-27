@@ -29,35 +29,310 @@ export interface GeoBoundingBox {
   maxLng: number;
 }
 
+export interface GeoPoint {
+  latitude: number;
+  longitude: number;
+}
+
+export type GeoIntegrityCategory =
+  | "valid"
+  | "valid_low_confidence"
+  | "invalid"
+  | "missing";
+
+export type GeoRenderingEligibility =
+  | "render"
+  | "require_moderation"
+  | "use_fallback"
+  | "block";
+
+export interface GeoValidationIssue {
+  code: string;
+  message: string;
+  field?: string;
+}
+
+export interface GeoCoordinateValidation {
+  category: GeoIntegrityCategory;
+  renderingEligibility: GeoRenderingEligibility;
+  point: GeoPoint | null;
+  confidence: number | null;
+  issues: GeoValidationIssue[];
+  isValid: boolean;
+  isRenderableOnMap: boolean;
+  requiresModeration: boolean;
+  requiresFallbackTreatment: boolean;
+}
+
+export interface GeoBoundingBoxValidation {
+  valid: boolean;
+  errors: string[];
+  issues: GeoValidationIssue[];
+  bounds: GeoBoundingBox | null;
+}
+
 /** Validation result for a bounding box. */
 export interface BoundingBoxValidation {
   valid: boolean;
   errors: string[];
 }
 
-export function validateBoundingBox(bb: GeoBoundingBox): BoundingBoxValidation {
-  const errors: string[] = [];
-  if (bb.minLat >= bb.maxLat) errors.push("minLat must be less than maxLat");
-  if (bb.minLng >= bb.maxLng) errors.push("minLng must be less than maxLng");
-  if (bb.minLat < -90 || bb.maxLat > 90)
-    errors.push("Latitude must be in range [-90, 90]");
-  if (bb.minLng < -180 || bb.maxLng > 180)
-    errors.push("Longitude must be in range [-180, 180]");
+export const PUBLIC_MAP_CONFIDENCE_THRESHOLD = 0.5;
+
+export function validateGeoPoint(
+  point: Partial<GeoPoint> | null | undefined,
+  options: {
+    confidence?: number | null;
+    address?: string | null;
+  } = {},
+): GeoCoordinateValidation {
+  const issues: GeoValidationIssue[] = [];
+  const latitude = point?.latitude;
+  const longitude = point?.longitude;
+  const confidence = options.confidence ?? null;
+
+  if (latitude == null && longitude == null) {
+    issues.push({
+      code: "MISSING_COORDINATES",
+      message: "Coordinates are missing.",
+      field: "coordinates",
+    });
+
+    return buildGeoCoordinateValidation(
+      "missing",
+      "use_fallback",
+      null,
+      confidence,
+      issues,
+    );
+  }
+
+  if (latitude == null) {
+    issues.push({
+      code: "MISSING_LATITUDE",
+      message: "Latitude is missing.",
+      field: "latitude",
+    });
+  }
+
+  if (longitude == null) {
+    issues.push({
+      code: "MISSING_LONGITUDE",
+      message: "Longitude is missing.",
+      field: "longitude",
+    });
+  }
+
+  if (issues.length > 0) {
+    return buildGeoCoordinateValidation(
+      "missing",
+      "use_fallback",
+      null,
+      confidence,
+      issues,
+    );
+  }
+
+  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90) {
+    issues.push({
+      code: "INVALID_LATITUDE",
+      message: `Latitude must be in [-90, 90], got ${latitude}.`,
+      field: "latitude",
+    });
+  }
+
+  if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+    issues.push({
+      code: "INVALID_LONGITUDE",
+      message: `Longitude must be in [-180, 180], got ${longitude}.`,
+      field: "longitude",
+    });
+  }
+
+  if (Math.abs(latitude) < 0.0000001 && Math.abs(longitude) < 0.0000001) {
+    issues.push({
+      code: "NULL_ISLAND_COORDINATES",
+      message:
+        "Coordinates (0, 0) indicate an unresolved null-island location.",
+      field: "latitude",
+    });
+  }
+
+  if (
+    confidence != null &&
+    (!Number.isFinite(confidence) || confidence < 0 || confidence > 1)
+  ) {
+    issues.push({
+      code: "INVALID_LOCATION_CONFIDENCE",
+      message: `Location confidence must be in [0, 1], got ${confidence}.`,
+      field: "confidence",
+    });
+  }
+
+  if (!options.address?.trim()) {
+    issues.push({
+      code: "MISSING_ADDRESS",
+      message:
+        "Address is missing; non-map fallback may rely on text-only location details.",
+      field: "address",
+    });
+  }
+
+  if (
+    issues.some((issue) =>
+      [
+        "INVALID_LATITUDE",
+        "INVALID_LONGITUDE",
+        "NULL_ISLAND_COORDINATES",
+        "INVALID_LOCATION_CONFIDENCE",
+      ].includes(issue.code),
+    )
+  ) {
+    return buildGeoCoordinateValidation(
+      "invalid",
+      "block",
+      null,
+      confidence,
+      issues,
+    );
+  }
+
+  const normalizedPoint: GeoPoint = { latitude, longitude };
+  if (confidence != null && confidence < PUBLIC_MAP_CONFIDENCE_THRESHOLD) {
+    issues.push({
+      code: "LOW_LOCATION_CONFIDENCE",
+      message: `Location confidence ${confidence.toFixed(2)} is below the public map threshold ${PUBLIC_MAP_CONFIDENCE_THRESHOLD.toFixed(2)}.`,
+      field: "confidence",
+    });
+
+    return buildGeoCoordinateValidation(
+      "valid_low_confidence",
+      "require_moderation",
+      normalizedPoint,
+      confidence,
+      issues,
+    );
+  }
+
+  return buildGeoCoordinateValidation(
+    "valid",
+    "render",
+    normalizedPoint,
+    confidence,
+    issues,
+  );
+}
+
+export function validateGeoBoundingBoxDetailed(
+  bb: GeoBoundingBox,
+): GeoBoundingBoxValidation {
+  const issues: GeoValidationIssue[] = [];
+  const minCorner = validateGeoPoint({
+    latitude: bb.minLat,
+    longitude: bb.minLng,
+  });
+  const maxCorner = validateGeoPoint({
+    latitude: bb.maxLat,
+    longitude: bb.maxLng,
+  });
+
+  appendBoundingBoxIssues(issues, minCorner, "minLat", "minLng");
+  appendBoundingBoxIssues(issues, maxCorner, "maxLat", "maxLng");
+
+  if (bb.minLat >= bb.maxLat) {
+    issues.push({
+      code: "INVALID_BBOX_LATITUDE_ORDER",
+      message: "minLat must be less than maxLat",
+      field: "minLat",
+    });
+  }
+
+  if (bb.minLng >= bb.maxLng) {
+    issues.push({
+      code: "INVALID_BBOX_LONGITUDE_ORDER",
+      message: "minLng must be less than maxLng",
+      field: "minLng",
+    });
+  }
+
   const latSpan = bb.maxLat - bb.minLat;
   const lngSpan = bb.maxLng - bb.minLng;
-  if (latSpan > 5 || lngSpan > 5)
-    errors.push(
-      "Bounding box span exceeds 5 degrees — overly broad query not allowed",
-    );
-  if (latSpan * lngSpan > 8)
-    errors.push(
-      "Bounding box area exceeds 8 square degrees — overly broad query not allowed",
-    );
-  return { valid: errors.length === 0, errors };
+  if (latSpan > 5 || lngSpan > 5) {
+    issues.push({
+      code: "BBOX_SPAN_TOO_WIDE",
+      message:
+        "Bounding box span exceeds 5 degrees — overly broad query not allowed",
+      field: "bounds",
+    });
+  }
+
+  if (latSpan * lngSpan > 8) {
+    issues.push({
+      code: "BBOX_AREA_TOO_WIDE",
+      message:
+        "Bounding box area exceeds 8 square degrees — overly broad query not allowed",
+      field: "bounds",
+    });
+  }
+
+  return {
+    valid: issues.length === 0,
+    errors: issues.map((issue) => issue.message),
+    issues,
+    bounds: issues.length === 0 ? bb : null,
+  };
+}
+
+export function validateBoundingBox(bb: GeoBoundingBox): BoundingBoxValidation {
+  const validation = validateGeoBoundingBoxDetailed(bb);
+  return { valid: validation.valid, errors: validation.errors };
 }
 
 export function isValidBoundingBox(bb: GeoBoundingBox): boolean {
   return validateBoundingBox(bb).valid;
+}
+
+function buildGeoCoordinateValidation(
+  category: GeoIntegrityCategory,
+  renderingEligibility: GeoRenderingEligibility,
+  point: GeoPoint | null,
+  confidence: number | null,
+  issues: GeoValidationIssue[],
+): GeoCoordinateValidation {
+  return {
+    category,
+    renderingEligibility,
+    point,
+    confidence,
+    issues,
+    isValid: category === "valid" || category === "valid_low_confidence",
+    isRenderableOnMap: renderingEligibility === "render",
+    requiresModeration: renderingEligibility === "require_moderation",
+    requiresFallbackTreatment: renderingEligibility === "use_fallback",
+  };
+}
+
+function appendBoundingBoxIssues(
+  destination: GeoValidationIssue[],
+  validation: GeoCoordinateValidation,
+  latitudeField: string,
+  longitudeField: string,
+) {
+  for (const issue of validation.issues) {
+    if (issue.code === "MISSING_ADDRESS") {
+      continue;
+    }
+
+    destination.push({
+      ...issue,
+      field:
+        issue.field === "latitude"
+          ? latitudeField
+          : issue.field === "longitude"
+            ? longitudeField
+            : issue.field,
+    });
+  }
 }
 
 // ---------------------------------------------------------------------------

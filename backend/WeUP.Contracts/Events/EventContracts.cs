@@ -508,30 +508,13 @@ public static class GeoBoundingBoxExtensions
     /// </summary>
     public static void Validate(this GeoBoundingBox bbox)
     {
-        if (bbox.MinLat < -90 || bbox.MinLat > 90)
-            throw new InvalidOperationException($"MinLat {bbox.MinLat} must be between -90 and 90");
-        if (bbox.MaxLat < -90 || bbox.MaxLat > 90)
-            throw new InvalidOperationException($"MaxLat {bbox.MaxLat} must be between -90 and 90");
-        if (bbox.MinLng < -180 || bbox.MinLng > 180)
-            throw new InvalidOperationException($"MinLng {bbox.MinLng} must be between -180 and 180");
-        if (bbox.MaxLng < -180 || bbox.MaxLng > 180)
-            throw new InvalidOperationException($"MaxLng {bbox.MaxLng} must be between -180 and 180");
-        if (bbox.MinLat >= bbox.MaxLat)
-            throw new InvalidOperationException($"MinLat ({bbox.MinLat}) must be less than MaxLat ({bbox.MaxLat})");
-        if (bbox.MinLng >= bbox.MaxLng)
-            throw new InvalidOperationException($"MinLng ({bbox.MinLng}) must be less than MaxLng ({bbox.MaxLng})");
+        var validation = GeoValidationRules.ValidateBoundingBox(bbox);
+        if (validation.IsValid)
+        {
+            return;
+        }
 
-        // Guardrails for query scale in Phase 0: keep viewports reasonably scoped.
-        var latSpan = bbox.MaxLat - bbox.MinLat;
-        var lngSpan = bbox.MaxLng - bbox.MinLng;
-        if (latSpan > 5)
-            throw new InvalidOperationException($"Latitude span ({latSpan}) exceeds max allowed span (5)");
-        if (lngSpan > 5)
-            throw new InvalidOperationException($"Longitude span ({lngSpan}) exceeds max allowed span (5)");
-
-        var area = latSpan * lngSpan;
-        if (area > 8)
-            throw new InvalidOperationException($"Bounding box area ({area}) exceeds max allowed area (8 square degrees)");
+        throw new InvalidOperationException(validation.Issues[0].Message);
     }
 
     /// <summary>

@@ -1,3 +1,5 @@
+using System.Linq;
+using WeUP.Contracts.Events;
 using WeUP.Domain.Moderation;
 
 namespace WeUP.Domain.Events;
@@ -353,10 +355,10 @@ public sealed record EventAggregate(
             throw new InvalidOperationException("Address.RawAddress is required.");
 
         // Geo
-        if (double.IsNaN(Latitude) || Latitude < -90 || Latitude > 90)
-            throw new InvalidOperationException("Latitude must be within [-90, 90].");
-        if (double.IsNaN(Longitude) || Longitude < -180 || Longitude > 180)
-            throw new InvalidOperationException("Longitude must be within [-180, 180].");
+        var geoValidation = GeoValidationRules.ValidatePoint(Latitude, Longitude, address: Address.RawAddress);
+        var geoIssue = geoValidation.Issues.FirstOrDefault(issue => issue.Code != "MISSING_ADDRESS");
+        if (geoIssue is not null)
+            throw new InvalidOperationException(geoIssue.Message);
 
         // Confidence
         if (double.IsNaN(ConfidenceScore) || ConfidenceScore < 0 || ConfidenceScore > 1)

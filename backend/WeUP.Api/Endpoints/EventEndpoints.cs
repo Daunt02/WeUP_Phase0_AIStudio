@@ -36,7 +36,15 @@ public static class EventEndpoints
             if (validation is not null) return validation;
 
             var response = await repo.GetMapFeedAsync(request, ct);
-            return Results.Ok(response);
+            var visibleEvents = response.Events
+                .Where(card => GeoValidationRules.ValidatePoint(card.Lat, card.Lng, card.Confidence).IsRenderableOnMap)
+                .ToArray();
+
+            return Results.Ok(new MapFeedResponse(
+                visibleEvents,
+                visibleEvents.Length,
+                response.Clusters,
+                response.QueryMode));
         })
         .WithName("GetEventMapFeed")
         .Produces<MapFeedResponse>()
@@ -338,49 +346,28 @@ public static class EventEndpoints
 
     private static IResult? ValidateBoundingBox(GeoBoundingBox bb)
     {
-        var errors = new List<string>();
-        if (bb.MinLat >= bb.MaxLat) errors.Add("minLat must be less than maxLat");
-        if (bb.MinLng >= bb.MaxLng) errors.Add("minLng must be less than maxLng");
-        if (bb.MinLat < -90 || bb.MaxLat > 90) errors.Add("Latitude out of range [-90, 90]");
-        if (bb.MinLng < -180 || bb.MaxLng > 180) errors.Add("Longitude out of range [-180, 180]");
-        if (bb.MaxLat - bb.MinLat > 10 || bb.MaxLng - bb.MinLng > 10)
-            errors.Add("Bounding box span exceeds 10 degrees");
+        var validation = GeoValidationRules.ValidateBoundingBox(bb);
+        if (validation.IsValid)
+        {
+            return null;
+        }
 
-        if (errors.Count == 0) return null;
         return Results.ValidationProblem(
-            errors.ToDictionary(e => "bounds", e => new[] { e }),
+            validation.Issues
+                .GroupBy(issue => issue.Field ?? "bounds", StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(
+                    group => group.Key,
+                    group => group.Select(issue => issue.Message).Distinct(StringComparer.Ordinal).ToArray(),
+                    StringComparer.OrdinalIgnoreCase),
             statusCode: 422);
     }
 
     private static bool TryParseBbox(string raw, out GeoBoundingBox bounds, out string error)
     {
-        bounds = new GeoBoundingBox(0, 0, 0, 0);
-        error = "";
-
-        if (string.IsNullOrWhiteSpace(raw))
-        {
-            error = "bbox is required and must use format 'minLng,minLat,maxLng,maxLat'.";
-            return false;
-        }
-
-        var tokens = raw.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-        if (tokens.Length != 4)
-        {
-            error = "bbox must include exactly 4 comma-separated numeric values: minLng,minLat,maxLng,maxLat.";
-            return false;
-        }
-
-        if (!double.TryParse(tokens[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var minLng) ||
-            !double.TryParse(tokens[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var minLat) ||
-            !double.TryParse(tokens[2], NumberStyles.Float, CultureInfo.InvariantCulture, out var maxLng) ||
-            !double.TryParse(tokens[3], NumberStyles.Float, CultureInfo.InvariantCulture, out var maxLat))
-        {
-            error = "bbox values must be valid numbers in format minLng,minLat,maxLng,maxLat.";
-            return false;
-        }
-
-        bounds = new GeoBoundingBox(minLat, maxLat, minLng, maxLng);
-        return true;
+        var validation = GeoValidationRules.ParseBoundingBox(raw);
+        bounds = validation.Bounds ?? new GeoBoundingBox(0, 0, 0, 0);
+        error = validation.Issues.FirstOrDefault()?.Message ?? string.Empty;
+        return validation.IsValid;
     }
 
     private static async Task<HashSet<string>> ResolveSavedEventIdsAsync(
@@ -422,7 +409,8 @@ public static class EventEndpoints
 
     private static string ResolveMarkerState(EventMapCardDto card, HashSet<string> savedEventIds)
     {
-        if (card.Confidence < 0.35)
+        // Invalid, missing, or low-confidence coordinates are suppressed instead of silently rendered.
+        if (!GeoValidationRules.ValidatePoint(card.Lat, card.Lng, card.Confidence).IsRenderableOnMap)
         {
             return "low-confidence-hidden";
         }

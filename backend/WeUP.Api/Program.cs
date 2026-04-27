@@ -206,6 +206,7 @@ else
 }
 
 // Spatial query services (P19) — bounding box, district, viewport queries
+builder.Services.AddSingleton<IGeoValidationService, GeoValidationService>();
 builder.Services.AddScoped<IViewportQueryService, ViewportQueryService>();
 
 // Market policy services (P20) — market boundaries, freeze rules, assignment
