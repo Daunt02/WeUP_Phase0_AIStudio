@@ -1,6 +1,7 @@
 using System.Text.Json;
 using WeUP.Contracts.Events;
 using WeUP.Contracts.Saves;
+using WeUP.Contracts.Temporal;
 using Xunit;
 
 namespace WeUP.Tests.Integration;
@@ -62,6 +63,7 @@ public sealed class ContractManifestTests
             [nameof(SaveStateMigrationItemResultDto)] = GetJsonPropertyNames<SaveStateMigrationItemResultDto>(),
             [nameof(SaveStateDiscoveryContextMigrationResultDto)] = GetJsonPropertyNames<SaveStateDiscoveryContextMigrationResultDto>(),
             [nameof(SaveStateMigrationResultDto)] = GetJsonPropertyNames<SaveStateMigrationResultDto>(),
+            [nameof(TemporalQueryDto)] = GetJsonPropertyNames<TemporalQueryDto>(),
         };
 
         Assert.Equal(expected.Keys.OrderBy(x => x), manifest.Contracts.Keys.OrderBy(x => x));

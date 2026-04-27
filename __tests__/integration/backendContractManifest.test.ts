@@ -122,11 +122,24 @@ describe("backend contract manifest", () => {
     bbox: "-122.52,37.70,-122.37,37.85",
     preset: TimeWindowPreset.Now,
     timezone: "America/Los_Angeles",
+    marketTimezone: "America/Los_Angeles",
+    fromUtc: undefined,
+    toUtc: undefined,
+    referenceInstantUtc: undefined,
     customStartUtc: undefined,
     customEndUtc: undefined,
     district: undefined,
     categories: undefined,
     includeSavedOnly: false,
+  };
+
+  const temporalQueryDto = {
+    preset: TimeWindowPreset.Now,
+    fromUtc: undefined,
+    toUtc: undefined,
+    marketTimezone: "America/Los_Angeles",
+    referenceInstantUtc: undefined,
+    isCustomRange: false,
   };
 
   const calendarOverlayItem: CalendarEventItemDto = {
@@ -357,6 +370,7 @@ describe("backend contract manifest", () => {
     expectKeys("MapFeedResponse", mapFeedResponse);
     expectKeys("EventMapFeedV1ResponseDto", mapFeedV1Response);
     expectKeys("EventCalendarFeedQueryDto", calendarFeedV1Query);
+    expectKeys("TemporalQueryDto", temporalQueryDto);
     expectKeys("CalendarEventItemDto", calendarOverlayItem);
     expectKeys("EventCalendarFeedV1ResponseDto", calendarFeedV1Response);
     expectKeys("CalendarFeedRequest", {

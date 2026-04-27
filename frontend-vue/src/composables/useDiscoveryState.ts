@@ -301,6 +301,10 @@ export function useDiscoveryState(): UseDiscoveryStateReturn {
       bbox: base.bbox,
       preset: base.preset,
       timezone: base.timezone,
+      marketTimezone: base.marketTimezone,
+      fromUtc: base.fromUtc,
+      toUtc: base.toUtc,
+      referenceInstantUtc: base.referenceInstantUtc,
       ...(base.customStartUtc !== undefined
         ? { customStartUtc: base.customStartUtc }
         : {}),

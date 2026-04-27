@@ -50,8 +50,12 @@
       "customEndUtc",
       "customStartUtc",
       "district",
+      "fromUtc",
       "includeSavedOnly",
+      "marketTimezone",
       "preset",
+      "referenceInstantUtc",
+      "toUtc",
       "timezone"
     ],
     "EventMapFeedClusterDto": [
@@ -84,8 +88,12 @@
       "customEndUtc",
       "customStartUtc",
       "district",
+      "fromUtc",
       "includeSavedOnly",
+      "marketTimezone",
       "preset",
+      "referenceInstantUtc",
+      "toUtc",
       "timezone"
     ],
     "CalendarEventItemDto": [
@@ -325,6 +333,14 @@
       "processedAtUtc",
       "retainedLocalSavedEventIds",
       "status"
+    ],
+    "TemporalQueryDto": [
+      "fromUtc",
+      "isCustomRange",
+      "marketTimezone",
+      "preset",
+      "referenceInstantUtc",
+      "toUtc"
     ]
   }
 }

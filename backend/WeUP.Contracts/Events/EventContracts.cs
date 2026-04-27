@@ -125,6 +125,25 @@ public sealed record EventMapFeedQueryDto
     public string Bbox { get; init; } = string.Empty;
     public TimeWindowPreset Preset { get; init; } = TimeWindowPreset.Now;
     public string Timezone { get; init; } = string.Empty;
+    /// <summary>
+    /// Canonical market timezone alias for cross-surface temporal parity.
+    /// Legacy <see cref="Timezone"/> remains for backward compatibility.
+    /// </summary>
+    public string? MarketTimezone { get; init; }
+    /// <summary>
+    /// Canonical explicit custom-range start in UTC.
+    /// Legacy <see cref="CustomStartUtc"/> remains for backward compatibility.
+    /// </summary>
+    public DateTimeOffset? FromUtc { get; init; }
+    /// <summary>
+    /// Canonical explicit custom-range end in UTC.
+    /// Legacy <see cref="CustomEndUtc"/> remains for backward compatibility.
+    /// </summary>
+    public DateTimeOffset? ToUtc { get; init; }
+    /// <summary>
+    /// Optional deterministic reference instant for server-side preset expansion.
+    /// </summary>
+    public DateTimeOffset? ReferenceInstantUtc { get; init; }
     public DateTimeOffset? CustomStartUtc { get; init; }
     public DateTimeOffset? CustomEndUtc { get; init; }
     public string? District { get; init; }
@@ -178,6 +197,25 @@ public sealed record EventCalendarFeedQueryDto
     public string Bbox { get; init; } = string.Empty;
     public TimeWindowPreset Preset { get; init; } = TimeWindowPreset.Now;
     public string Timezone { get; init; } = string.Empty;
+    /// <summary>
+    /// Canonical market timezone alias for cross-surface temporal parity.
+    /// Legacy <see cref="Timezone"/> remains for backward compatibility.
+    /// </summary>
+    public string? MarketTimezone { get; init; }
+    /// <summary>
+    /// Canonical explicit custom-range start in UTC.
+    /// Legacy <see cref="CustomStartUtc"/> remains for backward compatibility.
+    /// </summary>
+    public DateTimeOffset? FromUtc { get; init; }
+    /// <summary>
+    /// Canonical explicit custom-range end in UTC.
+    /// Legacy <see cref="CustomEndUtc"/> remains for backward compatibility.
+    /// </summary>
+    public DateTimeOffset? ToUtc { get; init; }
+    /// <summary>
+    /// Optional deterministic reference instant for server-side preset expansion.
+    /// </summary>
+    public DateTimeOffset? ReferenceInstantUtc { get; init; }
     public DateTimeOffset? CustomStartUtc { get; init; }
     public DateTimeOffset? CustomEndUtc { get; init; }
     public string? District { get; init; }

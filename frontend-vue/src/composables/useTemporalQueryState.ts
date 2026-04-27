@@ -89,6 +89,7 @@ export function useTemporalQueryState(
     const base: TemporalQueryDto = {
       preset: preset.value,
       marketTimezone: marketTimezone.value.trim(),
+      isCustomRange: isCustomRangePreset(preset.value),
       ...(referenceInstantUtc.value.trim()
         ? {
             referenceInstantUtc: new Date(
@@ -112,6 +113,7 @@ export function useTemporalQueryState(
   const requestSignature = computed(() =>
     JSON.stringify({
       preset: temporalQuery.value.preset,
+      isCustomRange: temporalQuery.value.isCustomRange ?? false,
       fromUtc: temporalQuery.value.fromUtc ?? null,
       toUtc: temporalQuery.value.toUtc ?? null,
       marketTimezone: temporalQuery.value.marketTimezone,

@@ -107,13 +107,31 @@ export enum TimeWindowPreset {
   Custom = "custom",
 }
 
+/** Backend DTO: WeUP.Contracts.Temporal.TemporalQueryDto */
+export interface TemporalQueryDto {
+  readonly preset: TimeWindowPreset;
+  readonly fromUtc?: string;
+  readonly toUtc?: string;
+  readonly marketTimezone: string;
+  readonly referenceInstantUtc?: string;
+  readonly isCustomRange: boolean;
+}
+
 export interface EventMapFeedQueryDto {
   /** Comma-separated format: minLng,minLat,maxLng,maxLat */
   readonly bbox: string;
   /** Backend-resolved preset identity for deterministic map/calendar window parity. */
   readonly preset: TimeWindowPreset;
-  /** Required IANA or Windows timezone identifier used by backend preset expansion. */
+  /** Legacy timezone field. Prefer marketTimezone for canonical temporal contract alignment. */
   readonly timezone: string;
+  /** Canonical timezone field shared by map, calendar, and saved temporal filtering. */
+  readonly marketTimezone?: string;
+  /** Canonical explicit UTC range start for custom-range requests. */
+  readonly fromUtc?: string;
+  /** Canonical explicit UTC range end for custom-range requests. */
+  readonly toUtc?: string;
+  /** Optional deterministic reference instant for backend preset resolution. */
+  readonly referenceInstantUtc?: string;
   /** Required when preset=custom. Must be earlier than customEndUtc. */
   readonly customStartUtc?: string;
   /** Required when preset=custom. Must be later than customStartUtc. */
@@ -145,7 +163,16 @@ export interface EventCalendarFeedQueryDto {
   /** Comma-separated format: minLng,minLat,maxLng,maxLat */
   readonly bbox: string;
   readonly preset: TimeWindowPreset;
+  /** Legacy timezone field. Prefer marketTimezone for canonical temporal contract alignment. */
   readonly timezone: string;
+  /** Canonical timezone field shared by map, calendar, and saved temporal filtering. */
+  readonly marketTimezone?: string;
+  /** Canonical explicit UTC range start for custom-range requests. */
+  readonly fromUtc?: string;
+  /** Canonical explicit UTC range end for custom-range requests. */
+  readonly toUtc?: string;
+  /** Optional deterministic reference instant for backend preset resolution. */
+  readonly referenceInstantUtc?: string;
   readonly customStartUtc?: string;
   readonly customEndUtc?: string;
   readonly district?: string;

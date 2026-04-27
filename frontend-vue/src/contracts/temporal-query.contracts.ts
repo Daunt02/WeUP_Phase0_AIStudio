@@ -14,6 +14,8 @@ export interface TemporalQueryDto {
   readonly toUtc?: string;
   readonly marketTimezone: string;
   readonly referenceInstantUtc?: string;
+  /** Server-computed helper on the C# DTO; optional in request payloads. */
+  readonly isCustomRange?: boolean;
 }
 
 /**

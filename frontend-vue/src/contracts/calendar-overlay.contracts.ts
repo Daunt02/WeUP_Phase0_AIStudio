@@ -21,7 +21,12 @@ export type CalendarOverlayLayerState =
 export interface EventCalendarFeedQueryDto {
   readonly bbox: string;
   readonly preset: EventMapFeedQueryDto["preset"];
+  /** Legacy alias. Prefer marketTimezone. */
   readonly timezone: EventMapFeedQueryDto["timezone"];
+  readonly marketTimezone?: EventMapFeedQueryDto["marketTimezone"];
+  readonly fromUtc?: EventMapFeedQueryDto["fromUtc"];
+  readonly toUtc?: EventMapFeedQueryDto["toUtc"];
+  readonly referenceInstantUtc?: EventMapFeedQueryDto["referenceInstantUtc"];
   readonly customStartUtc?: EventMapFeedQueryDto["customStartUtc"];
   readonly customEndUtc?: EventMapFeedQueryDto["customEndUtc"];
   readonly district?: EventMapFeedQueryDto["district"];
