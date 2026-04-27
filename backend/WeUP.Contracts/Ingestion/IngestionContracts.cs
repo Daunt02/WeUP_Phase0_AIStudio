@@ -273,6 +273,37 @@ public sealed record IngestionRequestEnvelope(
     DateTimeOffset ReceivedAtUtc,
     IReadOnlyDictionary<string, string?> Metadata);
 
+/// <summary>
+/// Temporal certainty classification produced during ingestion normalization.
+///
+/// This exists to keep uncertainty explicit and auditable. If certainty is low,
+/// callers should avoid manufacturing canonical UTC values.
+/// </summary>
+public enum IngestionTemporalCertaintyDto
+{
+    ExactUtcFromExplicitTimezone,
+    ProjectedFromMarketTimezone,
+    DateOnlyWithTimezoneContext,
+    AmbiguousOrIncomplete,
+}
+
+/// <summary>
+/// Temporal normalization output that preserves ambiguity explicitly.
+///
+/// Rules:
+/// - StartUtc/EndUtc are ISO UTC strings when present.
+/// - AmbiguousOrIncomplete means exact UTC is not trustworthy yet.
+/// - UnresolvedAmbiguities should include machine-readable reason codes.
+/// </summary>
+public sealed record IngestionTemporalNormalizationDto(
+    string? StartUtc,
+    string? EndUtc,
+    string? SourceTimezone,
+    string MarketTimezone,
+    IngestionTemporalCertaintyDto Certainty,
+    string[] UnresolvedAmbiguities,
+    string[] EvidenceRefs);
+
 public record CanonicalEventCandidate(
     string? Title,
     string? VenueName,

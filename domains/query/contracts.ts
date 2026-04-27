@@ -77,6 +77,22 @@ export interface TimeWindow {
   timezone: string;
 }
 
+/**
+ * Authoritative backend-resolved temporal window.
+ *
+ * Unlike TimeWindow, this shape carries preset-resolution provenance so
+ * map/calendar/detail/filter surfaces can stay aligned without frontend
+ * reinterpretation of temporal semantics.
+ */
+export interface BackendResolvedTimeWindow extends TimeWindow {
+  /** Backend preset identity that produced the UTC bounds. */
+  sourcePreset: string;
+  /** Human-readable label returned by backend (e.g. "Tonight"). */
+  presetLabel: string;
+  /** UTC instant used by backend as reference "now" for expansion. */
+  resolutionInstantUtc: string;
+}
+
 /** Named temporal presets — mapped to concrete TimeWindows at query time. */
 export type TemporalPreset =
   | "TODAY" // local market day 00:00 -> 00:00 next day
@@ -87,6 +103,10 @@ export type TemporalPreset =
 
 /**
  * Resolve a TemporalPreset to a concrete UTC TimeWindow.
+ *
+ * @deprecated Backend preset expansion is authoritative. Use backend-resolved
+ * windows whenever possible and pass those through buildMapFeedQueryFromResolvedWindow
+ * or buildCalendarFeedQueryFromResolvedWindow.
  * @param preset - named preset
  * @param timezone - IANA timezone for the launch market (e.g. "America/Chicago")
  * @param now - current time as ISO string; defaults to Date.now()
@@ -334,6 +354,16 @@ export interface MapFeedQuery {
   sort?: EventSortOption;
 }
 
+/**
+ * Canonical map query shape when using backend-resolved temporal windows.
+ */
+export interface MapFeedResolvedWindowQuery extends Omit<
+  MapFeedQuery,
+  "window"
+> {
+  window: BackendResolvedTimeWindow;
+}
+
 export interface MapFeedResponse {
   events: EventMapCardProjection[];
   totalCount: number;
@@ -367,6 +397,29 @@ export function buildMapFeedQuery(
   };
 }
 
+export function buildMapFeedQueryFromResolvedWindow(
+  bounds: GeoBoundingBox,
+  window: BackendResolvedTimeWindow,
+  filters?: EventFilters,
+): MapFeedResolvedWindowQuery {
+  if (!isValidBoundingBox(bounds)) {
+    const { errors } = validateBoundingBox(bounds);
+    throw new Error(`Invalid bounding box: ${errors.join("; ")}`);
+  }
+
+  return {
+    bounds,
+    window: {
+      ...normalizeTimeWindow(window),
+      sourcePreset: window.sourcePreset,
+      presetLabel: window.presetLabel,
+      resolutionInstantUtc: new Date(window.resolutionInstantUtc).toISOString(),
+    },
+    filters,
+    sort: "start_time_asc",
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Calendar feed
 // ---------------------------------------------------------------------------
@@ -376,6 +429,16 @@ export interface CalendarFeedQuery {
   filters?: EventFilters;
   sort?: EventSortOption;
   pagination?: PaginationParams;
+}
+
+/**
+ * Canonical calendar query shape when using backend-resolved temporal windows.
+ */
+export interface CalendarFeedResolvedWindowQuery extends Omit<
+  CalendarFeedQuery,
+  "window"
+> {
+  window: BackendResolvedTimeWindow;
 }
 
 export interface CalendarFeedResponse extends PaginatedResponse<EventCalendarProjection> {}
@@ -388,6 +451,24 @@ export function buildCalendarFeedQuery(
 ): CalendarFeedQuery {
   return {
     window: resolveTemporalPreset(preset, timezone),
+    filters,
+    sort: "start_time_asc",
+    pagination: pagination ?? { page: 1, pageSize: 50 },
+  };
+}
+
+export function buildCalendarFeedQueryFromResolvedWindow(
+  window: BackendResolvedTimeWindow,
+  filters?: EventFilters,
+  pagination?: PaginationParams,
+): CalendarFeedResolvedWindowQuery {
+  return {
+    window: {
+      ...normalizeTimeWindow(window),
+      sourcePreset: window.sourcePreset,
+      presetLabel: window.presetLabel,
+      resolutionInstantUtc: new Date(window.resolutionInstantUtc).toISOString(),
+    },
     filters,
     sort: "start_time_asc",
     pagination: pagination ?? { page: 1, pageSize: 50 },

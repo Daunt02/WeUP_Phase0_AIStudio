@@ -329,6 +329,10 @@ public sealed record EventAggregate(
             throw new InvalidOperationException("TimeZone is required.");
         if (StartUtc == default)
             throw new InvalidOperationException("StartUtc must not be DateTimeOffset.MinValue.");
+        if (StartUtc.Offset != TimeSpan.Zero)
+            throw new InvalidOperationException("StartUtc must be stored in canonical UTC (offset +00:00).");
+        if (EndUtc.HasValue && EndUtc.Value.Offset != TimeSpan.Zero)
+            throw new InvalidOperationException("EndUtc must be stored in canonical UTC (offset +00:00) when present.");
         if (EndUtc.HasValue && EndUtc.Value < StartUtc)
             throw new InvalidOperationException("EndUtc cannot be earlier than StartUtc.");
 
@@ -437,8 +441,8 @@ public sealed record EventAggregate(
             Latitude = request.Latitude ?? Latitude,
             Longitude = request.Longitude ?? Longitude,
             TimeZone = request.TimeZone ?? TimeZone,
-            StartUtc = request.StartUtc ?? StartUtc,
-            EndUtc = request.EndUtc ?? EndUtc,
+            StartUtc = request.StartUtc?.ToUniversalTime() ?? StartUtc,
+            EndUtc = request.EndUtc?.ToUniversalTime() ?? EndUtc,
             LocalStartDisplay = request.LocalStartDisplay ?? LocalStartDisplay,
             LocalEndDisplay = request.LocalEndDisplay ?? LocalEndDisplay,
             EventStatus = request.EventStatus ?? EventStatus,

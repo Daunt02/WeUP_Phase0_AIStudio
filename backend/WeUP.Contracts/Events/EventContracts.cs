@@ -85,6 +85,10 @@ public enum EventMapMarkerState
 public record EventMapItemDto(
     string EventId,
     string Title,
+    /// <remarks>
+    /// Canonical event start instant in UTC.
+    /// This is storage-authoritative and must not be interpreted as local wall-clock input.
+    /// </remarks>
     DateTimeOffset StartUtc,
     DateTimeOffset? EndUtc,
     double Latitude,
@@ -186,8 +190,16 @@ public sealed record EventCalendarFeedQueryDto
 public record CalendarEventItemDto(
     string EventId,
     string Title,
+    /// <remarks>
+    /// Canonical event start instant in UTC.
+    /// Frontend display should project this into the supplied Timezone.
+    /// </remarks>
     DateTimeOffset StartUtc,
     DateTimeOffset? EndUtc,
+    /// <remarks>
+    /// IANA timezone used for display projection and market semantics.
+    /// It does not change StartUtc/EndUtc storage values.
+    /// </remarks>
     string Timezone,
     string VenueName,
     string? District,
@@ -251,7 +263,10 @@ public record EventCalendarCardDto(
     string Title,
     string VenueName,
     string Category,
-    /// <remarks>ISO 8601 UTC. Serialize as "yyyy-MM-ddTHH:mm:ssZ".</remarks>
+    /// <remarks>
+    /// ISO 8601 UTC. Serialize as "yyyy-MM-ddTHH:mm:ssZ".
+    /// Canonical storage is UTC only; display projection is driven by Timezone.
+    /// </remarks>
     DateTimeOffset StartUtc,
     DateTimeOffset? EndUtc,
     /// <remarks>IANA timezone identifier.</remarks>
@@ -283,10 +298,16 @@ public record EventDetailDto(
     double Lng,
     string Category,
     string[] Categories,
-    /// <remarks>ISO 8601 UTC. Serialize as "yyyy-MM-ddTHH:mm:ssZ".</remarks>
+    /// <remarks>
+    /// ISO 8601 UTC. Serialize as "yyyy-MM-ddTHH:mm:ssZ".
+    /// This is the canonical persisted instant and must remain UTC across all layers.
+    /// </remarks>
     DateTimeOffset StartUtc,
     DateTimeOffset? EndUtc,
-    /// <remarks>IANA timezone identifier.</remarks>
+    /// <remarks>
+    /// IANA timezone identifier used for market/event-local rendering.
+    /// This field carries projection context and is not a second storage clock.
+    /// </remarks>
     string Timezone,
     string? FlyerImageUrl,
     MediaRefDto[] MediaRefs,
