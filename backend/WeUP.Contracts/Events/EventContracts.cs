@@ -152,6 +152,118 @@ public sealed record EventMapFeedQueryDto
 }
 
 /// <summary>
+/// Enhanced query contract for GET /api/events/map-feed/v2 (spatial query semantics).
+/// Integrates canonical spatial filtering with event discovery.
+/// 
+/// This DTO wraps SpatialQueryDto and adds temporal/categorical filters.
+/// Map, calendar, and saved discovery surfaces all bind to this contract,
+/// ensuring consistent spatial semantics across all event feeds.
+/// 
+/// BINDING EXAMPLE:
+///   GET /api/events/map-feed/v2?marketIds=houston,dallas&districtIds=downtown&bbox=...&preset=now&timezone=America/Chicago
+///   
+/// SPATIAL DIMENSIONS (mutually-exclusive combinations):
+/// 1. BboxOnly: bbox only (freeform map exploration).
+/// 2. TaxonomyOnly: marketIds/districtIds/neighborhoodIds only (curated feed).
+/// 3. BboxWithTaxonomy: both bbox and taxonomy (refined search).
+/// 
+/// All spatial dimensions resolve to a single composition mode during validation.
+/// Backend must reject ambiguous or invalid spatial combinations.
+/// </summary>
+public sealed record EventMapFeedQueryV2Dto
+{
+    /// <summary>
+    /// Market identity filter (canonical IDs).
+    /// Corresponds to SpatialQueryDto.MarketIds.
+    /// </summary>
+    public string[]? MarketIds { get; init; }
+
+    /// <summary>
+    /// Market filter using URL-friendly slugs.
+    /// Backend resolves to MarketIds. Mutually exclusive with MarketIds.
+    /// </summary>
+    public string[]? MarketSlugs { get; init; }
+
+    /// <summary>
+    /// District identity filter (canonical IDs).
+    /// Corresponds to SpatialQueryDto.DistrictIds.
+    /// </summary>
+    public string[]? DistrictIds { get; init; }
+
+    /// <summary>
+    /// District filter using URL-friendly slugs.
+    /// Backend resolves to DistrictIds. Mutually exclusive with DistrictIds.
+    /// </summary>
+    public string[]? DistrictSlugs { get; init; }
+
+    /// <summary>
+    /// Neighborhood identity filter (canonical IDs).
+    /// Corresponds to SpatialQueryDto.NeighborhoodIds.
+    /// </summary>
+    public string[]? NeighborhoodIds { get; init; }
+
+    /// <summary>
+    /// Neighborhood filter using URL-friendly slugs.
+    /// Backend resolves to NeighborhoodIds. Mutually exclusive with NeighborhoodIds.
+    /// </summary>
+    public string[]? NeighborhoodSlugs { get; init; }
+
+    /// <summary>
+    /// Bounding box geometry: "minLng,minLat,maxLng,maxLat".
+    /// When non-empty, filters events within this WGS84 envelope.
+    /// </summary>
+    public string? Bbox { get; init; }
+
+    /// <summary>
+    /// When true, district filters include all descendant neighborhoods.
+    /// When false, only direct district members.
+    /// Default: true.
+    /// </summary>
+    public bool IncludeDescendants { get; init; } = true;
+
+    /// <summary>
+    /// Confidence threshold for spatial resolution (range [0.0, 1.0]).
+    /// Events below this threshold are excluded.
+    /// Default: 0.0 (no minimum).
+    /// </summary>
+    public double MinSpatialConfidence { get; init; } = 0.0;
+
+    // Temporal dimensions (shared with EventMapFeedQueryDto)
+    public TimeWindowPreset Preset { get; init; } = TimeWindowPreset.Now;
+    public string Timezone { get; init; } = string.Empty;
+    public string? MarketTimezone { get; init; }
+    public DateTimeOffset? FromUtc { get; init; }
+    public DateTimeOffset? ToUtc { get; init; }
+    public DateTimeOffset? ReferenceInstantUtc { get; init; }
+    public DateTimeOffset? CustomStartUtc { get; init; }
+    public DateTimeOffset? CustomEndUtc { get; init; }
+
+    // Categorical/content filters
+    public string[]? Categories { get; init; }
+    public bool IncludeSavedOnly { get; init; }
+
+    /// <summary>
+    /// Convert to canonical SpatialQueryDto for validation and execution.
+    /// Backend query handlers should use this method to extract spatial semantics.
+    /// </summary>
+    public Spatial.SpatialQueryDto ToSpatialQuery()
+    {
+        return new Spatial.SpatialQueryDto
+        {
+            MarketIds = this.MarketIds,
+            MarketSlugs = this.MarketSlugs,
+            DistrictIds = this.DistrictIds,
+            DistrictSlugs = this.DistrictSlugs,
+            NeighborhoodIds = this.NeighborhoodIds,
+            NeighborhoodSlugs = this.NeighborhoodSlugs,
+            Bbox = this.Bbox,
+            IncludeDescendants = this.IncludeDescendants,
+            MinConfidence = this.MinSpatialConfidence
+        };
+    }
+}
+
+/// <summary>
 /// Optional cluster aggregate for the canonical map feed.
 /// EventIds always reference canonical events and never replace event identity.
 /// </summary>
