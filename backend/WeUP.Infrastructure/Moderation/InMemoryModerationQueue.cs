@@ -227,6 +227,54 @@ public sealed class InMemoryModerationQueue : IModerationQueueRepository
         return Task.FromResult(stats);
     }
 
+    public Task<ModerationQueueTelemetrySnapshot> GetTelemetrySnapshotAsync(CancellationToken ct = default)
+    {
+        _ = ct;
+
+        var observedAtUtc = DateTimeOffset.UtcNow;
+        var all = _items.Values.ToList();
+
+        var queueSize = all
+            .GroupBy(item => new
+            {
+                RiskLevel = ModerationTelemetryDimensions.ResolveRiskLevel(item),
+                ModerationStatus = ModerationTelemetryDimensions.ResolveWorkflowStatus(item),
+            })
+            .Select(group => new ModerationQueueCountSample(group.Key.RiskLevel, group.Key.ModerationStatus, group.Count()))
+            .OrderBy(sample => sample.RiskLevel, StringComparer.Ordinal)
+            .ThenBy(sample => sample.ModerationStatus, StringComparer.Ordinal)
+            .ToArray();
+
+        var pending = all
+            .Select(item => new
+            {
+                Item = item,
+                RiskLevel = ModerationTelemetryDimensions.ResolveRiskLevel(item),
+                ModerationStatus = ModerationTelemetryDimensions.ResolveWorkflowStatus(item),
+            })
+            .Where(x => ModerationTelemetryDimensions.IsPendingStatus(x.ModerationStatus))
+            .ToArray();
+
+        var pendingTotals = pending
+            .GroupBy(x => new { x.RiskLevel, x.ModerationStatus })
+            .Select(group => new ModerationQueueCountSample(group.Key.RiskLevel, group.Key.ModerationStatus, group.Count()))
+            .OrderBy(sample => sample.RiskLevel, StringComparer.Ordinal)
+            .ThenBy(sample => sample.ModerationStatus, StringComparer.Ordinal)
+            .ToArray();
+
+        var backlogAge = pending
+            .GroupBy(x => new { x.RiskLevel, x.ModerationStatus })
+            .Select(group => new ModerationQueueAgeSample(
+                group.Key.RiskLevel,
+                group.Key.ModerationStatus,
+                group.Max(x => Math.Max(0d, (observedAtUtc - x.Item.CreatedAt).TotalMilliseconds))))
+            .OrderBy(sample => sample.RiskLevel, StringComparer.Ordinal)
+            .ThenBy(sample => sample.ModerationStatus, StringComparer.Ordinal)
+            .ToArray();
+
+        return Task.FromResult(new ModerationQueueTelemetrySnapshot(observedAtUtc, queueSize, pendingTotals, backlogAge));
+    }
+
     private static long DecodeCursor(string cursor)
     {
         try { return long.Parse(System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(cursor))); }

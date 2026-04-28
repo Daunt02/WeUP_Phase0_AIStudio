@@ -44,7 +44,8 @@ public sealed class ModerationActionService(
     IAuditTrailService auditTrail,
     IModerationAuditService moderationAudit,
     IUserRoleResolver roleResolver,
-    IEnumerable<IModerationActionHandler> handlers) : IModerationActionService
+    IEnumerable<IModerationActionHandler> handlers,
+    IModerationTelemetry? telemetry = null) : IModerationActionService
 {
     private static readonly IReadOnlyDictionary<(ModeratorAction Action, ModerationItemStatus From), ModerationItemStatus> TransitionTable
         = new Dictionary<(ModeratorAction Action, ModerationItemStatus From), ModerationItemStatus>
@@ -64,6 +65,7 @@ public sealed class ModerationActionService(
 
     private readonly IReadOnlyDictionary<ModeratorAction, IModerationActionHandler> _handlers =
         handlers.ToDictionary(h => h.Action);
+    private readonly IModerationTelemetry _telemetry = telemetry ?? NullModerationTelemetry.Instance;
 
     public Task<ModerationActionResult> ApproveAsync(
         string itemId,
@@ -147,6 +149,7 @@ public sealed class ModerationActionService(
         var prevStatus = item.Status;
         var actionName = command.Action.ToString().ToLowerInvariant();
         var auditNote = mutation.AuditNote ?? command.Note;
+    var processingStartedAtUtc = ModerationTelemetryDimensions.ResolveProcessingStartedAtUtc(item);
 
         // Fail-closed: write immutable audit entries first. If this step fails,
         // the queue item remains untouched and no mutation can happen silently.
@@ -190,6 +193,14 @@ public sealed class ModerationActionService(
             Timestamp: timestamp));
 
         await queue.UpdateItemAsync(item, ct);
+        _telemetry.TrackProcessingCompletion(
+            item,
+            actionName,
+            ModerationTelemetryDimensions.ResolveWorkflowStatus(mutation.NewStatus, actionName),
+            processingStartedAtUtc,
+            timestamp,
+            command.ActorId);
+        await _telemetry.RefreshBacklogAsync(ct);
 
         return new ModerationActionResult(
             ItemId: item.ItemId,

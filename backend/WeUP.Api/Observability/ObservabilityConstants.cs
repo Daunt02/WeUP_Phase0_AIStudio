@@ -24,6 +24,11 @@ public static class ObservabilityConstants
     /// This isolates duplicate classification and review pressure from generic ingestion metrics.
     /// </summary>
     public const string DedupeMergeMeterName = "WeUP.DedupeMerge";
+    /// <summary>
+    /// Dedicated meter for moderation queue health and reviewer throughput telemetry (M10-P49).
+    /// This keeps publish safety signals alertable without depending on UI inspection.
+    /// </summary>
+    public const string ModerationMeterName = "WeUP.Moderation";
     public const string IngestionActivitySource = "WeUP.Ingestion";
     public const string ModerationActivitySource = "WeUP.Moderation";
 }

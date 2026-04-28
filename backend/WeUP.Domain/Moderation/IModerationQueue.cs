@@ -61,4 +61,5 @@ public interface IModerationQueueRepository
         int pageSize, string? cursor, CancellationToken ct = default);
     Task<int> CountTotalHistoryAsync(CancellationToken ct = default);
     Task<ModerationStatsDto> GetStatsAsync(CancellationToken ct = default);
+    Task<ModerationQueueTelemetrySnapshot> GetTelemetrySnapshotAsync(CancellationToken ct = default);
 }

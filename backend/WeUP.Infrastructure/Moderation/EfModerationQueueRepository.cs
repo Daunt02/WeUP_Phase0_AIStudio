@@ -219,6 +219,82 @@ public sealed class EfModerationQueueRepository : IModerationQueueRepository
             AsOf: DateTimeOffset.UtcNow.ToString("O"));
     }
 
+    public async Task<ModerationQueueTelemetrySnapshot> GetTelemetrySnapshotAsync(CancellationToken ct = default)
+    {
+        var observedAtUtc = DateTimeOffset.UtcNow;
+        var rows = await _db.ModerationQueueItems
+            .AsNoTracking()
+            .Select(e => new
+            {
+                e.Status,
+                e.CreatedAt,
+                e.ReviewReasonsJson,
+                e.ConfidenceJson,
+                e.HistoryJson,
+            })
+            .ToListAsync(ct);
+
+        static double ParseAggregateConfidence(string json)
+        {
+            try
+            {
+                var doc = JsonDocument.Parse(json);
+                return doc.RootElement.TryGetProperty("aggregate", out var aggregate)
+                    ? aggregate.GetDouble()
+                    : 0d;
+            }
+            catch
+            {
+                return 0d;
+            }
+        }
+
+        var telemetryRows = rows.Select(row =>
+        {
+            var itemStatus = Enum.Parse<ModerationItemStatus>(row.Status, true);
+            var reviewReasons = JsonSerializer.Deserialize<string[]>(row.ReviewReasonsJson, _json) ?? [];
+            var history = DeserialiseHistory(row.HistoryJson);
+            var workflowStatus = ModerationTelemetryDimensions.ResolveWorkflowStatus(itemStatus, history.LastOrDefault()?.Action);
+
+            return new
+            {
+                RiskLevel = ModerationTelemetryDimensions.ResolveRiskLevel(reviewReasons, ParseAggregateConfidence(row.ConfidenceJson)),
+                ModerationStatus = workflowStatus,
+                row.CreatedAt,
+            };
+        }).ToArray();
+
+        var queueSize = telemetryRows
+            .GroupBy(row => new { row.RiskLevel, row.ModerationStatus })
+            .Select(group => new ModerationQueueCountSample(group.Key.RiskLevel, group.Key.ModerationStatus, group.Count()))
+            .OrderBy(sample => sample.RiskLevel, StringComparer.Ordinal)
+            .ThenBy(sample => sample.ModerationStatus, StringComparer.Ordinal)
+            .ToArray();
+
+        var pending = telemetryRows
+            .Where(row => ModerationTelemetryDimensions.IsPendingStatus(row.ModerationStatus))
+            .ToArray();
+
+        var pendingTotals = pending
+            .GroupBy(row => new { row.RiskLevel, row.ModerationStatus })
+            .Select(group => new ModerationQueueCountSample(group.Key.RiskLevel, group.Key.ModerationStatus, group.Count()))
+            .OrderBy(sample => sample.RiskLevel, StringComparer.Ordinal)
+            .ThenBy(sample => sample.ModerationStatus, StringComparer.Ordinal)
+            .ToArray();
+
+        var backlogAge = pending
+            .GroupBy(row => new { row.RiskLevel, row.ModerationStatus })
+            .Select(group => new ModerationQueueAgeSample(
+                group.Key.RiskLevel,
+                group.Key.ModerationStatus,
+                group.Max(row => Math.Max(0d, (observedAtUtc - row.CreatedAt).TotalMilliseconds))))
+            .OrderBy(sample => sample.RiskLevel, StringComparer.Ordinal)
+            .ThenBy(sample => sample.ModerationStatus, StringComparer.Ordinal)
+            .ToArray();
+
+        return new ModerationQueueTelemetrySnapshot(observedAtUtc, queueSize, pendingTotals, backlogAge);
+    }
+
     // -----------------------------------------------------------------------
     // Entity <-> domain mapping
     // -----------------------------------------------------------------------

@@ -74,6 +74,8 @@ public static class ObservabilitySetup
                     .AddMeter(ObservabilityConstants.OcrNormalizationMeterName)
                     // Deduplication and merge outcome telemetry (M10-P48)
                     .AddMeter(ObservabilityConstants.DedupeMergeMeterName)
+                    // Moderation throughput and backlog telemetry (M10-P49)
+                    .AddMeter(ObservabilityConstants.ModerationMeterName)
                     .AddConsoleExporter()
                     // Prometheus scrape endpoint served at /metrics
                     .AddPrometheusExporter();

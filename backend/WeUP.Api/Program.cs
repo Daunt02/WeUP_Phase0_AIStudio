@@ -141,6 +141,12 @@ builder.Services.AddSingleton<IOcrNormalizationTelemetry>(
 builder.Services.AddSingleton<DedupeMergeMetricsService>(
     _ => new DedupeMergeMetricsService(WeUP.Api.Observability.ObservabilityConstants.DedupeMergeMeterName));
 
+builder.Services.AddSingleton<IModerationTelemetry>(sp =>
+    new ModerationMetricsService(
+        sp.GetRequiredService<IServiceScopeFactory>(),
+        WeUP.Api.Observability.ObservabilityConstants.ModerationMeterName));
+builder.Services.AddHostedService<ModerationMetricsWarmupService>();
+
 builder.Services.AddSingleton<WeUP.Domain.Dedupe.IDeduplicationStrategy>(sp =>
     new InstrumentedDeduplicationStrategy(
         new WeUP.Domain.Dedupe.WeightedDeduplicationStrategy(),

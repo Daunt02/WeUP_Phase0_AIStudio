@@ -53,11 +53,13 @@ public interface IModerationQueueService
 
 public sealed class ModerationQueueService(
     IModerationQueueRepository queue,
-    IModerationAuditService moderationAuditService) : IModerationQueueService
+    IModerationAuditService moderationAuditService,
+    IModerationTelemetry? telemetry = null) : IModerationQueueService
 {
     private const string RiskScoreMarker = "risk-score:";
     private const string RiskLevelMarker = "risk-level:";
     private const string CandidateMarker = "candidate-id:";
+    private readonly IModerationTelemetry _telemetry = telemetry ?? NullModerationTelemetry.Instance;
 
     public async Task<ModerationQueueResponse> GetQueueAsync(ModerationQueueFilter filter, CancellationToken ct = default)
     {
@@ -224,6 +226,7 @@ public sealed class ModerationQueueService(
             reasonComment: "Candidate enqueued for moderation review.",
             actionTimestampUtc: now,
             ct: ct);
+        await _telemetry.RefreshBacklogAsync(ct);
 
         return ToWorkflowItem(item);
     }
@@ -290,6 +293,7 @@ public sealed class ModerationQueueService(
             reasonComment: $"Assigned reviewer '{reviewerId}'.",
             actionTimestampUtc: now,
             ct: ct);
+        await _telemetry.RefreshBacklogAsync(ct);
 
         return ToWorkflowItem(item);
     }
@@ -323,11 +327,13 @@ public sealed class ModerationQueueService(
         var now = DateTimeOffset.UtcNow;
         var previousStatus = item.Status;
         var nextItemStatus = ToItemStatus(nextStatus);
+        var processingStartedAtUtc = ModerationTelemetryDimensions.ResolveProcessingStartedAtUtc(item);
+        var actionName = ToActionName(nextStatus);
 
         item.Status = nextItemStatus;
         item.AppendHistory(new ReviewHistoryEntry(
             RecordId: Guid.NewGuid().ToString("N"),
-            Action: ToActionName(nextStatus),
+            Action: actionName,
             ActorId: actorId,
             Note: note,
             PreviousStatus: previousStatus,
@@ -339,12 +345,25 @@ public sealed class ModerationQueueService(
             item,
             reviewerId: actorId,
             actorId: actorId,
-            action: ToActionName(nextStatus),
+            action: actionName,
             previousStatus: previousStatus,
             newStatus: nextItemStatus,
             reasonComment: note,
             actionTimestampUtc: now,
             ct: ct);
+
+        if (nextStatus is ModerationStatus.Approved or ModerationStatus.Rejected or ModerationStatus.NeedsEdit)
+        {
+            _telemetry.TrackProcessingCompletion(
+                item,
+                actionName,
+                ModerationTelemetryDimensions.ResolveWorkflowStatus(nextItemStatus, actionName),
+                processingStartedAtUtc,
+                now,
+                actorId);
+        }
+
+        await _telemetry.RefreshBacklogAsync(ct);
 
         return ToWorkflowItem(item);
     }
