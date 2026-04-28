@@ -72,6 +72,8 @@ public static class ObservabilitySetup
                     .AddMeter(ObservabilityConstants.IngestionMeterName)
                     // OCR + normalization quality telemetry (M10-P47)
                     .AddMeter(ObservabilityConstants.OcrNormalizationMeterName)
+                    // Deduplication and merge outcome telemetry (M10-P48)
+                    .AddMeter(ObservabilityConstants.DedupeMergeMeterName)
                     .AddConsoleExporter()
                     // Prometheus scrape endpoint served at /metrics
                     .AddPrometheusExporter();

@@ -19,6 +19,11 @@ public static class ObservabilityConstants
     /// This remains isolated from ingestion and API meters to keep signal ownership clear.
     /// </summary>
     public const string OcrNormalizationMeterName = "WeUP.OcrNormalization";
+    /// <summary>
+    /// Dedicated meter for deduplication and merge outcome telemetry (M10-P48).
+    /// This isolates duplicate classification and review pressure from generic ingestion metrics.
+    /// </summary>
+    public const string DedupeMergeMeterName = "WeUP.DedupeMerge";
     public const string IngestionActivitySource = "WeUP.Ingestion";
     public const string ModerationActivitySource = "WeUP.Moderation";
 }

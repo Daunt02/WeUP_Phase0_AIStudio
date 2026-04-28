@@ -162,7 +162,7 @@ public sealed class MergePlanner : IMergePlanner
         var hasRequireReview = decisions.Values.Any(d => d.Action == MergeFieldAction.RequireReview);
         var hasRejectMerge = decisions.Values.Any(d => d.Action == MergeFieldAction.RejectMerge);
         var autoMergeAllowed = !hasRequireReview && !hasRejectMerge && !hasApprovedProtection && assessment.AutoMergeAllowed;
-        var requiresManualReview = hasRequireReview || conflicts.Count > 0;
+        var requiresManualReview = hasRequireReview || conflicts.Count > 0 || hasApprovedProtection || hasSafetyBlockers || !assessment.AutoMergeAllowed;
 
         appliedRules.Add(autoMergeAllowed ? "rule_auto_merge_safe" : "rule_manual_review_required");
 
@@ -173,6 +173,8 @@ public sealed class MergePlanner : IMergePlanner
         var manualReviewReasons = new List<string>();
         if (hasApprovedProtection)
             manualReviewReasons.Add("Canonical event is approved; mutation requires authorization.");
+        if (!assessment.AutoMergeAllowed)
+            manualReviewReasons.Add("Dedup assessment did not authorize automatic merge.");
         if (conflicts.Count > 0)
             manualReviewReasons.Add($"Detected {conflicts.Count} field conflict(s) requiring review.");
         if (hasRequireReview)

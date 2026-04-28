@@ -189,6 +189,33 @@ public sealed class MergePlannerTests
             r => r.Contains("approved", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Fact]
+    public void CreatePlan_RequiresReview_WhenAssessmentDoesNotAllowAutoMerge()
+    {
+        var canonical = CreateCanonical(
+            title: "Warehouse Session",
+            venueName: "Dock 9",
+            startUtc: "2026-10-15T19:00:00Z",
+            address: "Dock 9");
+
+        var incoming = CreateCandidate(
+            title: "Warehouse Session",
+            venueName: "Dock 9",
+            startUtc: "2026-10-15T19:00:00Z",
+            address: "Dock 9");
+
+        var assessment = CreateAssessment(
+            level: DuplicateAssessmentLevel.PossibleDuplicate,
+            autoMergeAllowed: false);
+
+        var plan = _planner.CreatePlan(incoming, canonical, assessment);
+
+        Assert.False(plan.AutoMergeAllowed);
+        Assert.True(plan.RequiresManualReview);
+        Assert.Contains(plan.ManualReviewReasons,
+            reason => reason.Contains("did not authorize automatic merge", StringComparison.OrdinalIgnoreCase));
+    }
+
     // ─────────────────────────────────────────────────────────────────────
     // Field Decision Precedence Tests
     // ─────────────────────────────────────────────────────────────────────

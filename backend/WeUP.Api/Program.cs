@@ -21,6 +21,7 @@ using WeUP.Domain.Ocr;
 using WeUP.Domain.Resolution;
 using WeUP.Domain.Temporal;
 using WeUP.Infrastructure.Auth;
+using WeUP.Infrastructure.Dedupe;
 using WeUP.Infrastructure.Flyer;
 using WeUP.Infrastructure.Submissions;
 using WeUP.Infrastructure.Ingestion;
@@ -136,6 +137,19 @@ builder.Services.AddSingleton<IngestionMetricsService>(
 
 builder.Services.AddSingleton<IOcrNormalizationTelemetry>(
     _ => new OcrNormalizationMetricsService(WeUP.Api.Observability.ObservabilityConstants.OcrNormalizationMeterName));
+
+builder.Services.AddSingleton<DedupeMergeMetricsService>(
+    _ => new DedupeMergeMetricsService(WeUP.Api.Observability.ObservabilityConstants.DedupeMergeMeterName));
+
+builder.Services.AddSingleton<WeUP.Domain.Dedupe.IDeduplicationStrategy>(sp =>
+    new InstrumentedDeduplicationStrategy(
+        new WeUP.Domain.Dedupe.WeightedDeduplicationStrategy(),
+        sp.GetRequiredService<DedupeMergeMetricsService>()));
+
+builder.Services.AddSingleton<WeUP.Domain.Dedupe.IMergePlanner>(sp =>
+    new InstrumentedMergePlanner(
+        new WeUP.Domain.Dedupe.MergePlanner(),
+        sp.GetRequiredService<DedupeMergeMetricsService>()));
 
 // Register named lifecycle observers; CompositeIngestionLifecycleObserver fans out to all.
 builder.Services.AddSingleton<LoggingIngestionLifecycleObserver>();
