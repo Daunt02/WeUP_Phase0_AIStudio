@@ -20,7 +20,7 @@ public sealed class IngestionOrchestrator(
         var now = DateTimeOffset.UtcNow;
         var job = new IngestionJob(
             JobId: Guid.NewGuid().ToString("N"),
-            RequestId: request.RequestId,
+            RequestId: request.RequestId.ToString("N"),
             SourceType: request.SourceType,
             SubmittedBy: request.SubmittedBy,
             Status: IngestionJobStatus.Pending,
@@ -31,7 +31,9 @@ public sealed class IngestionOrchestrator(
             Lifecycle: [new IngestionStatusRecord(IngestionJobStatus.Pending, now, "Ingestion request accepted.")],
             OcrAttemptCount: 0,
             ErrorMessage: null,
-            Metadata: request.Metadata,
+            Metadata: request.Metadata is null
+                ? new Dictionary<string, string?>()
+                : request.Metadata.ToDictionary(kvp => kvp.Key, kvp => (string?)kvp.Value, StringComparer.OrdinalIgnoreCase),
             CreatedAtUtc: now,
             UpdatedAtUtc: now,
             CompletedAtUtc: null);

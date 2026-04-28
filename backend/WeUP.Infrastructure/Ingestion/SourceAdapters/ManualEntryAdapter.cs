@@ -30,8 +30,11 @@ public sealed class ManualEntryAdapter : ISourceAdapter
 
         var contentBytes = SourceAdapterGuards.Utf8(request.ManualEntryText);
         var sha256 = SourceAdapterGuards.ComputeSha256(contentBytes);
-        var metadata = SourceAdapterGuards.MetadataWithInvariant(
-            request.Metadata,
+        IReadOnlyDictionary<string, string?> metadata = request.Metadata is null
+            ? new Dictionary<string, string?>()
+            : request.Metadata.ToDictionary(kvp => kvp.Key, kvp => (string?)kvp.Value, StringComparer.OrdinalIgnoreCase);
+        metadata = SourceAdapterGuards.MetadataWithInvariant(
+            metadata,
             "adapter.sourceType",
             request.SourceType.ToString());
 

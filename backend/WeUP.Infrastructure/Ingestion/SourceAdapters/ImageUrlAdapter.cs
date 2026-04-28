@@ -52,7 +52,9 @@ public sealed class ImageUrlAdapter(IHttpClientFactory httpClientFactory) : ISou
         var contentType = response.Content.Headers.ContentType?.MediaType ?? request.ContentType;
         var sha256 = SourceAdapterGuards.ComputeSha256(contentBytes);
 
-        var metadata = request.Metadata;
+        IReadOnlyDictionary<string, string?> metadata = request.Metadata is null
+            ? new Dictionary<string, string?>()
+            : request.Metadata.ToDictionary(kvp => kvp.Key, kvp => (string?)kvp.Value, StringComparer.OrdinalIgnoreCase);
         metadata = SourceAdapterGuards.MetadataWithInvariant(metadata, "adapter.sourceType", request.SourceType.ToString());
         metadata = SourceAdapterGuards.MetadataWithInvariant(metadata, "adapter.sourceUrl", request.ImageUrl);
         metadata = SourceAdapterGuards.MetadataWithInvariant(metadata, "adapter.httpStatus", ((int)response.StatusCode).ToString());

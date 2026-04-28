@@ -44,8 +44,11 @@ public sealed class ImageUploadAdapter : ISourceAdapter
             throw new IngestionValidationException("imageBase64 decoded to an empty payload.");
         }
 
-        var metadata = SourceAdapterGuards.MetadataWithInvariant(
-            request.Metadata,
+        IReadOnlyDictionary<string, string?> metadata = request.Metadata is null
+            ? new Dictionary<string, string?>()
+            : request.Metadata.ToDictionary(kvp => kvp.Key, kvp => (string?)kvp.Value, StringComparer.OrdinalIgnoreCase);
+        metadata = SourceAdapterGuards.MetadataWithInvariant(
+            metadata,
             "adapter.sourceType",
             request.SourceType.ToString());
 

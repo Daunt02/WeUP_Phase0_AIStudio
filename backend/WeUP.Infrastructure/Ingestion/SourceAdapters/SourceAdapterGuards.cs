@@ -10,7 +10,7 @@ internal static class SourceAdapterGuards
 {
     internal static void EnsureCommonInvariants(IngestionRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.RequestId))
+        if (request.RequestId == Guid.Empty)
         {
             throw new IngestionValidationException("requestId is required.");
         }
@@ -25,10 +25,7 @@ internal static class SourceAdapterGuards
             throw new IngestionValidationException("receivedAtUtc must be a valid timestamp.");
         }
 
-        if (request.Metadata is null)
-        {
-            throw new IngestionValidationException("metadata must be provided.");
-        }
+        _ = request.Metadata;
     }
 
     internal static void EnsureNoCrossSourceFields(IngestionRequest request, params string[] allowed)
@@ -51,17 +48,22 @@ internal static class SourceAdapterGuards
         }
     }
 
-    internal static ImmutableDictionary<string, string?> MetadataWithInvariant(
-        ImmutableDictionary<string, string?> metadata,
+    internal static IReadOnlyDictionary<string, string?> MetadataWithInvariant(
+        IReadOnlyDictionary<string, string?>? metadata,
         string key,
         string? value)
     {
-        if (metadata.ContainsKey(key))
+        var mutable = metadata is null
+            ? new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
+            : new Dictionary<string, string?>(metadata.ToDictionary(kvp => kvp.Key, kvp => (string?)kvp.Value), StringComparer.OrdinalIgnoreCase);
+
+        if (mutable.ContainsKey(key))
         {
             throw new IngestionValidationException($"metadata already contains reserved key '{key}'.");
         }
 
-        return metadata.Add(key, value);
+        mutable[key] = value;
+        return mutable;
     }
 
     internal static string ComputeSha256(ImmutableArray<byte> bytes)

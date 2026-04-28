@@ -3,8 +3,8 @@ using WeUP.Contracts.Ingestion;
 namespace WeUP.Domain.Ingestion;
 
 /// <summary>
-/// Converts one raw external input into a deterministic canonical payload.
-/// Adapters must throw for malformed requests and never apply silent fallback behavior.
+/// Abstraction for turning an <see cref="IngestionRequest"/> into a <see cref="RawIngestionPayload"/>.
+/// Implementations must throw for malformed requests.
 /// </summary>
 public interface ISourceAdapter
 {
