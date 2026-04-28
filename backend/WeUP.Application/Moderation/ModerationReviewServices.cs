@@ -3,6 +3,7 @@ using WeUP.Contracts.Ingestion;
 using WeUP.Domain.Events;
 using WeUP.Domain.Media;
 using WeUP.Domain.Moderation;
+using ModerationConfidenceVector = WeUP.Contracts.Moderation.ConfidenceVector;
 
 namespace WeUP.Application.Moderation;
 
@@ -68,7 +69,7 @@ public sealed class ModerationEvidenceService(
             sourceRefs.Add($"event:{item.LinkedEventId}");
         }
 
-        var confidence = new ConfidenceVector(
+        var confidence = new ModerationConfidenceVector(
             Extraction: item.Confidence.Extraction,
             Geocode: item.Confidence.Geocode,
             Temporal: item.Confidence.Temporal,

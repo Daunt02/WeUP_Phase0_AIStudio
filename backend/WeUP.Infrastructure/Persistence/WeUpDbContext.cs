@@ -42,6 +42,7 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
 
         modelBuilder.ApplyConfiguration(new EventEntityConfiguration());
         modelBuilder.ApplyConfiguration(new SavedEventEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new IngestionEvidenceConfiguration());
 
         // Remaining entities use convention-based config for Phase 0
         modelBuilder.Entity<EventSourceEntity>(b =>
@@ -165,20 +166,6 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
             b.HasIndex(e => e.RequestId).IsUnique();
             b.HasIndex(e => e.SourceRef);
             b.HasIndex(e => e.IdempotencyKey);
-        });
-
-        modelBuilder.Entity<IngestionEvidenceEntity>(b =>
-        {
-            b.ToTable("ingestion_evidence");
-            b.HasKey(e => e.Id);
-            b.Property(e => e.JobId).HasMaxLength(64).IsRequired();
-            b.Property(e => e.EvidenceId).HasMaxLength(128).IsRequired();
-            b.Property(e => e.Kind).HasMaxLength(64).IsRequired();
-            b.Property(e => e.Reference).HasMaxLength(1024).IsRequired();
-            b.Property(e => e.MimeType).HasMaxLength(256);
-            b.Property(e => e.Payload).HasMaxLength(4000);
-            b.Property(e => e.MetadataJson).HasColumnType("jsonb").IsRequired();
-            b.HasIndex(e => e.EvidenceId);
         });
 
         modelBuilder.Entity<IngestionCandidateEntity>(b =>

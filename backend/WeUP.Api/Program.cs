@@ -8,6 +8,7 @@ using WeUP.Application.Ingestion;
 using WeUP.Application.Moderation;
 using WeUP.Application.Resolution;
 using WeUP.Application.Users;
+using WeUP.Contracts.Ingestion;
 using WeUP.Domain.Events;
 using WeUP.Domain.Flyer;
 using WeUP.Domain.Ingestion;
@@ -73,6 +74,7 @@ if (runtime.UsesDatabase)
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.Configure<MediaIntakeOptions>(builder.Configuration.GetSection(MediaIntakeOptions.SectionName));
 builder.Services.Configure<VideoIntakeOptions>(builder.Configuration.GetSection(VideoIntakeOptions.SectionName));
+builder.Services.Configure<ConfidenceOptions>(builder.Configuration.GetSection("WeUP:Ingestion:Confidence"));
 builder.Services.AddSwaggerGen(c =>
 {
     var runtimeLabel = runtime.UsesDatabase ? "v1 (Postgres runtime)" : "v1 (stub runtime)";
@@ -124,6 +126,7 @@ if (runtime.UsesDatabase)
     builder.Services.AddScoped<IIngestionJobRepository, EfIngestionJobRepository>();
     builder.Services.AddScoped<IIngestionOrchestrationRepository, EfIngestionOrchestrationRepository>();
     builder.Services.AddScoped<IIngestionAuditWriter, ConsoleIngestionAuditWriter>();
+    builder.Services.AddScoped<IEvidenceTracker, EvidenceTracker>();
 }
 else
 {
