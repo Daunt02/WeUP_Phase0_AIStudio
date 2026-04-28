@@ -127,6 +127,7 @@ if (runtime.UsesDatabase)
     builder.Services.AddScoped<IIngestionOrchestrationRepository, EfIngestionOrchestrationRepository>();
     builder.Services.AddScoped<IIngestionAuditWriter, ConsoleIngestionAuditWriter>();
     builder.Services.AddScoped<IEvidenceTracker, EvidenceTracker>();
+    builder.Services.AddScoped<IIngestionJobManager, IngestionJobManager>();
 }
 else
 {
