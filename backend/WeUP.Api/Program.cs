@@ -184,7 +184,15 @@ builder.Services.AddScoped<IRawIngestionPayloadFactory, RawIngestionPayloadFacto
 // Flyer pipeline
 builder.Services.AddSingleton<IFlyerTextPostProcessor, FlyerTextPostProcessor>();
 builder.Services.AddSingleton<IOcrProvider, SidecarOcrProvider>();
-builder.Services.AddSingleton<IOcrService, ProviderBackedOcrService>();
+var useMockOcr = builder.Configuration.GetValue<bool>("WeUP:Ocr:UseMock");
+if (useMockOcr)
+{
+    builder.Services.AddSingleton<IOcrService, MockOcrService>();
+}
+else
+{
+    builder.Services.AddSingleton<IOcrService, ProviderBackedOcrService>();
+}
 builder.Services.AddSingleton<IFlyerOcrService, FlyerOcrServiceAdapter>();
 builder.Services.AddSingleton<INormalizationEngine, NormalizationEngine>();
 builder.Services.AddSingleton<IFlyerNormalizationService, HeuristicFlyerNormalizationService>();

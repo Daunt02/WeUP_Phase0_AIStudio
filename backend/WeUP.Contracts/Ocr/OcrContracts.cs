@@ -1,5 +1,10 @@
 namespace WeUP.Contracts.Ocr;
 
+/// <summary>
+/// Simple rectangular bounding box used by OCR providers.
+/// </summary>
+public sealed record BoundingBox(int X, int Y, int Width, int Height);
+
 public sealed record OcrTextBlock(
     int Index,
     string Text,
