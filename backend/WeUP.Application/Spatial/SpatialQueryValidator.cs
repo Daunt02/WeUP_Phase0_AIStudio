@@ -1,5 +1,6 @@
 namespace WeUP.Application.Spatial;
 
+using Microsoft.Extensions.Logging;
 using WeUP.Contracts.Spatial;
 
 /// <summary>

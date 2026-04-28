@@ -38,7 +38,6 @@ public static class ObservabilitySetup
 
         builder.Services.AddSingleton(new System.Diagnostics.ActivitySource(ObservabilityConstants.ActivitySourceName));
         builder.Services.AddSingleton(new System.Diagnostics.Metrics.Meter(ObservabilityConstants.MeterName));
-
         builder.Services.AddOpenTelemetry()
             .ConfigureResource(resource => resource.AddService(
                 serviceName: ObservabilityConstants.ServiceName,
@@ -69,7 +68,11 @@ public static class ObservabilitySetup
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddMeter(ObservabilityConstants.MeterName)
-                    .AddConsoleExporter();
+                    // Ingestion pipeline metrics (M10-P46)
+                    .AddMeter(ObservabilityConstants.IngestionMeterName)
+                    .AddConsoleExporter()
+                    // Prometheus scrape endpoint served at /metrics
+                    .AddPrometheusExporter();
 
                 var otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
                 if (!string.IsNullOrWhiteSpace(otlpEndpoint))
@@ -90,6 +93,10 @@ public static class ObservabilitySetup
     public static void UseWeUPObservability(this WebApplication app)
     {
         app.UseMiddleware<CorrelationIdMiddleware>();
+        // Expose /metrics for Prometheus scraping (M10-P46).
+        // Endpoint is intentionally unauthenticated because Prometheus scrapers run
+        // inside the cluster network.  Gate behind network policy if needed.
+        app.MapPrometheusScrapingEndpoint();
     }
 }
 

@@ -131,7 +131,18 @@ else
     builder.Services.AddSingleton<IIngestionAuditWriter, ConsoleIngestionAuditWriter>();
 }
 
-builder.Services.AddSingleton<IIngestionLifecycleObserver, LoggingIngestionLifecycleObserver>();
+builder.Services.AddSingleton<IngestionMetricsService>(
+    _ => new IngestionMetricsService(WeUP.Api.Observability.ObservabilityConstants.IngestionMeterName));
+
+// Register named lifecycle observers; CompositeIngestionLifecycleObserver fans out to all.
+builder.Services.AddSingleton<LoggingIngestionLifecycleObserver>();
+builder.Services.AddSingleton<MetricsIngestionLifecycleObserver>();
+builder.Services.AddSingleton<IIngestionLifecycleObserver>(sp =>
+    new CompositeIngestionLifecycleObserver(
+    [
+        sp.GetRequiredService<LoggingIngestionLifecycleObserver>(),
+        sp.GetRequiredService<MetricsIngestionLifecycleObserver>(),
+    ]));
 builder.Services.AddScoped<IIngestionOrchestrator, IngestionOrchestrator>();
 
 builder.Services.AddSingleton<IEventSourceAdapter, ManualSubmissionAdapter>();

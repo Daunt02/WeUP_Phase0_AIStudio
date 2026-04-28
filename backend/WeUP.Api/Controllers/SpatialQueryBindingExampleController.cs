@@ -70,26 +70,26 @@ public sealed class SpatialQueryBindingExampleController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> GetMapFeedWithSpatialQuery(
         // Spatial dimensions (query parameters)
-        [FromQuery] string[]? marketIds,
-        [FromQuery] string[]? marketSlugs,
-        [FromQuery] string[]? districtIds,
-        [FromQuery] string[]? districtSlugs,
-        [FromQuery] string[]? neighborhoodIds,
-        [FromQuery] string[]? neighborhoodSlugs,
-        [FromQuery] string? bbox,
+        [FromQuery] string[]? marketIds = null,
+        [FromQuery] string[]? marketSlugs = null,
+        [FromQuery] string[]? districtIds = null,
+        [FromQuery] string[]? districtSlugs = null,
+        [FromQuery] string[]? neighborhoodIds = null,
+        [FromQuery] string[]? neighborhoodSlugs = null,
+        [FromQuery] string? bbox = null,
         [FromQuery] bool includeDescendants = true,
         [FromQuery] double minSpatialConfidence = 0.0,
         // Temporal dimensions
         [FromQuery] TimeWindowPreset preset = TimeWindowPreset.Now,
-        [FromQuery] string? timezone,
-        [FromQuery] string? marketTimezone,
-        [FromQuery] DateTimeOffset? fromUtc,
-        [FromQuery] DateTimeOffset? toUtc,
-        [FromQuery] DateTimeOffset? referenceInstantUtc,
-        [FromQuery] DateTimeOffset? customStartUtc,
-        [FromQuery] DateTimeOffset? customEndUtc,
+        [FromQuery] string? timezone = null,
+        [FromQuery] string? marketTimezone = null,
+        [FromQuery] DateTimeOffset? fromUtc = null,
+        [FromQuery] DateTimeOffset? toUtc = null,
+        [FromQuery] DateTimeOffset? referenceInstantUtc = null,
+        [FromQuery] DateTimeOffset? customStartUtc = null,
+        [FromQuery] DateTimeOffset? customEndUtc = null,
         // Content filters
-        [FromQuery] string[]? categories,
+        [FromQuery] string[]? categories = null,
         [FromQuery] bool includeSavedOnly = false)
     {
         // Bind all parameters into canonical DTO once
@@ -180,14 +180,14 @@ public sealed class SpatialQueryBindingExampleController : ControllerBase
     [HttpGet("calendar-feed")]
     [Produces("application/json")]
     public async Task<ActionResult> GetCalendarFeedWithSpatialQuery(
-        [FromQuery] string[]? marketIds,
-        [FromQuery] string[]? districtIds,
-        [FromQuery] string[]? neighborhoodIds,
-        [FromQuery] string? bbox,
+        [FromQuery] string[]? marketIds = null,
+        [FromQuery] string[]? districtIds = null,
+        [FromQuery] string[]? neighborhoodIds = null,
+        [FromQuery] string? bbox = null,
         [FromQuery] bool includeDescendants = true,
         [FromQuery] TimeWindowPreset preset = TimeWindowPreset.Now,
-        [FromQuery] string? timezone,
-        [FromQuery] string[]? categories,
+        [FromQuery] string? timezone = null,
+        [FromQuery] string[]? categories = null,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 50)
     {
@@ -234,11 +234,11 @@ public sealed class SpatialQueryBindingExampleController : ControllerBase
     [HttpGet("saved-feed")]
     [Produces("application/json")]
     public async Task<ActionResult> GetSavedFeedWithSpatialQuery(
-        [FromQuery] string[]? marketIds,
-        [FromQuery] string[]? districtIds,
-        [FromQuery] string? bbox,
+        [FromQuery] string[]? marketIds = null,
+        [FromQuery] string[]? districtIds = null,
+        [FromQuery] string? bbox = null,
         [FromQuery] TimeWindowPreset preset = TimeWindowPreset.Now,
-        [FromQuery] string? timezone)
+        [FromQuery] string? timezone = null)
     {
         if (string.IsNullOrWhiteSpace(timezone))
         {
