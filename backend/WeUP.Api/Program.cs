@@ -8,6 +8,7 @@ using WeUP.Application.Ingestion;
 using WeUP.Application.Moderation;
 using WeUP.Application.Resolution;
 using WeUP.Application.Users;
+using WeUP.Application.Dedupe;
 using WeUP.Contracts.Ingestion;
 using WeUP.Domain.Events;
 using WeUP.Domain.Flyer;
@@ -156,6 +157,8 @@ builder.Services.AddSingleton<WeUP.Domain.Dedupe.IDeduplicationStrategy>(sp =>
     new InstrumentedDeduplicationStrategy(
         new WeUP.Domain.Dedupe.WeightedDeduplicationStrategy(),
         sp.GetRequiredService<DedupeMergeMetricsService>()));
+
+builder.Services.AddTransient<WeUP.Domain.Dedupe.IDeduplicationService, WeightedDeduplicationService>();
 
 builder.Services.AddSingleton<WeUP.Domain.Dedupe.IMergePlanner>(sp =>
     new InstrumentedMergePlanner(

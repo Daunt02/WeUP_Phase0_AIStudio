@@ -1,4 +1,6 @@
+using WeUP.Contracts.Dedupe;
 using WeUP.Contracts.Ingestion;
+using WeUP.Domain.Events;
 
 namespace WeUP.Domain.Dedupe;
 
@@ -68,9 +70,21 @@ public record DedupeResult(
 /// </summary>
 public interface IDeduplicationService
 {
+    /// <summary>
+    /// Deterministically compare a candidate against canonical events and return the best assessment.
+    /// </summary>
+    Task<DuplicateAssessment> AssessAsync(
+        CandidateEvent candidate,
+        IReadOnlyCollection<EventAggregate> canonicalEvents)
+        => throw new NotSupportedException("This implementation supports only EvaluateCandidateAsync.");
+
+    /// <summary>
+    /// Legacy dedupe API retained for compatibility with the existing ingestion pipeline.
+    /// </summary>
     Task<DedupeResult> EvaluateCandidateAsync(
         NormalizedEventCandidate candidate,
-        CancellationToken ct = default);
+        CancellationToken ct = default)
+        => throw new NotSupportedException("This implementation supports only AssessAsync.");
 }
 
 /// <summary>
