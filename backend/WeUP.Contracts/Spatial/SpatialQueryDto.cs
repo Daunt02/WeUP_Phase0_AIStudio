@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace WeUP.Contracts.Spatial;
 
 /// <summary>
@@ -5,6 +7,7 @@ namespace WeUP.Contracts.Spatial;
 /// Defines how spatial filters interact and which filters take precedence.
 /// The backend owns authoritative mode interpretation—clients must not guess.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum SpatialCompositionMode
 {
     /// <summary>
