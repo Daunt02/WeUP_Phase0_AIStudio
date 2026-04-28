@@ -5,6 +5,7 @@ using WeUP.Contracts.Ocr;
 using WeUP.Domain.Flyer;
 using WeUP.Domain.Ingestion;
 using WeUP.Domain.Media;
+using FlyerNormalizationEngineAlias = WeUP.Domain.Flyer.INormalizationEngine;
 
 namespace WeUP.Infrastructure.Flyer;
 
@@ -760,7 +761,7 @@ public sealed class FlyerIngestionPipeline(
     }
 }
 
-public sealed class HeuristicFlyerNormalizationService(INormalizationEngine normalizationEngine) : IFlyerNormalizationService
+public sealed class HeuristicFlyerNormalizationService(FlyerNormalizationEngineAlias normalizationEngine) : IFlyerNormalizationService
 {
     private const string Version = "heuristic-normalizer-v1.0";
 

@@ -11,6 +11,7 @@ using WeUP.Application.Users;
 using WeUP.Domain.Events;
 using WeUP.Domain.Flyer;
 using WeUP.Domain.Ingestion;
+using FlyerNormalizationEngineAlias = WeUP.Domain.Flyer.INormalizationEngine;
 using WeUP.Domain.Moderation;
 using WeUP.Domain.Users;
 using WeUP.Domain.Spatial;
@@ -194,7 +195,7 @@ else
     builder.Services.AddSingleton<IOcrService, ProviderBackedOcrService>();
 }
 builder.Services.AddSingleton<IFlyerOcrService, FlyerOcrServiceAdapter>();
-builder.Services.AddSingleton<INormalizationEngine, NormalizationEngine>();
+builder.Services.AddSingleton<FlyerNormalizationEngineAlias, NormalizationEngine>();
 builder.Services.AddSingleton<IFlyerNormalizationService, HeuristicFlyerNormalizationService>();
 builder.Services.AddSingleton<IFlyerConfidenceEvaluator, FlyerConfidenceEvaluator>();
 builder.Services.AddScoped<IFlyerIngestionPipeline, FlyerIngestionPipeline>();

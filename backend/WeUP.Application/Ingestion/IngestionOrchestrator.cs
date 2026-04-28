@@ -3,13 +3,14 @@ using WeUP.Contracts.Ocr;
 using WeUP.Domain.Flyer;
 using WeUP.Domain.Ingestion;
 using WeUP.Domain.Ocr;
+using FlyerNormalizationEngineAlias = WeUP.Domain.Flyer.INormalizationEngine;
 
 namespace WeUP.Application.Ingestion;
 
 public sealed class IngestionOrchestrator(
     IRawIngestionPayloadFactory payloadFactory,
     IOcrService ocrService,
-    INormalizationEngine normalizationEngine,
+    FlyerNormalizationEngineAlias normalizationEngine,
     IIngestionOrchestrationRepository repository,
     IIngestionLifecycleObserver observer) : IIngestionOrchestrator
 {
