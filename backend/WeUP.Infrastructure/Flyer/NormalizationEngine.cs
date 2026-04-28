@@ -5,7 +5,7 @@ using WeUP.Domain.Flyer;
 
 namespace WeUP.Infrastructure.Flyer;
 
-public sealed class NormalizationEngine : INormalizationEngine
+public sealed class NormalizationEngine(IOcrNormalizationTelemetry? telemetry = null) : INormalizationEngine
 {
     private static readonly Regex HashtagRegex = new("#(?<tag>[a-z0-9_]{2,30})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private static readonly Regex IsoDateTimeRegex = new(
@@ -46,6 +46,8 @@ public sealed class NormalizationEngine : INormalizationEngine
         ["party"] = "party",
     };
 
+    private readonly IOcrNormalizationTelemetry _telemetry = telemetry ?? new NoopOcrNormalizationTelemetry();
+
     public EventCandidate Normalize(OcrResult ocr)
     {
         ArgumentNullException.ThrowIfNull(ocr);
@@ -67,7 +69,7 @@ public sealed class NormalizationEngine : INormalizationEngine
             ["tags"] = tagsScore,
         };
 
-        return new EventCandidate(
+        var candidate = new EventCandidate(
             Title: title,
             StartUtc: startUtc,
             EndUtc: endUtc,
@@ -76,6 +78,9 @@ public sealed class NormalizationEngine : INormalizationEngine
             Tags: tags,
             RawFields: rawFields,
             FieldScores: scores);
+
+        _telemetry.TrackNormalization(candidate);
+        return candidate;
     }
 
     public (string? Value, FieldHeuristicScore Score) ExtractTitle(OcrResult ocr)
@@ -497,6 +502,17 @@ public sealed class NormalizationEngine : INormalizationEngine
 
     private static string NormalizeWhitespace(string value)
         => Regex.Replace(value.Trim(), "\\s+", " ");
+
+    private sealed class NoopOcrNormalizationTelemetry : IOcrNormalizationTelemetry
+    {
+        public void TrackOcrExtraction(string provider, string providerVersion, bool success, double confidence)
+        {
+        }
+
+        public void TrackNormalization(EventCandidate candidate)
+        {
+        }
+    }
 
     private sealed record OcrLine(string Text, double Confidence, int Position);
 }

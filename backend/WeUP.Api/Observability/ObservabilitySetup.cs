@@ -70,6 +70,8 @@ public static class ObservabilitySetup
                     .AddMeter(ObservabilityConstants.MeterName)
                     // Ingestion pipeline metrics (M10-P46)
                     .AddMeter(ObservabilityConstants.IngestionMeterName)
+                    // OCR + normalization quality telemetry (M10-P47)
+                    .AddMeter(ObservabilityConstants.OcrNormalizationMeterName)
                     .AddConsoleExporter()
                     // Prometheus scrape endpoint served at /metrics
                     .AddPrometheusExporter();

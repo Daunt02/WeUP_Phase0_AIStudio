@@ -14,6 +14,11 @@ public static class ObservabilityConstants
     /// enabled or disabled independently.
     /// </summary>
     public const string IngestionMeterName = "WeUP.Ingestion";
+    /// <summary>
+    /// Dedicated meter for OCR and normalization quality telemetry (M10-P47).
+    /// This remains isolated from ingestion and API meters to keep signal ownership clear.
+    /// </summary>
+    public const string OcrNormalizationMeterName = "WeUP.OcrNormalization";
     public const string IngestionActivitySource = "WeUP.Ingestion";
     public const string ModerationActivitySource = "WeUP.Moderation";
 }

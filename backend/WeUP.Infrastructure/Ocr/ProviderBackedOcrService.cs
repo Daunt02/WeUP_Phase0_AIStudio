@@ -1,6 +1,7 @@
 using System.Text.Json;
 using SixLabors.ImageSharp;
 using WeUP.Contracts.Ocr;
+using WeUP.Infrastructure.Flyer;
 using WeUP.Domain.Ocr;
 
 namespace WeUP.Infrastructure.Ocr;
@@ -25,9 +26,10 @@ public sealed record OcrProviderRequest(
     int AttemptCount,
     DateTimeOffset StartedAtUtc);
 
-public sealed class ProviderBackedOcrService(IOcrProvider provider) : IOcrService
+public sealed class ProviderBackedOcrService(IOcrProvider provider, IOcrNormalizationTelemetry? telemetry = null) : IOcrService
 {
     private const int MaxAttempts = 2;
+    private readonly IOcrNormalizationTelemetry _telemetry = telemetry ?? new NoopOcrNormalizationTelemetry();
 
     public async Task<OcrResult> ExtractAsync(OcrRequest request, CancellationToken ct = default)
     {
@@ -67,7 +69,9 @@ public sealed class ProviderBackedOcrService(IOcrProvider provider) : IOcrServic
                     StartedAtUtc: startedAtUtc);
 
                 var result = await provider.ExtractAsync(providerRequest, ct);
-                return NormalizeSuccess(request, extractionId, startedAtUtc, attempt, result);
+                var normalized = NormalizeSuccess(request, extractionId, startedAtUtc, attempt, result);
+                _telemetry.TrackOcrExtraction(normalized.Provider, normalized.ProviderVersion, normalized.Success, normalized.Confidence);
+                return normalized;
             }
             catch (OperationCanceledException)
             {
@@ -84,12 +88,15 @@ public sealed class ProviderBackedOcrService(IOcrProvider provider) : IOcrServic
             }
         }
 
-        return BuildFailureResult(
+        var failure = BuildFailureResult(
             request,
             extractionId,
             startedAtUtc,
             attemptCount: MaxAttempts,
             failureReason: lastError?.Message ?? "OCR provider failed.");
+
+        _telemetry.TrackOcrExtraction(failure.Provider, failure.ProviderVersion, failure.Success, failure.Confidence);
+        return failure;
     }
 
     private OcrResult NormalizeSuccess(OcrRequest request, string extractionId, DateTimeOffset startedAtUtc, int attemptCount, OcrResult providerResult)
@@ -162,6 +169,17 @@ public sealed class ProviderBackedOcrService(IOcrProvider provider) : IOcrServic
         }
 
         return merged;
+    }
+
+    private sealed class NoopOcrNormalizationTelemetry : IOcrNormalizationTelemetry
+    {
+        public void TrackOcrExtraction(string provider, string providerVersion, bool success, double confidence)
+        {
+        }
+
+        public void TrackNormalization(WeUP.Domain.Flyer.EventCandidate candidate)
+        {
+        }
     }
 }
 

@@ -134,6 +134,9 @@ else
 builder.Services.AddSingleton<IngestionMetricsService>(
     _ => new IngestionMetricsService(WeUP.Api.Observability.ObservabilityConstants.IngestionMeterName));
 
+builder.Services.AddSingleton<IOcrNormalizationTelemetry>(
+    _ => new OcrNormalizationMetricsService(WeUP.Api.Observability.ObservabilityConstants.OcrNormalizationMeterName));
+
 // Register named lifecycle observers; CompositeIngestionLifecycleObserver fans out to all.
 builder.Services.AddSingleton<LoggingIngestionLifecycleObserver>();
 builder.Services.AddSingleton<MetricsIngestionLifecycleObserver>();
