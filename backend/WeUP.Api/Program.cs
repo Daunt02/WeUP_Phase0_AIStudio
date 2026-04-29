@@ -163,6 +163,7 @@ builder.Services.AddTransient<WeUP.Domain.Dedupe.IDeduplicationService, Weighted
 // M2-P07: Fuzzy matching helpers (Application layer)
 builder.Services.AddTransient<WeUP.Contracts.Dedupe.IFuzzyStringMatcher, WeUP.Application.Dedupe.LevenshteinStringMatcher>();
 builder.Services.AddTransient<WeUP.Contracts.Dedupe.ITemporalMatcher, WeUP.Application.Dedupe.TemporalMatcherService>();
+builder.Services.AddTransient<WeUP.Contracts.Dedupe.IGeoMatcher, WeUP.Application.Dedupe.GeoMatcher>();
 
 builder.Services.AddSingleton<WeUP.Domain.Dedupe.IMergePlanner>(sp =>
     new InstrumentedMergePlanner(
