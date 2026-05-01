@@ -396,7 +396,7 @@ public sealed record MergePlanAudit(
 /// - Route to review if plan.RequiresManualReview = true.
 /// - Reject if plan.RejectMerge = true.
 /// </summary>
-public interface IMergePlanner
+public partial interface IMergePlanner
 {
     /// <summary>
     /// Generate a comprehensive, auditable merge plan for a single pair:

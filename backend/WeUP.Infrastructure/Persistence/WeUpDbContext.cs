@@ -35,6 +35,7 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
     public DbSet<EventSubmissionEntity> EventSubmissions => Set<EventSubmissionEntity>();
     public DbSet<ModerationQueueItemEntity> ModerationQueueItems => Set<ModerationQueueItemEntity>();
     public DbSet<ModerationHistoryEntryEntity> ModerationHistoryEntries => Set<ModerationHistoryEntryEntity>();
+    public DbSet<MergePlanEntity> MergePlans => Set<MergePlanEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -43,6 +44,7 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
         modelBuilder.ApplyConfiguration(new EventEntityConfiguration());
         modelBuilder.ApplyConfiguration(new SavedEventEntityConfiguration());
         modelBuilder.ApplyConfiguration(new IngestionEvidenceConfiguration());
+        modelBuilder.ApplyConfiguration(new MergePlanConfiguration());
 
         // Remaining entities use convention-based config for Phase 0
         modelBuilder.Entity<EventSourceEntity>(b =>

@@ -165,10 +165,7 @@ builder.Services.AddTransient<WeUP.Contracts.Dedupe.IFuzzyStringMatcher, WeUP.Ap
 builder.Services.AddTransient<WeUP.Contracts.Dedupe.ITemporalMatcher, WeUP.Application.Dedupe.TemporalMatcherService>();
 builder.Services.AddTransient<WeUP.Contracts.Dedupe.IGeoMatcher, WeUP.Application.Dedupe.GeoMatcher>();
 
-builder.Services.AddSingleton<WeUP.Domain.Dedupe.IMergePlanner>(sp =>
-    new InstrumentedMergePlanner(
-        new WeUP.Domain.Dedupe.MergePlanner(),
-        sp.GetRequiredService<DedupeMergeMetricsService>()));
+builder.Services.AddTransient<WeUP.Domain.Dedupe.IMergePlanner, WeUP.Application.Dedupe.MergePlanner>();
 
 // Register named lifecycle observers; CompositeIngestionLifecycleObserver fans out to all.
 builder.Services.AddSingleton<LoggingIngestionLifecycleObserver>();

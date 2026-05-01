@@ -1,6 +1,8 @@
 using System.Diagnostics.Metrics;
+using ContractDedupe = WeUP.Contracts.Dedupe;
 using WeUP.Contracts.Ingestion;
 using WeUP.Domain.Dedupe;
+using WeUP.Domain.Events;
 
 namespace WeUP.Infrastructure.Dedupe;
 
@@ -306,4 +308,10 @@ public sealed class InstrumentedMergePlanner : IMergePlanner
         _metrics.TrackMergePlan(plan);
         return plan;
     }
+
+    public Task<ContractDedupe.MergePlan> GeneratePlanAsync(
+        ContractDedupe.DuplicateAssessment assessment,
+        CandidateEvent candidate,
+        EventAggregate canonical)
+        => _inner.GeneratePlanAsync(assessment, candidate, canonical);
 }
