@@ -226,7 +226,7 @@ builder.Services.AddScoped<IModerationAuditService, ModerationAuditService>();
 builder.Services.AddScoped<IModerationQueueService, ModerationQueueService>();
 builder.Services.AddScoped<IModerationEvidenceService, ModerationEvidenceService>();
 builder.Services.AddSingleton<IConfidenceScoringService, ConfidenceScoringService>();
-builder.Services.AddSingleton<IRiskScoringService, RiskScoringService>();
+builder.Services.AddTransient<IRiskScoringService, RiskScoringService>();
 builder.Services.AddSingleton<IPublishEligibilityService, PublishEligibilityService>();
 builder.Services.AddScoped<IModerationActionHandler, ApproveHandler>();
 builder.Services.AddScoped<IModerationActionHandler, RejectHandler>();
