@@ -1,3 +1,82 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using WeUP.Contracts.Resolution;
+using WeUP.Domain.Resolution;
+using WeUP.Infrastructure.Persistence;
+using WeUP.Infrastructure.Resolution;
+
+namespace WeUP.Application.Resolution;
+
+/// <summary>
+/// Append‑only provenance service.  All writes are performed via INSERT only.
+/// </summary>
+public sealed class ProvenanceService : IProvenanceService
+{
+    private readonly WeUpDbContext _db;
+    private readonly ILogger<ProvenanceService> _log;
+
+    public ProvenanceService(WeUpDbContext db, ILogger<ProvenanceService> log)
+    {
+        _db = db;
+        _log = log;
+    }
+
+    public async Task RecordAsync(ProvenanceEntry entry)
+    {
+        // Defensive: ensure no duplicate Ids.
+        var exists = await _db.Provenance.AnyAsync(p => p.Id == entry.Id);
+        if (exists)
+        {
+            _log.LogWarning("Duplicate provenance entry ignored: {Id}", entry.Id);
+            return;
+        }
+
+        var entity = new ProvenanceEntity
+        {
+            Id = entry.Id,
+            EventId = entry.EventId,
+            CandidateId = entry.CandidateId,
+            FieldName = entry.FieldName,
+            OldValue = entry.OldValue,
+            NewValue = entry.NewValue,
+            ChangedAtUtc = entry.ChangedAtUtc,
+            ChangedBy = entry.ChangedBy,
+            Reason = entry.Reason
+        };
+
+        _db.Provenance.Add(entity);
+        await _db.SaveChangesAsync();
+
+        _log.LogInformation(
+            "Provenance recorded: Event {EventId}, Field {Field}, From '{Old}' → '{New}'",
+            entry.EventId, entry.FieldName, entry.OldValue, entry.NewValue);
+    }
+
+    public async Task<IReadOnlyList<ProvenanceEntry>> GetLineageAsync(Guid eventId)
+    {
+        var rows = await _db.Provenance
+            .Where(p => p.EventId == eventId)
+            .OrderBy(p => p.ChangedAtUtc)
+            .ToListAsync();
+
+        var result = rows.Select(p => new ProvenanceEntry(
+            Id: p.Id,
+            EventId: p.EventId,
+            CandidateId: p.CandidateId,
+            FieldName: p.FieldName,
+            OldValue: p.OldValue,
+            NewValue: p.NewValue,
+            ChangedAtUtc: p.ChangedAtUtc,
+            ChangedBy: p.ChangedBy,
+            Reason: p.Reason)).ToArray();
+
+        return result;
+    }
+}
 using WeUP.Contracts.Resolution;
 using WeUP.Domain.Resolution;
 

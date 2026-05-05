@@ -36,6 +36,7 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
     public DbSet<ModerationQueueItemEntity> ModerationQueueItems => Set<ModerationQueueItemEntity>();
     public DbSet<ModerationHistoryEntryEntity> ModerationHistoryEntries => Set<ModerationHistoryEntryEntity>();
     public DbSet<MergePlanEntity> MergePlans => Set<MergePlanEntity>();
+    public DbSet<WeUP.Infrastructure.Resolution.ProvenanceEntity> Provenance => Set<WeUP.Infrastructure.Resolution.ProvenanceEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -45,6 +46,7 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
         modelBuilder.ApplyConfiguration(new SavedEventEntityConfiguration());
         modelBuilder.ApplyConfiguration(new IngestionEvidenceConfiguration());
         modelBuilder.ApplyConfiguration(new MergePlanConfiguration());
+        modelBuilder.ApplyConfiguration(new WeUP.Infrastructure.Persistence.Configurations.ProvenanceConfiguration());
 
         // Remaining entities use convention-based config for Phase 0
         modelBuilder.Entity<EventSourceEntity>(b =>
