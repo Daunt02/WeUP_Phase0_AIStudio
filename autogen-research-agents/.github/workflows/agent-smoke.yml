@@ -1,0 +1,26 @@
+name: Agent Smoke Tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          pip install -r autogen-research-agents/requirements.txt
+      - name: Run tests
+        run: |
+          pytest -q autogen-research-agents/autogen_research_agents/tests
+      - name: Run agent runner (smoke)
+        run: |
+          python -m autogen_research_agents.agents.agent_runner --scan --root autogen-research-agents
