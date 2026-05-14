@@ -31,5 +31,5 @@ public interface IModerationQueueService
     /// <summary>
     /// Update the status of an item (Approved / Rejected / NeedsEdit) and optionally store reviewer notes.
     /// </summary>
-    Task UpdateStatusAsync(Guid queueItemId, ModerationStatus newStatus, string? reviewerNotes = null);
+    Task UpdateStatusAsync(Guid queueItemId, ModerationItemStatus newStatus, string? reviewerNotes = null);
 }

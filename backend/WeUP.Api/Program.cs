@@ -221,7 +221,14 @@ else
     builder.Services.AddSingleton<IModerationQueueRepository>(sp => sp.GetRequiredService<InMemoryModerationQueue>());
     builder.Services.AddSingleton<IModerationAuditRepository, InMemoryModerationAuditRepository>();
 }
-builder.Services.AddSingleton<IAuditTrailService, InMemoryAuditTrail>();
+if (runtime.UsesDatabase)
+{
+    builder.Services.AddScoped<IAuditTrailService, EfAuditTrailRepository>();
+}
+else
+{
+    builder.Services.AddSingleton<IAuditTrailService, InMemoryAuditTrail>();
+}
 builder.Services.AddScoped<IModerationAuditService, ModerationAuditService>();
 builder.Services.AddScoped<IModerationQueueService, ModerationQueueService>();
 builder.Services.AddScoped<IModerationEvidenceService, ModerationEvidenceService>();
@@ -247,13 +254,14 @@ builder.Services.AddSingleton<ITokenService, BearerTokenService>();
 builder.Services.AddScoped<UserAuthService>();
 
 // User persistence services (P17)
-builder.Services.AddSingleton<IItineraryRepository, InMemoryItineraryRepository>();
 if (runtime.UsesDatabase)
 {
+    builder.Services.AddScoped<IItineraryRepository, EfItineraryRepository>();
     builder.Services.AddScoped<IUserPreferencesRepository, EfUserPreferencesRepository>();
 }
 else
 {
+    builder.Services.AddSingleton<IItineraryRepository, InMemoryItineraryRepository>();
     builder.Services.AddSingleton<IUserPreferencesRepository, InMemoryPreferencesRepository>();
 }
 

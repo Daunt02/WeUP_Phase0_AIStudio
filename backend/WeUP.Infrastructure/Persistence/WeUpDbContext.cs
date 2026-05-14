@@ -37,6 +37,8 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
     public DbSet<ModerationHistoryEntryEntity> ModerationHistoryEntries => Set<ModerationHistoryEntryEntity>();
     public DbSet<MergePlanEntity> MergePlans => Set<MergePlanEntity>();
     public DbSet<WeUP.Infrastructure.Resolution.ProvenanceEntity> Provenance => Set<WeUP.Infrastructure.Resolution.ProvenanceEntity>();
+    public DbSet<ItineraryEntity> Itineraries => Set<ItineraryEntity>();
+    public DbSet<AuditTrailEntity> AuditTrails => Set<AuditTrailEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -466,6 +468,39 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
             b.HasIndex(e => new { e.ReviewerId, e.ActionTimestampUtc });
             b.HasIndex(e => new { e.EventId, e.ActionTimestampUtc });
             b.HasIndex(e => new { e.QueueItemId, e.ActionTimestampUtc });
+        });
+
+        modelBuilder.Entity<ItineraryEntity>(b =>
+        {
+            b.ToTable("itineraries");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.UserId).HasMaxLength(128).IsRequired();
+            b.Property(e => e.ItemId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.EventId).HasMaxLength(128).IsRequired();
+            b.Property(e => e.Note).HasMaxLength(1024);
+            b.Property(e => e.Position).IsRequired();
+            b.HasIndex(e => e.UserId);
+            b.HasIndex(e => e.ItemId).IsUnique();
+        });
+
+        modelBuilder.Entity<AuditTrailEntity>(b =>
+        {
+            b.ToTable("audit_trails");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.EntryId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.ItemId).HasMaxLength(64).IsRequired();
+            b.Property(e => e.ItemKind).HasMaxLength(64).IsRequired();
+            b.Property(e => e.Action).HasMaxLength(64).IsRequired();
+            b.Property(e => e.ActorId).HasMaxLength(128).IsRequired();
+            b.Property(e => e.PreviousStatus).HasMaxLength(64).IsRequired();
+            b.Property(e => e.NextStatus).HasMaxLength(64).IsRequired();
+            b.Property(e => e.Note).HasMaxLength(4000);
+            b.Property(e => e.EvidenceSnapshotRefsJson).HasColumnType("jsonb").IsRequired();
+            b.Property(e => e.CorrelationId).HasMaxLength(128).IsRequired();
+            b.HasIndex(e => e.EntryId).IsUnique();
+            b.HasIndex(e => e.ItemId);
+            b.HasIndex(e => e.ActorId);
+            b.HasIndex(e => e.TimestampUtc);
         });
     }
 }
