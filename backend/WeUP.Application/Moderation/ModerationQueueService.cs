@@ -1,3 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using WeUP.Contracts.Moderation;
+using WeUP.Domain.Moderation;
+using WeUP.Infrastructure.Persistence;
+using WeUP.Infrastructure.Persistence.Entities;
+
+namespace WeUP.Application.Moderation;
 using WeUP.Contracts.Moderation;
 using WeUP.Domain.Dedupe;
 using WeUP.Domain.Flyer;

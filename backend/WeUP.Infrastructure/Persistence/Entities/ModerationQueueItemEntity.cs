@@ -1,3 +1,34 @@
+using System;
+using System.ComponentModel.DataAnnotations;
+using WeUP.Contracts.Moderation;
+
+namespace WeUP.Infrastructure.Persistence.Entities;
+
+/// <summary>
+/// Append‑only table for moderation queue items.  The row‑version column prevents
+/// concurrent updates that would violate the monotonic workflow.
+/// </summary>
+public sealed class ModerationQueueItemEntity
+{
+    [Key]
+    public Guid QueueItemId { get; set; }
+
+    public Guid CandidateId { get; set; }
+
+    public ModerationStatus Status { get; set; }
+
+    public DateTimeOffset CreatedAtUtc { get; set; }
+
+    public DateTimeOffset? AssignedAtUtc { get; set; }
+
+    public Guid? ReviewerId { get; set; }
+
+    public string? ReviewerNotes { get; set; }
+
+    // Optimistic concurrency token – EF will throw on conflicting updates.
+    [Timestamp]
+    public byte[] RowVersion { get; set; } = null!;
+}
 namespace WeUP.Infrastructure.Persistence.Entities;
 
 /// <summary>
