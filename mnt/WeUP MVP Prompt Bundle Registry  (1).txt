@@ -1,0 +1,2209 @@
+﻿WeUP MVP Prompt Bundle Registry (Titles Only)
+________________
+
+
+Bundle M1 — Ingestion Core Systems v1.0
+* M1-P01 — Define Source Adapter and Input Contract v1.0
+* M1-P02 — Implement Flyer OCR Pipeline v1.0
+* M1-P03 — Define Normalization Engine and Event Extraction v1.0
+* M1-P04 — Implement Confidence Scoring and Evidence Model v1.0
+* M1-P05 — Create Ingestion Job Lifecycle and State Tracking v1.0
+________________
+
+
+Bundle M2 — Deduplication and Resolution Engine v1.0
+* M2-P06 — Define Canonical Deduplication Strategy and Matching Heuristics v1.0
+* M2-P07 — Implement Fuzzy Matching Across Title, Time, and Venue v1.0
+* M2-P08 — Implement Geo-Spatial Proximity Matching v1.0
+* M2-P09 — Create Merge Planning and Conflict Resolution System v1.0
+* M2-P10 — Enforce Provenance Preservation Across Merged Events v1.0
+________________
+
+
+Bundle M3 — Moderation and Publish Control v1.0
+* M3-P11 — Define EventRiskScore and Moderation Classification Model v1.0
+* M3-P12 — Build Moderation Queue and Review Workflow v1.0
+* M3-P13 — Implement Publish Eligibility Gate and Validation Rules v1.0
+* M3-P14 — Create Immutable Moderation History and Audit Trail v1.0
+* M3-P15 — Implement Moderator Actions and Review Surfaces v1.0
+________________
+
+
+Bundle M4 — Canonical Event System and Data Integrity v1.0
+* M4-P16 — Define Canonical EventAggregate Contract v1.0
+* M4-P17 — Establish DTO Mapping Boundaries Between Frontend and Backend v1.0
+* M4-P18 — Implement Event Versioning and Update Semantics v1.0
+* M4-P19 — Enforce Schema Consistency and Contract Validation v1.0
+* M4-P20 — Track Merge Lineage and Event Evolution v1.0
+________________
+
+
+Bundle M5 — Map and Discovery Surface v1.0
+* M5-P21 — Implement Map Rendering and Marker System v1.0
+* M5-P22 — Build Marker Clustering and Density Control v1.0
+* M5-P23 — Implement Event Detail Modal and Interaction Flow v1.0
+* M5-P24 — Integrate Time-Based Filtering into Map Discovery v1.0
+* M5-P25 — Optimize Map Performance and Rendering Latency v1.0
+________________
+
+
+Bundle M6 — Calendar Overlay and Temporal UI v1.0
+* M6-P26 — Implement Calendar Overlay Layer Architecture v1.0
+* M6-P27 — Build Masonry Event Layout and Time-Slot Packing v1.0
+* M6-P28 — Sync Calendar Overlay with Map State v1.0
+* M6-P29 — Implement Temporal Navigation and Scrubbing Controls v1.0
+* M6-P30 — Optimize Calendar Interaction and Transition States v1.0
+________________
+
+
+Bundle M7 — Save System and User Context v1.0
+* M7-P31 — Implement Save and Unsave Event Functionality v1.0
+* M7-P32 — Define Local Persistence Model for Anonymous Users v1.0
+* M7-P33 — Implement Auth-Ready Save State Migration Path v1.0
+* M7-P34 — Build User Context and Preference Tracking v1.0
+* M7-P35 — Create Saved Events Retrieval and Display Logic v1.0
+________________
+
+
+Bundle M8 — Temporal Semantics Engine v1.0
+* M8-P36 — Define Canonical Time Window Semantics v1.0
+* M8-P37 — Implement “Tonight,” “Weekend,” and Rolling Window Logic v1.0
+* M8-P38 — Normalize Timezone Handling Across System Layers v1.0
+* M8-P39 — Synchronize Temporal Logic Between Frontend and Backend v1.0
+* M8-P40 — Validate Temporal Edge Cases and Boundary Conditions v1.0
+________________
+
+
+Bundle M9 — Spatial Semantics and City Modeling v1.0
+* M9-P41 — Define Market, District, and Neighborhood Model v1.0
+* M9-P42 — Implement Geo Validation and Coordinate Integrity v1.0
+* M9-P43 — Build Spatial Query Semantics and Filtering Logic v1.0
+* M9-P44 — Design Cluster-Ready Spatial Response Structures v1.0
+* M9-P45 — Document Houston Phase 0 Spatial Model v1.0
+________________
+
+
+Bundle M10 — Ingestion Observability and Telemetry v1.0
+* M10-P46 — Implement Ingestion Metrics and Success Tracking v1.0
+* M10-P47 — Add OCR and Normalization Telemetry v1.0
+* M10-P48 — Track Deduplication and Merge Outcomes v1.0
+* M10-P49 — Monitor Moderation Throughput and Backlog v1.0
+* M10-P50 — Create Ingestion Performance Dashboard v1.0
+________________
+
+
+Bundle M11 — Promoter Incentive and Abuse Protection v1.0
+* M11-P51 — Define Promoter Submission Incentive Model v1.0
+* M11-P52 — Implement Submission Rate Limiting and Throttling v1.0
+* M11-P53 — Detect Duplicate and Spam Submissions v1.0
+* M11-P54 — Implement Basic Reputation Scoring for Submitters v1.0
+* M11-P55 — Integrate Incentive Logic with Moderation Gate v1.0
+________________
+
+
+Bundle M12 — Identity and Session Layer v1.0
+* M12-P56 — Implement Anonymous Session Identity Model v1.0
+* M12-P57 — Add Lightweight Authentication (Email/Magic Link) v1.0
+* M12-P58 — Bind User Actions to Identity Context v1.0
+* M12-P59 — Secure Submission and Save Flows v1.0
+* M12-P60 — Validate Identity-Dependent Behaviors via Tests v1.0
+________________
+
+
+Bundle M13 — Error Handling and Failure Semantics v1.0
+* M13-P61 — Define OCR Failure and Partial Extraction Handling v1.0
+* M13-P62 — Implement Missing and Ambiguous Field Resolution v1.0
+* M13-P63 — Handle Conflicting Data from Multiple Sources v1.0
+* M13-P64 — Define Confidence Transparency and UI Exposure v1.0
+* M13-P65 — Build Deterministic Failure States Across System v1.0
+________________
+
+
+Bundle M14 — MVP Integration and End-to-End Validation v1.0
+* M14-P66 — Build End-to-End Ingestion-to-Map Test Harness v1.0
+* M14-P67 — Validate Full Discovery Flow Across UI and Backend v1.0
+* M14-P68 — Test Deduplication and Moderation in Real Data Scenarios v1.0
+* M14-P69 — Validate Performance Under MVP Load Conditions v1.0
+* M14-P70 — Produce MVP Readiness Report and Gap Matrix v1.0
+________________
+
+
+Final Structure
+You now have:
+* 14 Bundles
+* 70 MVP prompts
+* Fully segmented by system domain
+* Fully versioned and execution-ready
+________________
+
+
+Next
+If you want precision execution:
+* I can expand M1 (Ingestion Core) into full deep prompts
+* or generate M2 Dedup Engine with scoring algorithms + C# implementation
+* or produce a full MVP execution order with dependencies and timelines
+
+
+
+
+Below are clean, production-grade, copy-paste prompts for each M1 item. Each is designed to be dropped into your build workflow (Copilot / GPT / Claude / internal agent) and produce deterministic, implementation-ready output.
+________________
+
+
+Bundle M1 — Ingestion Core Systems v1.0
+M1-P01 — Define Source Adapter and Input Contract v1.0
+You are implementing the ingestion boundary for a production-grade .NET 8 backend.
+Objective:
+Create a strict, deterministic source adapter layer that converts all incoming inputs into a canonical RawIngestionPayload contract.
+Requirements:
+* Define IngestionRequest and RawIngestionPayload as immutable C# records
+* Support three source types: ImageUpload, ImageUrl, ManualEntry
+* Compute SHA256 content hash immediately on ingestion
+* Preserve all metadata without loss
+* Do not allow direct OCR invocation from controllers
+Deliver:
+1. C# record definitions for:
+   * IngestionRequest
+   * RawIngestionPayload
+   * IngestionSourceType enum
+2. ISourceAdapter interface
+3. Concrete adapters:
+   * ImageUploadAdapter
+   * ImageUrlAdapter
+   * ManualEntryAdapter
+4. Validation logic for malformed inputs
+5. Error handling strategy (fail fast, no silent fallback)
+Constraints:
+* No mutable state
+* No dynamic typing
+* No hidden defaults
+* All inputs must pass through adapter layer
+Output format:
+* Complete C# implementation with namespaces
+* Minimal but production-ready (no placeholders)
+* Include comments explaining boundaries and invariants
+________________
+
+
+M1-P02 — Implement Flyer OCR Pipeline v1.0
+You are implementing a production OCR pipeline in a .NET 8 backend system.
+Objective:
+Extract structured text from flyer images while preserving full traceability and confidence.
+Requirements:
+* Define IOcrService interface
+* Implement OcrResult and OcrTextBlock contracts
+* Preserve raw OCR text and bounding boxes
+* Support async processing with retry
+* Never fabricate or “clean” text at this stage
+Deliver:
+1. IOcrService interface
+2. OcrResult and OcrTextBlock records
+3. Example implementation using a pluggable OCR provider (abstracted)
+4. Retry logic (max 1 retry)
+5. Failure handling (return low confidence, not fake data)
+Rules:
+* OCR stage must be lossless (no aggressive transformations)
+* Confidence must be passed through, not recalculated
+* Empty OCR result is valid and must propagate
+Constraints:
+* No business logic in OCR layer
+* No normalization here
+* No inference beyond OCR provider output
+Output:
+* Full C# implementation
+* Clear separation between extraction and downstream processing
+________________
+
+
+M1-P03 — Define Normalization Engine and Event Extraction v1.0
+You are implementing the normalization engine for an ingestion pipeline.
+Objective:
+Transform OCR output into a structured EventCandidate without fabricating missing data.
+Requirements:
+* Define INormalizationEngine interface
+* Create EventCandidate record
+* Extract:
+   * Title
+   * StartUtc / EndUtc
+   * Venue
+   * Address
+   * Tags
+* Use deterministic heuristics (regex, positional logic, simple NLP)
+* Allow partial extraction (nulls are valid)
+Deliver:
+1. INormalizationEngine interface
+2. EventCandidate record
+3. NormalizationEngine implementation
+4. Extraction methods:
+   * ExtractTitle
+   * ExtractDateTime
+   * ExtractVenue
+   * ExtractAddress
+   * ExtractTags
+5. Heuristic scoring per field
+Rules:
+* NEVER fabricate missing values
+* NEVER assume timezone silently
+* Return null instead of guessing
+* All raw fields must be preserved in RawFields
+Constraints:
+* No external ML dependency required
+* Must be deterministic and testable
+* Must operate on OcrResult only
+Output:
+* Full C# implementation
+* Clear separation of extraction logic per field
+________________
+
+
+M1-P04 — Implement Confidence Scoring and Evidence Model v1.0
+You are implementing confidence scoring and evidence tracking for an ingestion system.
+Objective:
+Attach explicit, explainable confidence to every extracted field and preserve evidence for audit and review.
+Requirements:
+* Define FieldConfidence generic record
+* Define EvidenceBundle record
+* Upgrade EventCandidate to include field-level confidence
+* Compute overall confidence score deterministically
+Deliver:
+1. FieldConfidence record
+2. EvidenceBundle record
+3. EventCandidateV2 record
+4. ConfidenceScorer service
+5. Rules for confidence aggregation:
+   * OCR confidence propagation
+   * heuristic strength adjustments
+   * conflict penalties
+   * missing field penalties
+Rules:
+* Confidence must always be explicit
+* No “implicit confidence”
+* Evidence must include:
+   * raw text
+   * OCR blocks
+   * source hash
+   * timestamp
+Constraints:
+* No probabilistic ML scoring (deterministic only)
+* Must be explainable per field
+Output:
+* Full C# implementation
+* Clear scoring functions with comments
+________________
+
+
+M1-P05 — Create Ingestion Job Lifecycle and State Tracking v1.0
+You are implementing ingestion orchestration and lifecycle tracking for a production system.
+Objective:
+Create a deterministic ingestion job pipeline with explicit state transitions and observability.
+Requirements:
+* Define IngestionJob record
+* Define IngestionJobStatus enum
+* Implement IIngestionOrchestrator
+* Track lifecycle:
+Pending → Processing → OCR → Normalized → ReadyForDedup → Completed / Failed
+Deliver:
+   1. IngestionJob record
+   2. IngestionJobStatus enum
+   3. IIngestionOrchestrator interface
+   4. IngestionOrchestrator implementation
+   5. Persistence strategy (repository interface)
+   6. Observability hooks:
+   * job_started
+   * ocr_completed
+   * normalization_completed
+   * job_failed
+   * job_duration
+Rules:
+   * Every stage must be persisted
+   * No silent failure transitions
+   * Partial success must still persist evidence
+   * Failed jobs must include error message
+Failure Handling:
+   * Adapter failure → fail job
+   * OCR failure → retry once → fail
+   * normalization failure → fail but preserve OCR output
+Constraints:
+   * No in-memory-only tracking
+   * Must support async execution
+   * Must be replayable/debuggable
+Output:
+   * Full C# implementation
+   * Clean orchestration flow with logging points
+________________
+
+
+What You Do Next
+Run these prompts in this exact order:
+M1-P01 → M1-P02 → M1-P03 → M1-P04 → M1-P05
+
+
+Then immediately test with:
+10–20 real flyers → inspect outputs manually
+
+
+________________
+
+
+If you want the next step
+I’ll generate:
+   * M2 Dedup Engine prompts (same format, production-grade)
+   * or
+   * Full working .NET project scaffold wiring all M1 components together
+
+
+
+
+
+
+Bundle M2 — Deduplication and Resolution Engine v1.0
+Below are individual copy-paste prompts for the M2 dedup engine, in the same format and at the same rigor level.
+________________
+
+
+M2-P06 — Define Canonical Deduplication Strategy and Matching Heuristics v1.0
+You are implementing the canonical deduplication strategy for a production-grade .NET 8 backend.
+Objective:
+Define a deterministic deduplication and resolution model that compares incoming EventCandidate records against existing canonical EventAggregate records and produces a scored duplicate assessment.
+Requirements:
+   * Define the overall deduplication strategy document in code-oriented form
+   * Establish weighted matching dimensions:
+   * title similarity
+   * venue similarity
+   * address similarity
+   * temporal overlap
+   * geo proximity
+   * source hash / evidence overlap
+   * Define score bands:
+   * ExactDuplicate
+   * ProbableDuplicate
+   * PossibleDuplicate
+   * Distinct
+   * Define hard blockers against unsafe auto-merge
+   * Ensure all scoring is deterministic and explainable
+Deliver:
+   1. C# enums and records for:
+   * DuplicateAssessmentLevel
+   * MatchDimension
+   * MatchScoreBreakdown
+   * DuplicateAssessment
+   2. IDeduplicationStrategy interface
+   3. A weighted scoring model with exact thresholds
+   4. Merge safety rules and no-auto-merge conditions
+   5. Comments documenting invariants and operational intent
+Rules:
+   * No ML black box scoring
+   * No hidden thresholds
+   * Every score contribution must be inspectable
+   * Distinct must be a first-class outcome, not a low score accident
+Constraints:
+   * Must work with EventCandidate from ingestion pipeline
+   * Must compare against canonical EventAggregate only
+   * Must be testable with pure unit tests
+Output:
+   * Full C# implementation of contracts and strategy types
+   * Include comments showing how the strategy should be consumed by downstream resolution services
+________________
+
+
+M2-P07 — Implement Fuzzy Matching Across Title, Time, and Venue v1.0
+You are implementing deterministic fuzzy matching for a production-grade .NET 8 deduplication engine.
+Objective:
+Build a fuzzy matching subsystem that compares EventCandidate and EventAggregate across title, venue, and time dimensions with explainable scores.
+Requirements:
+   * Implement title similarity scoring
+   * Implement venue similarity scoring
+   * Implement temporal overlap scoring
+   * Support normalization for:
+   * punctuation
+   * casing
+   * common abbreviations
+   * whitespace collapse
+   * Temporal logic must account for:
+   * exact match
+   * overlapping ranges
+   * close-start proximity
+   * unknown/null times
+Deliver:
+   1. IFuzzyMatcher interface
+   2. TitleMatcher service
+   3. VenueMatcher service
+   4. TemporalMatcher service
+   5. Match result contracts for each dimension
+   6. Utility normalization helpers
+Rules:
+   * Never silently “fix” missing values into valid matches
+   * Null or missing fields must reduce certainty explicitly
+   * Time matching must not assume timezone silently
+   * Matching logic must be deterministic, documented, and unit-testable
+Constraints:
+   * No external AI service
+   * Use algorithmic similarity only
+   * Avoid overfitting to one flyer style
+Output:
+   * Full C# implementation
+   * Include unit-test-ready helper methods
+   * Include comments explaining how score ranges should be interpreted
+________________
+
+
+M2-P08 — Implement Geo-Spatial Proximity Matching v1.0
+You are implementing geospatial proximity matching for a production-grade .NET 8 deduplication engine.
+Objective:
+Determine whether two event records are likely duplicates based on spatial proximity, venue/address coherence, and geographic confidence.
+Requirements:
+   * Implement geo distance calculation between two points
+   * Score proximity across defined distance bands
+   * Incorporate address and venue cross-check signals
+   * Handle missing coordinates safely
+   * Distinguish:
+   * same venue / same coordinates
+   * nearby likely duplicate
+   * nearby but distinct venue
+   * no meaningful geo match
+Deliver:
+   1. IGeoMatcher interface
+   2. GeoMatchResult record
+   3. GeoMatcher implementation
+   4. Distance utility (Haversine or equivalent)
+   5. Threshold configuration for:
+   * exact proximity
+   * near proximity
+   * weak proximity
+   * no match
+Rules:
+   * Geographic closeness alone must not force duplicate classification
+   * Venue/address disagreement must reduce geo confidence
+   * Missing coordinates must not be treated as neutral-positive
+   * Geo scoring must be explainable and bounded
+Constraints:
+   * No dependency on full GIS engine required
+   * Must support future PostGIS upgrade seam
+   * Keep logic deterministic and pure where possible
+Output:
+   * Full C# implementation
+   * Include comments explaining scoring thresholds and conflict handling
+________________
+
+
+M2-P09 — Create Merge Planning and Conflict Resolution System v1.0
+You are implementing merge planning and conflict resolution for a production-grade .NET 8 event deduplication system.
+Objective:
+Create a merge planning layer that takes duplicate assessments and produces safe, reviewable merge plans without blindly mutating canonical events.
+Requirements:
+   * Define MergePlan contract
+   * Define field-by-field resolution actions:
+   * KeepExisting
+   * ReplaceWithCandidate
+   * MergeValues
+   * RequireReview
+   * RejectMerge
+   * Generate merge plans from DuplicateAssessment inputs
+   * Detect conflicting fields:
+   * different start times
+   * different venue names
+   * conflicting addresses
+   * divergent titles
+   * Preserve evidence and provenance for every recommended merge action
+Deliver:
+   1. MergePlan record
+   2. MergeFieldAction enum
+   3. ConflictDescriptor record
+   4. IMergePlanner interface
+   5. MergePlanner implementation
+   6. Rules for safe merge vs manual review vs reject
+Rules:
+   * No direct auto-merge of unsafe conflicts
+   * Merge planning must be separate from merge execution
+   * Every field decision must cite why it was chosen
+   * Provenance must survive every merge recommendation
+Constraints:
+   * Must operate on canonical EventAggregate + EventCandidate
+   * Must be deterministic and auditable
+   * Must support future moderation workflow integration
+Output:
+   * Full C# implementation
+   * Include comments explaining field precedence and conflict escalation rules
+________________
+
+
+M2-P10 — Enforce Provenance Preservation Across Merged Events v1.0
+You are implementing provenance preservation for a production-grade .NET 8 event resolution system.
+Objective:
+Ensure that when duplicate candidates are associated with existing canonical events, all source evidence, field lineage, and merge history are preserved immutably.
+Requirements:
+   * Define provenance model for canonical events
+   * Track:
+   * source request IDs
+   * candidate IDs
+   * evidence bundle references
+   * field-level lineage
+   * merge timestamps
+   * merge actor / system reason
+   * Preserve both prior and current values when fields change
+   * Make provenance queryable for moderation and audit workflows
+Deliver:
+   1. ProvenanceEntry record
+   2. FieldLineage record
+   3. MergeHistoryEntry record
+   4. IProvenanceService interface
+   5. ProvenanceService implementation
+   6. Append-only provenance rules
+Rules:
+   * Provenance must never be overwritten in place
+   * Merge history must be immutable
+   * Field lineage must preserve original source and confidence
+   * Canonical event state must remain explainable after multiple merges
+Constraints:
+   * Must integrate with EventAggregate, EventCandidate, MergePlan, and EvidenceBundle
+   * No destructive update pattern for provenance
+   * Must be suitable for EF Core persistence later
+Output:
+   * Full C# implementation
+   * Include comments explaining lineage semantics, audit expectations, and append-only guarantees
+________________
+
+
+Execution Order
+Run these in this order:
+M2-P06 → M2-P07 → M2-P08 → M2-P09 → M2-P10
+
+
+What M2 should produce
+After M2 is complete, you should have:
+   * a canonical duplicate assessment model
+   * deterministic fuzzy matching
+   * geospatial duplicate scoring
+   * safe merge planning
+   * immutable provenance preservation
+What comes after M2
+Only after M2 is stable should you move to:
+M3 — Moderation and Publish Control v1.0
+
+
+Because moderation without reliable dedup is operationally weak.
+Next: I can generate M3 Moderation and Publish Control prompts in the same format.
+Bundle M3 — Moderation and Publish Control v1.0
+Below are production-grade, copy-paste prompts for moderation and publish gating. This layer converts ingestion + dedup into a controlled, safe publishing system.
+________________
+
+
+M3-P11 — Define EventRiskScore and Moderation Classification Model v1.0
+You are implementing the risk classification model for a production-grade event ingestion system in .NET 8.
+Objective:
+Define a deterministic EventRiskScore model that classifies EventCandidate records into moderation tiers and drives publish eligibility.
+Requirements:
+   * Define EventRiskLevel enum:
+   * Low
+   * Medium
+   * High
+   * Restricted
+   * Compute risk based on:
+   * missing critical fields
+   * low confidence scores
+   * conflicting extracted data
+   * unknown venue/address
+   * suspicious keywords (basic rule-based)
+   * duplicate ambiguity (from dedup engine)
+   * Define EventRiskScore record with:
+   * overall score
+   * contributing factors
+   * explanation string
+Deliver:
+   1. EventRiskLevel enum
+   2. EventRiskScore record
+   3. IRiskScoringService interface
+   4. RiskScoringService implementation
+   5. Rule-based scoring logic with weighted factors
+   6. Human-readable explanation builder
+Rules:
+   * Risk scoring must be deterministic
+   * No ML or probabilistic black box
+   * Every risk score must be explainable
+   * Missing data must increase risk, not be ignored
+Constraints:
+   * Must operate on EventCandidateV2 + DuplicateAssessment
+   * Must not depend on external moderation services
+   * Must be unit-testable
+Output:
+   * Full C# implementation
+   * Include comments explaining each risk factor and its impact
+________________
+
+
+M3-P12 — Build Moderation Queue and Review Workflow v1.0
+You are implementing a moderation queue system for a production-grade ingestion platform.
+Objective:
+Create a moderation queue that receives candidates, supports review workflows, and enforces controlled transitions before publishing.
+Requirements:
+   * Define ModerationQueueItem record
+   * Define ModerationStatus enum:
+   * Pending
+   * InReview
+   * Approved
+   * Rejected
+   * NeedsEdit
+   * Implement queue operations:
+   * enqueue candidate
+   * fetch next item (by priority)
+   * assign reviewer
+   * update status
+   * Support prioritization:
+   * high-risk first
+   * low-confidence next
+   * Include timestamps for all transitions
+Deliver:
+   1. ModerationQueueItem record
+   2. ModerationStatus enum
+   3. IModerationQueueService interface
+   4. ModerationQueueService implementation
+   5. Priority sorting logic
+   6. Reviewer assignment logic
+Rules:
+   * Queue must be explicit (no hidden flows)
+   * Every status change must be persisted
+   * No auto-approval through queue
+   * Reviewer identity must be tracked
+Constraints:
+   * Must integrate with EventRiskScore
+   * Must not publish directly from queue
+   * Must support future UI integration
+Output:
+   * Full C# implementation
+   * Include comments explaining queue prioritization and workflow transitions
+________________
+
+
+M3-P13 — Implement Publish Eligibility Gate and Validation Rules v1.0
+You are implementing the publish eligibility gate for a production-grade event system.
+Objective:
+Prevent unsafe or incomplete events from being published by enforcing strict validation and moderation rules.
+Requirements:
+   * Define PublishEligibilityResult record
+   * Implement IPublishEligibilityService
+   * Validate:
+   * required fields present (title, time, location)
+   * minimum confidence thresholds met
+   * moderation status = Approved
+   * risk level allowed for auto-publish (Low only)
+   * Return:
+   * eligible / not eligible
+   * list of blockers
+   * required actions
+Deliver:
+   1. PublishEligibilityResult record
+   2. IPublishEligibilityService interface
+   3. PublishEligibilityService implementation
+   4. Validation rule set
+   5. Blocker definitions (enum or structured list)
+Rules:
+   * No event may publish without passing this gate
+   * No implicit approval allowed
+   * All blockers must be explicit and returned
+   * Risk level must directly influence eligibility
+Constraints:
+   * Must operate on canonical EventAggregate or approved candidate
+   * Must integrate with ModerationStatus and EventRiskScore
+   * Must be deterministic and testable
+Output:
+   * Full C# implementation
+   * Include comments explaining gating logic and failure conditions
+________________
+
+
+M3-P14 — Create Immutable Moderation History and Audit Trail v1.0
+You are implementing moderation audit logging for a production-grade event ingestion system.
+Objective:
+Create an immutable audit trail of all moderation actions, ensuring full traceability of decisions.
+Requirements:
+   * Define ModerationHistoryEntry record
+   * Capture:
+   * candidate ID
+   * reviewer ID
+   * previous status
+   * new status
+   * action timestamp
+   * reason/comment
+   * Ensure append-only behavior
+   * Provide query methods for:
+   * full history by candidate
+   * history by reviewer
+   * history by event
+Deliver:
+   1. ModerationHistoryEntry record
+   2. IModerationAuditService interface
+   3. ModerationAuditService implementation
+   4. Append-only persistence logic
+   5. Query methods for audit retrieval
+Rules:
+   * No mutation of existing records
+   * Every moderation action must produce an audit entry
+   * History must be reconstructable in order
+   * Comments/reasons must be preserved
+Constraints:
+   * Must integrate with ModerationQueueService
+   * Must support future compliance/audit requirements
+   * Must be efficient for retrieval
+Output:
+   * Full C# implementation
+   * Include comments explaining immutability guarantees and audit expectations
+________________
+
+
+M3-P15 — Implement Moderator Actions and Review Surfaces v1.0
+You are implementing moderator action logic for a production-grade event ingestion system.
+Objective:
+Define and implement all moderator actions that operate on moderation queue items and candidates.
+Requirements:
+   * Supported actions:
+   * Approve
+   * Reject
+   * Edit (modify candidate fields)
+   * Merge (apply merge plan from dedup)
+   * Each action must:
+   * update moderation status
+   * create audit entry
+   * optionally update candidate data
+   * Edits must:
+   * preserve original values in provenance
+   * update confidence if needed
+Deliver:
+   1. ModeratorAction enum
+   2. IModerationActionService interface
+   3. ModerationActionService implementation
+   4. Action handlers:
+   * ApproveHandler
+   * RejectHandler
+   * EditHandler
+   * MergeHandler
+   5. Validation logic per action
+Rules:
+   * No action may bypass audit logging
+   * Edit must not overwrite provenance
+   * Merge must respect MergePlan rules
+   * Reject must include reason
+Constraints:
+   * Must integrate with:
+   * ModerationQueue
+   * PublishEligibilityService
+   * ProvenanceService (from M2)
+   * Must be deterministic and role-aware
+Output:
+   * Full C# implementation
+   * Include comments explaining action flows and safety constraints
+________________
+
+
+Execution Order
+M3-P11 → M3-P12 → M3-P13 → M3-P14 → M3-P15
+
+
+________________
+
+
+What M3 Produces
+After completion, you will have:
+   * deterministic risk classification
+   * structured moderation queue
+   * enforced publish gate
+   * immutable audit trail
+   * safe moderator action system
+________________
+
+
+What This Unlocks
+You can now safely:
+Publish → Map → Discovery
+
+
+Without:
+   * spam flooding
+   * unsafe events
+   * ingestion garbage leaking to users
+________________
+
+
+Next
+The correct next bundle is:
+M5 — Map and Discovery Surface v1.0
+
+
+Or if you want tighter control:
+   * M4 (Canonical Event System hardening)
+________________
+
+
+If you want, next I can generate:
+   * M5 Map + Calendar prompts (UI + backend contract aligned)
+   * or
+   * Full vertical slice wiring (M1 + M2 + M3 → API + Vue integration)
+Bundle M5 — Map and Discovery Surface v1.0
+Bundle M6 — Calendar Overlay and Temporal UI v1.0
+Below are production-grade, copy-paste prompts aligned across Vue 3 + Quasar frontend, .NET 8 backend contracts, and Mapbox-based discovery surfaces.
+________________
+
+
+M5-P21 — Implement Map Rendering and Marker System v1.0
+You are implementing the primary map discovery surface for a production-grade Vue 3 + Quasar frontend with a .NET 8 backend.
+Objective:
+Build the canonical WeUP map surface that renders approved events as markers using a backend-driven event feed contract.
+Requirements:
+   * Use Vue 3 Composition API
+   * Use Quasar for shell/UI controls
+   * Use Mapbox GL JS for rendering
+   * Consume a real backend API contract, not mock-first service logic
+   * Render event markers from canonical event feed data
+   * Support marker states:
+   * default
+   * selected
+   * saved
+   * low-confidence-hidden (not rendered in public feed)
+   * Keep map as the primary surface, not a subordinate widget
+Deliver:
+   1. Backend DTO contract for EventMapItemDto
+   2. API endpoint contract for map feed query
+   3. Frontend TypeScript interfaces aligned to backend DTOs
+   4. Vue component for MapSurface
+   5. Marker rendering layer with selection handling
+   6. Minimal service/composable for fetching map events
+Required backend DTO fields:
+   * eventId
+   * title
+   * startUtc
+   * endUtc
+   * latitude
+   * longitude
+   * venueName
+   * district
+   * primaryCategory
+   * savedByCurrentUser
+   * markerState
+Required query fields:
+   * bbox
+   * timeWindowPreset
+   * fromUtc
+   * toUtc
+   * district
+   * categories
+   * includeSavedOnly
+Rules:
+   * No direct frontend dependency on EF/domain models
+   * No local mock shape may drift from the API contract
+   * Marker selection must resolve by canonical eventId only
+   * Map load and marker rendering must degrade gracefully under empty result sets
+Constraints:
+   * No ticketing or door logic
+   * No feed-style ranking UI
+   * No hidden fallback to mock data
+   * Keep map interaction deterministic and traceable
+Output:
+   * Full C# DTOs and endpoint contract shape
+   * Full TypeScript interfaces
+   * Vue 3 + Quasar component scaffold
+   * Mapbox integration code
+   * Comments explaining contract boundaries and marker rendering invariants
+________________
+
+
+M5-P22 — Build Marker Clustering and Density Control v1.0
+You are implementing marker clustering and density management for a production-grade map-first event discovery application.
+Objective:
+Prevent marker overload and preserve usability by implementing deterministic clustering and density control aligned between backend responses and frontend rendering.
+Requirements:
+   * Support cluster rendering for dense urban areas
+   * Distinguish:
+   * single event marker
+   * multi-event cluster
+   * selected marker bypass behavior
+   * Preserve click-through flow:
+   * cluster click zooms or expands
+   * marker click opens event detail
+   * Support backend-ready response structure for clusterable map items
+   * Allow future server-side clustering upgrade without breaking contracts
+Deliver:
+   1. Cluster-capable DTO additions or parallel response model
+   2. Frontend cluster rendering logic
+   3. Density thresholds for when clustering activates
+   4. Marker expansion / zoom behavior rules
+   5. Selection preservation when clusters recompute
+Rules:
+   * Selected event must remain discoverable even when density changes
+   * Cluster rendering must not obscure saved state or active filters
+   * No random cluster behavior
+   * Clustering must not mutate canonical event identity
+Constraints:
+   * Implement in a way that can start frontend-side but preserve backend seam
+   * No feed fallback list as primary overflow mechanism
+   * Must perform acceptably at 50–200 visible events
+Output:
+   * Full backend response model update
+   * Full TypeScript interfaces
+   * Vue / Mapbox clustering logic
+   * Comments explaining density invariants, expansion behavior, and identity preservation
+________________
+
+
+M5-P23 — Implement Event Detail Modal and Interaction Flow v1.0
+You are implementing the event detail interaction flow for a production-grade map-first event discovery application.
+Objective:
+Build the canonical event detail modal that opens from map marker selection, displays normalized event data, shows provenance-aware content where appropriate, and supports save/share actions.
+Requirements:
+   * Use Vue 3 Composition API + Quasar
+   * Event detail opens from marker click and resolves by eventId
+   * Modal must support:
+   * title
+   * date/time
+   * venue
+   * address
+   * flyer image
+   * categories/tags
+   * source/provenance summary
+   * save/unsave action
+   * share action placeholder
+   * Modal state must be synchronized with map selection state
+   * Close action must return user cleanly to map context
+Deliver:
+   1. Backend DTO for EventDetailDto
+   2. API endpoint contract for event detail by eventId
+   3. Frontend TS interface aligned to DTO
+   4. Vue component for EventDetailModal
+   5. State/composable logic for open/close/select behavior
+   6. Save action wiring seam
+Rules:
+   * Event detail must consume canonical normalized data only
+   * No direct rendering of raw OCR garbage
+   * Provenance should be present but not overwhelm public UX
+   * Save state must reflect backend or local persistence truth, not a fake local toggle
+Constraints:
+   * No ticket purchase UI
+   * No door/admission UI
+   * No social graph complexity
+   * Keep modal readable in one viewport without turning into a scroll maze
+Output:
+   * Full backend DTO + endpoint shape
+   * Full TypeScript interface
+   * Full Vue 3 + Quasar modal scaffold
+   * Comments explaining state synchronization and modal interaction rules
+________________
+
+
+M5-P24 — Integrate Time-Based Filtering into Map Discovery v1.0
+You are implementing temporal filtering for a production-grade map-first event discovery system.
+Objective:
+Integrate canonical time-based filtering into the map feed so the frontend and backend agree exactly on what event windows are shown.
+Requirements:
+   * Support preset windows:
+   * now
+   * tonight
+   * tomorrow
+   * thisWeekend
+   * custom
+   * Define backend query contract for temporal filtering
+   * Define frontend filter state model aligned to backend
+   * Ensure map reloads deterministically on filter changes
+   * Preserve selected event behavior when filters change and selected event leaves scope
+Deliver:
+   1. TimeWindowPreset enum in C# and TypeScript
+   2. MapFeedQuery DTO with temporal fields
+   3. Frontend filter composable
+   4. Backend controller/query binding example
+   5. Rules for when selection clears or persists
+   6. Example filter UI component using Quasar
+Rules:
+   * Frontend and backend must not derive different window semantics
+   * Timezone handling must be explicit
+   * Custom range must validate before request dispatch
+   * Temporal filtering must apply to both map and downstream calendar overlay contracts
+Constraints:
+   * No relative-date guessing in UI without backend alignment
+   * No duplicated time logic across components
+   * Must be unit-testable on both client and server
+Output:
+   * Full C# enums/DTOs
+   * Full TS enums/interfaces
+   * Vue composable + filter component scaffold
+   * Comments explaining temporal contract alignment and selection behavior
+________________
+
+
+M5-P25 — Optimize Map Performance and Rendering Latency v1.0
+You are implementing performance and rendering discipline for a production-grade map-first event discovery application.
+Objective:
+Optimize the map surface so event loading, marker rendering, filter changes, and detail interactions remain responsive under MVP load.
+Requirements:
+   * Reduce unnecessary rerenders
+   * Debounce viewport-driven fetches
+   * Cache recent query results safely
+   * Avoid full marker re-creation on trivial state changes
+   * Support loading, empty, and degraded states explicitly
+   * Define performance instrumentation points
+Deliver:
+   1. Frontend composable or service optimizations for map feed fetching
+   2. Debounced viewport query logic
+   3. Marker diff/update strategy
+   4. Loading state model
+   5. Instrumentation hooks for:
+   * map feed request duration
+   * marker render count
+   * detail open latency
+   6. Backend considerations for efficient map query responses
+Rules:
+   * No fake performance through stale or misleading data
+   * Cache keys must include temporal + spatial query dimensions
+   * Empty state must be explicit, not treated as failure
+   * Performance optimization must not break correctness
+Constraints:
+   * No premature overengineering
+   * No infinite fetch loops tied to reactive map state
+   * Keep logic understandable and testable
+Output:
+   * Vue 3 composable/service code
+   * Example backend response shaping guidance
+   * Instrumentation examples
+   * Comments explaining fetch strategy, caching boundaries, and rendering tradeoffs
+________________
+
+
+M6-P26 — Implement Calendar Overlay Layer Architecture v1.0
+You are implementing the calendar overlay architecture for a production-grade map-first event discovery application.
+Objective:
+Build the calendar overlay as a layered temporal interface on top of the map, not as a separate disconnected page.
+Requirements:
+   * Calendar overlay must be synchronized with map state
+   * Overlay opens above map while preserving spatial continuity
+   * Support layered states:
+   * closed
+   * partial overlay
+   * expanded overlay
+   * event-selected overlay
+   * Define backend contract for calendar feed items
+   * Use Vue 3 + Quasar with clean component boundaries
+Deliver:
+   1. Backend DTO for CalendarEventItemDto
+   2. API contract for calendar feed query
+   3. Frontend TS interfaces
+   4. Vue components for:
+   * CalendarOverlayShell
+   * CalendarTimelineHeader
+   * CalendarEventGrid
+   5. Overlay state model/composable
+   6. Rules for interaction with map selection state
+Rules:
+   * Calendar is an alternate temporal projection of the same canonical events
+   * Map remains present beneath the overlay
+   * Event identity must remain consistent across map and calendar
+   * Overlay states must be deterministic and finite
+Constraints:
+   * No separate route required for core overlay behavior
+   * No feed-style scrolling substitute for temporal structure
+   * No divergence between map event contract and calendar event contract
+Output:
+   * Full backend DTO/API shapes
+   * Full TS interfaces
+   * Vue scaffolding for overlay architecture
+   * Comments explaining state layers and map/calendar synchronization
+________________
+
+
+M6-P27 — Build Masonry Event Layout and Time-Slot Packing v1.0
+You are implementing the event layout engine for a production-grade calendar overlay in a map-first discovery application.
+Objective:
+Render events in a masonry-like temporal layout that packs events into visible time structures without visual collapse or overlap confusion.
+Requirements:
+   * Accept canonical calendar event items
+   * Group events into time buckets
+   * Pack event cards into a masonry/bin-packing style layout
+   * Handle:
+   * overlapping events
+   * simultaneous start times
+   * sparse periods
+   * dense periods
+   * Preserve click target clarity and readable density
+Deliver:
+   1. Time bucket model
+   2. Layout computation utility/composable
+   3. Vue component for CalendarEventGrid
+   4. Event card component contract
+   5. Rules for dense-period handling and overflow signaling
+Rules:
+   * Layout must remain deterministic for the same input
+   * Dense periods must not destroy readability
+   * Events must remain selectable by canonical eventId
+   * Layout logic must not silently reorder events in semantically confusing ways
+Constraints:
+   * No pseudo-random packing
+   * No collapsing all dense windows into useless stacks
+   * Keep implementation testable and separable from rendering
+Output:
+   * TypeScript layout utilities
+   * Vue component scaffolding
+   * Comments explaining bucket logic, packing rules, and density tradeoffs
+________________
+
+
+M6-P28 — Sync Calendar Overlay with Map State v1.0
+You are implementing state synchronization between the map surface and calendar overlay for a production-grade event discovery application.
+Objective:
+Ensure that map state, calendar state, filter state, and selected event state remain consistent and predictable across overlay transitions.
+Requirements:
+   * Shared state must include:
+   * selected eventId
+   * active temporal filter
+   * active district/category filters
+   * visible event set reference
+   * overlay mode
+   * Define synchronization rules for:
+   * marker click → calendar highlight
+   * calendar click → map selection
+   * filter change → both surfaces refresh
+   * selected event removed from scope → selection reset or fallback
+   * Use Vue composables/store discipline
+Deliver:
+   1. Shared state model
+   2. useDiscoveryState composable or equivalent store
+   3. Synchronization methods and event handlers
+   4. Clear state transition rules
+   5. Examples of component integration points
+Rules:
+   * There must be one source of truth for selected event state
+   * Calendar and map must not compete for ownership
+   * State transitions must be explicit and testable
+   * No hidden watcher loops that mutate each other recursively
+Constraints:
+   * Avoid overcoupled components
+   * Avoid duplicated filter state across map and calendar
+   * Keep it production-readable
+Output:
+   * TypeScript composable/store code
+   * Example component integration
+   * Comments explaining synchronization invariants and anti-loop protections
+________________
+
+
+M6-P29 — Implement Temporal Navigation and Scrubbing Controls v1.0
+You are implementing temporal navigation controls for a production-grade map-plus-calendar event discovery application.
+Objective:
+Create a temporal navigation system that allows users to move across event windows using presets, date shifts, and scrubbing interactions while staying aligned with backend time semantics.
+Requirements:
+   * Support:
+   * preset buttons
+   * date step forward/back
+   * timeline scrub interaction
+   * reset to now
+   * Align control output to canonical TimeWindowPreset / custom range contracts
+   * Drive both map and calendar queries from the same temporal navigation state
+   * Provide accessible and visibly understandable interactions
+Deliver:
+   1. Vue component for TemporalNavigationControls
+   2. TS state/composable integration with shared discovery state
+   3. Scrubbing logic
+   4. Backend query examples showing how controls map to API requests
+   5. Guardrails for invalid ranges and window transitions
+Rules:
+   * Controls must not invent time windows independent of backend logic
+   * Scrubbing must have bounded, understandable semantics
+   * State changes must be debounced where appropriate
+   * Selected event behavior under temporal shift must be defined explicitly
+Constraints:
+   * No overly decorative time control without operational clarity
+   * No duplicated date logic in multiple components
+   * Keep controls usable on mobile viewport sizes
+Output:
+   * Vue 3 + Quasar component scaffold
+   * TS composable logic
+   * Example API query mapping
+   * Comments explaining time navigation semantics and UX constraints
+________________
+
+
+M6-P30 — Optimize Calendar Interaction and Transition States v1.0
+You are implementing interaction polish and transition discipline for a production-grade calendar overlay in a map-first event discovery application.
+Objective:
+Optimize calendar overlay transitions, event selection interactions, and panel motion so the temporal interface feels responsive, readable, and operationally clear.
+Requirements:
+   * Define transition states for:
+   * overlay open
+   * overlay close
+   * partial to expanded
+   * event select
+   * event deselect
+   * filter refresh
+   * Keep motion finite, ambient, and non-disorienting
+   * Ensure performance remains acceptable during transitions
+   * Preserve user orientation relative to the map beneath
+Deliver:
+   1. Transition state model
+   2. Vue transition wrappers or motion integration guidance
+   3. Loading/degraded/empty interaction states
+   4. Selection transition rules
+   5. Comments describing where motion should stop and where clarity takes precedence
+Rules:
+   * Motion must support comprehension, not distract from event discovery
+   * No infinite or excessive animation loops
+   * Empty and loading states must be explicit
+   * Transition logic must not break state synchronization with map
+Constraints:
+   * No cinematic excess at the expense of usability
+   * No feed-like behavior hidden behind transition tricks
+   * Keep implementation maintainable
+Output:
+   * Vue transition scaffolding
+   * State diagrams or inline transition comments
+   * Recommendations for motion discipline within Quasar/Vue
+________________
+
+
+Execution Order
+M5-P21 → M5-P22 → M5-P23 → M5-P24 → M5-P25
+M6-P26 → M6-P27 → M6-P28 → M6-P29 → M6-P30
+
+
+What these bundles produce
+After M5 + M6, you should have:
+   * canonical backend contracts for map + calendar feeds
+   * Vue/Quasar map surface aligned to .NET DTOs
+   * marker rendering + clustering
+   * event detail modal flow
+   * calendar overlay architecture
+   * temporal navigation and synchronized discovery state
+What should come after this
+The correct next move is either:
+   * M4 Canonical Event System hardening, if contracts are still drifting
+or
+   * M7 Save System and User Context, if discovery retention is the next priority
+Bundle M7 — Save System and User Context v1.0
+Below are production-grade, copy-paste prompts for the save system and lightweight user context layer, aligned across Vue 3 + Quasar frontend and .NET 8 backend contracts.
+________________
+
+
+M7-P31 — Implement Save and Unsave Event Functionality v1.0
+You are implementing the event save and unsave capability for a production-grade Vue 3 + Quasar frontend with a .NET 8 backend.
+Objective:
+Build a deterministic save/unsave system for canonical events that works for both authenticated users and anonymous fallback mode, with explicit boundaries between UI state and persistence state.
+Requirements:
+      * Define backend DTOs and endpoint contracts for:
+      * save event
+      * unsave event
+      * get saved state by eventId
+      * Define TypeScript interfaces aligned to backend DTOs
+      * Implement Vue composable/service for save/unsave behavior
+      * Wire saved state to:
+      * map marker state
+      * event detail modal
+      * saved events list surfaces
+      * Use canonical eventId only
+Deliver:
+      1. C# DTOs:
+      * SaveEventRequestDto
+      * SaveEventResponseDto
+      * UnsaveEventRequestDto
+      * SavedStateDto
+      2. Backend endpoint contract examples
+      3. TS interfaces aligned to DTOs
+      4. Vue composable for save state mutations
+      5. Example save button component or integration snippet
+      6. Error handling and optimistic update strategy
+Rules:
+      * Save state must reflect actual persistence result, not a fake local toggle
+      * No direct UI mutation without mutation result handling
+      * Canonical eventId is the only identifier for save ownership
+      * Backend and frontend must agree on saved-state truth model
+Constraints:
+      * No ticketing or checkout logic
+      * No social or collaborative saved-state features
+      * No mock-first fallback hidden in production paths
+Output:
+      * Full C# DTOs and endpoint contract shapes
+      * Full TS interfaces
+      * Vue composable/service code
+      * Comments explaining persistence truth, optimistic update rollback, and eventId invariants
+________________
+
+
+M7-P32 — Define Local Persistence Model for Anonymous Users v1.0
+You are implementing anonymous local persistence for a production-grade event discovery application.
+Objective:
+Define a local persistence model for anonymous users that stores saved events and lightweight discovery context without pretending to be the system of record.
+Requirements:
+      * Store anonymous saved events locally
+      * Store lightweight discovery context such as:
+      * last viewed district
+      * last temporal filter
+      * recent map viewport
+      * Define a strict browser storage schema
+      * Add expiration/versioning strategy
+      * Make local persistence explicitly separate from authenticated backend persistence
+Deliver:
+      1. TypeScript interfaces for:
+      * AnonymousSavedState
+      * AnonymousDiscoveryContext
+      * LocalStorageEnvelope
+      2. Storage key strategy
+      3. Versioning and migration rules
+      4. Local persistence service/composable
+      5. Guardrails for corrupted local state handling
+Rules:
+      * Local state is convenience state, not system-of-record truth
+      * Corrupt or invalid local state must be discarded safely
+      * Local persistence must be schema-versioned
+      * No hidden coupling between anonymous state and authenticated state
+Constraints:
+      * Browser-only persistence
+      * No silent merge into backend
+      * No long-lived assumptions without version checks
+Output:
+      * Full TS interfaces
+      * Vue composable/service code
+      * Storage strategy and validation helpers
+      * Comments explaining local-vs-authoritative boundaries and migration handling
+________________
+
+
+M7-P33 — Implement Auth-Ready Save State Migration Path v1.0
+You are implementing the save-state migration path from anonymous local persistence to authenticated backend persistence for a production-grade event discovery application.
+Objective:
+Create a deterministic migration path that allows anonymous saved events and lightweight context to be reconciled into authenticated user state without duplicate corruption or split-brain ownership.
+Requirements:
+      * Define migration strategy for:
+      * saved event IDs
+      * local discovery context
+      * Support migration trigger on sign-in
+      * Prevent duplicate saves during migration
+      * Preserve user intent where possible
+      * Make migration explicit and auditable
+Deliver:
+      1. Backend DTOs and endpoint shape for save-state migration
+      2. TypeScript interfaces aligned to migration contract
+      3. Migration service/composable
+      4. Conflict resolution rules:
+      * local saved + backend saved
+      * local saved + backend absent
+      * invalid local eventId
+      5. Migration result model with counts and status
+Rules:
+      * Migration must be one-way into authenticated ownership
+      * No silent partial migration without reporting
+      * Duplicate event IDs must collapse deterministically
+      * Invalid or missing local IDs must not poison backend state
+Constraints:
+      * No magical cross-device reconciliation beyond contract scope
+      * No destructive delete of local state until migration result is confirmed
+      * Keep migration logic testable and idempotent
+Output:
+      * Full C# DTOs and endpoint contract shape
+      * Full TS interfaces
+      * Migration composable/service code
+      * Comments explaining migration invariants, idempotency, and conflict handling
+________________
+
+
+M7-P34 — Build User Context and Preference Tracking v1.0
+You are implementing lightweight user context and preference tracking for a production-grade event discovery application.
+Objective:
+Create a minimal but coherent user context model that tracks discovery preferences and interaction state relevant to the MVP.
+Requirements:
+      * Track:
+      * preferred districts
+      * preferred categories
+      * preferred temporal presets
+      * last-used map state
+      * saved count summary
+      * Define backend-ready preference contract
+      * Define frontend state model and composable
+      * Keep preferences separate from ephemeral UI-only component state
+Deliver:
+      1. C# DTOs for user preferences/context
+      2. TS interfaces aligned to DTOs
+      3. Vue composable for user context
+      4. Update methods for preference changes
+      5. Example integration points with:
+      * map discovery filters
+      * calendar overlay filters
+      * saved events surfaces
+Rules:
+      * Context must support anonymous and authenticated modes with explicit ownership
+      * Preferences are not raw analytics exhaust
+      * UI-only temporary state must not leak into persisted preferences
+      * Category/district preferences must use canonical values, not arbitrary strings
+Constraints:
+      * No recommendation engine
+      * No behavioral profiling complexity
+      * No feed-ranking dependency
+Output:
+      * Full C# DTOs
+      * Full TS interfaces
+      * Vue composable/store code
+      * Comments explaining preference ownership, persistence boundaries, and canonical taxonomy usage
+________________
+
+
+M7-P35 — Create Saved Events Retrieval and Display Logic v1.0
+You are implementing saved events retrieval and display logic for a production-grade event discovery application.
+Objective:
+Build the retrieval flow and UI logic for displaying saved events consistently across authenticated and anonymous contexts.
+Requirements:
+      * Define backend API contract for retrieving saved events
+      * Define TS interfaces aligned to backend DTOs
+      * Build Vue composable/service for loading saved events
+      * Support display surfaces:
+      * saved list panel
+      * saved count badge
+      * saved markers on map
+      * Ensure saved event retrieval uses canonical normalized event data
+Deliver:
+      1. C# DTOs for saved event list response
+      2. Endpoint contract for saved event retrieval
+      3. TS interfaces aligned to DTOs
+      4. Vue composable/service for saved events loading
+      5. Example Vue component scaffold for a saved events panel/list
+      6. Empty, loading, and degraded state handling
+Rules:
+      * Saved event retrieval must not depend on raw local shapes when authenticated
+      * Saved list items must resolve from canonical event data
+      * Missing/deleted saved events must be handled explicitly
+      * Saved surfaces must remain consistent with current save state mutations
+Constraints:
+      * No recommendation logic in saved list
+      * No social sharing or collaborative lists
+      * Keep display logic compatible with both map and calendar workflows
+Output:
+      * Full C# DTOs and endpoint contract shapes
+      * Full TS interfaces
+      * Vue composable/service code
+      * Vue component scaffold
+      * Comments explaining retrieval consistency, deleted-event handling, and save-state coherence
+________________
+
+
+Execution Order
+M7-P31 → M7-P32 → M7-P33 → M7-P34 → M7-P35
+
+
+What M7 produces
+After M7, you should have:
+      * deterministic save/unsave behavior
+      * anonymous local persistence with schema discipline
+      * authenticated migration path
+      * lightweight user context and preferences
+      * saved event retrieval and display surfaces
+What should come after M7
+The correct next move is one of these:
+      * M8 Temporal Semantics Engine, if time filtering still has ambiguity
+      * M10 Ingestion Observability and Telemetry, if you need operational visibility before broader use
+      * full vertical slice wiring across M1 + M2 + M3 + M5 + M6 + M7
+Next: I can generate M8 Temporal Semantics Engine prompts in the same format.
+Bundle M8 — Temporal Semantics Engine v1.0
+Below are production-grade, copy-paste prompts for the temporal semantics engine, aligned across .NET 8 backend contracts, Vue 3 + Quasar frontend state, and the map/calendar discovery surfaces.
+________________
+
+
+M8-P36 — Define Canonical Time Window Semantics v1.0
+You are implementing the canonical temporal semantics model for a production-grade event discovery system using .NET 8 on the backend and Vue 3 + Quasar on the frontend.
+Objective:
+Define a single authoritative time-window model so the frontend and backend interpret discovery windows identically.
+Requirements:
+      * Define canonical window types:
+      * Now
+      * Tonight
+      * Tomorrow
+      * ThisWeekend
+      * Next24Hours
+      * Next48Hours
+      * CustomRange
+      * Define exact semantic meaning for each window
+      * Define how windows are resolved relative to:
+      * market timezone
+      * request timestamp
+      * explicit custom range input
+      * Define a backend-first contract so frontend does not invent its own time meaning
+Deliver:
+      1. C# enum for TimeWindowPreset
+      2. C# record for ResolvedTimeWindow
+      3. TypeScript enum/interface aligned to backend
+      4. Canonical semantic rules for each preset
+      5. Validation rules for invalid ranges and unsupported combinations
+      6. Comments documenting invariants and market-timezone assumptions
+Rules:
+      * Time window meaning must be explicit and deterministic
+      * Frontend and backend must not each resolve windows independently in different ways
+      * All relative windows must be resolved against an explicit timezone-aware reference instant
+      * CustomRange must always resolve to explicit UTC bounds
+Constraints:
+      * No silent browser-local timezone assumptions
+      * No duplicated time-window rule sets across components
+      * Must be unit-testable and contract-testable
+Output:
+      * Full C# enums/records
+      * Full TypeScript enums/interfaces
+      * Clear semantic documentation in comments
+      * Example resolved outputs for each preset
+________________
+
+
+M8-P37 — Implement “Tonight,” “Weekend,” and Rolling Window Logic v1.0
+You are implementing the temporal window resolution engine for a production-grade event discovery system.
+Objective:
+Build deterministic logic for resolving relative discovery presets such as Tonight, Tomorrow, ThisWeekend, Next24Hours, and Next48Hours into explicit UTC ranges.
+Requirements:
+      * Implement ITimeWindowResolver interface
+      * Resolve all relative presets using:
+      * reference instant
+      * market timezone
+      * canonical preset rules
+      * Support:
+      * Tonight
+      * Tomorrow
+      * ThisWeekend
+      * Next24Hours
+      * Next48Hours
+      * Define edge-case behavior for:
+      * late-night requests
+      * weekend boundary transitions
+      * daylight saving transitions
+      * invalid timezone input
+Deliver:
+      1. ITimeWindowResolver interface
+      2. TimeWindowResolver implementation
+      3. Resolution methods per preset
+      4. Unit-test-ready helper methods
+      5. Explicit examples for Houston-style market-timezone use
+Rules:
+      * “Tonight” must not be vague; define exact start/end behavior
+      * “ThisWeekend” must have exact day/time boundaries
+      * Rolling windows must use exact duration math, not fuzzy calendar logic
+      * DST transitions must not silently distort intended window bounds
+Constraints:
+      * Must use DateTimeOffset / timezone-aware backend logic
+      * No frontend-only derivation of preset bounds
+      * No hidden fallback to server local timezone
+Output:
+      * Full C# implementation
+      * Comments explaining edge-case handling and weekend/tonight semantics
+      * Example unit test cases
+________________
+
+
+M8-P38 — Normalize Timezone Handling Across System Layers v1.0
+You are implementing timezone normalization for a production-grade event discovery system.
+Objective:
+Create a consistent timezone handling model across ingestion, canonical event storage, backend query resolution, and frontend display.
+Requirements:
+      * Define a single timezone policy for:
+      * event storage
+      * event querying
+      * event display
+      * time window resolution
+      * Use UTC as canonical storage time
+      * Preserve market timezone context for display and preset resolution
+      * Define frontend formatting rules aligned to backend semantics
+      * Define handling for events with incomplete timezone certainty during ingestion
+Deliver:
+      1. C# timezone policy documentation in code comments and supporting types if needed
+      2. TypeScript display model and formatting helper contract
+      3. Backend rules for UTC storage + market timezone projection
+      4. Frontend date formatting utility contract
+      5. Rules for incomplete or ambiguous event time inputs
+Rules:
+      * Canonical event time storage must be UTC
+      * Public display must respect market/event timezone semantics
+      * Ingestion ambiguity must not be hidden behind false precision
+      * Frontend must not reinterpret already-normalized UTC values as raw local timestamps
+Constraints:
+      * No mixed storage strategy
+      * No dependence on browser locale as source-of-truth for event semantics
+      * Must align map, calendar, detail modal, and filters
+Output:
+      * C# supporting types and policy comments
+      * TypeScript interfaces/helpers
+      * Examples showing UTC storage and local market display conversion
+________________
+
+
+M8-P39 — Synchronize Temporal Logic Between Frontend and Backend v1.0
+You are implementing temporal contract synchronization for a production-grade event discovery application using .NET 8 and Vue 3 + Quasar.
+Objective:
+Ensure that frontend filter state, calendar overlay state, and backend discovery queries all use the same temporal contract with no silent drift.
+Requirements:
+      * Define a shared contract for temporal queries:
+      * preset
+      * fromUtc
+      * toUtc
+      * marketTimezone
+      * referenceInstantUtc
+      * Align frontend filter composables to backend DTOs
+      * Prevent duplicate temporal rule logic across components
+      * Support both preset-driven and custom-range-driven queries
+      * Define how selected event behavior responds when temporal scope changes
+Deliver:
+      1. C# DTO for TemporalQueryDto
+      2. TS interface aligned to DTO
+      3. Vue composable for temporal state
+      4. Backend controller/query binding example
+      5. Contract drift prevention guidance
+      6. Example state flow for map + calendar + saved views
+Rules:
+      * Backend owns authoritative window resolution
+      * Frontend may request presets or explicit custom ranges, but must not invent separate semantics
+      * Contract must be usable by map feed, calendar feed, and saved-event retrieval
+      * Selection-reset behavior must be explicit when event leaves current time scope
+Constraints:
+      * No duplicated preset logic in multiple Vue components
+      * No hidden conversion from local display values to query values without validation
+      * Must be compatible with contract tests
+Output:
+      * Full C# DTO
+      * Full TS interface
+      * Vue composable/store code
+      * Comments explaining ownership boundaries and anti-drift rules
+________________
+
+
+M8-P40 — Validate Temporal Edge Cases and Boundary Conditions v1.0
+You are implementing temporal edge-case validation and test coverage for a production-grade event discovery system.
+Objective:
+Create a deterministic validation and test layer that proves the temporal semantics engine behaves correctly at boundaries and under ambiguous conditions.
+Requirements:
+      * Define validation rules for:
+      * invalid custom ranges
+      * end before start
+      * unsupported timezone
+      * null preset with no explicit range
+      * preset + conflicting explicit range
+      * Create test coverage for:
+      * midnight rollover
+      * late-night “Tonight” requests
+      * Friday/Saturday/Sunday weekend boundaries
+      * DST forward shift
+      * DST backward shift
+      * cross-day event rendering
+      * events near query boundary edges
+      * Include both backend unit tests and frontend contract-awareness examples
+Deliver:
+      1. C# validation service or helper
+      2. Unit test matrix for temporal edge cases
+      3. TS validation helpers where necessary
+      4. Example contract test scenarios
+      5. Expected pass/fail outcomes for each edge case
+Rules:
+      * Boundary behavior must be documented and test-backed
+      * Invalid ranges must fail explicitly, not self-correct silently
+      * Event inclusion/exclusion at boundaries must be deterministic
+      * DST behavior must be defined, not left to incidental library behavior alone
+Constraints:
+      * No fuzzy “best guess” handling for invalid input
+      * Keep validation logic production-readable
+      * Must support future regression testing
+Output:
+      * C# validation helpers and test scaffolds
+      * TS validation helpers if needed
+      * Clear edge-case table in comments or test names
+      * Comments explaining exact inclusion/exclusion rules
+________________
+
+
+Execution Order
+M8-P36 → M8-P37 → M8-P38 → M8-P39 → M8-P40
+
+
+What M8 produces
+After M8, you should have:
+      * canonical preset semantics
+      * deterministic window resolution
+      * unified timezone policy
+      * aligned frontend/backend temporal contracts
+      * edge-case validation and regression coverage
+What should come after M8
+The correct next move is usually one of these:
+      * M9 Spatial Semantics and City Modeling, if district and market semantics still drift
+      * M10 Ingestion Observability and Telemetry, if ingestion quality needs operational visibility
+      * full vertical slice wiring, if you now want the MVP path fully stitched together end-to-end
+Bundle M9 — Spatial Semantics and City Modeling v1.0
+Below are production-grade, copy-paste prompts for spatial semantics and city modeling, aligned across .NET 8 backend contracts, Vue 3 + Quasar frontend filters, and the map/calendar discovery surfaces.
+________________
+
+
+M9-P41 — Define Market, District, and Neighborhood Model v1.0
+You are implementing the spatial domain model for a production-grade event discovery system using .NET 8 on the backend and Vue 3 + Quasar on the frontend.
+Objective:
+Define a canonical spatial semantics model for market, district, and neighborhood so the entire system uses one authoritative geographic taxonomy.
+Requirements:
+      * Define the spatial hierarchy:
+      * Market
+      * District
+      * Neighborhood
+      * Establish canonical identifiers, display names, slugs, and parent-child relationships
+      * Support Houston Phase 0 as the initial market
+      * Define how events reference spatial entities
+      * Define how filters and queries use spatial entities
+      * Distinguish clearly between:
+      * user-facing labels
+      * canonical IDs/slugs
+      * internal geometry or boundary references
+Deliver:
+      1. C# records/entities for:
+      * Market
+      * District
+      * Neighborhood
+      2. TypeScript interfaces aligned to backend DTOs
+      3. Spatial taxonomy rules and parent-child invariants
+      4. Example seed data structure for Houston Phase 0
+      5. Guidelines for how EventAggregate should reference spatial semantics
+      6. Comments documenting the difference between market, district, and neighborhood semantics
+Rules:
+      * District and neighborhood must not be treated as freeform strings
+      * One event must resolve to one canonical market and zero-or-one canonical district/neighborhood records according to current confidence
+      * User-facing display labels must not become the source of truth
+      * Spatial taxonomy must be stable and versionable
+Constraints:
+      * No placeholder hacks such as mapping district to city name
+      * No raw frontend-only district lists independent of backend truth
+      * Must support future expansion to additional markets without breaking Houston
+Output:
+      * Full C# contracts/entities
+      * Full TypeScript interfaces
+      * Example Houston seed taxonomy
+      * Comments explaining hierarchy, IDs, slugs, and event linkage rules
+________________
+
+
+M9-P42 — Implement Geo Validation and Coordinate Integrity v1.0
+You are implementing geospatial validation and coordinate integrity controls for a production-grade event discovery system.
+Objective:
+Ensure that event coordinates, addresses, and spatial references are valid, bounded, and safe to use in map and discovery queries.
+Requirements:
+      * Define canonical GeoPoint contract
+      * Validate latitude and longitude ranges
+      * Detect missing, zeroed, or obviously invalid coordinates
+      * Define confidence-aware location integrity rules for ingestion output
+      * Support validation of:
+      * event coordinates
+      * viewport coordinates
+      * bbox query parameters
+      * Distinguish:
+      * valid coordinate
+      * valid but low-confidence coordinate
+      * invalid coordinate
+      * missing coordinate
+Deliver:
+      1. C# GeoPoint record
+      2. IGeoValidationService interface
+      3. GeoValidationService implementation
+      4. Validation result contracts
+      5. TypeScript interfaces/helpers for client-side guardrails where appropriate
+      6. Rules for when an event may appear on map versus requiring moderation or fallback treatment
+Rules:
+      * Invalid coordinates must never silently render on the map
+      * Missing coordinates must not default to arbitrary city center
+      * Coordinate validation must be deterministic and explicit
+      * Ingestion confidence must influence downstream spatial trust
+Constraints:
+      * No hidden geocoding assumptions in validation stage
+      * No frontend-only recovery logic that bypasses backend truth
+      * Must be unit-testable and reusable across ingestion, API, and UI guardrails
+Output:
+      * Full C# implementation
+      * Supporting TypeScript helpers if needed
+      * Comments explaining integrity categories and rendering eligibility rules
+________________
+
+
+M9-P43 — Build Spatial Query Semantics and Filtering Logic v1.0
+You are implementing canonical spatial query semantics for a production-grade event discovery application using .NET 8 and Vue 3 + Quasar.
+Objective:
+Define and implement consistent spatial filtering behavior across map feed, calendar feed, and saved discovery surfaces.
+Requirements:
+      * Support query dimensions:
+      * marketId
+      * districtIds
+      * neighborhoodIds
+      * bbox
+      * proximity-ready seam if needed
+      * Define how filters interact when multiple spatial dimensions are present
+      * Establish precedence and validation rules for:
+      * bbox-only queries
+      * market + district queries
+      * district + neighborhood combinations
+      * invalid or conflicting spatial combinations
+      * Ensure frontend filter state aligns exactly to backend query DTOs
+Deliver:
+      1. C# SpatialQueryDto
+      2. TypeScript interface aligned to DTO
+      3. Backend validation rules for spatial query combinations
+      4. Frontend composable/filter model for spatial filters
+      5. Example controller/query-binding usage
+      6. Rules for empty results, invalid filters, and conflicting filters
+Rules:
+      * Spatial filters must not be treated as loose strings
+      * Backend must own authoritative query interpretation
+      * Bbox queries and taxonomy filters must have explicit composition rules
+      * Invalid combinations must fail or normalize explicitly, not ambiguously
+Constraints:
+      * No duplicate filter logic spread across components
+      * No hidden fallback from district filter to raw text matching
+      * Must align map, calendar, and saved views to one spatial contract
+Output:
+      * Full C# DTO and validation scaffolding
+      * Full TypeScript interface/composable scaffold
+      * Comments explaining filter precedence, composition rules, and invalid query handling
+________________
+
+
+M9-P44 — Design Cluster-Ready Spatial Response Structures v1.0
+You are implementing cluster-ready spatial response structures for a production-grade map-first event discovery system.
+Objective:
+Design backend and frontend contracts that support current event marker rendering while preserving a clean upgrade path to richer clustering and spatial aggregation.
+Requirements:
+      * Define spatial response structures for:
+      * single event marker
+      * grouped/cluster-ready marker envelope
+      * metadata for visible area summaries if needed
+      * Preserve canonical event identity for single-event cases
+      * Allow cluster response structure to coexist with current event-item rendering
+      * Support future server-side clustering without breaking frontend contracts
+Deliver:
+      1. C# DTOs for:
+      * SpatialFeedResponseDto
+      * EventSpatialItemDto
+      * ClusterSpatialItemDto
+      2. TypeScript interfaces aligned to DTOs
+      3. Rules for when a response item is a cluster vs single event
+      4. Frontend type guards / rendering helpers
+      5. Comments documenting upgrade path from frontend clustering to server-aware clustering
+Rules:
+      * Cluster responses must never obscure canonical event identity for single items
+      * Response structures must be explicit, not polymorphic by accident
+      * Saved/selected state must remain interpretable under clustering
+      * Spatial response model must remain compatible with temporal filtering contracts
+Constraints:
+      * No random aggregation behavior
+      * No contract shape drift between frontend and backend
+      * Keep structures readable and testable
+Output:
+      * Full C# DTOs
+      * Full TypeScript interfaces and type guards
+      * Comments explaining clustering readiness, identity preservation, and response semantics
+________________
+
+
+M9-P45 — Document Houston Phase 0 Spatial Model v1.0
+You are creating the authoritative Houston Phase 0 spatial model document for a production-grade event discovery system.
+Objective:
+Produce a single canonical specification that explains how Houston market boundaries, districts, neighborhoods, and spatial query semantics must be represented across ingestion, canonical event storage, backend APIs, and frontend discovery UI.
+Requirements:
+      * Document:
+      * Houston Phase 0 market definition
+      * district taxonomy
+      * neighborhood taxonomy policy
+      * event-to-spatial resolution rules
+      * filter/query semantics
+      * coordinate integrity rules
+      * fallback behavior for uncertain spatial assignments
+      * Make the document implementation-oriented, not aspirational
+      * Ensure the document aligns with M9-P41 through M9-P44 outputs
+Deliver:
+      1. A pasteable markdown document named:
+WEUP_HOUSTON_PHASE0_SPATIAL_MODEL_v1.md
+      2. Sections covering:
+         * purpose
+         * canonical entities
+         * IDs and slugs
+         * hierarchy
+         * query semantics
+         * event linkage rules
+         * moderation implications
+         * future expansion notes
+         3. Example Houston taxonomy entries
+         4. Example event resolution scenarios
+         5. Spatial edge-case examples
+Rules:
+         * This document must be the single authority for Houston Phase 0 spatial semantics
+         * It must be specific enough to drive implementation and tests
+         * It must avoid vague “city vibes” language
+         * It must clearly separate canonical taxonomy from UI presentation and ingestion confidence
+Constraints:
+         * No speculative multi-city architecture essay
+         * No reliance on undocumented tribal knowledge
+         * Keep it implementation-ready and testable
+Output:
+         * Full markdown specification
+         * Clearly sectioned headings
+         * Example tables where useful
+         * Comments only where they materially improve implementation clarity
+________________
+
+
+Execution Order
+M9-P41 → M9-P42 → M9-P43 → M9-P44 → M9-P45
+
+
+What M9 produces
+After M9, you should have:
+         * canonical market/district/neighborhood taxonomy
+         * validated coordinate integrity rules
+         * aligned spatial query contracts
+         * cluster-ready spatial response structures
+         * one authoritative Houston Phase 0 spatial spec
+What should come after M9
+The next rational move is usually:
+         * M10 Ingestion Observability and Telemetry, if you need operational visibility before broader rollout
+         * M11 Promoter Incentive and Abuse Protection, if promoter submissions are entering MVP scope now
+         * full vertical slice wiring, if you want the MVP stack stitched end-to-end from ingest to map/calendar/save
+Bundle M10 — Ingestion Observability and Telemetry v1.0
+Below are production-grade, copy-paste prompts for observability across the ingestion pipeline (M1 → M2 → M3), aligned with .NET 8 + OpenTelemetry + Prometheus/Grafana, and compatible with your deterministic runtime philosophy.
+________________
+
+
+M10-P46 — Implement Ingestion Metrics and Success Tracking v1.0
+You are implementing ingestion metrics and success tracking for a production-grade .NET 8 backend using OpenTelemetry and Prometheus.
+Objective:
+Define and emit core ingestion metrics that allow visibility into system health, throughput, and failure rates across the ingestion pipeline.
+Requirements:
+         * Track metrics for:
+         * ingestion_requests_total
+         * ingestion_jobs_completed_total
+         * ingestion_jobs_failed_total
+         * ingestion_success_rate (derived)
+         * ingestion_job_duration_ms (histogram)
+         * Tag metrics with:
+         * sourceType
+         * status
+         * market
+         * Integrate with OpenTelemetry Meter API
+         * Export metrics in Prometheus-compatible format
+Deliver:
+         1. C# MetricsService using OpenTelemetry
+         2. Meter + Counter + Histogram definitions
+         3. Instrumentation hooks in:
+         * IngestionOrchestrator
+         4. Example Prometheus metric output
+         5. Documentation comments on metric meaning
+Rules:
+         * Metrics must be emitted at every job lifecycle transition
+         * Success/failure must be explicit, not inferred indirectly
+         * Duration must measure full ingestion pipeline, not partial steps
+         * No silent failures without metric emission
+Constraints:
+         * No reliance on logs for core metrics
+         * Must be lightweight and low overhead
+         * Must work without full distributed tracing enabled
+Output:
+         * Full C# implementation
+         * Metric definitions + usage examples
+         * Comments explaining metric cardinality and usage
+________________
+
+
+M10-P47 — Add OCR and Normalization Telemetry v1.0
+You are implementing detailed telemetry for OCR and normalization stages in a production ingestion pipeline.
+Objective:
+Expose internal visibility into OCR extraction quality and normalization success rates to detect degradation early.
+Requirements:
+         * Track:
+         * ocr_extraction_success_rate
+         * ocr_confidence_avg
+         * normalization_success_rate
+         * field_extraction_completeness
+         * Emit metrics per field:
+         * title_extracted
+         * time_extracted
+         * venue_extracted
+         * Track distribution of confidence scores
+         * Integrate telemetry directly into:
+         * IOcrService implementation
+         * INormalizationEngine implementation
+Deliver:
+         1. Metric definitions and instrumentation hooks
+         2. Field-level extraction tracking model
+         3. Histogram for confidence distribution
+         4. Sample dashboard query definitions
+         5. Comments explaining how to interpret signal degradation
+Rules:
+         * Missing fields must be tracked explicitly, not silently ignored
+         * Confidence must be observable at aggregate level
+         * OCR and normalization must not share ambiguous metrics
+         * Field-level metrics must align with EventCandidate structure
+Constraints:
+         * No sampling for MVP (capture all events)
+         * No log-only visibility
+         * Keep overhead minimal
+Output:
+         * Full C# instrumentation code
+         * Metric naming conventions
+         * Comments explaining operational signals and thresholds
+________________
+
+
+M10-P48 — Track Deduplication and Merge Outcomes v1.0
+You are implementing observability for deduplication and merge outcomes in a production event ingestion system.
+Objective:
+Track how ingestion results interact with the deduplication engine to identify duplication rates, merge frequency, and ambiguity.
+Requirements:
+         * Track:
+         * dedup_assessment_total by level:
+         * ExactDuplicate
+         * ProbableDuplicate
+         * PossibleDuplicate
+         * Distinct
+         * merge_plans_created_total
+         * merge_auto_approved_total
+         * merge_requires_review_total
+         * merge_rejected_total
+         * Track conflict frequency by field:
+         * title_conflicts
+         * time_conflicts
+         * venue_conflicts
+         * Integrate instrumentation into:
+         * DeduplicationStrategy
+         * MergePlanner
+Deliver:
+         1. Metric definitions for dedup + merge
+         2. Instrumentation in M2 services
+         3. Conflict tracking model
+         4. Example Prometheus queries for:
+         * duplicate rate
+         * merge pressure
+         5. Comments explaining system health signals
+Rules:
+         * Duplicate classification must be observable at system level
+         * Merge conflicts must not be hidden
+         * Review pressure must be measurable
+         * Metrics must align with moderation queue workload
+Constraints:
+         * No ambiguous “dedup success” metric without breakdown
+         * No aggregation that hides edge-case conflicts
+         * Must remain deterministic and reproducible
+Output:
+         * Full C# instrumentation
+         * Metric definitions
+         * Comments explaining interpretation and thresholds
+________________
+
+
+M10-P49 — Monitor Moderation Throughput and Backlog v1.0
+You are implementing moderation observability for a production-grade event ingestion system.
+Objective:
+Track moderation queue health, throughput, and backlog to ensure safe publish flow does not degrade under load.
+Requirements:
+         * Track:
+         * moderation_queue_size
+         * moderation_items_processed_total
+         * moderation_items_pending_total
+         * moderation_processing_time_ms
+         * moderation_backlog_age_ms
+         * Track breakdown by:
+         * risk level
+         * moderation status
+         * Integrate instrumentation into:
+         * ModerationQueueService
+         * ModerationActionService
+Deliver:
+         1. Metric definitions for moderation system
+         2. Instrumentation in queue operations
+         3. Backlog age calculation logic
+         4. Example alert conditions:
+         * backlog exceeds threshold
+         * processing latency too high
+         5. Comments explaining moderation system health signals
+Rules:
+         * Backlog must be visible at all times
+         * Queue depth must be measurable by risk tier
+         * Processing time must reflect actual reviewer or system action time
+         * Moderation must not become a blind spot in ingestion pipeline
+Constraints:
+         * No reliance on UI inspection alone
+         * Must support automated alerting later
+         * Must be efficient under high ingestion rate
+Output:
+         * Full C# instrumentation
+         * Metric definitions and tags
+         * Comments explaining queue health interpretation
+________________
+
+
+M10-P50 — Create Ingestion Performance Dashboard v1.0
+You are designing the ingestion observability dashboard for a production-grade event discovery system using Prometheus and Grafana.
+Objective:
+Define a minimal but complete dashboard that gives immediate visibility into ingestion pipeline health, quality, and bottlenecks.
+Requirements:
+         * Dashboard must include:
+         * ingestion throughput
+         * success vs failure rate
+         * OCR confidence distribution
+         * normalization completeness
+         * dedup classification breakdown
+         * merge conflict frequency
+         * moderation queue size and backlog
+         * Provide example PromQL queries for each panel
+         * Define alert thresholds for:
+         * ingestion failure spike
+         * OCR degradation
+         * moderation backlog growth
+         * Keep dashboard focused on actionable signals
+Deliver:
+         1. Dashboard panel definitions
+         2. PromQL queries for each metric
+         3. Alert rule examples
+         4. Suggested layout structure
+         5. Comments explaining how to interpret each panel
+Rules:
+         * Dashboard must prioritize operational clarity over aesthetics
+         * No vanity metrics
+         * Every panel must map to a real decision or action
+         * Must support rapid debugging of ingestion failures
+Constraints:
+         * No over-complex dashboards for MVP
+         * Must align exactly with metrics defined in M10-P46–M10-P49
+         * Must be usable without deep tribal knowledge
+Output:
+         * Full dashboard specification (markdown or JSON-style)
+         * PromQL queries
+         * Comments explaining usage and expected ranges
+________________
+
+
+Execution Order
+M10-P46 → M10-P47 → M10-P48 → M10-P49 → M10-P50
+
+
+________________
+
+
+What M10 produces
+After M10, you will have:
+         * full ingestion pipeline observability
+         * OCR + normalization quality visibility
+         * dedup + merge transparency
+         * moderation queue health tracking
+         * actionable dashboard + alerting baseline
+________________
+
+
+What this unlocks
+You can now:
+Run real ingestion → detect failures → improve system → iterate safely
+
+
+Without:
+         * guessing why ingestion fails
+         * silent data degradation
+         * moderation bottlenecks going unnoticed
+________________
+
+
+Next
+You now have two viable next moves:
+1. Production Readiness
+         * Release gates
+         * SLO enforcement
+         * pilot readiness
+2. System Expansion
+         * M11 Promoter Incentive + Abuse Protection
+         * full vertical slice (end-to-end user flow)
+________________
+
+
+If you want the highest leverage next step, I recommend:
+Full Vertical Slice Wiring (M1–M10 → working system)
+
+
+I can generate that as a step-by-step execution plan + repo structure + endpoints + Vue integration.

@@ -1,0 +1,1641 @@
+﻿WeUP Phase 0 — Technical Requirements Document (TRD)
+Scope: Deep infrastructure, OCR pipeline, parser pipeline, geocoding flow, map-serving backend, and operational architecture
+Target Stack: .NET 8 + Vue 3 + Quasar + PostgreSQL + Redis + Object Storage + OCR/Parsing workers
+________________
+
+
+0. Document Intent
+This TRD defines the technical design for WeUP Phase 0, where the platform ingests flyer images and converts them into structured events rendered on a geospatial discovery UI.
+This document covers:
+* infrastructure topology
+* backend service decomposition
+* OCR ingestion pipeline
+* parsing and normalization pipeline
+* geocoding strategy
+* database design
+* queue/event model
+* observability and failure handling
+* starter code for .NET services and OCR worker integration
+This is the system-level execution spec for the MVP.
+________________
+
+
+1. Technical Objective
+Build a system that can:
+1. accept flyer uploads
+2. store originals securely
+3. run OCR on flyer content
+4. parse extracted text into structured event records
+5. geocode venue/address data
+6. persist normalized events
+7. expose query APIs for map/calendar rendering
+8. support human/admin correction when OCR/parsing confidence is low
+________________
+
+
+2. Architecture Overview
+2.1 Logical Topology
+[ Vue 3 + Quasar SPA ]
+          |
+          v
+[ WeUp.Api (.NET 8) ]
+          |
+          +----------------------------+
+          |                            |
+          v                            v
+[ PostgreSQL ]                   [ Redis ]
+          |
+          v
+[ Object Storage ]
+          |
+          v
+[ OCR Worker ]
+          |
+          v
+[ Parser / Normalizer Worker ]
+          |
+          v
+[ Geocoding Adapter ]
+          |
+          v
+[ Event Persistence + Query API ]
+
+
+________________
+
+
+2.2 Deployment Topology
+Client
+  |
+  v
+Reverse Proxy / Gateway
+  |
+  +--> WeUp.Api
+  +--> OCR Worker API / Background Consumer
+  +--> Parser Worker
+  +--> Admin API
+  |
+  +--> Postgres
+  +--> Redis
+  +--> Storage Provider
+
+
+________________
+
+
+3. Recommended Project Structure
+3.1 .NET Solution Layout
+src/
+  WeUp.Api/
+  WeUp.Application/
+  WeUp.Domain/
+  WeUp.Infrastructure/
+  WeUp.Contracts/
+  WeUp.Workers.Ocr/
+  WeUp.Workers.Parser/
+  WeUp.Admin.Api/
+tests/
+  WeUp.UnitTests/
+  WeUp.IntegrationTests/
+ops/
+  docker/
+  k8s/
+  scripts/
+
+
+________________
+
+
+3.2 Responsibility Boundaries
+WeUp.Api
+* upload endpoints
+* public event query endpoints
+* saved/bookmark endpoints
+* DTO mapping
+* auth boundary
+WeUp.Application
+* use cases
+* orchestration logic
+* validation
+* commands/queries
+WeUp.Domain
+* core entities
+* enums
+* business rules
+* confidence and state logic
+WeUp.Infrastructure
+* EF Core
+* storage adapters
+* OCR adapters
+* geocoding adapters
+* Redis cache
+* queue publisher/consumer
+WeUp.Workers.Ocr
+* consumes flyer ingestion jobs
+* downloads image
+* runs OCR
+* stores raw OCR output
+WeUp.Workers.Parser
+* parses OCR text
+* normalizes date/time/address
+* geocodes
+* creates/updates event record
+WeUp.Admin.Api
+* review queue
+* edit event details
+* approve/reject flagged records
+________________
+
+
+4. Core Domain Model
+________________
+
+
+4.1 FlyerIngestionJob
+Represents upload intake and processing state.
+public class FlyerIngestionJob
+{
+    public Guid Id { get; set; }
+    public Guid UploadId { get; set; }
+    public IngestionStatus Status { get; set; }
+    public int RetryCount { get; set; }
+    public string? FailureReason { get; set; }
+    public DateTime CreatedAtUtc { get; set; }
+    public DateTime? StartedAtUtc { get; set; }
+    public DateTime? CompletedAtUtc { get; set; }
+}
+
+
+________________
+
+
+4.2 FlyerUpload
+Stores original upload metadata.
+public class FlyerUpload
+{
+    public Guid Id { get; set; }
+    public string OriginalFileName { get; set; } = string.Empty;
+    public string StorageKey { get; set; } = string.Empty;
+    public string MimeType { get; set; } = string.Empty;
+    public long FileSizeBytes { get; set; }
+    public string UploadedByUserId { get; set; } = string.Empty;
+    public UploadSourceType SourceType { get; set; }
+    public DateTime CreatedAtUtc { get; set; }
+}
+
+
+________________
+
+
+4.3 OcrExtraction
+Stores raw OCR output and confidence.
+public class OcrExtraction
+{
+    public Guid Id { get; set; }
+    public Guid UploadId { get; set; }
+    public string RawText { get; set; } = string.Empty;
+    public string? StructuredJson { get; set; }
+    public decimal? AverageConfidence { get; set; }
+    public string EngineName { get; set; } = string.Empty;
+    public DateTime CreatedAtUtc { get; set; }
+}
+
+
+________________
+
+
+4.4 ParsedEventCandidate
+Intermediate normalized result prior to approval/merge.
+public class ParsedEventCandidate
+{
+    public Guid Id { get; set; }
+    public Guid UploadId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public DateTime? EventDateLocal { get; set; }
+    public TimeOnly? StartTimeLocal { get; set; }
+    public TimeOnly? EndTimeLocal { get; set; }
+    public string VenueName { get; set; } = string.Empty;
+    public string AddressRaw { get; set; } = string.Empty;
+    public decimal ParsingConfidence { get; set; }
+    public decimal GeocodingConfidence { get; set; }
+    public CandidateReviewStatus ReviewStatus { get; set; }
+    public string? ParseNotes { get; set; }
+    public DateTime CreatedAtUtc { get; set; }
+}
+
+
+________________
+
+
+4.5 EventRecord
+Final event entity served to users.
+public class EventRecord
+{
+    public Guid Id { get; set; }
+    public Guid SourceUploadId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public DateTime StartDateTimeLocal { get; set; }
+    public DateTime? EndDateTimeLocal { get; set; }
+    public string VenueName { get; set; } = string.Empty;
+    public string AddressLine { get; set; } = string.Empty;
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
+    public string TimeZone { get; set; } = "America/Chicago";
+    public EventState State { get; set; }
+    public string FlyerImageUrl { get; set; } = string.Empty;
+    public DateTime CreatedAtUtc { get; set; }
+    public DateTime UpdatedAtUtc { get; set; }
+}
+
+
+________________
+
+
+5. Key Enums
+public enum IngestionStatus
+{
+    Pending = 0,
+    Uploaded = 1,
+    OcrQueued = 2,
+    OcrComplete = 3,
+    ParseQueued = 4,
+    Parsed = 5,
+    Geocoded = 6,
+    Published = 7,
+    Failed = 8,
+    NeedsReview = 9
+}
+
+
+public enum UploadSourceType
+{
+    UserUpload = 0,
+    SocialIngest = 1,
+    AdminImport = 2
+}
+
+
+public enum CandidateReviewStatus
+{
+    Pending = 0,
+    AutoApproved = 1,
+    NeedsHumanReview = 2,
+    Approved = 3,
+    Rejected = 4
+}
+
+
+public enum EventState
+{
+    Draft = 0,
+    Published = 1,
+    Hidden = 2,
+    Archived = 3
+}
+
+
+________________
+
+
+6. Database Design
+6.1 Required Tables
+* FlyerUploads
+* FlyerIngestionJobs
+* OcrExtractions
+* ParsedEventCandidates
+* EventRecords
+* SavedEvents
+* VenueCache
+* GeocodeCache
+* AdminReviewLogs
+________________
+
+
+6.2 Suggested SQL/EF Indexes
+FlyerUploads
+* index on CreatedAtUtc
+* index on UploadedByUserId
+EventRecords
+* composite index on (StartDateTimeLocal, State)
+* spatial or lat/lng index strategy depending on DB
+* index on VenueName
+* index on TimeZone
+ParsedEventCandidates
+* index on (ReviewStatus, CreatedAtUtc)
+* index on UploadId
+GeocodeCache
+* unique index on normalized address hash
+________________
+
+
+7. Processing Pipeline
+________________
+
+
+7.1 Pipeline Stages
+1. Upload accepted
+2. Upload metadata persisted
+3. File stored in object storage
+4. OCR job queued
+5. OCR worker extracts text
+6. Raw OCR stored
+7. Parse job queued
+8. Parser extracts title/date/time/address/venue
+9. Geocoder resolves lat/lng
+10. Confidence scoring computed
+11. Candidate auto-published or flagged
+12. Public API returns event
+
+
+________________
+
+
+7.2 Confidence-Based Routing
+Auto-publish threshold
+Use a simple weighted model:
+* OCR confidence: 30%
+* title extraction confidence: 20%
+* date/time confidence: 20%
+* venue confidence: 10%
+* geocode confidence: 20%
+score >= 0.85  => auto publish
+0.60 - 0.84    => needs admin review
+< 0.60         => failed / needs manual correction
+
+
+This is practical for Phase 0.
+________________
+
+
+8. OCR Engine Strategy
+8.1 Recommended Architecture
+Abstract OCR behind an interface so you can swap engines later.
+public interface IOcrEngine
+{
+    Task<OcrResult> ExtractTextAsync(Stream fileStream, string fileName, CancellationToken ct);
+}
+
+
+________________
+
+
+8.2 Supported OCR Modes
+Local baseline
+* Tesseract-based worker
+* cheap
+* fast to prototype
+* weaker on stylized flyers
+Cloud production option
+* Azure AI Vision
+* Google Cloud Vision
+* AWS Textract is less aligned for flyers than forms/docs
+For Phase 0, keep engine-pluggable.
+________________
+
+
+8.3 OCR Result Contract
+public sealed class OcrResult
+{
+    public string RawText { get; init; } = string.Empty;
+    public decimal AverageConfidence { get; init; }
+    public string EngineName { get; init; } = string.Empty;
+    public string? StructuredPayloadJson { get; init; }
+}
+
+
+________________
+
+
+9. Parser Strategy
+9.1 Phase 0 Parsing Method
+Use deterministic parsing first:
+* regex for dates
+* regex for times
+* phrase windows for venue/address
+* keyword dictionaries
+* address heuristics
+* fallback rules
+Do not make Phase 0 dependent on an LLM.
+________________
+
+
+9.2 Extraction Targets
+Parser must attempt to produce:
+* title
+* event date
+* start time
+* end time
+* venue name
+* address
+* performer/DJ list optional
+* age restriction optional
+* category optional
+________________
+
+
+9.3 Parser Interface
+public interface IFlyerParser
+{
+    Task<ParsedFlyerResult> ParseAsync(string rawText, CancellationToken ct);
+}
+
+
+Result type
+public sealed class ParsedFlyerResult
+{
+    public string? Title { get; init; }
+    public DateTime? EventDateLocal { get; init; }
+    public TimeOnly? StartTimeLocal { get; init; }
+    public TimeOnly? EndTimeLocal { get; init; }
+    public string? VenueName { get; init; }
+    public string? AddressRaw { get; init; }
+    public decimal TitleConfidence { get; init; }
+    public decimal DateConfidence { get; init; }
+    public decimal TimeConfidence { get; init; }
+    public decimal VenueConfidence { get; init; }
+    public List<string> Notes { get; init; } = new();
+}
+
+
+________________
+
+
+10. Geocoding Strategy
+10.1 Interface
+public interface IGeocodingService
+{
+    Task<GeocodeResult?> GeocodeAsync(string addressOrVenue, CancellationToken ct);
+}
+
+
+public sealed class GeocodeResult
+{
+    public string ResolvedAddress { get; init; } = string.Empty;
+    public double Latitude { get; init; }
+    public double Longitude { get; init; }
+    public decimal Confidence { get; init; }
+}
+
+
+________________
+
+
+10.2 Resolution Order
+1. full extracted address
+2. venue + city
+3. venue-only query with local city bias
+4. admin fallback
+________________
+
+
+10.3 Cache Strategy
+Before calling external geocoder:
+* normalize address text
+* hash normalized value
+* query GeocodeCache
+This reduces cost and repeat latency.
+________________
+
+
+11. Public Query API Design
+11.1 Event Queries
+GET /api/events?from=2026-03-21T00:00:00&to=2026-03-22T23:59:59&lat=29.7604&lng=-95.3698&radiusKm=15
+GET /api/events/{id}
+GET /api/events/map?from=...&to=...
+GET /api/events/calendar?month=2026-03
+POST /api/events/upload
+POST /api/events/{id}/save
+DELETE /api/events/{id}/save
+
+
+________________
+
+
+11.2 Upload Response Contract
+{
+  "uploadId": "guid",
+  "jobId": "guid",
+  "status": "OcrQueued"
+}
+
+
+________________
+
+
+11.3 Event DTO
+public sealed class EventDto
+{
+    public Guid Id { get; init; }
+    public string Title { get; init; } = string.Empty;
+    public DateTime StartDateTimeLocal { get; init; }
+    public DateTime? EndDateTimeLocal { get; init; }
+    public string VenueName { get; init; } = string.Empty;
+    public string AddressLine { get; init; } = string.Empty;
+    public double Latitude { get; init; }
+    public double Longitude { get; init; }
+    public string FlyerImageUrl { get; init; } = string.Empty;
+}
+
+
+________________
+
+
+12. Queueing and Background Execution
+12.1 Queue Abstraction
+For Phase 0, use one of:
+* Redis-backed queue
+* PostgreSQL outbox + worker poller
+* RabbitMQ if you already want explicit broker separation
+Pragmatic choice:
+* start with IBackgroundJobQueue
+* implement with Redis or DB-backed queue
+________________
+
+
+12.2 Queue Contracts
+public interface IBackgroundJobQueue
+{
+    Task EnqueueOcrAsync(Guid uploadId, CancellationToken ct);
+    Task EnqueueParseAsync(Guid uploadId, CancellationToken ct);
+}
+
+
+________________
+
+
+13. Failure Handling
+13.1 Failure Cases
+* corrupt image
+* unsupported file type
+* OCR extraction empty
+* date not parsed
+* address ambiguous
+* geocoder timeout
+* duplicate event record
+________________
+
+
+13.2 Retry Rules
+OCR retry
+* up to 3 retries
+* exponential backoff
+Geocode retry
+* 2 retries
+* then mark NeedsReview
+Parse retry
+* only if worker/process failed, not if extraction semantically weak
+________________
+
+
+14. Observability
+14.1 Structured Logging
+Every stage should log:
+* upload_id
+* job_id
+* stage
+* duration_ms
+* success
+* error_code
+________________
+
+
+14.2 Metrics
+Track:
+* uploads accepted
+* OCR success rate
+* parse success rate
+* auto-publish rate
+* review queue size
+* median processing time
+* geocoder cache hit rate
+________________
+
+
+14.3 Tracing
+Use OpenTelemetry spans around:
+* upload persistence
+* storage upload
+* OCR call
+* parse execution
+* geocode call
+* final publish
+________________
+
+
+15. Security Requirements
+15.1 Upload Validation
+Reject:
+* non-image content
+* oversized files
+* malformed headers
+* dangerous content types
+Allowed:
+* image/jpeg
+* image/png
+* image/webp
+________________
+
+
+15.2 Storage Safety
+* random object keys
+* do not trust client filename
+* private originals if possible
+* public transformed delivery URLs only
+________________
+
+
+15.3 Authorization
+Phase 0 minimal:
+* authenticated uploads
+* public event reads
+* authenticated save/bookmark
+* admin-only correction endpoints
+________________
+
+
+16. Performance Targets
+Metric
+	Target
+	Upload API response
+	< 500 ms
+	OCR stage median
+	< 5 s
+	Parse stage median
+	< 1 s
+	Geocode median
+	< 1.5 s cached miss
+	Event query API
+	< 200 ms
+	Map payload query
+	< 300 ms
+	________________
+
+
+17. Deep Infra Code — .NET Starter
+________________
+
+
+17.1 Domain Models
+namespace WeUp.Domain.Entities;
+
+
+public sealed class FlyerUpload
+{
+    public Guid Id { get; set; }
+    public string OriginalFileName { get; set; } = string.Empty;
+    public string StorageKey { get; set; } = string.Empty;
+    public string MimeType { get; set; } = string.Empty;
+    public long FileSizeBytes { get; set; }
+    public string UploadedByUserId { get; set; } = string.Empty;
+    public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+}
+
+
+namespace WeUp.Domain.Entities;
+
+
+public sealed class EventRecord
+{
+    public Guid Id { get; set; }
+    public Guid SourceUploadId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public DateTime StartDateTimeLocal { get; set; }
+    public DateTime? EndDateTimeLocal { get; set; }
+    public string VenueName { get; set; } = string.Empty;
+    public string AddressLine { get; set; } = string.Empty;
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
+    public string FlyerImageUrl { get; set; } = string.Empty;
+    public string TimeZone { get; set; } = "America/Chicago";
+    public int State { get; set; } = 1;
+    public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAtUtc { get; set; } = DateTime.UtcNow;
+}
+
+
+________________
+
+
+17.2 EF Core DbContext
+using Microsoft.EntityFrameworkCore;
+using WeUp.Domain.Entities;
+
+
+namespace WeUp.Infrastructure.Persistence;
+
+
+public sealed class WeUpDbContext : DbContext
+{
+    public WeUpDbContext(DbContextOptions<WeUpDbContext> options) : base(options) { }
+
+
+    public DbSet<FlyerUpload> FlyerUploads => Set<FlyerUpload>();
+    public DbSet<EventRecord> EventRecords => Set<EventRecord>();
+    public DbSet<OcrExtractionEntity> OcrExtractions => Set<OcrExtractionEntity>();
+    public DbSet<ParsedEventCandidateEntity> ParsedEventCandidates => Set<ParsedEventCandidateEntity>();
+
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<FlyerUpload>(b =>
+        {
+            b.ToTable("FlyerUploads");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.OriginalFileName).HasMaxLength(260).IsRequired();
+            b.Property(x => x.StorageKey).HasMaxLength(512).IsRequired();
+            b.Property(x => x.MimeType).HasMaxLength(100).IsRequired();
+            b.Property(x => x.UploadedByUserId).HasMaxLength(128).IsRequired();
+            b.HasIndex(x => x.CreatedAtUtc);
+        });
+
+
+        modelBuilder.Entity<EventRecord>(b =>
+        {
+            b.ToTable("EventRecords");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Title).HasMaxLength(300).IsRequired();
+            b.Property(x => x.VenueName).HasMaxLength(300);
+            b.Property(x => x.AddressLine).HasMaxLength(500);
+            b.Property(x => x.FlyerImageUrl).HasMaxLength(1000);
+            b.Property(x => x.TimeZone).HasMaxLength(64).IsRequired();
+            b.HasIndex(x => x.StartDateTimeLocal);
+            b.HasIndex(x => new { x.StartDateTimeLocal, x.State });
+        });
+
+
+        modelBuilder.Entity<OcrExtractionEntity>(b =>
+        {
+            b.ToTable("OcrExtractions");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.RawText).HasColumnType("text").IsRequired();
+            b.Property(x => x.StructuredJson).HasColumnType("text");
+            b.Property(x => x.EngineName).HasMaxLength(100).IsRequired();
+            b.HasIndex(x => x.UploadId).IsUnique();
+        });
+
+
+        modelBuilder.Entity<ParsedEventCandidateEntity>(b =>
+        {
+            b.ToTable("ParsedEventCandidates");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Title).HasMaxLength(300);
+            b.Property(x => x.VenueName).HasMaxLength(300);
+            b.Property(x => x.AddressRaw).HasMaxLength(500);
+            b.Property(x => x.ParseNotes).HasColumnType("text");
+            b.HasIndex(x => x.UploadId).IsUnique();
+            b.HasIndex(x => x.ReviewStatus);
+        });
+    }
+}
+
+
+public sealed class OcrExtractionEntity
+{
+    public Guid Id { get; set; }
+    public Guid UploadId { get; set; }
+    public string RawText { get; set; } = string.Empty;
+    public string? StructuredJson { get; set; }
+    public decimal? AverageConfidence { get; set; }
+    public string EngineName { get; set; } = string.Empty;
+    public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+}
+
+
+public sealed class ParsedEventCandidateEntity
+{
+    public Guid Id { get; set; }
+    public Guid UploadId { get; set; }
+    public string? Title { get; set; }
+    public DateTime? EventDateLocal { get; set; }
+    public TimeOnly? StartTimeLocal { get; set; }
+    public TimeOnly? EndTimeLocal { get; set; }
+    public string? VenueName { get; set; }
+    public string? AddressRaw { get; set; }
+    public decimal ParsingConfidence { get; set; }
+    public decimal GeocodingConfidence { get; set; }
+    public int ReviewStatus { get; set; }
+    public string? ParseNotes { get; set; }
+    public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+}
+
+
+________________
+
+
+17.3 Storage Interface
+namespace WeUp.Application.Abstractions;
+
+
+public interface IObjectStorage
+{
+    Task<string> UploadAsync(
+        Stream content,
+        string objectKey,
+        string contentType,
+        CancellationToken ct);
+
+
+    Task<Stream> OpenReadAsync(string objectKey, CancellationToken ct);
+}
+
+
+________________
+
+
+17.4 Upload Command Handler
+using Microsoft.AspNetCore.Http;
+using WeUp.Application.Abstractions;
+using WeUp.Domain.Entities;
+using WeUp.Infrastructure.Persistence;
+
+
+namespace WeUp.Application.Uploads;
+
+
+public sealed class UploadFlyerHandler
+{
+    private static readonly HashSet<string> AllowedMimeTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    };
+
+
+    private const long MaxFileSizeBytes = 10 * 1024 * 1024;
+
+
+    private readonly WeUpDbContext _db;
+    private readonly IObjectStorage _storage;
+    private readonly IBackgroundJobQueue _queue;
+
+
+    public UploadFlyerHandler(
+        WeUpDbContext db,
+        IObjectStorage storage,
+        IBackgroundJobQueue queue)
+    {
+        _db = db;
+        _storage = storage;
+        _queue = queue;
+    }
+
+
+    public async Task<(Guid uploadId, Guid jobId)> HandleAsync(
+        IFormFile file,
+        string userId,
+        CancellationToken ct)
+    {
+        if (file.Length <= 0)
+            throw new InvalidOperationException("Empty file.");
+
+
+        if (file.Length > MaxFileSizeBytes)
+            throw new InvalidOperationException("File exceeds max size.");
+
+
+        if (!AllowedMimeTypes.Contains(file.ContentType))
+            throw new InvalidOperationException("Unsupported content type.");
+
+
+        var uploadId = Guid.NewGuid();
+        var objectKey = $"flyers/{DateTime.UtcNow:yyyy/MM/dd}/{uploadId}{Path.GetExtension(file.FileName)}";
+
+
+        await using var readStream = file.OpenReadStream();
+        await _storage.UploadAsync(readStream, objectKey, file.ContentType, ct);
+
+
+        var upload = new FlyerUpload
+        {
+            Id = uploadId,
+            OriginalFileName = file.FileName,
+            StorageKey = objectKey,
+            MimeType = file.ContentType,
+            FileSizeBytes = file.Length,
+            UploadedByUserId = userId
+        };
+
+
+        _db.FlyerUploads.Add(upload);
+        await _db.SaveChangesAsync(ct);
+
+
+        var jobId = Guid.NewGuid();
+        await _queue.EnqueueOcrAsync(uploadId, ct);
+
+
+        return (uploadId, jobId);
+    }
+}
+
+
+________________
+
+
+17.5 Upload Controller
+using Microsoft.AspNetCore.Mvc;
+using WeUp.Application.Uploads;
+
+
+namespace WeUp.Api.Controllers;
+
+
+[ApiController]
+[Route("api/events")]
+public sealed class EventUploadController : ControllerBase
+{
+    private readonly UploadFlyerHandler _handler;
+
+
+    public EventUploadController(UploadFlyerHandler handler)
+    {
+        _handler = handler;
+    }
+
+
+    [HttpPost("upload")]
+    [RequestSizeLimit(10 * 1024 * 1024)]
+    public async Task<IActionResult> Upload([FromForm] IFormFile file, CancellationToken ct)
+    {
+        var userId = User.Identity?.Name ?? "dev-user";
+        var (uploadId, jobId) = await _handler.HandleAsync(file, userId, ct);
+
+
+        return Accepted(new
+        {
+            uploadId,
+            jobId,
+            status = "OcrQueued"
+        });
+    }
+}
+
+
+________________
+
+
+18. OCR Pipeline Code
+________________
+
+
+18.1 OCR Engine Abstraction
+namespace WeUp.Application.Abstractions;
+
+
+public interface IOcrEngine
+{
+    Task<OcrResult> ExtractTextAsync(Stream fileStream, string fileName, CancellationToken ct);
+}
+
+
+public sealed class OcrResult
+{
+    public string RawText { get; init; } = string.Empty;
+    public decimal AverageConfidence { get; init; }
+    public string EngineName { get; init; } = string.Empty;
+    public string? StructuredPayloadJson { get; init; }
+}
+
+
+________________
+
+
+18.2 OCR Worker Service
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using WeUp.Application.Abstractions;
+using WeUp.Infrastructure.Persistence;
+
+
+namespace WeUp.Workers.Ocr;
+
+
+public sealed class OcrWorkerService : BackgroundService
+{
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<OcrWorkerService> _logger;
+
+
+    public OcrWorkerService(IServiceProvider serviceProvider, ILogger<OcrWorkerService> logger)
+    {
+        _serviceProvider = serviceProvider;
+        _logger = logger;
+    }
+
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var queue = scope.ServiceProvider.GetRequiredService<IOcrQueueConsumer>();
+
+
+                var nextUploadId = await queue.DequeueAsync(stoppingToken);
+                if (nextUploadId is null)
+                {
+                    await Task.Delay(500, stoppingToken);
+                    continue;
+                }
+
+
+                var db = scope.ServiceProvider.GetRequiredService<WeUpDbContext>();
+                var storage = scope.ServiceProvider.GetRequiredService<IObjectStorage>();
+                var ocrEngine = scope.ServiceProvider.GetRequiredService<IOcrEngine>();
+                var parseQueue = scope.ServiceProvider.GetRequiredService<IBackgroundJobQueue>();
+
+
+                var upload = await db.FlyerUploads.FirstOrDefaultAsync(x => x.Id == nextUploadId.Value, stoppingToken);
+                if (upload is null)
+                {
+                    _logger.LogWarning("Upload not found: {UploadId}", nextUploadId);
+                    continue;
+                }
+
+
+                await using var fileStream = await storage.OpenReadAsync(upload.StorageKey, stoppingToken);
+                var result = await ocrEngine.ExtractTextAsync(fileStream, upload.OriginalFileName, stoppingToken);
+
+
+                var existing = await db.OcrExtractions.FirstOrDefaultAsync(x => x.UploadId == upload.Id, stoppingToken);
+                if (existing is null)
+                {
+                    db.OcrExtractions.Add(new OcrExtractionEntity
+                    {
+                        Id = Guid.NewGuid(),
+                        UploadId = upload.Id,
+                        RawText = result.RawText,
+                        AverageConfidence = result.AverageConfidence,
+                        EngineName = result.EngineName,
+                        StructuredJson = result.StructuredPayloadJson
+                    });
+                }
+                else
+                {
+                    existing.RawText = result.RawText;
+                    existing.AverageConfidence = result.AverageConfidence;
+                    existing.EngineName = result.EngineName;
+                    existing.StructuredJson = result.StructuredPayloadJson;
+                }
+
+
+                await db.SaveChangesAsync(stoppingToken);
+                await parseQueue.EnqueueParseAsync(upload.Id, stoppingToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "OCR worker iteration failed.");
+                await Task.Delay(1000, stoppingToken);
+            }
+        }
+    }
+}
+
+
+public interface IOcrQueueConsumer
+{
+    Task<Guid?> DequeueAsync(CancellationToken ct);
+}
+
+
+________________
+
+
+18.3 Stub Tesseract OCR Engine
+using WeUp.Application.Abstractions;
+
+
+namespace WeUp.Infrastructure.Ocr;
+
+
+public sealed class TesseractOcrEngine : IOcrEngine
+{
+    public async Task<OcrResult> ExtractTextAsync(Stream fileStream, string fileName, CancellationToken ct)
+    {
+        using var reader = new MemoryStream();
+        await fileStream.CopyToAsync(reader, ct);
+
+
+        // Replace with actual Tesseract invocation.
+        // This is intentionally a stubbed adapter boundary.
+        var simulatedText = """
+        SATURDAY MARCH 22
+        MIDNIGHT THEORY
+        10PM - 2AM
+        THE VIOLET ROOM
+        2412 MAIN ST HOUSTON TX
+        DJ NOVA + LUNE
+        """;
+
+
+        return new OcrResult
+        {
+            RawText = simulatedText,
+            AverageConfidence = 0.84m,
+            EngineName = "TesseractStub",
+            StructuredPayloadJson = null
+        };
+    }
+}
+
+
+________________
+
+
+19. Parsing Pipeline Code
+________________
+
+
+19.1 Parser Implementation
+using System.Globalization;
+using System.Text.RegularExpressions;
+using WeUp.Application.Abstractions;
+
+
+namespace WeUp.Infrastructure.Parsing;
+
+
+public sealed class RegexFlyerParser : IFlyerParser
+{
+    private static readonly Regex TimeRangeRegex =
+        new(@"(?<start>\d{1,2}(:\d{2})?\s?(AM|PM))\s*[-–]\s*(?<end>\d{1,2}(:\d{2})?\s?(AM|PM))",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+
+    private static readonly Regex DateRegex =
+        new(@"(?<month>JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)[A-Z]*\s+(?<day>\d{1,2})",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+
+    private static readonly Regex AddressRegex =
+        new(@"\d{2,6}\s+[A-Z0-9\s\.]+(ST|STREET|AVE|AVENUE|RD|ROAD|BLVD|DR|LANE|LN|WAY)\b.*",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+
+    public Task<ParsedFlyerResult> ParseAsync(string rawText, CancellationToken ct)
+    {
+        var lines = rawText
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .ToList();
+
+
+        var title = ExtractTitle(lines);
+        var eventDate = ExtractDate(rawText);
+        var (start, end, timeConfidence) = ExtractTimes(rawText);
+        var address = ExtractAddress(lines);
+        var venue = ExtractVenue(lines, address);
+
+
+        var notes = new List<string>();
+        if (title is null) notes.Add("Title not confidently resolved.");
+        if (eventDate is null) notes.Add("Date not confidently resolved.");
+        if (address is null) notes.Add("Address not confidently resolved.");
+
+
+        return Task.FromResult(new ParsedFlyerResult
+        {
+            Title = title,
+            EventDateLocal = eventDate,
+            StartTimeLocal = start,
+            EndTimeLocal = end,
+            VenueName = venue,
+            AddressRaw = address,
+            TitleConfidence = title is null ? 0.30m : 0.85m,
+            DateConfidence = eventDate is null ? 0.20m : 0.80m,
+            TimeConfidence = timeConfidence,
+            VenueConfidence = venue is null ? 0.35m : 0.75m,
+            Notes = notes
+        });
+    }
+
+
+    private static string? ExtractTitle(List<string> lines)
+    {
+        return lines
+            .Where(x => x.Length is > 3 and < 80)
+            .FirstOrDefault(x =>
+                !x.Contains("AM", StringComparison.OrdinalIgnoreCase) &&
+                !x.Contains("PM", StringComparison.OrdinalIgnoreCase) &&
+                !char.IsDigit(x[0]));
+    }
+
+
+    private static DateTime? ExtractDate(string rawText)
+    {
+        var match = DateRegex.Match(rawText);
+        if (!match.Success) return null;
+
+
+        var monthToken = match.Groups["month"].Value[..3].ToUpperInvariant();
+        var dayToken = match.Groups["day"].Value;
+
+
+        if (!DateTime.TryParseExact(
+                $"{monthToken} {dayToken} 2026",
+                "MMM d yyyy",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var date))
+        {
+            return null;
+        }
+
+
+        return date;
+    }
+
+
+    private static (TimeOnly? start, TimeOnly? end, decimal confidence) ExtractTimes(string rawText)
+    {
+        var match = TimeRangeRegex.Match(rawText);
+        if (!match.Success) return (null, null, 0.25m);
+
+
+        static TimeOnly? ParseTime(string value)
+        {
+            var formats = new[] { "h tt", "h:mm tt", "hh tt", "hh:mm tt" };
+            if (DateTime.TryParseExact(value.ToUpperInvariant(), formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt))
+            {
+                return TimeOnly.FromDateTime(dt);
+            }
+
+
+            return null;
+        }
+
+
+        var start = ParseTime(match.Groups["start"].Value.Replace(" ", ""));
+        var end = ParseTime(match.Groups["end"].Value.Replace(" ", ""));
+
+
+        return (start, end, (start is not null && end is not null) ? 0.85m : 0.45m);
+    }
+
+
+    private static string? ExtractAddress(List<string> lines)
+    {
+        foreach (var line in lines)
+        {
+            var match = AddressRegex.Match(line.ToUpperInvariant());
+            if (match.Success) return line;
+        }
+
+
+        return null;
+    }
+
+
+    private static string? ExtractVenue(List<string> lines, string? address)
+    {
+        if (lines.Count == 0) return null;
+
+
+        if (!string.IsNullOrWhiteSpace(address))
+        {
+            var idx = lines.FindIndex(x => x.Equals(address, StringComparison.OrdinalIgnoreCase));
+            if (idx > 0) return lines[idx - 1];
+        }
+
+
+        return lines.Skip(1).FirstOrDefault(x => x.Length is > 3 and < 80);
+    }
+}
+
+
+________________
+
+
+19.2 Parser Worker
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using WeUp.Application.Abstractions;
+using WeUp.Domain.Entities;
+using WeUp.Infrastructure.Persistence;
+
+
+namespace WeUp.Workers.Parser;
+
+
+public sealed class ParserWorkerService : BackgroundService
+{
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<ParserWorkerService> _logger;
+
+
+    public ParserWorkerService(IServiceProvider serviceProvider, ILogger<ParserWorkerService> logger)
+    {
+        _serviceProvider = serviceProvider;
+        _logger = logger;
+    }
+
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var queue = scope.ServiceProvider.GetRequiredService<IParseQueueConsumer>();
+                var uploadId = await queue.DequeueAsync(stoppingToken);
+
+
+                if (uploadId is null)
+                {
+                    await Task.Delay(500, stoppingToken);
+                    continue;
+                }
+
+
+                var db = scope.ServiceProvider.GetRequiredService<WeUpDbContext>();
+                var parser = scope.ServiceProvider.GetRequiredService<IFlyerParser>();
+                var geocoder = scope.ServiceProvider.GetRequiredService<IGeocodingService>();
+
+
+                var ocr = await db.OcrExtractions.FirstOrDefaultAsync(x => x.UploadId == uploadId.Value, stoppingToken);
+                var upload = await db.FlyerUploads.FirstOrDefaultAsync(x => x.Id == uploadId.Value, stoppingToken);
+
+
+                if (ocr is null || upload is null)
+                {
+                    _logger.LogWarning("Missing OCR or upload for {UploadId}", uploadId);
+                    continue;
+                }
+
+
+                var parsed = await parser.ParseAsync(ocr.RawText, stoppingToken);
+
+
+                GeocodeResult? geocode = null;
+                var geocodeInput = parsed.AddressRaw ?? parsed.VenueName;
+                if (!string.IsNullOrWhiteSpace(geocodeInput))
+                {
+                    geocode = await geocoder.GeocodeAsync(geocodeInput, stoppingToken);
+                }
+
+
+                var parseConfidence = (
+                    parsed.TitleConfidence * 0.20m +
+                    parsed.DateConfidence * 0.20m +
+                    parsed.TimeConfidence * 0.20m +
+                    parsed.VenueConfidence * 0.10m +
+                    (ocr.AverageConfidence ?? 0m) * 0.30m
+                );
+
+
+                var geocodeConfidence = geocode?.Confidence ?? 0m;
+                var overall = parseConfidence + (geocodeConfidence * 0.20m);
+
+
+                var candidate = await db.ParsedEventCandidates.FirstOrDefaultAsync(x => x.UploadId == uploadId.Value, stoppingToken);
+                if (candidate is null)
+                {
+                    candidate = new ParsedEventCandidateEntity
+                    {
+                        Id = Guid.NewGuid(),
+                        UploadId = uploadId.Value
+                    };
+                    db.ParsedEventCandidates.Add(candidate);
+                }
+
+
+                candidate.Title = parsed.Title;
+                candidate.EventDateLocal = parsed.EventDateLocal;
+                candidate.StartTimeLocal = parsed.StartTimeLocal;
+                candidate.EndTimeLocal = parsed.EndTimeLocal;
+                candidate.VenueName = parsed.VenueName;
+                candidate.AddressRaw = geocode?.ResolvedAddress ?? parsed.AddressRaw;
+                candidate.ParsingConfidence = parseConfidence;
+                candidate.GeocodingConfidence = geocodeConfidence;
+                candidate.ParseNotes = string.Join(Environment.NewLine, parsed.Notes);
+
+
+                if (overall >= 0.85m && parsed.EventDateLocal is not null && parsed.StartTimeLocal is not null)
+                {
+                    candidate.ReviewStatus = 1; // AutoApproved
+
+
+                    var start = parsed.EventDateLocal.Value.Date + parsed.StartTimeLocal.Value.ToTimeSpan();
+                    DateTime? end = parsed.EndTimeLocal is null
+                        ? null
+                        : parsed.EventDateLocal.Value.Date + parsed.EndTimeLocal.Value.ToTimeSpan();
+
+
+                    db.EventRecords.Add(new EventRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        SourceUploadId = upload.Id,
+                        Title = parsed.Title ?? "Untitled Event",
+                        StartDateTimeLocal = start,
+                        EndDateTimeLocal = end,
+                        VenueName = parsed.VenueName ?? string.Empty,
+                        AddressLine = geocode?.ResolvedAddress ?? parsed.AddressRaw ?? string.Empty,
+                        Latitude = geocode?.Latitude ?? 0,
+                        Longitude = geocode?.Longitude ?? 0,
+                        FlyerImageUrl = upload.StorageKey
+                    });
+                }
+                else
+                {
+                    candidate.ReviewStatus = 2; // NeedsHumanReview
+                }
+
+
+                await db.SaveChangesAsync(stoppingToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Parser worker iteration failed.");
+                await Task.Delay(1000, stoppingToken);
+            }
+        }
+    }
+}
+
+
+public interface IParseQueueConsumer
+{
+    Task<Guid?> DequeueAsync(CancellationToken ct);
+}
+
+
+________________
+
+
+20. Geocoder Stub
+using WeUp.Application.Abstractions;
+
+
+namespace WeUp.Infrastructure.Geocoding;
+
+
+public sealed class StubGeocodingService : IGeocodingService
+{
+    public Task<GeocodeResult?> GeocodeAsync(string addressOrVenue, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(addressOrVenue))
+            return Task.FromResult<GeocodeResult?>(null);
+
+
+        return Task.FromResult<GeocodeResult?>(new GeocodeResult
+        {
+            ResolvedAddress = addressOrVenue,
+            Latitude = 29.7604,
+            Longitude = -95.3698,
+            Confidence = 0.80m
+        });
+    }
+}
+
+
+________________
+
+
+21. Event Query Service
+using Microsoft.EntityFrameworkCore;
+using WeUp.Infrastructure.Persistence;
+
+
+namespace WeUp.Application.Events;
+
+
+public sealed class EventQueryService
+{
+    private readonly WeUpDbContext _db;
+
+
+    public EventQueryService(WeUpDbContext db)
+    {
+        _db = db;
+    }
+
+
+    public async Task<IReadOnlyList<EventDto>> GetEventsAsync(DateTime from, DateTime to, CancellationToken ct)
+    {
+        return await _db.EventRecords
+            .AsNoTracking()
+            .Where(x => x.State == 1 && x.StartDateTimeLocal >= from && x.StartDateTimeLocal <= to)
+            .OrderBy(x => x.StartDateTimeLocal)
+            .Select(x => new EventDto
+            {
+                Id = x.Id,
+                Title = x.Title,
+                StartDateTimeLocal = x.StartDateTimeLocal,
+                EndDateTimeLocal = x.EndDateTimeLocal,
+                VenueName = x.VenueName,
+                AddressLine = x.AddressLine,
+                Latitude = x.Latitude,
+                Longitude = x.Longitude,
+                FlyerImageUrl = x.FlyerImageUrl
+            })
+            .ToListAsync(ct);
+    }
+}
+
+
+________________
+
+
+22. Admin Review Requirements
+22.1 Admin Queue
+Admin must be able to view:
+* original flyer image
+* raw OCR text
+* parsed candidate data
+* confidence scores
+* publish/edit/reject controls
+________________
+
+
+22.2 Admin API Surface
+GET  /api/admin/review/candidates
+GET  /api/admin/review/candidates/{uploadId}
+POST /api/admin/review/candidates/{uploadId}/approve
+POST /api/admin/review/candidates/{uploadId}/reject
+PUT  /api/admin/review/candidates/{uploadId}
+
+
+________________
+
+
+23. Frontend Integration Requirements
+23.1 Map payload
+Return compact event objects, not all OCR/parsing metadata.
+23.2 Modal payload
+Include:
+* flyer image
+* formatted date/time
+* venue/address
+* save flag
+23.3 Upload UX
+Show:
+* progress
+* accepted state
+* pending processing state
+* fallback “under review” state
+________________
+
+
+24. Operational Recommendations
+24.1 Start simple
+Do not split into many deployables too early. A realistic first production cut is:
+* one API
+* one OCR worker
+* one parser worker
+* one Postgres
+* one Redis
+* one object store
+24.2 Delay fancy infra
+Do not add:
+* Kafka
+* full event bus
+* k8s
+* vector DB
+* multi-region anything
+Not in Phase 0.
+________________
+
+
+25. Build Order
+Sprint 1
+* upload API
+* storage adapter
+* DB schema
+* queue abstraction
+Sprint 2
+* OCR worker
+* OCR persistence
+* parser service
+* candidate persistence
+Sprint 3
+* geocoder
+* autopublish thresholds
+* public event query APIs
+Sprint 4
+* admin review queue
+* save/bookmark
+* map/calendar UI integration
+Sprint 5
+* caching
+* observability
+* retry hardening
+________________
+
+
+26. Blunt Assessment
+The real Phase 0 technical risk is not the map.
+It is data quality under noisy flyer input.
+So the correct system shape is:
+* deterministic first
+* confidence-scored
+* human-reviewable
+* storage-safe
+* operationally simple
+That is what will actually survive first contact with real nightlife flyers.
+If you want, the next logical artifact is the full Phase 0 repo scaffold with exact file paths and production-ready code for Program.cs, DI registration, EF migrations, Docker Compose, and Vue/Quasar upload-map-calendar pages.

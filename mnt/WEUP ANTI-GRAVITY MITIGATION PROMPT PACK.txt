@@ -1,0 +1,332 @@
+﻿Below is a Mitigation Prompt Pack Bundle designed for AntiGravity execution mode (i.e., high-autonomy refactoring agents with strict invariants, contract enforcement, and deterministic rollback safety).
+This is structured as a multi-agent correction system, not a single prompt. The goal is to eliminate:
+* Multi-source-of-truth collapse
+* Contract drift
+* Frontend split-brain
+* Pipeline fragmentation
+* Agent-side unbound outputs
+* Documentation divergence
+________________
+
+
+🧭 WEUP ANTI-GRAVITY MITIGATION PROMPT PACK
+Codename: AG-ORBITAL-RESET v1
+Core Objective
+Transform the repository into a single deterministic execution system with:
+* one contract authority layer
+* one orchestration kernel
+* one domain truth graph
+* validated cross-runtime consistency (C# + TS + Python agents)
+________________
+
+
+0. SYSTEM GUARDRAILS (GLOBAL INVARIANTS)
+These apply to ALL prompts in the pack.
+INVARIANTS:
+
+
+I1. There must be exactly ONE source of truth per domain concept.
+I2. No duplicate bounded context definitions across layers.
+I3. All workflows must resolve through a deterministic execution graph.
+I4. Contracts must be the ONLY cross-system communication boundary.
+I5. No agent (Python/LLM) may output non-contract-validated structures.
+I6. Frontend must consume ONLY contract-derived schemas.
+I7. Documentation must reference implementation, not diverge from it.
+
+
+________________
+
+
+1. ORCHESTRATION KERNEL REBUILD PROMPT
+Agent: KernelArchitectAgent
+TASK:
+Design and enforce a single execution kernel for all WeUP workflows.
+
+
+REQUIREMENTS:
+- Define a deterministic DAG execution model covering:
+  ingestion → moderation → resolution → publish
+- Ensure all pipelines become nodes in this DAG
+- Remove implicit orchestration from services
+- Introduce a central OrchestrationKernel service (C#)
+
+
+OUTPUT:
+- DAG schema definition
+- Kernel API contract (C# interfaces)
+- Execution trace model
+- Failure/retry semantics
+- Idempotency rules
+
+
+CONSTRAINT:
+No domain logic is allowed outside kernel-controlled execution paths.
+
+
+________________
+
+
+2. CONTRACT AUTHORITY CONSOLIDATION PROMPT
+Agent: ContractGovernanceAgent
+TASK:
+Establish a single contract authority system across backend, frontend, and agents.
+
+
+REQUIREMENTS:
+- Identify all duplicate contract definitions
+- Merge into unified /contracts root registry
+- Create versioned contract manifest system
+- Enforce compile-time validation across:
+  - .NET backend
+  - TypeScript frontend
+  - Python agent outputs
+
+
+OUTPUT:
+- Contract registry structure
+- Versioning policy (semantic + compatibility rules)
+- Breaking change detection strategy
+- Code generation pipeline (optional)
+
+
+RULE:
+All DTOs must originate from contract definitions only.
+
+
+________________
+
+
+3. DOMAIN COLLAPSE & BOUNDARY REPAIR PROMPT
+Agent: DomainRefactorAgent
+TASK:
+Collapse fragmented bounded contexts into coherent domain clusters.
+
+
+REQUIREMENTS:
+- Merge overlapping domains:
+  - Publishing + Moderation → Governance
+  - Dedupe + Resolution → Entity Integrity
+  - Media + Flyer → Content Intelligence
+- Remove duplicate service responsibilities
+- Define Aggregate Roots explicitly
+
+
+OUTPUT:
+- Final bounded context map
+- Aggregate root definitions
+- Domain event boundaries
+- Service ownership matrix
+
+
+RULE:
+Each domain concept must exist in exactly one bounded context.
+
+
+________________
+
+
+4. FRONTEND CONSOLIDATION PROMPT (REACT/VUE SPLIT FIX)
+Agent: FrontendUnificationAgent
+TASK:
+Eliminate dual-frontend divergence and enforce contract-driven UI.
+
+
+REQUIREMENTS:
+- Choose single frontend system (React or Vue)
+- Delete or archive alternative frontend
+- Replace all API assumptions with contract-driven models
+- Introduce shared schema consumption layer
+
+
+OUTPUT:
+- UI architecture decision report
+- Migration plan (component mapping)
+- Contract-to-UI binding layer
+- Deprecation checklist for unused frontend
+
+
+RULE:
+UI must never define its own domain model.
+
+
+________________
+
+
+5. PIPELINE DETERMINISM ENFORCEMENT PROMPT
+Agent: PipelineIntegrityAgent
+TASK:
+Unify all ingestion, moderation, dedupe, and resolution pipelines under a deterministic execution model.
+
+
+REQUIREMENTS:
+- Identify all implicit service-to-service workflows
+- Convert them into explicit DAG nodes
+- Remove ad-hoc service chaining
+- Ensure idempotent execution
+
+
+OUTPUT:
+- Unified pipeline DAG
+- Node definitions per service
+- Retry/failure propagation model
+- State transition diagram
+
+
+RULE:
+No pipeline step may execute outside DAG control.
+
+
+________________
+
+
+6. AGENT OUTPUT CONSTRAINT PROMPT (PYTHON AUTOGEN SYSTEM)
+Agent: AgentContractEnforcer
+TASK:
+Bind all AI/Autogen agents to strict contract validation.
+
+
+REQUIREMENTS:
+- All agent outputs must conform to:
+  - WeUP.Contracts schemas only
+- Reject free-form LLM outputs
+- Introduce validation middleware layer
+- Add schema signing (hash-based integrity)
+
+
+OUTPUT:
+- Agent validation pipeline
+- Schema enforcement wrapper
+- Failure handling strategy
+- Example valid/invalid outputs
+
+
+RULE:
+No untyped AI output may enter backend systems.
+
+
+________________
+
+
+7. OBSERVABILITY UNIFICATION PROMPT
+Agent: TelemetryUnificationAgent
+TASK:
+Unify observability across backend, frontend, and agents.
+
+
+REQUIREMENTS:
+- Standardize correlation IDs across all runtimes
+- Propagate trace context:
+  frontend → API → services → Python agents
+- Define event schema for logs and telemetry
+
+
+OUTPUT:
+- Unified telemetry schema
+- Cross-runtime propagation strategy
+- OpenTelemetry instrumentation map
+- Debug trace reconstruction model
+
+
+RULE:
+No system component may log without trace correlation.
+
+
+________________
+
+
+8. DOCUMENTATION GOVERNANCE CLEANUP PROMPT
+Agent: DocAuthorityAgent
+TASK:
+Eliminate documentation drift and enforce implementation-linked documentation.
+
+
+REQUIREMENTS:
+- Classify docs into:
+  - authoritative (code-linked)
+  - historical (archive only)
+  - invalid (remove)
+- Remove redundant mnt/ specs from active lineage
+- Link every doc to a code module or domain boundary
+
+
+OUTPUT:
+- Documentation hierarchy tree
+- Migration/archival plan
+- Dead spec removal list
+- Canonical documentation index
+
+
+RULE:
+Docs must describe reality, not intent divergence.
+
+
+________________
+
+
+9. SYSTEM-WIDE FINAL CONSISTENCY PROMPT
+Agent: SystemIntegrityValidator
+TASK:
+Perform full-system invariance validation after refactor.
+
+
+REQUIREMENTS:
+- Validate:
+  - contract uniqueness
+  - domain collapse success
+  - pipeline DAG determinism
+  - frontend single-source binding
+  - agent schema compliance
+- Detect residual duplication or ambiguity
+
+
+OUTPUT:
+- System health report
+- Remaining violations list
+- Risk grading (LOW / MED / CRITICAL)
+- Deployment readiness gate
+
+
+RULE:
+System cannot be marked “READY” if ANY duplication remains.
+
+
+________________
+
+
+🔥 EXECUTION SEQUENCE (ANTI-GRAVITY ORDER)
+Run in strict order:
+1. ContractGovernanceAgent
+2. KernelArchitectAgent
+3. DomainRefactorAgent
+4. PipelineIntegrityAgent
+5. FrontendUnificationAgent
+6. AgentContractEnforcer
+7. TelemetryUnificationAgent
+8. DocAuthorityAgent
+9. SystemIntegrityValidator
+________________
+
+
+⚠️ PRE-MORTEM RISKS (IMPORTANT)
+If this is executed incorrectly:
+* Partial migration → worse fragmentation
+* Contract mismatch → runtime silent failures
+* Frontend deletion before schema lock → UI collapse
+* Agent enforcement without schema versioning → brittle pipeline breaks
+Mitigation:
+ALWAYS implement contract registry first before touching domain or frontend layers.
+________________
+
+
+NEXT ACTIONS
+1. Implement ContractGovernanceAgent first (non-negotiable)
+2. Build contract registry + validator pipeline
+3. Then introduce Kernel DAG execution layer
+4. Only then begin domain + frontend refactor
+________________
+
+
+If needed next step, I can generate:
+* full C# OrchestrationKernel implementation (production-grade)
+* contract registry generator tool (source-gen + TS sync)
+* or a step-by-step repo migration execution plan with rollback checkpoints

@@ -1,0 +1,1324 @@
+﻿Create the full WeUP Sponsors TRD
+
+
+Here is the comprehensive Technical Requirements Document (TRD) for the WeUP Sponsors Portal, synthesizing the core requirements, anti-surveillance constraints, and implementation architecture for the Houston-first MVP.
+
+
+WeUP Sponsors Portal — TRD
+Houston-first, fractal-local, anti-extraction sponsorship system
+
+
+Core idea: Sponsors fund value delivery (grants, infrastructure, supplies, tools, credits) and direct opt-in engagement—not mass ads. Creators are not billboards.
+
+
+1) Purpose and Success Criteria
+1.1 Purpose
+Create a sponsorship layer that:
+
+
+Surfaces “bubbled” opportunities (projects, events, venues, and creator-circles that are ready).
+
+
+Allows venue-direct programs (especially liquor) spanning multiple events.
+
+
+Allows creator seeding (products and tools distributed to vetted circles).
+
+
+Supports sponsor coalitions to co-fund specific cultural “sections” without turning the city into an ad grid.
+
+
+Uses receipts and milestone escrow (Stellar and Solana) for accountable funding.
+
+
+1.2 Success Metrics (ROE: Return on Experience)
+
+
+Percentage of funding releases that complete milestones without disputes.
+
+
+Cost per completed opt-in micro-loop (e.g., claim, redeem, attend + claim, volunteer + payout).
+
+
+Event/venue stability metrics, including staff coverage and safety incident resolution time.
+
+
+Creator retention without requiring public promo, tracked via repeat participation in seeded programs.
+
+
+2) Non-Negotiables and Constraints
+2.1 Anti-NASCAR Guardrails
+
+
+No forced logo placement on creator assets.
+
+
+No “wrap” requirements, meaning no obligations to "post X times".
+
+
+Sponsor presence is expressed strictly as infrastructure and value delivery, not visual domination.
+
+
+2.2 Privacy and Anti-Surveillance
+
+
+No individual-level ad targeting.
+
+
+Sponsor interactions and claims must be mediated by privacy-preserving zero-knowledge proofs (zk-SNARKs) and Merkle attendance trees to prevent behavioral dossiers.
+
+
+3) Core Domain Models & Architecture (.NET 8 + Postgres)
+To seamlessly compile this portal into the rest of WeUP, the backend relies on C# domain models and Entity Framework (EF) Core mappings.
+
+
+SponsorProgram: Defines the funding pool, allowable sections, and target criteria for venues or creator circles.
+
+
+Opportunity: Bubbled cultural slates representing validated projects that have met the local receipt density threshold required for funding.
+
+
+MilestoneReceipt: Cryptographic proof of delivery or attendance that triggers escrow logic.
+
+
+4) Policy Decision DTOs & The Bubbling Algorithm
+Sponsor visibility and action decisions are governed by deterministic Policy Decision DTOs. Instead of algorithmic feeds, the "bubbling" algorithm relies on aggregated historical consistency scores and local receipt verification. This ensures sponsors see validated, high-integrity opportunities without exposing raw processing output arrays directly to the UI components.
+
+
+5) Escrow & Milestone Verification
+Funding is locked in chain-agnostic smart contracts (Stellar or Solana) upon the approval of a program. Release criteria are enforced by the WeUP Signal Integrity Protocol (WSIP), ensuring payouts only occur upon verifiable delivery receipts and milestone achievements, removing arbitrary disputes.
+
+
+(Sections 6–12 cover internal API structures, Vue 3 / Quasar UI integration, and legal compliance overrides.)
+
+
+13) Observability & Integrity
+13.1 Metrics
+
+
+Time to approve a program.
+
+
+Milestone verification time.
+
+
+Escrow release latency.
+
+
+Claim redemption rates per section (aggregated).
+
+
+Fraud flags per section (non-personal).
+
+
+13.2 Abuse Controls
+
+
+Claim rate limits per persona per window.
+
+
+Non-transferable claim tokens by default.
+
+
+Anomaly detection on redemptions analyzing receipt patterns.
+
+
+Coalition cap enforcement to maintain strict section density and prevent monopolization.
+
+
+14) MVP Build Sequence (Houston)
+Phase 1 (Core)
+
+
+Opportunities (bubbling slate), Programs, basic Offers/Claims, and Receipts integration.
+
+
+Manual coalition planning with no optimizer deployed yet.
+
+
+One escrow path, picking Stellar or Solana first while keeping the interface chain-agnostic.
+
+
+Phase 2 (Coalitions + CRA)
+
+
+Coalition objects, the CRA optimizer, and section caps/weights.
+
+
+Fair attribution (φ) reports generated for internal use only.
+
+
+Phase 3 (Venue Liquor Programs)
+
+
+Venue-direct multi-event sponsorship alongside compliance gating.
+
+
+Delivery receipts mapped directly to milestone-based releases.
+
+
+Phase 4 (Festival Pop-Up Cells)
+
+
+Zone-based sections, higher-frequency re-optimization, and offline considerations.
+
+
+Your uploads may be too large for the best results. Learn moreOpens in a new window
+Create the FRD for WeUP Sponsors
+
+
+Here is the complete Functional Requirements Document (FRD) for the WeUP Sponsors Portal, detailing the exact user behaviors, system rules, and interaction loops needed to execute the Houston-first MVP.
+
+
+WeUP Sponsors Portal — FRD
+Houston-first, fractal-local, anti-extraction sponsorship system
+
+
+1. Product Vision & Constitutional Constraints
+The Sponsor Portal allows brands to fund infrastructure, creator grants, supplies, and tools for verified cultural spaces. Sponsors participate by delivering value, not mass advertising.
+
+
+Anti-NASCAR Rule: The system strictly forbids forced logo placements on creator assets and mandatory "wrap" requirements (e.g., "post X times"). Sponsor presence is exclusively functional.
+
+
+Anti-Surveillance Rule: Individual-level ad targeting is completely blocked. All sponsor interactions, claims, and attendance validations are mediated by privacy-preserving zero-knowledge proofs and Merkle trees.
+
+
+2. User Personas
+Sponsor Operator: Deploys capital into funding pools, reviews cryptographically verified "bubbled" opportunities, and monitors aggregated escrow milestones.
+
+
+Venue / Organizer: Curates sponsor coalitions, tracks the delivery of physical or digital infrastructure, and processes verifiable receipts to unlock payouts.
+
+
+Creator / Attendee: Interacts with the sponsor via opt-in micro-loops (claiming seeded tools, redeeming credits, or fulfilling volunteer payouts) without sacrificing behavioral privacy.
+
+
+3. Core Functional Flows
+3.1 Opportunity "Bubbling" (Discovery)
+System Action: Instead of an open feed, the system surfaces a "bubbled" slate of opportunities (projects, events, venues, creator-circles).
+
+
+Logic: Opportunities only become visible to sponsors once they hit a deterministic local receipt density threshold, validating that the cultural space is real and ready.
+
+
+Sponsor Action: Sponsors browse these slates to identify optimal sections for funding without seeing individual user identities.
+
+
+3.2 Program and Offer Management
+Sponsor Action: A sponsor creates a Program that dictates the parameters of a funding pool (e.g., a multi-event liquor program at a specific venue).
+
+
+Execution: The sponsor attaches specific Offers to the program, such as bar credits or creator product seeding.
+
+
+System Action: Upon program approval, the required capital is locked in a chain-agnostic smart contract escrow (Stellar or Solana) to guarantee accountable funding.
+
+
+3.3 The Opt-In Claim & Redemption Loop
+User Action: Verified attendees or creators selectively opt-in to claim an offer.
+
+
+System Action: The system issues a claim token. By default, all claim tokens are non-transferable.
+
+
+Redemption: When the user redeems the token at the venue, the WeUP Signal Integrity Protocol (WSIP) processes the redemption receipt securely against the event graph.
+
+
+3.4 Milestone Escrow Release
+System Action: Payouts are highly deterministic and strictly receipt-based, eliminating manual dispute resolution.
+
+
+Trigger: Once a required volume of redemption or delivery receipts is cryptographically verified, the system automatically unseals the escrow and routes the payout to the venue or organizer.
+
+
+4. Abuse Controls & Ecosystem Integrity
+To maintain the integrity of the funding pipeline, the system enforces the following automated constraints:
+
+
+Rate Limits: Hard limits on claim rates per persona, per time window.
+
+
+Anomaly Detection: The system monitors redemption velocity and receipt patterns to flag non-personal fraud flags per section.
+
+
+Coalition Caps: Enforces strict section density limits to prevent any single sponsor from monopolizing a venue and turning it into an ad grid.
+
+
+5. Phased Release Sequence
+Phase 1 (Core)
+
+
+Deploy the bubbling slate for Opportunities and Programs.
+
+
+Enable basic Offer/Claim loops and receipt integration.
+
+
+Support manual coalition planning and a single escrow path (Stellar or Solana).
+
+
+Phase 2 (Coalitions + CRA)
+
+
+Activate full Coalition objects and the CRA optimizer.
+
+
+Enforce section caps and weights, generating internal-only Fair Attribution (φ) reports.
+
+
+Phase 3 (Venue Liquor Programs)
+
+
+Unlock venue-direct, multi-event sponsorship layers with built-in compliance gating.
+
+
+Map physical delivery receipts directly to automated milestone-based releases.
+
+
+Phase 4 (Festival Pop-Up Cells)
+
+
+Support zone-based sections and higher-frequency re-optimization algorithms for large footprint deployments.
+
+
+Implement offline synchronization considerations for remote festival environments.
+
+
+Your uploads may be too large for the best results. Learn moreOpens in a new window
+Give the good the bad the ugly and the fix for the current state of WeUP
+
+
+Based on the provided status assessments, roadmaps, and architectural doctrines, here is the current state of WeUP broken down into the Good, the Bad, the Ugly, and the Fix.
+
+
+The Good (Solid Foundations)
+Established Core Architecture: Foundational runtime and domain work exists, including the WeUP World Surface Runtime, environment boundaries, and EF Core migrations.
+
+
+Clean State Management: UI state topology has been successfully refactored to remove render-time mutations, and the canonical event aggregate and status state machines are defined.
+
+
+Clear Product Direction: The foundational map-first direction and persistence layers are real and implemented.
+
+
+The Bad (Incomplete Execution & Blockers)
+Not Public-Ready: The repository is stuck in a "late pre-MVP architecture" or "early MVP assembly" stage and is not ready for public release.
+
+
+Broken Conversion Funnel: The essential user conversion path (flyer → event detail → get access → pay → QR → scan) is completely missing or incomplete. Specifically, ticket checkout, QR issuance, and door check-in are not implemented.
+
+
+Missing Operational Basics: Critical release elements such as moderation tools, ops fallback, release gates, observability, and anti-surveillance UX hardening are absent.
+
+
+The Ugly (Existential Risks & Sprawl)
+Constitutional Drift: WeUP faces the existential risk of degrading into a "Commodity Collapse Pattern" (becoming a generic Eventbrite clone with a social shell) if it loses its presence-centered, anti-surveillance identity.
+
+
+Feature Bloat: The system currently has too many undefined "arenas," causing feature sprawl, breaking composability, and violating the system's fractal principles.
+
+
+Distraction by Moonshots: The roadmap contains conceptual depth (wearables, blockchain integration, deep social features) that risks distracting from proving the basic economic loop.
+
+
+The Fix (The MVP Doctrine)
+Finish the Basics: Engineering must focus exclusively on completing the v0.2/v0.3 gaps: public event details, publish flow, ticket checkout, QR issuance, and door scanning.
+
+
+Freeze Scope: Explicitly defer moonshot features like wearables, blockchain integration, and 3D immersion until v1.0 is stable and proven.
+
+
+Collapse the Arenas: Refactor the sprawling UI surfaces into 7 strict "Super Arenas" (World, Time, Access, Flow, Signal, Social, Governance) mapped by rigorous contracts to prevent architectural drift.
+
+
+Test in Reality: Run 2–3 real-world pilot events to surface actual problems before adding any more conceptual documentation or features.
+
+
+Your uploads may be too large for the best results. Learn moreOpens in a new window
+Implement a complete architectural, WeUP Phase versioned set of excruciatingly detailed fixes for the complete release of the MVP
+
+
+This is the rigorous, versioned architectural fix list required to move the WeUP repository from its current "Late pre-MVP / Early MVP Assembly" state to a defensible, pilot-ready Public MVP.
+
+
+To prevent Constitutional Drift into the Commodity Collapse Pattern (CCP), this implementation explicitly defers all Tier A/C moonshots (wearables, blockchain proofs, deep social graph, geo-audio) until the core economic and entry loops are proven in reality.
+
+
+PHASE 0.10: The Broken Conversion Loop (v0.2/v0.3 Gaps)
+Mission: Complete the fundamental user conversion path (Event Detail → Get Access → Pay → QR → Scan).
+
+
+1. Ticket Checkout Architecture (.NET 8 + Postgres)
+
+
+Fix: Implement the transactional pipeline linking the Canonical Event Aggregate to external payment webhooks.
+
+
+Architecture: * Create idempotent webhook listeners (e.g., Stripe) that process fulfillment in a single run.
+
+
+Implement distributed locks during the checkout window to prevent overselling highly constrained venue capacities.
+
+
+KPI: >95% checkout success rate; 0 duplicate admissions under webhook retry storms.
+
+
+2. Cryptographic QR Issuance (WeUP Pass)
+
+
+Fix: Generate and persist secure, non-transferable access tokens upon payment success.
+
+
+Architecture: * QR payloads must be signed by the server. They must contain zero plain-text PII to satisfy the Anti-Surveillance Invariant (I5).
+
+
+Bind the issued WeUP Pass directly to the Identity / Tier state machine.
+
+
+3. Door Scan & Check-In Subsystem (Quasar + Vue 3)
+
+
+Fix: Build the offline-capable operator surface for validating the WeUP Pass.
+
+
+Architecture:
+
+
+Implement an edge-first scanner module in the frontend that caches the allowed guestlist via a local IndexedDB state.
+
+
+Offline Mode: Enforce local-accept for cryptographically valid QRs when network drops, with deterministic sync-later conflict resolution to detect duplicate scans across multiple offline devices.
+
+
+KPI: <1s scan latency; 0 duplicate admissions.
+
+
+PHASE 0.15: Media Ingestion & Semantic Pipeline
+Mission: Replace manual UI-forward mocking with the deterministic ingestion and media spine (Bundle 4).
+
+
+1. Heterogeneous Source Adapters (P10)
+
+
+Fix: Build the ingestion boundary to accept manual submissions, pasted URLs, and venue page scrapes without contaminating the event domain.
+
+
+Architecture: Emits canonical candidate payloads preserving provenance and evidence, passing them into a deterministic background job queue.
+
+
+2. Flyer OCR & Media Normalization (P11 & P28-P30)
+
+
+Fix: Standardize flyer assets and extract metadata.
+
+
+Architecture: * Centralize projection logic. Do not expose raw processing output arrays or raw FFmpeg outputs directly to the UI components.
+
+
+Create canonical preview/projection DTOs so the UI cleanly consumes display-ready media.
+
+
+3. Event Deduplication & Conflict Resolution (P12)
+
+
+Fix: Prevent map clutter from duplicate flyer uploads.
+
+
+Architecture: Implement hash-based matching on flyer assets and spatial-temporal bounding boxes to automatically flag overlapping entries for review.
+
+
+4. Publish Gate Contracts (P14) & Moderation UI (P13)
+
+
+Fix: Stop treating event confidence as decorative passive metadata.
+
+
+Architecture:
+
+
+Implement strict, testable Publish Eligibility backend logic.
+
+
+Define exact blocker taxonomies (missing fields, unresolved dedupe). If an event lacks minimum requirements, publication is blocked at the API level, making it impossible for the frontend or moderation UI to silently force invalid publication.
+
+
+PHASE 0.20: Observability, Auth, & Operations
+Mission: Implement production-grade tracing, session management, and catastrophic recovery scaffolding (Concierge N22-N24).
+
+
+1. Device Sessions & Hardened Auth
+
+
+Fix: Implement a robust JWT lifecycle for the invite-to-access flow.
+
+
+Architecture: Wire MagicAuthController to create secure sessions, issue httpOnly refresh cookies, and allow single-click revoke-all for compromised operator devices.
+
+
+2. Telemetry & Observability Pipeline
+
+
+Fix: Eliminate blind spots in the API and scanner endpoints.
+
+
+Architecture: * Integrate SerilogRequestLogging with structured JSON console outputs.
+
+
+Deploy OpenTelemetry tracing and metrics via OTLP (specifically mapping ops/version, healthz, and scanner endpoint latencies).
+
+
+3. Migration Safety & Backups
+
+
+Fix: Protect the PostgreSQL persistence layer from catastrophic data loss during live events.
+
+
+Architecture: Deploy docker-compose.backup.yml with automated entrypoints (run-backup.sh, restore-latest.sh) and validate the restore drill against the MigrationsController.
+
+
+PHASE 1.0: The Pilot & Scope Freeze Doctrine
+Mission: Run real-world validation to prove the economic loop before advancing the product.
+
+
+1. The Feature Freeze
+
+
+Action: Architecturally lock the codebase. No further work on Wearables, WLLS Motion Tokens, blockchain state channels, or Fair Attribution (φ) CRA optimizers is permitted until the Phase 1.0 MVP clears the pilot phase.
+
+
+2. The Failure Test Suite Execution
+
+
+Fix: Subject the .NET 8 ticketing backend to the FAILURE_TEST_SUITE.md protocols.
+
+
+Testing Parameters:
+
+
+Load Test: 500 concurrent users attempting checkout.
+
+
+Payment Failures: Webhook delay and webhook retry storms.
+
+
+QR Replay: Immediate sequential scans of the same QR.
+
+
+3. The 3-Venue Real-World Pilot
+
+
+Execution: Deploy the hardened Phase 0.20 system to 3 organizers hosting small (50 cap), medium (150 cap), and large (200+ cap) events.
+
+
+Pass Criteria: 0 duplicate admissions, <0.5% false rejects, 0 founder intervention required at the door.
+
+
+Create a titled and versioned mitigation prompt bundle pack with detailed system architecture much like this mitigation document. Just give the title s
+
+
+WeUP Mitigation Prompt Bundle Pack v1.1: Core MVP Stabilization & Constitutional Lock
+
+
+Bundle M1: Architecture Scope Freeze & Constitutional Enforcement
+
+
+M1-P01: Enforce MVP Bounded Contexts & Strip Tier A/C Surfaces
+
+
+M1-P02: Implement API-Level Schema Linting for Profile Gravity Risk
+
+
+M1-P03: Lock UI State Topology to Map-First Event Discovery
+
+
+M1-P04: Gate Release Candidates Against Untested Extraneous Endpoints
+
+
+Bundle M2: The Deterministic Economic Loop Hardening
+
+
+M2-P05: Secure Webhook Idempotency & Retry Storm Protection for Ticket Checkout
+
+
+M2-P06: Bind Cryptographic Server-Signed QR Issuance to WeUP Pass State
+
+
+M2-P07: Implement Distributed Locks for Venue Capacity Restraints
+
+
+M2-P08: Synchronize Calendar Overlay State with Payment Fulfillment
+
+
+Bundle M3: Door Scan Integrity & Offline Resilience
+
+
+M3-P09: Cache Edge-First Allowed Guestlist via IndexedDB
+
+
+M3-P10: Enforce Local-Accept Offline Mode for Cryptographically Valid QRs
+
+
+M3-P11: Execute Deterministic Sync-Later Conflict Resolution
+
+
+M3-P12: Flag Duplicate Admission Attempts Under Network Drop Conditions
+
+
+Bundle M4: Media Ingestion Lineage & Merge Semantics
+
+
+M4-P13: Define Canonical Event Aggregate Evolution Model
+
+
+M4-P14: Implement Deduplication Merge Behavior Without Traceability Loss
+
+
+M4-P15: Protect Source Authority & Confidence Vectors Across Repeated Operations
+
+
+M4-P16: Integrate Publish Gate Contracts with Moderation UI Lineage
+
+
+Bundle M5: System Observability & Catastrophic Recovery
+
+
+M5-P17: Deploy OpenTelemetry Tracing for Edge Scanner Latencies
+
+
+M5-P18: Implement Hardened JWT Device Sessions & Single-Click Revoke-All
+
+
+M5-P19: Automate Postgres Backup Execution and Restore Drill Simulation
+
+
+M5-P20: Execute Failure Test Suite (Load, Replay, and Device Failure Scenarios)
+
+
+Is this the complete set?
+
+
+Yes, Bundles M1 through M5 represent the complete bounded set for the MVP Stabilization & Constitutional Lock.
+
+
+The mitigation specification explicitly identifies Bundle M5 (The MVP Test Suite & Catastrophic Recovery) as the final high-value artifact required to secure the baseline system.
+
+
+This hard stop is intentional and enforces the "Scope Freeze Doctrine." To prevent constitutional drift and feature bloat, the system must not advance beyond these five bundles until the 3-venue real-world pilot successfully proves the core economic loop. Any additional bundles introduced at this stage would violate the mitigation constraints by prematurely pulling in Tier A or Tier C "moonshot" features (such as wearables, blockchain state channels, or deep social graphs) before the foundational ticketing, entry, and recovery pipelines are stable.
+
+
+Create M1 prompts complete for github copilot ingestion after completing the mitigation document's prompts
+
+
+Here are the fully fleshed-out, copy-pasteable execution prompts for Bundle M1 — Ingestion Core Systems v1.0, formatted specifically for GitHub Copilot (or similar AI coding agents) ingestion.
+
+
+Copy each block entirely and paste it into your IDE's agent window to build the foundational ingestion slice without architectural drift.
+
+
+M1-P01 — Define Source Adapter and Input Contract v1.0
+Markdown
+# Context
+You are working in the WeUP Phase 0 repository. We are building the `Ingestion Core System` to enforce a strict ingestion boundary. We need to normalize all incoming sources into a single `IngestionRequest` contract before they enter the processing pipeline.
+
+
+# Objective
+Implement the Source Adapter framework and canonical input contracts for the WeUP ingestion pipeline.
+
+
+# Contracts Required (C# 11+ Records)
+Create the following domain models:
+
+
+1. `IngestionRequest`:
+- `Guid RequestId`
+- `IngestionSourceType SourceType`
+- `string RawInput` (URL or base64 data)
+- `string? SubmittedByUserId`
+- `DateTimeOffset SubmittedAtUtc`
+- `Dictionary<string, string>? Metadata`
+
+
+2. `IngestionSourceType` (Enum): `ImageUpload`, `ImageUrl`, `ManualEntry`.
+
+
+3. `RawIngestionPayload` (Output of the adapter):
+- `Guid RequestId`
+- `byte[] ImageBytes`
+- `string? SourceUrl`
+- `string ContentHash` (SHA256 for early deduplication pre-checks)
+- `DateTimeOffset ReceivedAtUtc`
+
+
+# Interfaces Required
+Create the `ISourceAdapter` interface:
+- `Task<RawIngestionPayload> AdaptAsync(IngestionRequest request);`
+
+
+# Rules & Constraints
+- All ingestion routes must pass through an implementation of `ISourceAdapter`.
+- Do NOT invoke OCR directly from API controllers.
+- The `ContentHash` must be computed immediately upon payload generation.
+- The metadata dictionary must be preserved; never drop it.
+
+
+# Acceptance Criteria
+- C# Records and Enums are defined correctly.
+- Interface `ISourceAdapter` is created.
+- A base implementation or factory is provided to route `IngestionSourceType` to specific adapters.
+- Please output only production-grade code with necessary XML docstrings.
+M1-P02 — Implement Flyer OCR Pipeline v1.0
+Markdown
+# Context
+You are working in the WeUP Phase 0 repository. We are building the `Ingestion Core System`. We have the `RawIngestionPayload` and now need to extract structured text from flyer images with deterministic output while preserving the raw trace.
+
+
+# Objective
+Implement the `IOcrService` and the result contracts to extract text from `RawIngestionPayload`.
+
+
+# Contracts Required
+1. `OcrTextBlock`:
+- `string Text`
+- `float Confidence`
+- `BoundingBox Box` (You may define a simple `BoundingBox(int X, int Y, int Width, int Height)` record)
+
+
+2. `OcrResult`:
+- `Guid RequestId`
+- `string RawText`
+- `IReadOnlyList<OcrTextBlock> Blocks`
+- `float Confidence` (Aggregate confidence)
+- `DateTimeOffset ProcessedAtUtc`
+
+
+# Interfaces Required
+Create `IOcrService`:
+- `Task<OcrResult> ExtractAsync(RawIngestionPayload payload);`
+
+
+# Rules & Constraints
+- Preserve the full raw OCR output; never discard `RawText`.
+- Do NOT aggressively "clean" or guess missing text at the OCR stage; this is the job of the normalization engine.
+- If confidence is low, return the low confidence score. Do not artificially inflate or fake certainty.
+- Support `async` execution and anticipate transient failure (wrap your mock/real implementation to handle retry logic).
+- If no text is extracted, return an empty list of blocks and 0.0f confidence, do not throw an exception.
+
+
+# Acceptance Criteria
+- Provide the contracts, the interface, and a robust fallback-safe dummy implementation (or Azure/AWS/Google Vision interface wrapper) that respects the retry constraint.
+- Include unit test placeholders ensuring raw trace preservation.
+M1-P03 — Define Normalization Engine and Event Extraction v1.0
+Markdown
+# Context
+You are working in the WeUP Phase 0 repository. The OCR pipeline now yields an `OcrResult`. We need to convert this messy textual data into a structured `CandidateEvent` without losing the origin mapping.
+
+
+# Objective
+Implement the `INormalizationEngine` that parses `OcrResult` into a structured `CandidateEvent`.
+
+
+# Contracts Required
+1. `CandidateEvent`:
+- `Guid CandidateId`
+- `Guid RequestId`
+- `string? Title`
+- `DateTimeOffset? InferredStartUtc`
+- `string? RawLocationText`
+- `float OverallExtractionConfidence`
+
+
+# Interfaces Required
+Create `INormalizationEngine`:
+- `Task<CandidateEvent> NormalizeAsync(OcrResult ocrResult);`
+
+
+# Rules & Constraints
+- The Normalization engine's sole job is semantic extraction. It must not communicate with the database.
+- Missing fields (e.g., date cannot be parsed) must be left as `null`. Do NOT default to `DateTime.UtcNow` or inject fake data.
+- Do NOT silently drop unparseable locations; keep them in `RawLocationText`.
+
+
+# Acceptance Criteria
+- Domain models and `INormalizationEngine` are defined.
+- Provide a standard implementation `RegexNormalizationEngine` or similar that extracts basic heuristics.
+- No UI logic or EF Core dependencies are introduced in this layer.
+M1-P04 — Implement Confidence Scoring and Evidence Model v1.0
+Markdown
+# Context
+You are working in the WeUP Phase 0 repository. To satisfy the WeUP Constitutional Doctrine, we must never fake certainty. Every `CandidateEvent` needs a strict evidence trail so moderators know *why* the system extracted what it did.
+
+
+# Objective
+Implement the `IEvidenceTracker` and the `ConfidenceScore` structures to attach source provenance to candidates.
+
+
+# Contracts Required
+1. `EvidenceRecord`:
+- `Guid CandidateId`
+- `string SourceType` (e.g., "OCR_Title_Match", "Date_Regex")
+- `string RawMatchedText`
+- `float LocalConfidence`
+
+
+2. `ConfidenceVector`:
+- `float TemporalConfidence` (How sure are we of the time?)
+- `float SpatialConfidence` (How sure are we of the location?)
+- `float SemanticConfidence` (How sure are we of the title/artist?)
+- `bool RequiresManualReview` (Computed property: true if any vector is < 0.8f)
+
+
+# Interfaces Required
+Create `IEvidenceTracker`:
+- `void AttachEvidence(Guid candidateId, EvidenceRecord record);`
+- `ConfidenceVector CalculateVector(Guid candidateId);`
+
+
+# Rules & Constraints
+- The `RequiresManualReview` flag is non-negotiable and strictly calculated based on the confidence vectors.
+- Evidence must be append-only.
+- Do not let the UI manipulate these scores. They are backend-authoritative.
+
+
+# Acceptance Criteria
+- C# Records defined for the evidence model.
+- Implementation of the `IEvidenceTracker`.
+- Provide a method to generate a `ConfidenceVector` based on a list of `EvidenceRecord`s.
+M1-P05 — Create Ingestion Job Lifecycle and State Tracking v1.0
+Markdown
+# Context
+You are working in the WeUP Phase 0 repository. Ingestion is an asynchronous, multi-step pipeline (`Adapter -> OCR -> Normalization -> Evidence`). We need a robust state machine to track a job from start to finish to prevent silent failures and unmoderated ghost events.
+
+
+# Objective
+Implement `IngestionJobTracker` to govern the lifecycle of an ingestion request.
+
+
+# Contracts Required
+1. `IngestionJobStatus` (Enum):
+`Received`, `OcrProcessing`, `Normalizing`, `PendingReview`, `Rejected`, `Published`, `Failed`
+
+
+2. `IngestionJob`:
+- `Guid JobId`
+- `Guid RequestId`
+- `IngestionJobStatus Status`
+- `DateTimeOffset CreatedAtUtc`
+- `DateTimeOffset UpdatedAtUtc`
+- `string? FailureReason`
+
+
+# Interfaces Required
+Create `IIngestionJobManager`:
+- `Task<IngestionJob> CreateJobAsync(IngestionRequest request);`
+- `Task TransitionJobAsync(Guid jobId, IngestionJobStatus newStatus, string? failureReason = null);`
+
+
+# Rules & Constraints
+- State transitions must be strictly monotonic (e.g., cannot go from `PendingReview` back to `OcrProcessing`).
+- If a step throws an exception, the job MUST transition to `Failed` and explicitly store the `FailureReason`.
+- Silent drops are forbidden. Every request must result in a job tracked in the system.
+
+
+# Acceptance Criteria
+- C# Enum and Record for the job state.
+- Implement the `IIngestionJobManager` with internal validation to prevent invalid state transitions.
+- Emit structured logs on every state transition.
+Your uploads may be too large for the best results. Learn moreOpens in a new window
+Create M2
+
+
+Here are the execution prompts for Bundle M2 — The Deterministic Economic Loop Hardening, formatted specifically for GitHub Copilot or your AI coding agent.
+
+
+Copy each block entirely and paste it into your IDE to build the core transactional pipeline without risking double-spends, overselling, or PII leaks.
+
+
+M2-P05 — Secure Webhook Idempotency & Retry Storm Protection
+Markdown
+# Context
+You are working in the WeUP Phase 0 repository. We are building the `Economic Loop Core`. Payment providers (like Stripe) guarantee "at least once" delivery of webhooks. During high-demand ticket drops, WeUP will face retry storms. We must ensure that a fulfilled payment never results in duplicate ticket issuance or double-crediting.
+
+
+# Objective
+Implement the `IWebhookIdempotencyService` and the persistence structures to guarantee exactly-once processing of payment webhooks.
+
+
+# Contracts Required (C# 11+ Records)
+1. `WebhookProcessingRecord`:
+- `Guid Id` (Primary Key)
+- `string ProviderEventId` (e.g., Stripe Event ID - MUST be unique)
+- `string EventType` (e.g., "checkout.session.completed")
+- `WebhookProcessingStatus Status` (Enum: `Received`, `Processing`, `Processed`, `Failed`)
+- `DateTimeOffset ReceivedAtUtc`
+- `DateTimeOffset? ProcessedAtUtc`
+
+
+# Interfaces Required
+Create `IWebhookIdempotencyService`:
+- `Task<bool> TryAcquireProcessingLockAsync(string providerEventId, string eventType);`
+- `Task MarkProcessedAsync(string providerEventId);`
+- `Task MarkFailedAsync(string providerEventId, string reason);`
+
+
+# Rules & Constraints
+- Database constraints MUST enforce uniqueness on `ProviderEventId`.
+- The `TryAcquireProcessingLockAsync` method must use atomic database operations (e.g., Postgres `INSERT ON CONFLICT DO NOTHING` or advisory locks) to ensure competing threads cannot both start processing the same webhook.
+- If the lock cannot be acquired because it is already `Processed`, return `false` so the controller can immediately return HTTP 200 OK to the provider without processing.
+- If the status is `Processing`, the system must either wait or return HTTP 409/429 to force the provider to retry later.
+
+
+# Acceptance Criteria
+- EF Core Entity configuration explicitly defines the unique index on the provider event ID.
+- Implementation handles concurrent identical webhooks gracefully.
+- Include unit tests simulating two threads attempting to process the same `providerEventId` simultaneously.
+M2-P06 — Bind Cryptographic Server-Signed QR Issuance to WeUP Pass State
+Markdown
+# Context
+You are working in the WeUP Phase 0 repository. The economic loop has cleared the webhook. We must now issue the `WeUP Pass` (the ticket). To satisfy the Anti-Surveillance Invariant (I5), the QR payload must contain ZERO plain-text personally identifiable information (PII).
+
+
+# Objective
+Implement `IPassIssuanceService` to generate a cryptographically signed payload bound to the `Canonical Event Aggregate` and the `Identity / Tier` state machine.
+
+
+# Contracts Required
+1. `WeupPassRecord` (Database Entity):
+- `Guid PassId`
+- `Guid EventId`
+- `Guid UserId`
+- `string TicketTier`
+- `PassState State` (Enum: `Issued`, `Scanned`, `Revoked`)
+- `string SignatureHash` 
+
+
+2. `QrPayloadDto` (What gets encoded into the QR):
+- `Guid PassId`
+- `Guid EventId`
+- `long ExpiryUnix`
+- `string ServerSignature` (HMAC-SHA256 of PassId + EventId + Expiry + Secret)
+
+
+# Interfaces Required
+Create `IPassIssuanceService`:
+- `Task<WeupPassRecord> IssuePassAsync(Guid eventId, Guid userId, string tier);`
+- `bool VerifyPassSignature(QrPayloadDto payload);`
+
+
+# Rules & Constraints
+- The QR payload MUST NOT contain the user's name, email, or phone number.
+- The `ServerSignature` must be generated using a strictly managed backend secret (e.g., injected via `IOptions<PassCryptographyOptions>`).
+- The pass state must default to `Issued`.
+- The system must prevent issuing a pass if the user already holds an active pass for this specific event unless the tier explicitly allows multiples (assume standard 1-per-user for MVP).
+
+
+# Acceptance Criteria
+- The Cryptography service correctly signs and validates payloads.
+- The issuance service records the pass in the database within a transaction.
+- Tampering with the `PassId` or `EventId` in the `QrPayloadDto` results in a failed signature verification.
+M2-P07 — Implement Distributed Locks for Venue Capacity Restraints
+Markdown
+# Context
+You are working in the WeUP Phase 0 repository. Underground venues have strict, hard physical capacities. If a venue holds 150 people, we cannot sell 151 tickets, even if 50 people click "Buy" at the exact same millisecond. 
+
+
+# Objective
+Implement the `ITicketInventoryService` using distributed locking to manage atomic capacity decrements.
+
+
+# Contracts Required
+1. `EventCapacityState`:
+- `Guid EventId`
+- `int TotalCapacity`
+- `int ReservedCount` (Tickets in checkout flow, locked for 10 mins)
+- `int SoldCount` (Fully paid)
+
+
+# Interfaces Required
+Create `ITicketInventoryService`:
+- `Task<bool> TryReserveTicketAsync(Guid eventId, Guid userId, TimeSpan holdDuration);`
+- `Task CommitReservationAsync(Guid eventId, Guid userId);`
+- `Task ReleaseReservationAsync(Guid eventId, Guid userId);`
+
+
+# Rules & Constraints
+- You MUST use a distributed lock mechanism. If using pure Postgres, use `pg_advisory_xact_lock` or row-level `SELECT ... FOR UPDATE` on a specific capacity row. If using Redis, use Redlock. (Default to Postgres row-level locking for stack simplicity unless otherwise specified).
+- Calculation constraint: `TotalCapacity >= (SoldCount + ReservedCount) + 1` must evaluate to true before granting a reservation.
+- Reservations must have an expiration (e.g., 10 minutes). A background worker or lazy-evaluation query must release expired reservations.
+
+
+# Acceptance Criteria
+- Capacity cannot be overdrawn under concurrent load.
+- Expiration logic correctly frees up capacity if a user abandons the checkout flow.
+- Provide a load-test script or unit test that simulates 10 concurrent requests for 1 remaining ticket, ensuring exactly 1 succeeds and 9 fail.
+M2-P08 — Synchronize Calendar Overlay State with Payment Fulfillment
+Markdown
+# Context
+You are working in the WeUP Phase 0 repository. The WeUP Calendar Overlay UI must reflect reality instantly. When a user completes a ticket purchase, their spatial map and calendar overlay must update to show they are "Committed" to that event without requiring a hard page refresh.
+
+
+# Objective
+Implement the state synchronization layer between backend fulfillment and the Vue 3 / Quasar frontend using standard WebSocket/SignalR or robust polling DTOs.
+
+
+# Contracts Required
+1. `UserEventStateDto`:
+- `Guid EventId`
+- `EventCommitmentLevel Level` (Enum: `None`, `Saved`, `Ticketed`, `CheckedIn`)
+- `Guid? PassId`
+
+
+# Interfaces Required (Backend)
+Create `IClientStateNotifier`:
+- `Task NotifyTicketConfirmedAsync(Guid userId, Guid eventId, Guid passId);`
+
+
+# Pinia Store Action (Frontend - TypeScript)
+Create an action in `useEventStore`:
+- `updateCommitmentState(eventId: string, passId: string)`
+
+
+# Rules & Constraints
+- The backend must push a lightweight notification (or be pollable via a highly optimized `/api/me/event-states` endpoint) that updates the `UserEventStateDto`.
+- The frontend `Pinia` store must reactively update the specific event card's UI state (e.g., changing the button from "Get Access" to "View Pass") across the Map, Calendar Overlay, and Event Detail view simultaneously.
+- Do NOT re-fetch the entire event catalog just to update one ticket status. Mutate the local state graph directly.
+
+
+# Acceptance Criteria
+- Define the backend notification interface/hub.
+- Provide the TypeScript Pinia store patch demonstrating how the specific event node is updated immutably.
+- Provide the Vue 3 component computed property that reacts to this state change to render the `WeUP Pass` QR code access button. 
+
+M9-P43 — Build Spatial Query Semantics and Filtering Logic v1.0
+Writing
+You are implementing canonical spatial query semantics for a production-grade event discovery application using .NET 8 and Vue 3 + Quasar.
+
+
+Objective:
+Define and implement consistent spatial filtering behavior across map feed, calendar feed, and saved discovery surfaces.
+
+
+Requirements:
+
+
+Support query dimensions:
+
+
+marketId
+
+
+districtIds
+
+
+neighborhoodIds
+
+
+bbox
+
+
+proximity-ready seam if needed
+
+
+Define how filters interact when multiple spatial dimensions are present
+
+
+Establish precedence and validation rules for:
+
+
+bbox-only queries
+
+
+market + district queries
+
+
+district + neighborhood combinations
+
+
+invalid or conflicting spatial combinations
+
+
+Ensure frontend filter state aligns exactly to backend query DTOs
+
+
+Deliver:
+
+
+C# SpatialQueryDto
+
+
+TypeScript interface aligned to DTO
+
+
+Backend validation rules for spatial query combinations
+
+
+Frontend composable/filter model for spatial filters
+
+
+Example controller/query-binding usage
+
+
+Rules for empty results, invalid filters, and conflicting filters
+
+
+Rules:
+
+
+Spatial filters must not be treated as loose strings
+
+
+Backend must own authoritative query interpretation
+
+
+Bbox queries and taxonomy filters must have explicit composition rules
+
+
+Invalid combinations must fail or normalize explicitly, not ambiguously
+
+
+Constraints:
+
+
+No duplicate filter logic spread across components
+
+
+No hidden fallback from district filter to raw text matching
+
+
+Must align map, calendar, and saved views to one spatial contract
+
+
+Output:
+
+
+Full C# DTO and validation scaffolding
+
+
+Full TypeScript interface/composable scaffold
+
+
+Comments explaining filter precedence, composition rules, and invalid query handling
+
+
+M9-P43 — Build Spatial Query Semantics and Filtering Logic v1.0
+Writing
+You are implementing canonical spatial query semantics for a production-grade event discovery application using .NET 8 and Vue 3 + Quasar.
+
+
+Objective:
+Define and implement consistent spatial filtering behavior across map feed, calendar feed, and saved discovery surfaces.
+
+
+Requirements:
+
+
+Support query dimensions:
+
+
+marketId
+
+
+districtIds
+
+
+neighborhoodIds
+
+
+bbox
+
+
+proximity-ready seam if needed
+
+
+Define how filters interact when multiple spatial dimensions are present
+
+
+Establish precedence and validation rules for:
+
+
+bbox-only queries
+
+
+market + district queries
+
+
+district + neighborhood combinations
+
+
+invalid or conflicting spatial combinations
+
+
+Ensure frontend filter state aligns exactly to backend query DTOs
+
+
+Deliver:
+
+
+C# SpatialQueryDto
+
+
+TypeScript interface aligned to DTO
+
+
+Backend validation rules for spatial query combinations
+
+
+Frontend composable/filter model for spatial filters
+
+
+Example controller/query-binding usage
+
+
+Rules for empty results, invalid filters, and conflicting filters
+
+
+Rules:
+
+
+Spatial filters must not be treated as loose strings
+
+
+Backend must own authoritative query interpretation
+
+
+Bbox queries and taxonomy filters must have explicit composition rules
+
+
+Invalid combinations must fail or normalize explicitly, not ambiguously
+
+
+Constraints:
+
+
+No duplicate filter logic spread across components
+
+
+No hidden fallback from district filter to raw text matching
+
+
+Must align map, calendar, and saved views to one spatial contract
+
+
+Output:
+
+
+Full C# DTO and validation scaffolding
+
+
+Full TypeScript interface/composable scaffold
+
+
+Comments explaining filter precedence, composition rules, and invalid query handling
+
+
+
+
+M9-P43 — Build Spatial Query Semantics and Filtering Logic v1.0
+Writing
+You are implementing canonical spatial query semantics for a production-grade event discovery application using .NET 8 and Vue 3 + Quasar.
+
+
+Objective:
+Define and implement consistent spatial filtering behavior across map feed, calendar feed, and saved discovery surfaces.
+
+
+Requirements:
+
+
+Support query dimensions:
+
+
+marketId
+
+
+districtIds
+
+
+neighborhoodIds
+
+
+bbox
+
+
+proximity-ready seam if needed
+
+
+Define how filters interact when multiple spatial dimensions are present
+
+
+Establish precedence and validation rules for:
+
+
+bbox-only queries
+
+
+market + district queries
+
+
+district + neighborhood combinations
+
+
+invalid or conflicting spatial combinations
+
+
+Ensure frontend filter state aligns exactly to backend query DTOs
+
+
+Deliver:
+
+
+C# SpatialQueryDto
+
+
+TypeScript interface aligned to DTO
+
+
+Backend validation rules for spatial query combinations
+
+
+Frontend composable/filter model for spatial filters
+
+
+Example controller/query-binding usage
+
+
+Rules for empty results, invalid filters, and conflicting filters
+
+
+Rules:
+
+
+Spatial filters must not be treated as loose strings
+
+
+Backend must own authoritative query interpretation
+
+
+Bbox queries and taxonomy filters must have explicit composition rules
+
+
+Invalid combinations must fail or normalize explicitly, not ambiguously
+
+
+Constraints:
+
+
+No duplicate filter logic spread across components
+
+
+No hidden fallback from district filter to raw text matching
+
+
+Must align map, calendar, and saved views to one spatial contract
+
+
+Output:
+
+
+Full C# DTO and validation scaffolding
+
+
+Full TypeScript interface/composable scaffold
+
+
+Comments explaining filter precedence, composition rules, and invalid query handling

@@ -1,0 +1,144 @@
+﻿WeUP MVP Prompt Bundle Registry (Titles Only)
+________________
+
+
+Bundle M1 — Ingestion Core Systems v1.0
+* M1-P01 — Define Source Adapter and Input Contract v1.0
+* M1-P02 — Implement Flyer OCR Pipeline v1.0
+* M1-P03 — Define Normalization Engine and Event Extraction v1.0
+* M1-P04 — Implement Confidence Scoring and Evidence Model v1.0
+* M1-P05 — Create Ingestion Job Lifecycle and State Tracking v1.0
+________________
+
+
+Bundle M2 — Deduplication and Resolution Engine v1.0
+* M2-P06 — Define Canonical Deduplication Strategy and Matching Heuristics v1.0
+* M2-P07 — Implement Fuzzy Matching Across Title, Time, and Venue v1.0
+* M2-P08 — Implement Geo-Spatial Proximity Matching v1.0
+* M2-P09 — Create Merge Planning and Conflict Resolution System v1.0
+* M2-P10 — Enforce Provenance Preservation Across Merged Events v1.0
+________________
+
+
+Bundle M3 — Moderation and Publish Control v1.0
+* M3-P11 — Define EventRiskScore and Moderation Classification Model v1.0
+* M3-P12 — Build Moderation Queue and Review Workflow v1.0
+* M3-P13 — Implement Publish Eligibility Gate and Validation Rules v1.0
+* M3-P14 — Create Immutable Moderation History and Audit Trail v1.0
+* M3-P15 — Implement Moderator Actions and Review Surfaces v1.0
+________________
+
+
+Bundle M4 — Canonical Event System and Data Integrity v1.0
+* M4-P16 — Define Canonical EventAggregate Contract v1.0
+* M4-P17 — Establish DTO Mapping Boundaries Between Frontend and Backend v1.0
+* M4-P18 — Implement Event Versioning and Update Semantics v1.0
+* M4-P19 — Enforce Schema Consistency and Contract Validation v1.0
+* M4-P20 — Track Merge Lineage and Event Evolution v1.0
+________________
+
+
+Bundle M5 — Map and Discovery Surface v1.0
+* M5-P21 — Implement Map Rendering and Marker System v1.0
+* M5-P22 — Build Marker Clustering and Density Control v1.0
+* M5-P23 — Implement Event Detail Modal and Interaction Flow v1.0
+* M5-P24 — Integrate Time-Based Filtering into Map Discovery v1.0
+* M5-P25 — Optimize Map Performance and Rendering Latency v1.0
+________________
+
+
+Bundle M6 — Calendar Overlay and Temporal UI v1.0
+* M6-P26 — Implement Calendar Overlay Layer Architecture v1.0
+* M6-P27 — Build Masonry Event Layout and Time-Slot Packing v1.0
+* M6-P28 — Sync Calendar Overlay with Map State v1.0
+* M6-P29 — Implement Temporal Navigation and Scrubbing Controls v1.0
+* M6-P30 — Optimize Calendar Interaction and Transition States v1.0
+________________
+
+
+Bundle M7 — Save System and User Context v1.0
+* M7-P31 — Implement Save and Unsave Event Functionality v1.0
+* M7-P32 — Define Local Persistence Model for Anonymous Users v1.0
+* M7-P33 — Implement Auth-Ready Save State Migration Path v1.0
+* M7-P34 — Build User Context and Preference Tracking v1.0
+* M7-P35 — Create Saved Events Retrieval and Display Logic v1.0
+________________
+
+
+Bundle M8 — Temporal Semantics Engine v1.0
+* M8-P36 — Define Canonical Time Window Semantics v1.0
+* M8-P37 — Implement “Tonight,” “Weekend,” and Rolling Window Logic v1.0
+* M8-P38 — Normalize Timezone Handling Across System Layers v1.0
+* M8-P39 — Synchronize Temporal Logic Between Frontend and Backend v1.0
+* M8-P40 — Validate Temporal Edge Cases and Boundary Conditions v1.0
+________________
+
+
+Bundle M9 — Spatial Semantics and City Modeling v1.0
+* M9-P41 — Define Market, District, and Neighborhood Model v1.0
+* M9-P42 — Implement Geo Validation and Coordinate Integrity v1.0
+* M9-P43 — Build Spatial Query Semantics and Filtering Logic v1.0
+* M9-P44 — Design Cluster-Ready Spatial Response Structures v1.0
+* M9-P45 — Document Houston Phase 0 Spatial Model v1.0
+________________
+
+
+Bundle M10 — Ingestion Observability and Telemetry v1.0
+* M10-P46 — Implement Ingestion Metrics and Success Tracking v1.0
+* M10-P47 — Add OCR and Normalization Telemetry v1.0
+* M10-P48 — Track Deduplication and Merge Outcomes v1.0
+* M10-P49 — Monitor Moderation Throughput and Backlog v1.0
+* M10-P50 — Create Ingestion Performance Dashboard v1.0
+________________
+
+
+Bundle M11 — Promoter Incentive and Abuse Protection v1.0
+* M11-P51 — Define Promoter Submission Incentive Model v1.0
+* M11-P52 — Implement Submission Rate Limiting and Throttling v1.0
+* M11-P53 — Detect Duplicate and Spam Submissions v1.0
+* M11-P54 — Implement Basic Reputation Scoring for Submitters v1.0
+* M11-P55 — Integrate Incentive Logic with Moderation Gate v1.0
+________________
+
+
+Bundle M12 — Identity and Session Layer v1.0
+* M12-P56 — Implement Anonymous Session Identity Model v1.0
+* M12-P57 — Add Lightweight Authentication (Email/Magic Link) v1.0
+* M12-P58 — Bind User Actions to Identity Context v1.0
+* M12-P59 — Secure Submission and Save Flows v1.0
+* M12-P60 — Validate Identity-Dependent Behaviors via Tests v1.0
+________________
+
+
+Bundle M13 — Error Handling and Failure Semantics v1.0
+* M13-P61 — Define OCR Failure and Partial Extraction Handling v1.0
+* M13-P62 — Implement Missing and Ambiguous Field Resolution v1.0
+* M13-P63 — Handle Conflicting Data from Multiple Sources v1.0
+* M13-P64 — Define Confidence Transparency and UI Exposure v1.0
+* M13-P65 — Build Deterministic Failure States Across System v1.0
+________________
+
+
+Bundle M14 — MVP Integration and End-to-End Validation v1.0
+* M14-P66 — Build End-to-End Ingestion-to-Map Test Harness v1.0
+* M14-P67 — Validate Full Discovery Flow Across UI and Backend v1.0
+* M14-P68 — Test Deduplication and Moderation in Real Data Scenarios v1.0
+* M14-P69 — Validate Performance Under MVP Load Conditions v1.0
+* M14-P70 — Produce MVP Readiness Report and Gap Matrix v1.0
+________________
+
+
+Final Structure
+You now have:
+* 14 Bundles
+* 70 MVP prompts
+* Fully segmented by system domain
+* Fully versioned and execution-ready
+________________
+
+
+Next
+If you want precision execution:
+* I can expand M1 (Ingestion Core) into full deep prompts
+* or generate M2 Dedup Engine with scoring algorithms + C# implementation
+* or produce a full MVP execution order with dependencies and timelines

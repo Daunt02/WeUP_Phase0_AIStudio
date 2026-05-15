@@ -1,0 +1,145 @@
+﻿Hardening Prompt Bundle Pack — WeUP Phase 0 Repo Consolidation
+This pack targets the exact weaknesses identified in the repo audit:
+* missing operational domains
+* non-functioning default runtime paths
+* redundant representations
+* transitional seams that need consolidation
+* gaps between architecture and activation
+This is not a greenfield pack.
+This is a repair, hardening, and consolidation pack for the repo as it exists now.
+________________
+
+
+Bundle H1 — Runtime Consolidation and Drift Removal
+H1-P01 — Eliminate Event Representation Drift Across Frontend, Domain, Contracts, and EF
+Create a full repo-wide consolidation pass that identifies and removes redundant event representations where possible. Define the exact role of NightlifeItem, EventAggregate, frontend projections, backend DTOs, and EF entities. Replace any improper direct consumption of legacy prototype shapes in active application code, and document a strict mapping boundary so only approved transformations remain.
+H1-P02 — Replace Transitional Save-State Split with a Single Source of Truth
+Refactor the save system so the application no longer has competing authorities between local persisted save IDs and backend save APIs. Define the final ownership model for saved events, migration behavior for local users, fallback behavior when unauthenticated, and the precise role of local UI persistence versus backend persistence.
+H1-P03 — Activate Real Runtime Mode and Remove Stub-First Default Execution
+Refactor backend startup and environment configuration so the application can run in an actual EF-backed mode by default in local development, while still allowing a clearly isolated stub/dev mode when explicitly configured. Remove the current ambiguity where EF repositories exist but stub repositories remain the silent default.
+H1-P04 — Normalize Frontend Service Layer to Real API-Backed Execution
+Refactor the frontend service layer so event reads, detail fetches, calendar fetches, and saves use the real backend API path instead of transitional mock-first service logic. Preserve a thin adapter seam if needed, but remove the ambiguity between migration seam and production behavior.
+H1-P05 — Remove Dead, Deprecated, and Transitional Runtime Paths
+Perform a targeted cleanup of deprecated service methods, duplicate fetch paths, old prototype state flows, unused event helpers, and stale runtime seams left over from the pre-P06/P09 architecture. Produce a repo-safe cleanup that removes dead logic without breaking the active app.
+________________
+
+
+Bundle H2 — Backend Activation, Persistence, and Operational Readiness
+H2-P06 — Commit and Validate Real EF Core Migrations and Database Bootstrap
+Replace migration instructions-only behavior with real committed EF Core migration artifacts, a deterministic local database bootstrap path, and a validated startup path for PostgreSQL-backed execution. Ensure the backend can be provisioned from repository state alone.
+H2-P07 — Harden Program.cs, Configuration, and Environment Matrix
+Create a production-grade configuration model for the backend that covers appsettings, development settings, environment variables, connection strings, stub-vs-real mode selection, and local frontend/backend coordination. Eliminate hidden startup ambiguity and document the environment matrix clearly.
+H2-P08 — Add Integration Tests for API, EF Repositories, and Persistence Flows
+Build integration tests that validate map feed, calendar feed, event detail, submission creation, save/unsave behavior, and database-backed repository behavior. The goal is to prove the backend actually works under real persistence, not merely compiles.
+H2-P09 — Add Repository Activation Guardrails and Startup Health Validation
+Add startup checks and health probes that fail loudly when the backend is misconfigured, such as missing connection strings, migrations not applied, or EF mode enabled without required packages or database availability. The app must stop pretending to be healthy when it is only partially wired.
+H2-P10 — Consolidate Contracts Between TypeScript and C# Without Silent Drift
+Create a repo-level contract discipline for frontend and backend DTO/query shape alignment. Whether through generation, validation tests, or strict mapping docs, ensure TypeScript contracts and C# contracts cannot silently diverge as the application evolves.
+________________
+
+
+Bundle H3 — Ingestion, Resolution, and Moderation Core
+H3-P11 — Implement the Missing Source Adapter and Ingestion Domain
+Create the real ingestion boundary missing from the application: source adapters, ingestion job lifecycle, candidate normalization contracts, evidence references, and backend endpoints for manual submission, pasted URL, and venue-page ingestion. This prompt closes the current missing ingestion domain.
+H3-P12 — Implement Flyer OCR Pipeline with Evidence Preservation and Review Triggers
+Add the real flyer ingestion pipeline on top of the ingestion framework, including OCR seam, normalization seam, confidence emission, evidence preservation, and deterministic manual-review recommendations. Do not fake certainty or bypass provenance.
+H3-P13 — Implement Deduplication, Entity Resolution, and Merge Planning
+Create the resolution layer that compares candidate events to existing records, scores duplicate likelihood, emits merge plans, blocks unsafe merges, and preserves provenance across merged records. This closes one of the largest missing operational domains in the repo.
+H3-P14 — Build the Moderation Queue, Review Actions, and Evidence Retrieval API
+Turn the current review structures into an operable moderation system: queue endpoints, evidence bundles, immutable review actions, history retrieval, and lifecycle-consistent moderation transitions. This replaces review-as-structure with review-as-system.
+H3-P15 — Enforce Publish Eligibility as a Backend Gate
+Take the existing confidence and review metadata and implement a real publish eligibility service with explicit thresholds, blockers, required-field rules, and moderation integration. Confidence must become an operational gate, not descriptive metadata.
+________________
+
+
+Bundle H4 — Identity, User Persistence, and State Ownership
+H4-P16 — Implement Real Auth, Session Identity, and Role Resolution
+Replace anonymous seams and placeholder user resolution with actual authentication, session or token identity, and role-aware backend request handling. Establish the real ownership model for user actions, saves, submissions, and moderation access.
+H4-P17 — Migrate Saved Events, Preferences, and UI Persistence into a Coherent User Model
+Unify saved events, user preferences, persisted map context, and later itinerary-oriented state into a clear ownership model that distinguishes local convenience state from authenticated system-of-record data. Remove the current split-brain persistence model.
+H4-P18 — Implement Full Event Submission Lifecycle for Real Users
+Turn submissions into a real authenticated user workflow with status tracking, evidence preservation, moderation linkage, and submission history retrieval. Ensure submitter identity becomes part of the operational system rather than a seam.
+H4-P19 — Add Moderator Authorization and Protected Administrative Surfaces
+Introduce real authorization boundaries for moderation endpoints, queue access, and future operational surfaces. Do not leave moderation as a public or effectively unsecured capability.
+H4-P20 — Add Account-State and Identity Tests for Protected Flows
+Create tests that validate authenticated save flows, anonymous fallback behavior, moderator-only access, submission ownership, and protected endpoint enforcement.
+________________
+
+
+Bundle H5 — Spatial, Temporal, and City Semantics Hardening
+H5-P21 — Replace District Placeholder Logic with a Real Market and District Domain
+Remove temporary hacks like mapping district code to AddressCity. Implement a first-class district/neighborhood/market model with explicit query semantics, future expansion seams, and domain-level meaning.
+H5-P22 — Harden Temporal Query Semantics Across Frontend and Backend
+Audit and normalize temporal window resolution, preset interpretation, timezone handling, and calendar integration so the frontend and backend agree exactly on what “today,” “tonight,” “weekend,” and custom windows mean.
+H5-P23 — Add Spatial Query Validation, Clustering, and PostGIS Upgrade Path
+Take the current bounding-box implementation and harden it for real use: stronger validation, cluster-ready response design, explicit PostGIS upgrade seam, and removal of geospatial shortcuts that will not scale.
+H5-P24 — Build Spatial/Temporal Contract Tests and Drift Detection
+Create test coverage that validates TS and C# query contract parity for geospatial and temporal semantics, including window edge cases, invalid bounding boxes, and market-specific timezone behavior.
+H5-P25 — Document the Canonical City Semantics Model for Houston Phase 0
+Create a single authoritative document covering market boundaries, district taxonomy, neighborhood handling, temporal discovery semantics, and how these concepts should be represented across UI, contracts, backend, and persistence.
+________________
+
+
+Bundle H6 — Observability, Release Gates, and Production Discipline
+H6-P26 — Implement Real OpenTelemetry, Correlation IDs, and Structured Logging
+Replace observability seams with active instrumentation across API requests, ingestion jobs, moderation actions, persistence flows, and error paths. Add correlation IDs so failures are traceable end-to-end.
+H6-P27 — Add Product Analytics and Error Telemetry Without Polluting Core Logic
+Implement analytics and runtime error telemetry with clean boundaries, ensuring product instrumentation does not become scattered through UI components or backend endpoints.
+H6-P28 — Create a Real End-to-End Test Harness Across Frontend and Backend
+Build a repo-level harness that proves the main user flows work across the actual app stack: world surface load, map feed, event detail, saves, submission, moderation-ready candidate handling, and authenticated behavior.
+H6-P29 — Add Release Mode Gatekeeping and Fail-Fast Environment Validation
+Implement explicit release-mode checks that block launch when critical requirements are missing, such as absent database connectivity, unmigrated schema, disabled auth, missing telemetry, or unresolved contract drift.
+H6-P30 — Create the WeUP Phase 0 Hardening Report and Remaining Gap Matrix
+Produce a final engineering report summarizing what was hardened, what was removed, what remains missing, and what exact blockers still exist between the repository and a true operational Phase 0 release.
+________________
+
+
+Recommended execution order
+Do not run this pack numerically without thought. The best order is:
+1. H1-P03
+2. H2-P06
+3. H2-P07
+4. H1-P04
+5. H1-P01
+6. H1-P02
+7. H1-P05
+8. H2-P08
+9. H2-P09
+10. H2-P10
+11. H3-P11
+12. H3-P12
+13. H3-P13
+14. H3-P15
+15. H3-P14
+16. H4-P16
+17. H4-P17
+18. H4-P18
+19. H4-P19
+20. H4-P20
+21. H5-P21
+22. H5-P22
+23. H5-P23
+24. H5-P24
+25. H5-P25
+26. H6-P26
+27. H6-P27
+28. H6-P28
+29. H6-P29
+30. H6-P30
+________________
+
+
+Hard truth
+Your repo does not primarily need more speculative features right now.
+It needs:
+* consolidation
+* activation
+* discipline
+* operability
+* testability
+* elimination of transitional ambiguity
+That is what this hardening pack is designed to force.
+Next
+I can turn this into a full copy-paste markdown registry file named like:
+WEUP_PHASE0_HARDENING_PROMPT_BUNDLE_PACK_v1.md
+or I can expand Bundle H1 into full deep execution prompts first.

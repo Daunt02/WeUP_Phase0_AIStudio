@@ -1,0 +1,3418 @@
+﻿WeUP Phase0 is being released today. Give a bulletpointed todo that will be condensed into 10 mod prompts
+
+
+Below is a condensed execution plan → mapped into 10 modular prompt blocks (designed for Google AI Studio / Copilot / Autogen ingestion).
+Each prompt is atomic, production-oriented, and Phase 0–scoped.
+
+
+🔧 WeUP Phase 0 — Release-Day Execution (10 Prompt Modules)
+1. CORE SYSTEM STABILIZATION
+Prompt 01 — “Stabilize Phase 0 Runtime”
+
+
+Validate all API endpoints (upload, OCR, parser, map, calendar, save)
+
+
+Enforce strict error boundaries (frontend + backend)
+
+
+Add global loading + retry states
+
+
+Implement fallback UI for failed OCR / parsing
+
+
+Ensure mobile responsiveness (critical)
+
+
+Lock dependencies (no last-minute version drift)
+
+
+2. FLYER INGESTION PIPELINE HARDENING
+Prompt 02 — “Flyer Upload + OCR + Parser Finalization”
+
+
+Accept: image, video flyer (MP4/MOV), PDF
+
+
+OCR pipeline:
+
+
+Extract: event name, date, time, location
+
+
+Confidence scoring per field
+
+
+Parser:
+
+
+Normalize datetime → UTC
+
+
+Resolve partial addresses → geocode
+
+
+Add manual correction UI (user-in-the-loop)
+
+
+Store raw + parsed + corrected versions
+
+
+3. MAP ENGINE (PRIMARY SURFACE)
+Prompt 03 — “Map as System Anchor”
+
+
+Map = default state (no empty screen)
+
+
+Plot events as:
+
+
+clustered pins
+
+
+heat zones (optional toggle)
+
+
+Tap → modal overlay (no navigation away)
+
+
+Add filters:
+
+
+time window slider
+
+
+category (party, networking, etc.)
+
+
+Optimize marker rendering performance
+
+
+4. CALENDAR + TIME INTELLIGENCE
+Prompt 04 — “Temporal Layer Upgrade”
+
+
+Replace basic calendar with:
+
+
+masonry / stacked timeline view
+
+
+Add:
+
+
+“Now / Tonight / Weekend” quick filters
+
+
+Sync with map:
+
+
+selecting time updates visible pins
+
+
+Hide time slider unless actively filtering
+
+
+Ensure zero-scroll modal interaction
+
+
+5. MODAL SYSTEM (NO PAGE NAVIGATION)
+Prompt 05 — “Overlay Interaction System”
+
+
+All actions occur in layered modals:
+
+
+Event detail
+
+
+Upload flow
+
+
+Save / favorites
+
+
+Modal rules:
+
+
+draggable
+
+
+snap positions (bottom / mid / full)
+
+
+Maintain map visibility behind modals
+
+
+Add animation transitions (fast, not heavy)
+
+
+6. SAVE + USER MEMORY (LIGHTWEIGHT)
+Prompt 06 — “User State + Persistence”
+
+
+Allow:
+
+
+save event
+
+
+bookmark locations
+
+
+Store locally first (Phase 0)
+
+
+Optional:
+
+
+lightweight auth (magic link or anon ID)
+
+
+Track:
+
+
+viewed events
+
+
+interaction timestamps
+
+
+7. VIDEO FLYER FEATURE (MONETIZATION SEED)
+Prompt 07 — “Video Flyer Ingestion + Boost”
+
+
+Accept video flyers
+
+
+Extract:
+
+
+thumbnail preview
+
+
+Tag as:
+
+
+“Featured”
+
+
+Display priority on map + feed
+
+
+Add “boosted placement” flag (future paid feature)
+
+
+8. UI/UX COMPRESSION FIXES
+Prompt 08 — “Viewport Optimization + De-Clutter”
+
+
+Remove visual congestion:
+
+
+hide secondary controls by default
+
+
+Prioritize:
+
+
+map visibility
+
+
+event clarity
+
+
+Introduce:
+
+
+context-aware UI (only show relevant controls)
+
+
+Ensure:
+
+
+thumb-friendly mobile interaction zones
+
+
+9. ANALYTICS + TELEMETRY (CRITICAL)
+Prompt 09 — “Phase 0 Tracking Layer”
+Track:
+
+
+uploads per user
+
+
+OCR success rate
+
+
+event saves
+
+
+map interactions (tap, zoom, filter)
+
+
+video flyer engagement
+
+
+Store in:
+
+
+lightweight analytics service (Firebase / Supabase)
+
+
+10. LAUNCH + MONETIZATION PRIMITIVES
+Prompt 10 — “Release + Revenue Hooks”
+
+
+Enable:
+
+
+featured event flag
+
+
+priority placement logic
+
+
+Add:
+
+
+“Promote this event” CTA (non-functional placeholder ok)
+
+
+Seed initial content manually if needed
+
+
+Prepare:
+
+
+Stripe hooks (disabled but scaffolded)
+
+
+Add simple landing explanation overlay for new users
+
+
+⚠️ Critical Release Constraints
+No new features beyond this scope
+
+
+No navigation complexity (single-page enforced)
+
+
+Map must never disappear
+
+
+User must understand app in <10 seconds
+
+
+Every action must feel immediate
+
+
+🧠 Execution Strategy (Condensed)
+If you are deploying via:
+
+
+Google AI Studio → each prompt = separate generation run
+
+
+Autogen / Agents → each prompt = task node in DAG
+
+
+Copilot → paste per file/module
+
+
+Optional (Recommended Next Step)
+If you want, I can convert this into:
+
+
+Full AI Studio MegaPrompt (one-shot build)
+
+
+Vue.js + Quasar component map (exact files)
+
+
+.NET backend endpoint checklist
+
+
+Agent orchestration DAG for Phase 0
+
+
+Just specify.
+
+
+
+
+Create 10 GitHub copilot prompts to end to end create WeUP Phase0
+
+
+Below are 10 GitHub Copilot prompts designed to generate WeUP Phase 0 end to end. They are ordered so you can run them sequentially across the codebase. Each prompt is written to push Copilot toward production-shaped output, not toy snippets.
+
+
+Use them as inline file prompts, chat prompts inside VS Code, or as the basis for Copilot Agent tasks.
+
+
+1. Monorepo and project scaffolding prompt
+You are a senior full stack architect. Create the complete starter scaffold for a production-ready WeUP Phase 0 application.
+
+
+Tech stack:
+- Frontend: Vue 3, Vite, TypeScript, Pinia, Vue Router
+- UI: Quasar preferred if needed, otherwise clean Vue component architecture
+- Map: Mapbox GL JS
+- Backend: ASP.NET Core .NET 8 Web API
+- Data store: PostgreSQL
+- Object/file storage abstraction for uploaded flyers
+- OCR/parser pipeline should be pluggable
+- Auth should be optional/lightweight for Phase 0
+- App must support mobile-first use
+
+
+Primary Phase 0 features:
+- Flyer upload
+- OCR extraction
+- Event parser and normalization
+- Map visualization
+- Calendar/timeline visualization
+- Save/bookmark events
+- Event detail modal
+- Basic analytics
+- Video flyer support as featured ingestion
+
+
+Generate:
+1. Full monorepo folder structure
+2. Frontend file structure
+3. Backend file structure
+4. Shared DTO and contract structure
+5. Environment variable templates
+6. Docker Compose for local development
+7. README with run instructions
+8. Recommended NuGet and npm packages
+9. Minimal seed data strategy
+10. Notes for future Stripe monetization hooks
+
+
+Constraints:
+- Keep Phase 0 focused
+- Single-page experience
+- Map-first UX
+- No unnecessary microservices yet
+- Code should be modular and easy to expand later
+
+
+Output the exact folder tree first, then generate each major starter file with code.
+2. Backend domain model and database prompt
+Create the full backend domain model and persistence layer for WeUP Phase 0 in ASP.NET Core .NET 8 using PostgreSQL and Entity Framework Core.
+
+
+The system must support:
+- Uploaded flyers
+- OCR extraction results
+- Parsed event records
+- Event source metadata
+- Geocoded addresses
+- Video flyer flag
+- Featured/boost-ready flag
+- Saved events
+- Lightweight analytics events
+- Manual correction history
+
+
+Create:
+1. Entity models
+2. DbContext
+3. Entity configurations using Fluent API
+4. Migrations-ready setup
+5. Repository interfaces only where useful, otherwise pragmatic service-oriented architecture
+6. DTOs for API responses
+7. Enum definitions
+8. Audit fields
+9. Seed data
+10. Validation rules
+
+
+Suggested entities:
+- UploadedAsset
+- EventRecord
+- ParsedField
+- OCRResult
+- EventLocation
+- SavedEvent
+- UserSession or AnonymousUserProfile
+- InteractionEvent
+- ParsingCorrection
+- EventTag
+
+
+Important rules:
+- Separate raw OCR text from normalized event data
+- Support confidence scores for extracted fields
+- Support partial parse failure
+- Support local anonymous saves for Phase 0
+- Store both original flyer metadata and normalized event metadata
+
+
+Generate complete code for models, DbContext, configs, and initial migration-ready structure.
+3. Upload, OCR, parsing, and normalization pipeline prompt
+Build the end-to-end flyer ingestion pipeline for WeUP Phase 0 in ASP.NET Core .NET 8.
+
+
+Inputs:
+- Image flyer upload
+- PDF flyer upload
+- Video flyer upload
+
+
+Pipeline stages:
+1. File validation
+2. File storage abstraction
+3. OCR extraction
+4. Event field parsing
+5. Datetime normalization
+6. Address normalization
+7. Geocoding
+8. Confidence scoring
+9. Persist raw + parsed + normalized result
+10. Return a review payload to frontend for user correction
+
+
+Requirements:
+- Use interfaces so OCR provider can be swapped later
+- Use a pluggable parser service
+- Video flyers should produce thumbnail metadata even if OCR is limited
+- Parse common flyer patterns:
+  - title
+  - date
+  - start time
+  - end time
+  - venue
+  - address
+  - city
+  - category
+  - price if present
+- Handle incomplete fields gracefully
+- Return warnings and confidence levels
+- Keep everything async and cancellation-token friendly
+- Add structured logging and error handling
+
+
+Generate:
+- Upload controller
+- Request/response models
+- File storage service abstraction
+- OCR service abstraction and mock implementation
+- Parser service
+- Geocoding service abstraction
+- Orchestrator service for the full pipeline
+- Unit-testable helpers
+- Example API endpoints
+
+
+The output should be real backend code, not pseudocode.
+4. Events API and save/bookmark flow prompt
+Create the backend API layer for WeUP Phase 0 event exploration and saving.
+
+
+Need endpoints for:
+- Get all events for map
+- Get filtered events by date range, category, and location radius
+- Get event by id
+- Save/bookmark event
+- Remove saved event
+- Get saved events
+- Submit manual corrections for OCR-parsed fields
+- Get featured events
+- Get lightweight event feed
+- Record analytics interaction
+
+
+Architecture:
+- ASP.NET Core .NET 8 Web API
+- Service layer with pragmatic separation
+- EF Core with PostgreSQL
+- Minimal auth support with fallback anonymous session id
+- Clean DTO mapping
+
+
+Frontend needs:
+- Fast map payloads
+- Lightweight calendar payloads
+- Rich detail modal payload
+- Save state per user/session
+
+
+Generate:
+1. Controllers
+2. Application services
+3. Query models
+4. Response DTOs
+5. Validation
+6. Error responses
+7. Example pagination where useful
+8. Filterable query composition
+9. Analytics ingestion endpoint
+10. Swagger-friendly annotations
+
+
+Make the API shaped for a Vue frontend that is map-first and overlay-driven.
+5. Frontend app shell, routing, and state prompt
+Create the frontend shell for WeUP Phase 0 using Vue 3, Vite, TypeScript, Pinia, and Vue Router.
+
+
+The application is a single-page nightlife and event discovery interface with the map as the main surface.
+
+
+Need:
+- App shell layout
+- Router setup
+- Global stores
+- API client layer
+- Responsive mobile-first design
+- Overlay/modal-driven interaction
+- No traditional multi-page navigation feel
+
+
+Core UI areas:
+- Fullscreen map surface
+- Floating filter controls
+- Time filter slider
+- Calendar/timeline overlay
+- Upload modal
+- Event detail modal
+- Saved events overlay
+- Featured event strip
+- First-time onboarding overlay
+
+
+Generate:
+1. File structure for src
+2. Main layout component
+3. Router setup
+4. Pinia stores
+5. Typed API service layer
+6. Global types
+7. Composables for event loading, saves, upload flow, and analytics
+8. Mobile-safe interaction design
+9. Error/loading states
+10. Clean styling tokens and layout constants
+
+
+Important:
+- Map must never disappear
+- UI must be visually compressed and uncluttered
+- Controls should show contextually
+- Keep code modular and component-driven
+
+
+Provide full code for the initial app shell and store wiring.
+6. Mapbox event map experience prompt
+Build the WeUP Phase 0 event map experience in Vue 3 with TypeScript and Mapbox GL JS.
+
+
+The map is the primary interaction surface.
+
+
+Required functionality:
+- Fullscreen responsive map
+- Event markers
+- Marker clustering
+- Click/tap marker opens event detail modal
+- Optional featured marker styling
+- Time-based filtering updates visible markers
+- Category filtering
+- Saved/bookmarked state reflected on marker interaction
+- Smooth mobile interactions
+- Lightweight performance-conscious rendering
+
+
+Need these frontend pieces:
+1. EventMap.vue
+2. Marker rendering strategy
+3. Cluster interaction behavior
+4. Map store integration
+5. Hook into event API
+6. Support geocoded event records
+7. Fit bounds behavior
+8. Map loading and empty state handling
+9. Basic map legend or contextual hints
+10. Cleanup lifecycle handling
+
+
+Constraints:
+- Do not overcomplicate the visual style
+- The map should stay visible behind overlays
+- Support both touch and desktop interactions
+- Optimize for many events without lag
+
+
+Generate real Vue components, composables, and helper utilities.
+7. Calendar, timeline, and temporal filtering prompt
+Create the temporal browsing layer for WeUP Phase 0 in Vue 3.
+
+
+The current requirement is not a plain calendar. It should feel like a nightlife-oriented temporal navigation system.
+
+
+Need:
+- Masonry-inspired calendar or stacked timeline view
+- Quick filters for Now, Tonight, Tomorrow, Weekend
+- Optional hourly slider integration
+- Time filter synchronized with map markers
+- Overlay or modal presentation, not a separate page
+- Support event grouping by date and time block
+- Compact mobile-friendly design
+- Rich event preview cards in the time view
+
+
+Generate:
+1. TimelineOverlay.vue
+2. CalendarModal.vue
+3. TimeFilterBar.vue
+4. Supporting composables
+5. Store integration with event filters
+6. Utility functions for grouping and formatting event time
+7. UX states for empty windows
+8. Toggle behavior so the slider hides when not needed
+9. Responsive layout logic
+10. Event click behavior that opens the same shared event detail modal
+
+
+Important:
+- Everything must stay consistent with the map-first single-page experience
+- Avoid generic business-calendar aesthetics
+- This is cultural nightlife discovery, not enterprise scheduling software
+8. Upload review modal and manual correction UX prompt
+Create the upload and review experience for WeUP Phase 0 in Vue 3.
+
+
+Users upload a flyer, the backend OCR/parsing pipeline extracts event data, then the user reviews and corrects fields before publishing or saving.
+
+
+Need:
+- Upload modal with drag/drop and mobile file picker support
+- Support image, PDF, and video flyer input
+- Upload progress state
+- OCR/parsing result review screen
+- Confidence indicators per field
+- Editable form for corrections
+- Address preview
+- Date/time normalization preview
+- Thumbnail preview for flyer/video
+- Submit corrected version back to backend
+
+
+Generate:
+1. UploadFlyerModal.vue
+2. ParseReviewModal.vue
+3. Form components for editable extracted fields
+4. Validation states
+5. API integration
+6. Error handling
+7. Success confirmation flow
+8. Reusable confidence badge component
+9. Thumbnail/preview component
+10. Store/composable logic for upload and correction
+
+
+Design goals:
+- Keep it intuitive for non-technical nightlife users
+- Minimize friction
+- Show what the system detected and what the user can fix
+- Prepare the architecture for future paid featured uploads
+9. Event detail modal, saved flow, featured events, and analytics prompt
+Build the shared event detail and engagement layer for WeUP Phase 0.
+
+
+Need a unified event detail modal that opens from:
+- Map marker click
+- Timeline item click
+- Featured event strip click
+- Saved events list click
+
+
+The modal must show:
+- Event title
+- Date/time
+- Venue/address
+- Flyer image or video thumbnail
+- Tags/category
+- Save/bookmark button
+- Featured badge if applicable
+- Parsed metadata section if useful
+- Basic CTA area for future ticketing or promotion
+- Share-ready architecture placeholder
+
+
+Also create:
+- FeaturedEventsStrip.vue
+- SavedEventsPanel.vue
+- Analytics hooks for modal open, save, unsave, filter use, upload success
+
+
+Generate:
+1. EventDetailModal.vue
+2. FeaturedEventsStrip.vue
+3. SavedEventsPanel.vue
+4. Analytics composable
+5. Event store integration
+6. Bookmark interactions
+7. Empty/loading states
+8. Future-proof CTA slot area
+9. Mobile bottom-sheet behavior
+10. Desktop overlay behavior
+
+
+Constraint:
+- This is Phase 0, so keep ticketing scaffolding non-functional but presentable
+- Code should be clean and extendable for monetization later
+10. End-to-end release hardening, observability, and production readiness prompt
+Perform the final release hardening pass for WeUP Phase 0 across frontend and backend.
+
+
+You are upgrading the application from working prototype to release candidate.
+
+
+Need:
+- Structured logging on backend
+- Global exception handling
+- Frontend error boundaries and fallback views
+- API retry strategy where appropriate
+- Health check endpoints
+- Basic analytics event schema
+- Docker production setup
+- CORS configuration
+- Environment-based configuration
+- Rate limiting for upload endpoints
+- File upload size limits
+- Swagger/OpenAPI cleanup
+- Basic integration test scaffolding
+- Seed script for initial event content
+- Placeholder Stripe integration boundaries for future featured promotion monetization
+- Simple onboarding overlay for first-time users
+- Accessibility and mobile sanity checks
+
+
+Generate:
+1. Backend middleware
+2. Logging setup
+3. Health checks
+4. App configuration
+5. Frontend global error handling
+6. Release checklist in markdown
+7. Docker and deployment notes
+8. Example appsettings files
+9. Integration test starter examples
+10. Final list of known Phase 1 extensions
+
+
+Keep the implementation realistic, minimal, and release-oriented.
+Recommended execution order
+Scaffold
+
+
+Backend models
+
+
+Ingestion pipeline
+
+
+Events API
+
+
+Frontend shell
+
+
+Map
+
+
+Timeline/calendar
+
+
+Upload review
+
+
+Event detail + saves + analytics
+
+
+Release hardening
+
+
+Practical note
+For best results with Copilot, run each prompt inside the target file or folder context, not as one giant monolithic chat. Copilot is better when constrained by nearby code.
+
+
+I can also turn these into:
+
+
+a file-by-file prompt pack
+
+
+a Quasar-specific version
+
+
+or a .NET + Vue exact folder map with prompt assignment per file
+
+
+
+
+After the first prompt is this the proper file structure?
+
+
+You didn’t include the structure, so I can’t validate it directly.
+I’ll give you the correct target structure for WeUP Phase 0—you can diff yours against this.
+
+
+This is what Copilot should have produced (or very close to it) if Prompt #1 executed properly.
+
+
+✅ Canonical WeUP Phase 0 Monorepo Structure
+weup/
+│
+├── README.md
+├── docker-compose.yml
+├── .env.example
+├── .gitignore
+│
+├── frontend/
+│   ├── package.json
+│   ├── vite.config.ts
+│   ├── tsconfig.json
+│   ├── index.html
+│   │
+│   └── src/
+│       ├── main.ts
+│       ├── App.vue
+│       │
+│       ├── assets/
+│       ├── styles/
+│       │
+│       ├── router/
+│       │   └── index.ts
+│       │
+│       ├── stores/
+│       │   ├── eventStore.ts
+│       │   ├── mapStore.ts
+│       │   ├── uiStore.ts
+│       │   └── userStore.ts
+│       │
+│       ├── composables/
+│       │   ├── useEvents.ts
+│       │   ├── useMap.ts
+│       │   ├── useUpload.ts
+│       │   ├── useFilters.ts
+│       │   └── useAnalytics.ts
+│       │
+│       ├── services/
+│       │   └── apiClient.ts
+│       │
+│       ├── types/
+│       │   └── event.ts
+│       │
+│       ├── components/
+│       │   ├── map/
+│       │   │   └── EventMap.vue
+│       │   │
+│       │   ├── modals/
+│       │   │   ├── EventDetailModal.vue
+│       │   │   ├── UploadFlyerModal.vue
+│       │   │   └── ParseReviewModal.vue
+│       │   │
+│       │   ├── timeline/
+│       │   │   ├── TimelineOverlay.vue
+│       │   │   └── TimeFilterBar.vue
+│       │   │
+│       │   ├── shared/
+│       │   │   ├── Loader.vue
+│       │   │   ├── ErrorState.vue
+│       │   │   └── ConfidenceBadge.vue
+│       │   │
+│       │   └── panels/
+│       │       ├── SavedEventsPanel.vue
+│       │       └── FeaturedEventsStrip.vue
+│       │
+│       └── layouts/
+│           └── MainLayout.vue
+│
+├── backend/
+│   ├── WeUP.API/
+│   │   ├── Controllers/
+│   │   ├── Middleware/
+│   │   ├── Program.cs
+│   │   ├── appsettings.json
+│   │   └── appsettings.Development.json
+│   │
+│   ├── WeUP.Application/
+│   │   ├── Services/
+│   │   ├── Interfaces/
+│   │   ├── DTOs/
+│   │   └── Mappings/
+│   │
+│   ├── WeUP.Domain/
+│   │   ├── Entities/
+│   │   ├── Enums/
+│   │   └── ValueObjects/
+│   │
+│   ├── WeUP.Infrastructure/
+│   │   ├── Persistence/
+│   │   │   ├── AppDbContext.cs
+│   │   │   └── Configurations/
+│   │   │
+│   │   ├── Services/
+│   │   │   ├── OCR/
+│   │   │   ├── Parsing/
+│   │   │   ├── Storage/
+│   │   │   └── Geocoding/
+│   │   │
+│   │   └── Migrations/
+│   │
+│   └── WeUP.Tests/
+│       ├── Unit/
+│       └── Integration/
+│
+├── shared/
+│   ├── contracts/
+│   │   └── event-contracts.ts
+│   │
+│   └── schemas/
+│       └── event-schema.json
+│
+└── scripts/
+    ├── seed-data.sql
+    └── dev-setup.sh
+🔍 What “Correct” Means (Validation Checklist)
+Use this to audit your generated structure:
+
+
+1. Frontend
+✔ Vue 3 + Vite present
+
+
+✔ Map components isolated (/components/map)
+
+
+✔ Modal system separated
+
+
+✔ Stores + composables split (not mixed)
+
+
+✔ API layer isolated (services/apiClient.ts)
+
+
+2. Backend
+✔ Clean separation:
+
+
+Domain
+
+
+Application
+
+
+Infrastructure
+
+
+API
+
+
+✔ OCR + Parsing NOT in controllers
+
+
+✔ DbContext inside Infrastructure
+
+
+✔ DTOs NOT inside controllers
+
+
+3. Cross-layer
+✔ Shared contracts folder exists
+
+
+✔ No circular dependencies
+
+
+✔ Upload pipeline not hardcoded
+
+
+4. Phase 0 constraints enforced
+✔ Single API (no microservices yet)
+
+
+✔ No over-engineered auth
+
+
+✔ No unnecessary message queues
+
+
+✔ No premature Kubernetes config
+
+
+🚨 Common Copilot Failure Patterns (Check These)
+If you see any of these, your structure is wrong and should be fixed:
+
+
+❌ Everything inside one project
+backend/
+  Controllers/
+  Models/
+  Services/
+→ This will not scale → reject
+
+
+❌ OCR logic inside controller
+public async Task<IActionResult> Upload()
+{
+    var text = RunOCR(file);
+}
+→ Wrong abstraction boundary
+
+
+❌ No composables (Vue)
+components/
+  everything.vue
+→ You’ll lose control fast
+
+
+❌ No separation of raw vs parsed data
+→ Critical for your ingestion pipeline
+
+
+❌ Map logic mixed into UI components
+→ Should be isolated in useMap or map module
+
+
+🧠 Reality Check
+Copilot rarely generates this cleanly on first pass.
+
+
+Typical outcome:
+
+
+60–70% correct
+
+
+Missing layering discipline
+
+
+Mixed responsibilities
+
+
+👉 Next Step
+Paste your generated structure.
+
+
+I’ll:
+
+
+Diff it line-by-line
+
+
+Mark what to fix
+
+
+Give you a repair prompt to correct it automatically
+
+
+Or I can generate:
+
+
+Exact .csproj files
+
+
+Exact Vue + Quasar variant
+
+
+Copilot prompts per folder
+
+
+Just specify.
+
+
+
+
+Give a conceptual repair prompt for each promtp
+
+
+Conceptual repair prompts for the 10 WeUP Phase 0 Copilot prompts
+These are second-pass correction prompts. Use them after Copilot generates the first draft and you can see drift, overengineering, missing files, or mixed responsibilities.
+
+
+They are written to force a repair/refactor pass, not a greenfield regeneration.
+
+
+1. Repair prompt — Monorepo and project scaffolding
+Repair the generated WeUP Phase 0 project scaffold.
+
+
+Do not regenerate from scratch. Refactor the existing structure into a clean, production-shaped monorepo.
+
+
+Target architecture:
+- frontend = Vue 3 + Vite + TypeScript app
+- backend = ASP.NET Core .NET 8 solution
+- shared = contracts/schemas only
+- scripts = setup/seed/dev helper scripts
+
+
+Requirements:
+- Remove redundant folders and duplicate starter files
+- Eliminate placeholder files that do not support Phase 0
+- Ensure frontend has clear separation between components, stores, composables, services, router, layouts, and types
+- Ensure backend has clear separation between API, Application, Domain, Infrastructure, and Tests
+- Keep the solution monolithic for now; do not add microservices
+- Keep auth lightweight and optional
+- Keep monetization hooks scaffold-only
+
+
+Deliverables:
+1. Show the corrected folder tree
+2. Explain what was wrong with the original scaffold
+3. Move or rename files to match the target architecture
+4. Generate any missing core starter files
+5. Remove anything that is overbuilt for Phase 0
+
+
+Constraint:
+Do not add new product scope. Only repair the architecture and file organization.
+2. Repair prompt — Backend domain model and database
+Repair the current WeUP Phase 0 backend data model and persistence layer.
+
+
+Do not throw everything away. Refactor the existing entities, DTOs, and EF Core setup so the data model correctly supports the application.
+
+
+Repair goals:
+- Separate raw uploaded asset data from OCR result data and normalized event data
+- Add confidence scores where parsing occurs
+- Support manual correction history
+- Support featured/video flyer metadata
+- Ensure audit fields exist on persisted entities
+- Fix poor naming, duplicated fields, and missing relationships
+- Remove premature abstractions that add noise without value
+- Ensure DbContext and entity configurations are correctly placed in Infrastructure
+- Ensure Domain stays domain-focused and does not contain persistence code
+
+
+Expected output:
+1. A diagnosis of model issues in the current implementation
+2. Corrected entity relationships
+3. Corrected Fluent API configurations
+4. Updated DbContext
+5. Fixed enums/value objects if needed
+6. Clean DTO boundaries between Domain and Application
+
+
+Constraint:
+Keep the model Phase 0 practical. Do not over-normalize or introduce event-sourcing unless already explicitly required.
+3. Repair prompt — Upload, OCR, parsing, and normalization pipeline
+Repair the flyer ingestion pipeline for WeUP Phase 0.
+
+
+The current implementation likely mixes controller logic, file storage, OCR, parsing, and normalization in the wrong places. Refactor the existing code into a clean ingestion workflow.
+
+
+Repair requirements:
+- Controllers should only coordinate requests/responses
+- File validation and storage must be handled in services
+- OCR provider must be behind an interface
+- Parsing logic must be separate from OCR extraction
+- Date/time normalization must be separate from text parsing
+- Geocoding must be a separate service boundary
+- Persist raw, parsed, and normalized outputs distinctly
+- Return a review payload suitable for frontend correction
+- Add structured error handling and warnings for low-confidence fields
+- Make the pipeline async and cancellation-token aware
+
+
+Deliverables:
+1. Identify the current boundary violations
+2. Refactor the orchestration into a pipeline/orchestrator service
+3. Extract reusable helpers where appropriate
+4. Repair request/response models
+5. Generate any missing service abstractions
+6. Keep video flyer handling minimal but architecturally correct
+
+
+Constraint:
+Do not replace the whole system with pseudocode. Repair the existing backend into a realistic Phase 0 service workflow.
+4. Repair prompt — Events API and save/bookmark flow
+Repair the WeUP Phase 0 Events API and save/bookmark flow.
+
+
+The API should be shaped for a map-first frontend and must return lean, purpose-built payloads. Refactor the current controllers, DTOs, and services to match that.
+
+
+Repair goals:
+- Remove fat controllers
+- Fix DTOs that expose internal persistence details
+- Add missing filter/query models for map and time browsing
+- Ensure event detail responses are richer than map list responses
+- Ensure save/bookmark flow works for both lightweight auth and anonymous session fallback
+- Add correction submission endpoint if missing
+- Add featured event query endpoint if missing
+- Add analytics ingestion endpoint if missing
+- Improve validation and consistent error response shape
+
+
+Deliverables:
+1. Diagnose current API design flaws
+2. Refactor controllers to thin endpoints
+3. Repair service boundaries
+4. Split response models by use case:
+   - map payload
+   - timeline payload
+   - detail payload
+   - saved event payload
+5. Add or repair Swagger annotations
+6. Improve query composition for filters
+
+
+Constraint:
+Do not introduce GraphQL, CQRS bloat, or extra services beyond Phase 0 need.
+5. Repair prompt — Frontend app shell, routing, and state
+Repair the WeUP Phase 0 frontend shell.
+
+
+The app must feel like a single-page, map-first experience. Refactor the current Vue structure so layout, state, routing, and API consumption are clean and maintainable.
+
+
+Repair goals:
+- Ensure the map remains the primary surface
+- Remove route complexity that makes the app feel multi-page
+- Separate stores from composables
+- Separate UI state from event data state
+- Ensure API calls are centralized in a typed client/service layer
+- Refactor overly large components into layout + feature modules
+- Add consistent loading/error handling patterns
+- Ensure mobile-first behavior is preserved
+
+
+Deliverables:
+1. Diagnose issues in current src structure
+2. Refactor router, stores, composables, and services into proper boundaries
+3. Break oversized components into focused pieces
+4. Repair App.vue and main layout architecture
+5. Add any missing shared UI state store
+6. Repair typing for core event and filter models
+
+
+Constraint:
+Do not redesign the product. Only repair the structure and app shell behavior for Phase 0.
+6. Repair prompt — Mapbox event map experience
+Repair the WeUP Phase 0 map experience.
+
+
+The map must be reliable, performant, and always present behind overlays. Refactor the current map implementation to fix architecture, rendering, and interaction issues.
+
+
+Repair goals:
+- Prevent the map from disappearing during UI state changes
+- Separate map instance management from UI components
+- Move marker/cluster logic into clean helpers or composables
+- Fix event click behavior to consistently open shared detail modal
+- Ensure filters update markers correctly
+- Improve mobile touch behavior
+- Eliminate unnecessary rerenders and memory leaks
+- Support featured markers without hardcoding visual logic everywhere
+
+
+Deliverables:
+1. Diagnose architectural and lifecycle issues
+2. Refactor map setup into a composable or map module
+3. Repair marker rendering and clustering strategy
+4. Repair integration with stores and filters
+5. Add loading/empty/error states
+6. Clean up lifecycle teardown logic
+
+
+Constraint:
+Do not switch map libraries. Repair the current Mapbox-based implementation.
+7. Repair prompt — Calendar, timeline, and temporal filtering
+Repair the temporal browsing layer for WeUP Phase 0.
+
+
+The current implementation may be too generic, too simple, or disconnected from the map. Refactor it into a nightlife-oriented temporal discovery layer.
+
+
+Repair goals:
+- Ensure time browsing is overlay-driven, not a separate page
+- Synchronize calendar/timeline selections with map filters
+- Add support for quick windows like Now, Tonight, Tomorrow, Weekend
+- Refactor any generic enterprise-calendar look and logic
+- Hide the time slider unless relevant
+- Ensure the event detail modal is shared across map and timeline
+- Improve grouping, formatting, and temporal utilities
+- Keep the layout compact and mobile-usable
+
+
+Deliverables:
+1. Diagnose shortcomings in current temporal UI and state flow
+2. Refactor timeline and calendar components
+3. Repair filter synchronization with stores and map
+4. Add missing time utility functions
+5. Improve responsive overlay behavior
+6. Simplify any overbuilt calendar logic
+
+
+Constraint:
+Do not turn this into a full scheduling product. Keep it focused on event discovery.
+8. Repair prompt — Upload review modal and manual correction UX
+Repair the upload and parse review experience for WeUP Phase 0.
+
+
+The upload flow should be easy for non-technical users and should clearly separate upload, OCR review, correction, and submission. Refactor the current implementation accordingly.
+
+
+Repair goals:
+- Separate upload step from parse review step
+- Improve field confidence visibility
+- Fix form state management for corrected parsed fields
+- Ensure image, PDF, and video flyer previews work appropriately
+- Improve validation and submission feedback
+- Refactor any overly dense or confusing modal UI
+- Ensure correction submission payload matches backend expectations
+- Add graceful handling for partial parse failure
+
+
+Deliverables:
+1. Diagnose upload/review UX and state management issues
+2. Refactor modal flow into clear stages
+3. Repair reusable field editor components
+4. Add or fix confidence indicators
+5. Repair preview rendering logic
+6. Improve success/error states and recovery behavior
+
+
+Constraint:
+Do not add advanced publishing workflows yet. Keep it Phase 0 and user-in-the-loop.
+9. Repair prompt — Event detail modal, saved flow, featured events, and analytics
+Repair the event engagement layer for WeUP Phase 0.
+
+
+The event detail modal, saved events, featured strip, and analytics hooks should all work as one coherent interaction system. Refactor the current implementation to achieve that.
+
+
+Repair goals:
+- Ensure one shared event detail modal is used from all entry points
+- Fix inconsistent event payload handling between map, timeline, featured, and saved views
+- Repair save/bookmark state synchronization
+- Refactor featured event strip so it is lightweight and not tightly coupled to the map
+- Add or repair analytics hooks for open, save, unsave, filter usage, and upload success
+- Improve mobile sheet behavior and desktop modal behavior
+- Add placeholder CTA area for future ticketing/promotion without implying functionality that does not exist
+
+
+Deliverables:
+1. Diagnose interaction inconsistencies
+2. Refactor event detail modal state handling
+3. Repair saved events and featured events integration
+4. Add or fix analytics composable usage
+5. Improve empty/loading/error states
+6. Ensure a future-proof but minimal CTA slot exists
+
+
+Constraint:
+Do not build ticketing now. Only scaffold the space for future monetization.
+10. Repair prompt — End-to-end release hardening and production readiness
+Repair the WeUP Phase 0 release candidate for production readiness.
+
+
+The app may currently work but still have weak observability, fragile error handling, and inconsistent configuration. Refactor the implementation into a stable release candidate.
+
+
+Repair goals:
+- Add or repair backend structured logging
+- Add global exception handling middleware
+- Add health checks and basic readiness endpoints
+- Repair environment-based configuration
+- Add upload limits and rate limiting where missing
+- Improve frontend global error handling
+- Add consistent retry behavior only where appropriate
+- Repair Docker and deployment configuration
+- Improve Swagger/OpenAPI shape
+- Add a release checklist and known limitations document
+- Keep Stripe-related monetization boundaries as placeholders only
+
+
+Deliverables:
+1. Diagnose production-readiness gaps
+2. Repair backend middleware and app configuration
+3. Repair frontend app-level error handling
+4. Add or fix health checks and logging
+5. Improve container/devops files
+6. Generate a concise Phase 0 release checklist
+7. List known technical debt to address in Phase 1
+
+
+Constraint:
+Do not overengineer observability or deployment. Keep it lean, but real.
+Recommended usage pattern
+For each original prompt:
+
+
+Run the original generation prompt.
+
+
+Inspect the output.
+
+
+Run the matching repair prompt in the same folder or file context.
+
+
+Then do one final targeted pass per file for naming, types, and edge cases.
+
+
+One global meta-repair prompt
+Use this after all 10 modules are generated:
+
+
+Perform a full architectural repair pass across the existing WeUP Phase 0 codebase.
+
+
+Goal:
+Align all generated code into one coherent release candidate without rewriting the product from scratch.
+
+
+Check for:
+- boundary violations
+- duplicate types and DTOs
+- inconsistent naming
+- overbuilt abstractions
+- missing shared state contracts
+- mismatched backend/frontend payloads
+- broken map-first UX assumptions
+- weak error handling
+- non-mobile-safe interaction patterns
+- dead code and placeholder drift
+
+
+Output:
+1. Top 25 architectural and implementation issues
+2. Recommended repair order
+3. Exact files to modify
+4. Refactored code for the highest-priority fixes
+5. Final summary of remaining Phase 1 debt
+
+
+Constraint:
+Prefer targeted refactors over total rewrites. Preserve working code where possible.
+If you want, I can turn these into a paired pack where each original prompt is followed by its repair prompt and a third verification prompt.
+
+
+
+
+Give a complete active business scope of the current implementation of WeUP phase0
+
+
+Below is the actual business scope of WeUP Phase 0 as it exists at release, not aspirational. This is framed as an operational product definition, including what you can do today, what users experience, and what can realistically generate revenue immediately.
+
+
+🧭 WeUP Phase 0 — Active Business Scope
+0. Core Positioning (What the product is right now)
+WeUP Phase 0 is:
+
+
+A real-time cultural event ingestion and discovery engine centered around flyer-based data extraction and map-first exploration.
+
+
+It is NOT yet:
+
+
+a ticketing platform
+
+
+a social network
+
+
+a marketplace
+
+
+It is a data + discovery layer.
+
+
+1. Core User Value Proposition
+For Users (Consumers)
+Discover events visually via a live map
+
+
+See what’s happening tonight / nearby
+
+
+Avoid fragmented event discovery across Instagram, flyers, word-of-mouth
+
+
+Quickly interpret messy flyer data into structured info
+
+
+For Hosts / Promoters
+Upload flyers → system extracts event info
+
+
+Reduce friction in publishing events
+
+
+Gain visibility on a map-based discovery layer
+
+
+Early positioning for featured placement
+
+
+2. Functional Capabilities (What works now)
+2.1 Flyer Ingestion Engine
+Upload:
+
+
+images
+
+
+PDFs
+
+
+video flyers (basic support)
+
+
+OCR extraction
+
+
+Field parsing:
+
+
+title
+
+
+date/time
+
+
+location
+
+
+Manual correction layer
+
+
+👉 This is the core proprietary engine
+
+
+2.2 Event Normalization Layer
+Converts unstructured flyer data → structured event
+
+
+Handles:
+
+
+partial data
+
+
+inconsistent formatting
+
+
+Produces:
+
+
+map-ready events
+
+
+time-filterable events
+
+
+2.3 Map-Based Discovery (Primary UX)
+Events displayed as:
+
+
+pins
+
+
+clusters
+
+
+Tap → event detail modal
+
+
+Filters:
+
+
+time
+
+
+category (basic)
+
+
+Map is persistent (core surface)
+
+
+2.4 Temporal Browsing Layer
+“Now / Tonight / Weekend” filtering
+
+
+Timeline/calendar overlay
+
+
+Syncs with map
+
+
+2.5 Event Interaction Layer
+View event details
+
+
+Save/bookmark events (local or light user state)
+
+
+See flyer preview / thumbnail
+
+
+2.6 Featured / Boostable Events (Proto-Monetization)
+Video flyers flagged as “premium”
+
+
+Featured positioning logic scaffolded
+
+
+Visual differentiation possible
+
+
+2.7 Lightweight Analytics (Internal)
+Track:
+
+
+uploads
+
+
+saves
+
+
+clicks
+
+
+map interactions
+
+
+3. Business Model — What You Can Monetize Today
+3.1 Featured Event Placement (Immediate Revenue)
+Product:
+“Boost your event on the map”
+
+
+Mechanism:
+Featured flag → priority placement
+
+
+Visual differentiation (larger marker, highlight, top strip)
+
+
+Pricing (Phase 0 realistic):
+$5–$25 per event (local testing range)
+
+
+👉 This is your fastest path to revenue
+
+
+3.2 Video Flyer Priority
+Product:
+Upload video flyer → automatic premium treatment
+
+
+Why it works:
+Promoters already create video flyers
+
+
+You convert it into distribution advantage
+
+
+3.3 Manual Concierge Upload (Done-for-you)
+Product:
+“Send me your flyer, I’ll post it”
+
+
+Execution:
+DM-based ingestion
+
+
+You manually upload + correct
+
+
+Pricing:
+$10–$50 per batch or weekly
+
+
+👉 Critical early-stage revenue bridge
+
+
+3.4 Local Promoter Partnerships
+Product:
+Bulk event ingestion for:
+
+
+clubs
+
+
+collectives
+
+
+DJs
+
+
+Offer:
+“All your events mapped automatically”
+
+
+4. Supply Side Reality (Critical)
+Your biggest constraint is:
+
+
+❗ Event supply density
+
+
+Without enough events:
+
+
+map feels empty
+
+
+product loses value
+
+
+Phase 0 requires:
+manual seeding
+
+
+scraping (future)
+
+
+direct promoter onboarding
+
+
+5. Demand Side Reality
+User behavior will be:
+
+
+Open app → scan map → decide where to go
+
+
+High frequency:
+
+
+Thurs–Sun
+
+
+evenings
+
+
+👉 This is utility-based usage, not social engagement yet
+
+
+6. Competitive Position (Actual, not hypothetical)
+You are competing with:
+Instagram (primary)
+
+
+Eventbrite (secondary)
+
+
+Word of mouth (dominant)
+
+
+Your edge:
+Structured extraction from chaos (flyers)
+
+
+Spatial + temporal visualization
+
+
+Speed of discovery
+
+
+Your weakness:
+No network effects yet
+
+
+No ticketing
+
+
+No trust layer
+
+
+7. What Phase 0 Does NOT Include (Important Boundaries)
+Do NOT assume you have:
+
+
+❌ payments / ticketing
+
+
+❌ social graph
+
+
+❌ messaging
+
+
+❌ reviews
+
+
+❌ recommendation engine
+
+
+❌ AI personalization
+
+
+❌ verified hosts
+
+
+These are Phase 1+
+
+
+8. Operational Requirements (Day 1–14)
+You (operator) must:
+Seed 20–100 events manually
+
+
+Onboard 5–10 promoters
+
+
+Upload events yourself if needed
+
+
+Test map density constantly
+
+
+Push featured events manually
+
+
+9. Success Metrics (Phase 0)
+Track only what matters:
+
+
+Supply
+of events ingested daily
+% OCR success
+
+
+% corrected
+
+
+Demand
+map opens
+
+
+event clicks
+
+
+saves
+
+
+Revenue
+of featured events sold
+revenue per week
+
+
+10. Realistic Outcome of Phase 0
+If executed correctly:
+
+
+Within 2–4 weeks:
+functioning nightlife map
+
+
+small promoter network
+
+
+first $50–$500 revenue
+
+
+What you gain:
+validated ingestion engine
+
+
+validated UX (map-first)
+
+
+real behavioral data
+
+
+🧠 Strategic Truth
+WeUP Phase 0 is not the business.
+
+
+It is:
+
+
+A data acquisition + behavior validation layer for a future marketplace
+
+
+If you want next step
+I can give you:
+
+
+Phase 0 → Phase 1 expansion spec
+
+
+Exact monetization scripts (what to say to promoters)
+
+
+Houston-specific go-to-market plan (hyper-localized)
+
+
+AI agent automation to scrape + ingest events daily
+
+
+Just specify.
+
+
+
+
+•        Phase 0 → Phase 1 expansion spec
+        •        Exact monetization scripts (what to say to promoters)
+        •        Houston-specific go-to-market plan (hyper-localized)
+        •        AI agent automation to scrape + ingest events daily
+
+
+Below is a tight, execution-grade bundle covering:
+
+
+Phase 0 → Phase 1 Expansion Spec
+
+
+Exact Monetization Scripts (Promoters/Hosts)
+
+
+Houston Hyper-Local Go-To-Market Plan
+
+
+AI Agent Automation (Scrape → Parse → Ingest → Review)
+
+
+No fluff—this is meant to be run.
+
+
+1) Phase 0 → Phase 1 Expansion Spec
+Objective
+Transition from data + discovery → transaction + distribution layer without breaking the map-first UX.
+
+
+Phase Boundary
+Phase 0: ingestion, map, timeline, save, featured
+
+
+Phase 1: conversion + ownership + repeat usage
+
+
+1.1 New Capabilities (Phase 1)
+A. Ticketing (Lightweight, not Eventbrite-scale)
+External link support (v1)
+
+
+Native “RSVP / Free ticket” (v2)
+
+
+Paid tickets (v3, Stripe)
+
+
+Backend
+
+
+EventTicketOption
+
+
+Order (minimal)
+
+
+AccessToken (QR or code)
+
+
+Frontend
+
+
+CTA slot in EventDetailModal → activated
+
+
+“Get tickets” flow (modal, no nav)
+
+
+B. Promoter Dashboard (Critical)
+Upload/manage events
+
+
+Edit parsed data
+
+
+See:
+
+
+views
+
+
+saves
+
+
+clicks
+
+
+Boost events
+
+
+Minimal UI
+
+
+Table + metrics + edit modal
+
+
+C. Identity Layer (Lightweight)
+Email magic link OR phone OTP
+
+
+Attach:
+
+
+saved events
+
+
+promoter ownership
+
+
+D. Featured Marketplace
+Self-serve boost purchase
+
+
+Placement tiers:
+
+
+Top strip
+
+
+Highlighted pins
+
+
+Time-priority
+
+
+E. Notification Layer
+“Tonight near you”
+
+
+“Saved event reminder”
+
+
+1.2 Data Model Additions
+EventTicketOption
+- Id
+- EventId
+- Type (Free | Paid | External)
+- Price
+- ExternalUrl
+
+
+Order
+- Id
+- UserId
+- EventId
+- Status
+
+
+PromoterProfile
+- Id
+- Name
+- Contact
+- Verified (bool)
+1.3 API Additions
+POST /tickets/create
+
+
+GET /promoter/events
+
+
+POST /events/boost
+
+
+GET /analytics/promoter
+
+
+POST /auth/magic-link
+
+
+1.4 UX Evolution
+Do NOT break:
+
+
+Map-first
+
+
+Modal overlays
+
+
+Add:
+
+
+CTA inside modal
+
+
+Dashboard as overlay panel
+
+
+Notifications as subtle layer
+
+
+1.5 Revenue Expansion
+Feature        Phase 0        Phase 1
+Featured placement        Manual        Self-serve
+Video flyer boost        Implicit        Paid
+Ticketing        None        % fee
+Promoter tools        None        Subscription-lite
+1.6 Success Criteria
+≥ 10 promoters onboarded
+
+
+≥ 20% events boosted
+
+
+≥ 5% users click CTA
+
+
+First recurring revenue
+
+
+2) Exact Monetization Scripts (Promoters)
+These are copy-paste usable.
+
+
+2.1 Cold DM (Instagram)
+Yo — quick question.
+
+
+I built a live map that shows what’s going on in Houston tonight based on flyers.
+
+
+I can put your events directly on the map so people nearby actually see them without scrolling IG.
+
+
+I’ll add your next event for free — if it drives traffic, we can boost future ones for like $10–$20.
+
+
+Send me a flyer and I’ll drop it in.
+2.2 In-Person (Bar / Club)
+I built something that puts events on a live city map instead of buried on Instagram.
+
+
+People open it and instantly see what’s happening around them.
+
+
+I can upload your flyers and feature your event so it shows up first in your area.
+
+
+Let me throw one up for you — no charge — and if you like it we can boost the next ones.
+2.3 Follow-Up Close
+That event got [X views / clicks].
+
+
+If you want, I can feature your next one so it shows up first on the map when people open the app nearby.
+
+
+It’s just $15 for priority placement.
+2.4 Bulk Promoter Deal
+If you’re running multiple events, I can handle all your flyers and keep everything updated on the map.
+
+
+Flat weekly — I’ll make sure your events are always visible and featured when it matters.
+2.5 Video Flyer Upsell
+If you’ve got a video flyer, those get priority placement automatically.
+
+
+They stand out more on the map — way higher engagement.
+3) Houston Hyper-Local Go-To-Market
+3.1 Target Zones (Start Here)
+Focus density, not coverage.
+
+
+Tier 1 (Launch Core)
+Midtown
+
+
+Downtown
+
+
+Washington Ave
+
+
+Montrose
+
+
+Tier 2
+Heights
+
+
+EaDo
+
+
+Third Ward
+
+
+3.2 Target Segments
+DJs
+
+
+Party promoters
+
+
+Hookah lounges
+
+
+Event collectives
+
+
+Small venues (not big clubs first)
+
+
+3.3 Daily Execution Plan (First 7 Days)
+Day 1–2
+Manually upload 30–50 events
+
+
+Build visible density
+
+
+Day 3–4
+DM 20 promoters/day
+
+
+Offer free placement
+
+
+Day 5–7
+Close 3–5 paid boosts
+
+
+Walk into venues physically
+
+
+3.4 On-the-Ground Strategy
+Go out Thurs–Sat
+
+
+Talk to:
+
+
+DJs
+
+
+door staff
+
+
+promoters
+
+
+Ask for flyers directly
+
+
+3.5 Distribution Hack
+Show the map LIVE on your phone
+
+
+People instantly understand it
+
+
+3.6 KPI Targets (Houston Phase 0)
+100 events on map
+
+
+10 promoters onboarded
+
+
+5 paid boosts
+
+
+50–200 DAU (early)
+
+
+4) AI Agent Automation (Scrape → Ingest)
+Objective
+Replace manual ingestion with:
+
+
+Autonomous daily event pipeline
+
+
+4.1 Architecture
+CrawlerAgent
+    ↓
+SourceExtractorAgent
+    ↓
+OCR/ParserAgent
+    ↓
+NormalizerAgent
+    ↓
+DeduplicationAgent
+    ↓
+WeUPIngestionAPI
+    ↓
+HumanReviewAgent (optional UI)
+4.2 Data Sources
+Instagram (public pages)
+
+
+Eventbrite
+
+
+Facebook events
+
+
+Club websites
+
+
+Telegram groups
+
+
+4.3 Agent Breakdown
+1. CrawlerAgent (Python recommended)
+Crawl pages
+
+
+Extract images/videos
+
+
+Save metadata
+
+
+2. SourceExtractorAgent
+Identify flyer-like assets
+
+
+Filter noise
+
+
+3. OCR/ParserAgent
+Reuse backend pipeline
+
+
+Extract fields
+
+
+4. NormalizerAgent
+Standardize:
+
+
+datetime
+
+
+address
+
+
+5. DeduplicationAgent
+Hash:
+
+
+title + date + location
+
+
+Prevent duplicates
+
+
+6. Ingestion Agent (C#)
+POST → /api/upload/automated
+
+
+Flag as:
+
+
+source = crawler
+
+
+confidence = X
+
+
+7. Human-in-the-loop UI
+Queue:
+
+
+low confidence events
+
+
+Approve/edit quickly
+
+
+4.4 Minimal Python Crawler (Concept)
+class CrawlerAgent:
+    def crawl(self, sources):
+        flyers = []
+        for source in sources:
+            flyers += self.extract_media(source)
+        return flyers
+4.5 Scheduling
+Run every 6–12 hours
+
+
+Store crawl history
+
+
+Avoid duplicate ingestion
+
+
+4.6 Storage
+Raw media → object storage
+
+
+Metadata → DB
+
+
+Embeddings (optional later)
+
+
+4.7 Integration with Your Stack
+Python = crawling + scraping
+
+
+C# = ingestion + orchestration
+
+
+Vue = review UI
+
+
+4.8 Phase 0 Automation Goal
+30–60% events auto-ingested
+
+
+40–70% require correction
+
+
+🧠 Final Strategic Read
+You now have:
+
+
+Product → ingestion + map
+
+
+Revenue → featured placement
+
+
+Distribution → promoters + local presence
+
+
+Scale path → AI ingestion
+
+
+If you want next
+I can give you:
+
+
+Full Autogen C# agent implementation for this pipeline
+
+
+n8n workflows for scraping + ingestion
+
+
+Exact Houston venue list + contact targets
+
+
+Phase 1 dashboard UI + backend code
+
+
+Just specify.
+
+
+
+
+•        Full Autogen C# agent implementation for this pipeline
+        •        n8n workflows for scraping + ingestion
+        •        Exact Houston venue list + contact targets
+        •        Phase 1 dashboard UI + backend code
+
+
+
+
+Thought for 1m 11s
+Below is a practical build bundle for those four items.
+
+
+One important constraint: for the Houston outreach piece, I can provide public business contact points and official booking/contact channels, not private individuals’ personal contact info.
+
+
+1) AutoGen C# implementation for the daily scrape → ingest pipeline
+The current AutoGen guidance for .NET emphasizes an event-driven, asynchronous core for scalable agent systems, and Microsoft’s main AutoGen repo currently tells new users to also evaluate Microsoft Agent Framework while AutoGen remains maintained with bug fixes and security patches. That means the safest move for WeUP is to keep the orchestration behind your own interfaces so you are not hard-coupled to a shifting package surface. 
+
+
+Recommended runtime shape
+CrawlerAgent
+  -> AssetClassifierAgent
+  -> OcrParseAgent
+  -> NormalizeAgent
+  -> DedupAgent
+  -> IngestAgent
+  -> ReviewQueueAgent
+Solution layout
+backend/
+  WeUP.Automation/
+    Abstractions/
+      ICrawlSource.cs
+      IAssetStore.cs
+      IEventIngestionClient.cs
+      IReviewQueue.cs
+      IDedupService.cs
+    Models/
+      CrawlAsset.cs
+      ParsedEventCandidate.cs
+      NormalizedEventCandidate.cs
+      IngestDecision.cs
+    Agents/
+      CrawlerAgent.cs
+      AssetClassifierAgent.cs
+      OcrParseAgent.cs
+      NormalizeAgent.cs
+      DedupAgent.cs
+      IngestAgent.cs
+      ReviewQueueAgent.cs
+    Orchestration/
+      DailyIngestionWorkflow.cs
+    Infrastructure/
+      HttpEventIngestionClient.cs
+      BlobAssetStore.cs
+      HashDedupService.cs
+    Program.cs
+Core contracts
+namespace WeUP.Automation.Models;
+
+
+public sealed record CrawlAsset(
+    string SourceName,
+    string SourceUrl,
+    string AssetUrl,
+    string AssetType, // image, video, pdf, html
+    DateTimeOffset DiscoveredAtUtc,
+    IReadOnlyDictionary<string, string>? Metadata = null);
+
+
+public sealed record ParsedEventCandidate(
+    string SourceName,
+    string SourceUrl,
+    string AssetUrl,
+    string? Title,
+    string? Description,
+    string? VenueName,
+    string? StreetAddress,
+    string? Neighborhood,
+    string? StartText,
+    string? EndText,
+    string? Category,
+    decimal? Price,
+    double Confidence,
+    IReadOnlyDictionary<string, string>? RawFields = null);
+
+
+public sealed record NormalizedEventCandidate(
+    string SourceName,
+    string SourceUrl,
+    string AssetUrl,
+    string Title,
+    string? Description,
+    string? VenueName,
+    string? StreetAddress,
+    string? Neighborhood,
+    DateTimeOffset? StartsAtUtc,
+    DateTimeOffset? EndsAtUtc,
+    string? Category,
+    decimal? Price,
+    double Confidence,
+    string DedupKey);
+namespace WeUP.Automation.Abstractions;
+
+
+using WeUP.Automation.Models;
+
+
+public interface ICrawlSource
+{
+    string Name { get; }
+    Task<IReadOnlyList<CrawlAsset>> DiscoverAssetsAsync(CancellationToken ct);
+}
+
+
+public interface IAssetStore
+{
+    Task<string> SaveAsync(CrawlAsset asset, CancellationToken ct);
+}
+
+
+public interface IEventIngestionClient
+{
+    Task<bool> IngestAsync(NormalizedEventCandidate candidate, CancellationToken ct);
+}
+
+
+public interface IReviewQueue
+{
+    Task EnqueueAsync(NormalizedEventCandidate candidate, string reason, CancellationToken ct);
+}
+
+
+public interface IDedupService
+{
+    Task<bool> ExistsAsync(string dedupKey, CancellationToken ct);
+    Task MarkSeenAsync(string dedupKey, CancellationToken ct);
+}
+Agents
+namespace WeUP.Automation.Agents;
+
+
+using WeUP.Automation.Abstractions;
+using WeUP.Automation.Models;
+
+
+public sealed class CrawlerAgent
+{
+    private readonly IEnumerable<ICrawlSource> _sources;
+
+
+    public CrawlerAgent(IEnumerable<ICrawlSource> sources) => _sources = sources;
+
+
+    public async Task<IReadOnlyList<CrawlAsset>> RunAsync(CancellationToken ct)
+    {
+        var results = new List<CrawlAsset>();
+
+
+        foreach (var source in _sources)
+        {
+            var assets = await source.DiscoverAssetsAsync(ct);
+            results.AddRange(assets);
+        }
+
+
+        return results;
+    }
+}
+namespace WeUP.Automation.Agents;
+
+
+using WeUP.Automation.Models;
+
+
+public sealed class AssetClassifierAgent
+{
+    public Task<IReadOnlyList<CrawlAsset>> RunAsync(
+        IReadOnlyList<CrawlAsset> assets,
+        CancellationToken ct)
+    {
+        var filtered = assets
+            .Where(a => a.AssetType is "image" or "video" or "pdf")
+            .Where(a => !string.IsNullOrWhiteSpace(a.AssetUrl))
+            .ToList();
+
+
+        return Task.FromResult<IReadOnlyList<CrawlAsset>>(filtered);
+    }
+}
+namespace WeUP.Automation.Agents;
+
+
+using System.Globalization;
+using System.Text.RegularExpressions;
+using WeUP.Automation.Models;
+
+
+public sealed class OcrParseAgent
+{
+    public Task<ParsedEventCandidate?> RunAsync(CrawlAsset asset, CancellationToken ct)
+    {
+        // Replace with your real OCR + parsing provider.
+        // For Phase 0, keep this deterministic and review-heavy.
+        var rawTitle = asset.Metadata?.GetValueOrDefault("title");
+        var rawVenue = asset.Metadata?.GetValueOrDefault("venue");
+        var rawStart = asset.Metadata?.GetValueOrDefault("start");
+
+
+        var parsed = new ParsedEventCandidate(
+            asset.SourceName,
+            asset.SourceUrl,
+            asset.AssetUrl,
+            rawTitle,
+            asset.Metadata?.GetValueOrDefault("description"),
+            rawVenue,
+            asset.Metadata?.GetValueOrDefault("street"),
+            asset.Metadata?.GetValueOrDefault("neighborhood"),
+            rawStart,
+            asset.Metadata?.GetValueOrDefault("end"),
+            asset.Metadata?.GetValueOrDefault("category"),
+            null,
+            confidence: string.IsNullOrWhiteSpace(rawTitle) ? 0.35 : 0.72,
+            RawFields: asset.Metadata);
+
+
+        return Task.FromResult<ParsedEventCandidate?>(parsed);
+    }
+}
+namespace WeUP.Automation.Agents;
+
+
+using System.Security.Cryptography;
+using System.Text;
+using WeUP.Automation.Models;
+
+
+public sealed class NormalizeAgent
+{
+    private static readonly TimeZoneInfo HoustonTz =
+        TimeZoneInfo.FindSystemTimeZoneById("America/Chicago");
+
+
+    public Task<NormalizedEventCandidate?> RunAsync(ParsedEventCandidate parsed, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(parsed.Title))
+            return Task.FromResult<NormalizedEventCandidate?>(null);
+
+
+        DateTimeOffset? startsAtUtc = null;
+        DateTimeOffset? endsAtUtc = null;
+
+
+        if (DateTime.TryParse(parsed.StartText, out var localStart))
+        {
+            var unspecified = DateTime.SpecifyKind(localStart, DateTimeKind.Unspecified);
+            var offset = new DateTimeOffset(unspecified, HoustonTz.GetUtcOffset(unspecified));
+            startsAtUtc = offset.ToUniversalTime();
+        }
+
+
+        if (DateTime.TryParse(parsed.EndText, out var localEnd))
+        {
+            var unspecified = DateTime.SpecifyKind(localEnd, DateTimeKind.Unspecified);
+            var offset = new DateTimeOffset(unspecified, HoustonTz.GetUtcOffset(unspecified));
+            endsAtUtc = offset.ToUniversalTime();
+        }
+
+
+        var dedupInput =
+            $"{parsed.Title}|{parsed.VenueName}|{parsed.StreetAddress}|{startsAtUtc:O}";
+        var dedupKey = Convert.ToHexString(
+            SHA256.HashData(Encoding.UTF8.GetBytes(dedupInput)));
+
+
+        var normalized = new NormalizedEventCandidate(
+            parsed.SourceName,
+            parsed.SourceUrl,
+            parsed.AssetUrl,
+            parsed.Title.Trim(),
+            parsed.Description,
+            parsed.VenueName?.Trim(),
+            parsed.StreetAddress?.Trim(),
+            parsed.Neighborhood?.Trim(),
+            startsAtUtc,
+            endsAtUtc,
+            parsed.Category?.Trim(),
+            parsed.Price,
+            parsed.Confidence,
+            dedupKey);
+
+
+        return Task.FromResult<NormalizedEventCandidate?>(normalized);
+    }
+}
+namespace WeUP.Automation.Agents;
+
+
+using WeUP.Automation.Abstractions;
+using WeUP.Automation.Models;
+
+
+public sealed class DedupAgent
+{
+    private readonly IDedupService _dedup;
+
+
+    public DedupAgent(IDedupService dedup) => _dedup = dedup;
+
+
+    public async Task<bool> ShouldProcessAsync(NormalizedEventCandidate candidate, CancellationToken ct)
+        => !await _dedup.ExistsAsync(candidate.DedupKey, ct);
+
+
+    public Task MarkProcessedAsync(NormalizedEventCandidate candidate, CancellationToken ct)
+        => _dedup.MarkSeenAsync(candidate.DedupKey, ct);
+}
+namespace WeUP.Automation.Agents;
+
+
+using WeUP.Automation.Abstractions;
+using WeUP.Automation.Models;
+
+
+public sealed class IngestAgent
+{
+    private readonly IEventIngestionClient _client;
+
+
+    public IngestAgent(IEventIngestionClient client) => _client = client;
+
+
+    public Task<bool> RunAsync(NormalizedEventCandidate candidate, CancellationToken ct)
+        => _client.IngestAsync(candidate, ct);
+}
+namespace WeUP.Automation.Agents;
+
+
+using WeUP.Automation.Abstractions;
+using WeUP.Automation.Models;
+
+
+public sealed class ReviewQueueAgent
+{
+    private readonly IReviewQueue _queue;
+
+
+    public ReviewQueueAgent(IReviewQueue queue) => _queue = queue;
+
+
+    public Task RouteAsync(NormalizedEventCandidate candidate, string reason, CancellationToken ct)
+        => _queue.EnqueueAsync(candidate, reason, ct);
+}
+Workflow orchestrator
+namespace WeUP.Automation.Orchestration;
+
+
+using WeUP.Automation.Agents;
+using WeUP.Automation.Models;
+
+
+public sealed class DailyIngestionWorkflow
+{
+    private readonly CrawlerAgent _crawler;
+    private readonly AssetClassifierAgent _classifier;
+    private readonly OcrParseAgent _parser;
+    private readonly NormalizeAgent _normalizer;
+    private readonly DedupAgent _dedup;
+    private readonly IngestAgent _ingest;
+    private readonly ReviewQueueAgent _review;
+
+
+    public DailyIngestionWorkflow(
+        CrawlerAgent crawler,
+        AssetClassifierAgent classifier,
+        OcrParseAgent parser,
+        NormalizeAgent normalizer,
+        DedupAgent dedup,
+        IngestAgent ingest,
+        ReviewQueueAgent review)
+    {
+        _crawler = crawler;
+        _classifier = classifier;
+        _parser = parser;
+        _normalizer = normalizer;
+        _dedup = dedup;
+        _ingest = ingest;
+        _review = review;
+    }
+
+
+    public async Task RunAsync(CancellationToken ct)
+    {
+        var discovered = await _crawler.RunAsync(ct);
+        var candidates = await _classifier.RunAsync(discovered, ct);
+
+
+        foreach (var asset in candidates)
+        {
+            var parsed = await _parser.RunAsync(asset, ct);
+            if (parsed is null)
+                continue;
+
+
+            var normalized = await _normalizer.RunAsync(parsed, ct);
+            if (normalized is null)
+                continue;
+
+
+            if (!await _dedup.ShouldProcessAsync(normalized, ct))
+                continue;
+
+
+            if (normalized.Confidence < 0.70 || normalized.StartsAtUtc is null)
+            {
+                await _review.RouteAsync(normalized, "Low confidence or missing start time", ct);
+                await _dedup.MarkProcessedAsync(normalized, ct);
+                continue;
+            }
+
+
+            var ok = await _ingest.RunAsync(normalized, ct);
+
+
+            if (!ok)
+                await _review.RouteAsync(normalized, "Ingestion failed", ct);
+
+
+            await _dedup.MarkProcessedAsync(normalized, ct);
+        }
+    }
+}
+HTTP ingestion client
+namespace WeUP.Automation.Infrastructure;
+
+
+using System.Net.Http.Json;
+using WeUP.Automation.Abstractions;
+using WeUP.Automation.Models;
+
+
+public sealed class HttpEventIngestionClient : IEventIngestionClient
+{
+    private readonly HttpClient _http;
+
+
+    public HttpEventIngestionClient(HttpClient http) => _http = http;
+
+
+    public async Task<bool> IngestAsync(NormalizedEventCandidate candidate, CancellationToken ct)
+    {
+        var payload = new
+        {
+            source = candidate.SourceName,
+            sourceUrl = candidate.SourceUrl,
+            assetUrl = candidate.AssetUrl,
+            title = candidate.Title,
+            description = candidate.Description,
+            venueName = candidate.VenueName,
+            streetAddress = candidate.StreetAddress,
+            neighborhood = candidate.Neighborhood,
+            startsAtUtc = candidate.StartsAtUtc,
+            endsAtUtc = candidate.EndsAtUtc,
+            category = candidate.Category,
+            price = candidate.Price,
+            confidence = candidate.Confidence,
+            dedupKey = candidate.DedupKey
+        };
+
+
+        var response = await _http.PostAsJsonAsync("/api/events/automated-ingest", payload, ct);
+        return response.IsSuccessStatusCode;
+    }
+}
+Program.cs
+using WeUP.Automation.Abstractions;
+using WeUP.Automation.Agents;
+using WeUP.Automation.Infrastructure;
+using WeUP.Automation.Orchestration;
+
+
+var builder = Host.CreateApplicationBuilder(args);
+
+
+builder.Services.AddHttpClient<IEventIngestionClient, HttpEventIngestionClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["WeUP:ApiBaseUrl"]!);
+});
+
+
+builder.Services.AddSingleton<AssetClassifierAgent>();
+builder.Services.AddSingleton<CrawlerAgent>();
+builder.Services.AddSingleton<OcrParseAgent>();
+builder.Services.AddSingleton<NormalizeAgent>();
+builder.Services.AddSingleton<DedupAgent>();
+builder.Services.AddSingleton<IngestAgent>();
+builder.Services.AddSingleton<ReviewQueueAgent>();
+builder.Services.AddSingleton<DailyIngestionWorkflow>();
+
+
+// TODO: bind your source implementations here.
+// builder.Services.AddSingleton<ICrawlSource, EventbriteSource>();
+// builder.Services.AddSingleton<ICrawlSource, VenueCalendarSource>();
+
+
+var app = builder.Build();
+
+
+using var scope = app.Services.CreateScope();
+var workflow = scope.ServiceProvider.GetRequiredService<DailyIngestionWorkflow>();
+await workflow.RunAsync(CancellationToken.None);
+Where AutoGen actually fits
+Use AutoGen for:
+
+
+source prioritization
+
+
+fuzzy flyer-field extraction from messy text
+
+
+venue/entity disambiguation
+
+
+escalation decisions for review queue
+
+
+Do not use AutoGen for:
+
+
+deterministic hashing
+
+
+dedup rules
+
+
+simple HTTP ingestion
+
+
+scheduler logic
+
+
+That split matches the current direction of AutoGen’s event-driven .NET core: let agents handle uncertain work; keep deterministic work outside the agent loop. 
+
+
+2) n8n workflows for scraping + ingestion
+Workflow A: nightly venue calendar ingestion
+Use this for venues with official calendars.
+
+
+Cron (every 6 hours)
+  -> HTTP Request (fetch venue page)
+  -> HTML Extract
+  -> Function (extract event links / flyer assets)
+  -> Split In Batches
+  -> HTTP Request (fetch event detail page)
+  -> Function (shape metadata)
+  -> HTTP Request (POST to WeUP.Automation source endpoint)
+  -> Slack/Email summary
+Workflow B: promoter submission inbox
+Use this for manual promoter intake.
+
+
+Webhook / Gmail trigger
+  -> Extract attachments
+  -> IF file type in [jpg,png,pdf,mp4,mov]
+  -> Upload to storage
+  -> HTTP Request (POST /api/upload/manual-intake)
+  -> Create review task
+  -> Send confirmation reply
+Workflow C: review queue digest
+Use this for human-in-the-loop.
+
+
+Cron (11:00 AM, daily)
+  -> HTTP Request (GET /api/review-queue?status=pending)
+  -> Function (group by reason, venue, confidence)
+  -> Slack / email digest
+n8n Function node example
+const item = $json;
+
+
+return [{
+  json: {
+    sourceName: item.sourceName,
+    sourceUrl: item.sourceUrl,
+    assetUrl: item.assetUrl,
+    title: item.title || null,
+    venue: item.venue || null,
+    start: item.start || null,
+    street: item.street || null,
+    neighborhood: item.neighborhood || null,
+    category: item.category || null,
+    description: item.description || null
+  }
+}];
+Initial n8n priorities
+Start with:
+
+
+official venue calendars
+
+
+direct promoter submissions
+
+
+only then social scraping
+
+
+That is the lowest-risk pipeline and the easiest to keep legally and operationally clean.
+
+
+3) Houston venue list + public contact targets
+Houston’s nightlife districts most directly relevant to WeUP include Downtown, Midtown, Montrose, Washington Avenue, and related adjacent zones, which aligns well with your earlier Phase 0 targeting. 
+
+
+Tier 1 targets
+These are strong first-wave targets because they visibly publish events, host recurring programming, or expose booking / rentals / contact paths publicly.
+
+
+Venue        Area        Why it matters for WeUP        Public contact target
+NOTO Houston        EaDo / East Downtown        Active event calendar with upcoming nightlife programming; strong candidate for boosted event inventory. 
+3215 McKinney St., Houston, TX 77003; phone (832) 409-7089; use official events / VIP reservation path. 
+Warehouse Live Midtown        Midtown        Heavy event cadence across genres; clear calendar and rentals/promotions surface. 
+2600 Travis St., Houston, TX 77006; use official site socials + rentals path. 
+Axelrad        Midtown / Museum District edge        High-frequency cultural programming and explicit public booking/contact paths. 
+1517 Alabama St., Houston, TX 77004; drink@axelradbeergarden.com; 713-597-8800; artist booking and food vendor links are public. 
+White Oak Music Hall        Near Northside / Heights edge        Hundreds of live events yearly, multiple spaces, strong calendar density. 
+2915 N Main St., Houston, TX 77009; booking@whiteoakmusichall.com for bands; events@whiteoakmusichall.com and 832-712-8127 for private events; info@whiteoakmusichall.com general. 
+Bauhaus Houston        Downtown / Midtown edge        Dance/nightlife-oriented programming and clear location signal. 
+1803 Pease St., Houston, TX 77003; use official site + official social pages. 
+Rise Rooftop        Midtown        Public calendar and active dance/live event programming. 
+2600 Travis St., Houston, TX 77006; use official site socials and event calendar. 
+The Heights Theater        Heights        Strong recurring schedule and rental/contact surface; useful for live-music expansion beyond club-only inventory. 
+Use official contact/rentals path on site; official schedule is active. 
+Stereo Live Houston        West Houston / EDM draw        Strong promoter ecosystem and recurring ticketed events via official organizer presence. 
+Use official organizer/event contact path via official event presence. 
+Outreach order
+Axelrad
+
+
+Warehouse Live Midtown
+
+
+NOTO Houston
+
+
+White Oak Music Hall
+
+
+Bauhaus
+
+
+Rise Rooftop
+
+
+The Heights Theater
+
+
+Stereo Live Houston
+
+
+What to say
+Use this opener:
+
+
+I built a Houston event map that turns flyers into structured listings and puts them in front of people looking for what’s happening tonight. I’d like to add your upcoming events and give you a featured placement test. If it performs, I can make this a recurring distribution channel for your programming.
+What to ask for
+upcoming flyer pack for next 2–4 weeks
+
+
+official calendar link
+
+
+preferred contact for recurring submissions
+
+
+whether they want standard listing or featured placement
+
+
+4) Phase 1 dashboard UI + backend code scope
+Phase 1 should add promoter control, not a giant back-office system.
+
+
+Dashboard modules
+Overview
+
+
+upcoming events
+
+
+views
+
+
+saves
+
+
+featured conversions
+
+
+Events
+
+
+list / edit / publish
+
+
+Uploads
+
+
+raw flyer assets
+
+
+parse status
+
+
+review required
+
+
+Boosts
+
+
+featured placement inventory
+
+
+Analytics
+
+
+CTR by event
+
+
+saves by event
+
+
+view heat by neighborhood
+
+
+Backend endpoints
+app.MapGet("/api/promoter/dashboard/overview", ...);
+app.MapGet("/api/promoter/events", ...);
+app.MapPost("/api/promoter/events", ...);
+app.MapPut("/api/promoter/events/{id}", ...);
+app.MapGet("/api/promoter/uploads", ...);
+app.MapGet("/api/promoter/review-queue", ...);
+app.MapPost("/api/promoter/boosts", ...);
+app.MapGet("/api/promoter/analytics", ...);
+Promoter dashboard DTOs
+public sealed record PromoterOverviewDto(
+    int UpcomingEvents,
+    int FeaturedEvents,
+    int TotalViews7d,
+    int TotalSaves7d,
+    decimal Revenue30d);
+
+
+public sealed record PromoterEventRowDto(
+    Guid EventId,
+    string Title,
+    string VenueName,
+    DateTimeOffset StartsAtUtc,
+    bool IsFeatured,
+    int Views,
+    int Saves,
+    string Status);
+
+
+public sealed record ReviewQueueRowDto(
+    Guid QueueId,
+    string AssetUrl,
+    string? SuggestedTitle,
+    string? SuggestedVenue,
+    string Reason,
+    double Confidence);
+Minimal API example
+app.MapGet("/api/promoter/dashboard/overview", async (
+    AppDbContext db,
+    ClaimsPrincipal user,
+    CancellationToken ct) =>
+{
+    var promoterId = user.FindFirst("sub")?.Value;
+    if (string.IsNullOrWhiteSpace(promoterId))
+        return Results.Unauthorized();
+
+
+    var upcomingEvents = await db.Events
+        .Where(x => x.PromoterId == promoterId && x.StartsAtUtc >= DateTimeOffset.UtcNow)
+        .CountAsync(ct);
+
+
+    var featuredEvents = await db.Events
+        .Where(x => x.PromoterId == promoterId && x.IsFeatured)
+        .CountAsync(ct);
+
+
+    var totalViews7d = await db.EventAnalytics
+        .Where(x => x.PromoterId == promoterId &&
+                    x.EventType == "view" &&
+                    x.OccurredAtUtc >= DateTimeOffset.UtcNow.AddDays(-7))
+        .CountAsync(ct);
+
+
+    var totalSaves7d = await db.EventAnalytics
+        .Where(x => x.PromoterId == promoterId &&
+                    x.EventType == "save" &&
+                    x.OccurredAtUtc >= DateTimeOffset.UtcNow.AddDays(-7))
+        .CountAsync(ct);
+
+
+    var dto = new PromoterOverviewDto(
+        upcomingEvents,
+        featuredEvents,
+        totalViews7d,
+        totalSaves7d,
+        Revenue30d: 0m);
+
+
+    return Results.Ok(dto);
+});
+Vue dashboard shell
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import { api } from '@/services/api'
+
+
+const overview = ref<any>(null)
+const loading = ref(false)
+
+
+onMounted(async () => {
+  loading.value = true
+  try {
+    overview.value = await api.get('/api/promoter/dashboard/overview')
+  } finally {
+    loading.value = false
+  }
+})
+</script>
+
+
+<template>
+  <div class="dashboard-page">
+    <div v-if="loading">Loading…</div>
+    <div v-else-if="overview" class="stats-grid">
+      <div class="stat-card">Upcoming: {{ overview.upcomingEvents }}</div>
+      <div class="stat-card">Featured: {{ overview.featuredEvents }}</div>
+      <div class="stat-card">Views 7d: {{ overview.totalViews7d }}</div>
+      <div class="stat-card">Saves 7d: {{ overview.totalSaves7d }}</div>
+    </div>
+  </div>
+</template>
+Phase 1 UI file map
+frontend/src/pages/promoter/
+  DashboardPage.vue
+  EventsPage.vue
+  UploadsPage.vue
+  ReviewQueuePage.vue
+  AnalyticsPage.vue
+
+
+frontend/src/components/promoter/
+  OverviewStats.vue
+  EventTable.vue
+  UploadQueueTable.vue
+  ReviewQueueTable.vue
+  BoostPurchaseCard.vue
+  AnalyticsChart.vue
+Practical rollout order
+Week 1
+stand up WeUP.Automation
+
+
+integrate one official source
+
+
+create /api/events/automated-ingest
+
+
+create /api/review-queue
+
+
+Week 2
+add n8n inbox flow
+
+
+add promoter dashboard overview
+
+
+onboard 3 venues manually
+
+
+Week 3
+add dedup + review queue analytics
+
+
+sell featured placement to 2–5 promoters
+
+
+add uploads/review page
+
+
+Week 4
+add boosts page
+
+
+add promoter event edit flow
+
+
+expand venue source coverage
+
+
+If you want the next step, I’ll turn this into a full file-by-file implementation pack for the backend automation project and the Vue promoter dashboard.

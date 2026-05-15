@@ -1,0 +1,300 @@
+﻿Below are production-grade, copy-paste prompt blocks for G1 (Ingestion Core) and G4 (Playback Engine).
+These are structured to force deterministic, deployable output aligned with your .NET 8 + PostGIS + Mapbox stack and existing M-bundles.
+No fluff. Each prompt is executable against AIStudio / Copilot.
+________________
+
+
+Bundle G1 — GeoMix Ingestion Core v1.0 (FULL PROMPTS)
+________________
+
+
+G1-P01 — Define GeoMix Upload Contract and DTO Schema v1.0
+You are a senior .NET 8 backend architect.
+Generate production-ready C# code for the GeoMix upload contract layer.
+Requirements:
+* Use record types (immutable)
+* Namespace: Weup.GeoMix.V1
+* Include DTOs for:
+   * InitUploadRequest
+   * InitUploadResponse
+   * CompleteUploadRequest
+   * GeoMixEntryDto
+* All timestamps must be DateTimeOffset (UTC only)
+* Include validation attributes (DataAnnotations)
+* Include enum types:
+   * MediaType (Audio only for MVP)
+   * MixVisibility
+* Include comments describing determinism requirements
+Constraints:
+* No business logic
+* No controllers
+* DTOs must be serialization-safe (System.Text.Json)
+* Avoid nullable ambiguity (explicit optional fields only)
+Output:
+* Single .cs file
+* Clean namespace + using statements
+* Ready for direct inclusion in API project
+________________
+
+
+G1-P02 — Implement Presigned Upload Pipeline with Integrity Validation v1.0
+You are implementing a production-grade ASP.NET Core 8 API.
+Generate:
+* GeoMixController.cs
+* Service layer: IGeoMixUploadService + implementation
+Endpoints:
+1. POST /api/geomix/init
+2. POST /api/geomix/complete
+Requirements:
+* Use dependency injection
+* Use async/await everywhere
+* Generate presigned upload URL (abstract interface, no vendor lock)
+* Validate:
+   * DJ identity (stub interface)
+   * VenueId present
+* On complete:
+   * Validate SHA256 hash
+   * Validate MIME type = audio/*
+   * Persist entry as Pending
+Include:
+* Proper error handling (ProblemDetails)
+* Logging (ILogger)
+* CancellationToken support
+Constraints:
+* No direct AWS/Azure SDK usage (use abstraction)
+* No EF implementation yet (interface only)
+Output:
+* Controller + service + interfaces
+* Production-grade structure
+________________
+
+
+G1-P03 — Enforce Geo-Proximity Validation (PostGIS + Anti-Spoof) v1.0
+You are implementing geo-validation logic for a fraud-resistant system.
+Generate:
+* GeoValidationService.cs
+* Interface: IGeoValidationService
+Function:
+* Validate that a given lat/lng is within 50 meters of a venue
+Requirements:
+* Use NetTopologySuite
+* Assume PostGIS-backed coordinates
+* Method:
+Task IsWithinVenueRadiusAsync(Guid venueId, double lat, double lng)
+Implementation:
+   * Query venue location
+   * Compute ST_Distance equivalent
+   * Reject if > 50 meters
+Include:
+   * Defensive checks (invalid coords)
+   * Logging of failed attempts
+   * Extension-ready for IP correlation
+Constraints:
+   * No controller
+   * No UI logic
+   * Pure service layer
+Output:
+   * Clean, testable service
+________________
+
+
+G1-P04 — Implement Media Hashing and Deterministic Identity v1.0
+You are implementing deterministic media identity.
+Generate:
+   * MediaHashService.cs
+   * Interface: IMediaHashService
+Functionality:
+   * Compute SHA256 hash from stream
+   * Return byte[] and hex string
+Requirements:
+   * Use System.Security.Cryptography
+   * Stream-based (no full memory load)
+   * Async compatible
+Add:
+   * Method:
+Task ComputeSha256HexAsync(Stream stream)
+Constraints:
+      * Must be deterministic
+      * No randomness
+      * No external dependencies
+Output:
+      * Production-ready hashing service
+________________
+
+
+G1-P05 — Create GeoMix Entry Persistence and Versioning Model v1.0
+You are designing EF Core persistence for an append-only system.
+Generate:
+      * GeoMixEntry entity
+      * DbContext configuration
+      * Fluent API mappings
+Requirements:
+      * Append-only (no updates)
+      * Version field required
+      * Include:
+      * Id
+      * DJId
+      * VenueId
+      * TimestampUtc
+      * Location (Point)
+      * Duration
+      * OffsetStart
+      * Hash
+      * Visibility
+      * CreatedAt
+Use:
+      * NetTopologySuite for GeoPoint
+      * PostgreSQL/PostGIS conventions
+Add:
+      * Indexes:
+      * timestamp
+      * venue
+      * geo (GIST)
+Constraints:
+      * No repository pattern
+      * No service layer
+      * Pure EF model
+Output:
+      * Entity + DbContext config
+________________
+
+
+Bundle G4 — Playback Engine v1.0 (FULL PROMPTS)
+________________
+
+
+G4-P16 — Define Playback Query Contract (Geo + Time Window) v1.0
+You are defining API contracts for deterministic playback.
+Generate DTOs:
+      * PlaybackRequest
+      * PlaybackResponse
+      * PlaybackEntryDto
+Requirements:
+      * Include:
+      * lat, lng
+      * time (optional)
+      * window (TimeSpan)
+      * Response includes:
+      * VenueId
+      * WindowStart/End
+      * Ordered entries
+Constraints:
+      * No business logic
+      * Must enforce UTC
+      * JSON serialization safe
+Output:
+      * Clean DTO definitions
+________________
+
+
+G4-P17 — Implement Deterministic Sorting and Stitching Engine v1.0
+You are implementing the core deterministic playback engine.
+Generate:
+      * PlaybackEngineService.cs
+      * Interface: IPlaybackEngineService
+Core logic:
+      * Input: List
+      * Output: ordered list
+Sorting rules:
+      1. TimestampUtc ASC
+      2. OffsetStart ASC
+Requirements:
+      * Stable ordering
+      * No randomness
+      * Pure function behavior
+Add:
+      * Unit-testable method
+      * Comments referencing determinism guarantee
+Constraints:
+      * No DB access
+      * No HTTP logic
+Output:
+      * Clean service implementation
+________________
+
+
+G4-P18 — Build Temporal Window Resolver (Server-Authoritative Time) v1.0
+You are implementing temporal resolution logic.
+Generate:
+      * TemporalWindowService.cs
+Function:
+      * Resolve playback window:
+      * Input: requested time + window size
+      * Output: start/end UTC
+Rules:
+      * Default to DateTimeOffset.UtcNow if null
+      * Window is symmetric
+Example:
+      * window = 10 min → ±5 min
+Constraints:
+      * No timezone ambiguity
+      * Server is source of truth
+Output:
+      * Deterministic time resolver
+________________
+
+
+G4-P19 — Optimize Spatial + Temporal Query Index Strategy v1.0
+You are optimizing database query performance.
+Generate:
+      * EF Core query method for playback
+Requirements:
+      * Filter:
+      * VenueId
+      * Timestamp range
+      * Order:
+      * Timestamp
+      * OffsetStart
+      * Use:
+      * AsNoTracking
+      * Proper indexing hints
+Also include:
+      * SQL equivalent query (commented)
+Constraints:
+      * No repository abstraction
+      * Direct DbContext usage
+Output:
+      * Efficient query method
+________________
+
+
+G4-P20 — Implement Playback Response Integrity (Hash + ETag) v1.0
+You are implementing response integrity.
+Generate:
+      * ETag generation logic for playback response
+Requirements:
+      * Hash entire ordered result set
+      * Use SHA256
+      * Return as HTTP ETag header
+Add:
+      * Middleware or helper method
+Constraints:
+      * Deterministic only
+      * Same input = same ETag
+Output:
+      * Production-ready ETag implementation
+________________
+
+
+Execution Order (Critical)
+Do NOT run these randomly.
+      1. G1-P01 → G1-P05 (data + ingestion foundation)
+      2. G4-P16 → G4-P18 (playback skeleton)
+      3. G4-P17 → G4-P20 (determinism + optimization)
+________________
+
+
+Hard Constraint Reminder
+If G4-P17 (deterministic sorting) is wrong or skipped:
+Your entire system becomes non-replayable → breaks your core philosophy.
+________________
+
+
+Next Step
+If you want, I’ll generate:
+      * Full integration glue (Controller → Service → DB → Playback)
+      * Or a Vue + Mapbox playback UI component with timeline sync
+Choose one:
+      * Backend integration
+      * Frontend playback layer
+      * End-to-end test harness

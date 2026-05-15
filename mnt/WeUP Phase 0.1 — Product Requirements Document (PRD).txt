@@ -1,0 +1,567 @@
+﻿WeUP Phase 0.1 — Product Requirements Document (PRD)
+Feature: Promoter Profiles + Media Feed (Photos + Short Video)
+________________
+
+
+0. Executive Summary
+Objective:
+Extend WeUP Phase 0 (flyer ingestion + map/calendar discovery) into an identity-driven platform by introducing Promoter Profiles with media feeds (photos + short-form video).
+Why this matters:
+* Converts WeUP from a utility (flyer parser) → platform (who to follow)
+
+* Establishes trust graph (promoters → users → venues)
+
+* Unlocks early monetization (featured profiles, paid media slots)
+
+* Increases retention via repeat engagement
+
+Phase Scope Constraint:
+This is NOT a social network buildout. No comments, no DMs, no algorithmic feed.
+________________
+
+
+1. Goals & Non-Goals
+1.1 Goals
+   * Allow promoters to create public profiles
+
+   * Enable multi-photo + short video uploads
+
+   * Introduce feed-based content model
+
+   * Allow media to be linked to events
+
+   * Provide user-facing promoter discovery
+
+   * Enable basic moderation + verification
+
+   * Establish foundation for monetization
+
+________________
+
+
+1.2 Non-Goals (Strict)
+      * No messaging (DMs)
+
+      * No comments or likes
+
+      * No livestreaming
+
+      * No long-form video hosting
+
+      * No recommendation algorithms
+
+      * No influencer marketplace yet
+
+________________
+
+
+2. User Personas
+2.1 Promoter
+         * Hosts or markets events
+
+         * Needs visibility and brand identity
+
+         * Wants to showcase event quality via media
+
+2.2 User (Consumer)
+            * Browses events
+
+            * Wants to assess “vibe”
+
+            * Follows trusted promoters
+
+2.3 Admin
+               * Moderates content
+
+               * Verifies promoters
+
+               * Manages abuse and quality
+
+________________
+
+
+3. Core User Stories
+Promoter
+                  * Create a profile → “I want a branded identity”
+
+                  * Upload photos/videos → “I want to show event vibe”
+
+                  * Link media to event → “I want promotion tied to attendance”
+
+                  * Manage feed → “I want to control my public image”
+
+User
+                     * View promoter profile → “I want to evaluate credibility”
+
+                     * Browse media feed → “I want to see what events look like”
+
+                     * Discover events from promoter → “I want consistency”
+
+________________
+
+
+4. Feature Breakdown
+________________
+
+
+4.1 Promoter Profile
+Description
+A public identity page for promoters.
+Required Fields
+{
+  "id": "guid",
+  "displayName": "string",
+  "slug": "string",
+  "bio": "string",
+  "profileImageUrl": "string",
+  "bannerImageUrl": "string",
+  "city": "string",
+  "instagramUrl": "string",
+  "tiktokUrl": "string",
+  "websiteUrl": "string",
+  "verificationStatus": "Pending | Verified | Rejected",
+  "createdAt": "datetime"
+}
+Rules
+                        * Unique slug per promoter
+
+                        * One profile per account (Phase 0)
+
+                        * Manual verification only
+
+________________
+
+
+4.2 Media System
+Supported Types
+                           * Images: JPG, PNG, WEBP
+
+                           * Video: MP4, MOV, WEBM
+
+Constraints
+                              * Max video length: 30 seconds
+
+                              * Max media per post: 10
+
+                              * Max file size (suggested):
+
+                                 * Images: 5MB
+
+                                 * Video: 25MB
+
+________________
+
+
+Media Asset Schema
+{
+  "id": "guid",
+  "promoterProfileId": "guid",
+  "mediaType": "Photo | Video",
+  "url": "string",
+  "thumbnailUrl": "string",
+  "caption": "string",
+  "durationSeconds": "int",
+  "visibilityStatus": "Draft | Published | Flagged",
+  "createdAt": "datetime"
+}
+________________
+
+
+4.3 Feed Post System
+Description
+A structured container for media.
+Schema
+{
+  "id": "guid",
+  "promoterProfileId": "guid",
+  "title": "string",
+  "body": "string",
+  "postType": "General | EventPromo | Recap | VenueHighlight",
+  "linkedEventId": "guid",
+  "status": "Draft | Published",
+  "publishedAt": "datetime"
+}
+Relationship
+                                    * One post → many media assets
+
+________________
+
+
+4.4 Feed UX Model
+Post Types
+                                       * Event Promo → pre-event hype
+
+                                       * Recap → post-event highlights
+
+                                       * General → brand identity content
+
+                                       * Venue Highlight → partnerships
+
+________________
+
+
+Feed Behavior
+                                          * Chronological
+
+                                          * No ranking algorithm
+
+                                          * Mobile-first scroll
+
+                                          * Media-first rendering
+
+________________
+
+
+4.5 Event Integration
+Behavior
+                                             * Promoter can link post → event
+
+                                             * Event page displays:
+
+                                                * “From Promoter” media section
+
+Result
+                                                   * Events gain visual richness
+
+                                                   * Promoters gain event association
+
+________________
+
+
+4.6 Public Promoter Page
+Structure
+Header
+                                                      * Banner image
+
+                                                      * Profile image
+
+                                                      * Name
+
+                                                      * Bio
+
+                                                      * Social links
+
+                                                      * Verification badge
+
+Tabs
+                                                         * Feed
+
+                                                         * Events
+
+                                                         * Gallery
+
+________________
+
+
+Feed Tab
+                                                            * Vertical card layout
+
+                                                            * Each card:
+
+                                                               * media carousel or video
+
+                                                               * caption
+
+                                                               * linked event
+
+                                                               * timestamp
+
+________________
+
+
+Gallery Tab
+                                                                  * Grid of images/videos
+
+________________
+
+
+Events Tab
+                                                                     * Upcoming events
+
+                                                                     * Past events
+
+________________
+
+
+4.7 Upload Flow
+Steps
+                                                                        1. Select “Create Post”
+
+                                                                        2. Upload media
+
+                                                                        3. Add caption/title
+
+                                                                        4. Optional: link event
+
+                                                                        5. Preview
+
+                                                                        6. Publish
+
+Requirements
+                                                                           * Drag-and-drop upload
+
+                                                                           * Progress indicator
+
+                                                                           * Thumbnail generation
+
+                                                                           * Mobile camera support
+
+________________
+
+
+4.8 Moderation System
+Rules
+                                                                              * All uploads pass validation:
+
+                                                                                 * type
+
+                                                                                 * size
+
+                                                                                 * duration
+
+                                                                                    * Flagged content hidden automatically
+
+Admin Controls
+                                                                                       * Remove media
+
+                                                                                       * Suspend promoter
+
+                                                                                       * Verify promoter
+
+                                                                                       * Feature promoter
+
+________________
+
+
+4.9 Monetization Hooks
+Phase 0.1 (Light)
+                                                                                          * Featured promoter flag
+
+                                                                                          * Paid “boosted post”
+
+                                                                                          * Verification fee (optional)
+
+Future
+                                                                                             * Subscription tiers
+
+                                                                                             * Analytics dashboards
+
+                                                                                             * Sponsored placements
+
+________________
+
+
+4.10 Storage & Delivery
+Recommended
+                                                                                                * Cloudinary (preferred)
+
+                                                                                                * Supabase Storage (acceptable)
+
+Requirements
+                                                                                                   * Image optimization
+
+                                                                                                   * Video compression
+
+                                                                                                   * CDN delivery
+
+                                                                                                   * Thumbnail generation
+
+________________
+
+
+4.11 API Design
+Promoter
+POST   /api/promoters
+GET    /api/promoters/{slug}
+PUT    /api/promoters/{id}
+GET    /api/promoters/{id}/feed
+Feed
+POST   /api/feed
+PUT    /api/feed/{id}
+DELETE /api/feed/{id}
+GET    /api/feed/{id}
+Media
+POST   /api/media/upload
+POST   /api/media/attach
+DELETE /api/media/{id}
+Admin
+POST /api/admin/promoters/{id}/verify
+POST /api/admin/media/{id}/flag
+POST /api/admin/promoters/{id}/suspend
+________________
+
+
+4.12 Database Tables
+                                                                                                      * PromoterProfiles
+
+                                                                                                      * FeedPosts
+
+                                                                                                      * MediaAssets
+
+                                                                                                      * FeedPostMedia
+
+                                                                                                      * Events (existing)
+
+                                                                                                      * ModerationLogs
+
+________________
+
+
+4.13 UI Component Map (Vue / Quasar)
+Promoter Side
+                                                                                                         * PromoterProfileForm.vue
+
+                                                                                                         * MediaUploader.vue
+
+                                                                                                         * FeedPostEditor.vue
+
+                                                                                                         * FeedPostPreview.vue
+
+User Side
+                                                                                                            * PromoterProfilePage.vue
+
+                                                                                                            * PromoterFeed.vue
+
+                                                                                                            * MediaCarousel.vue
+
+                                                                                                            * VideoPlayer.vue
+
+Shared
+                                                                                                               * MediaGrid.vue
+
+                                                                                                               * EventLinkChip.vue
+
+________________
+
+
+4.14 Success Metrics
+Adoption
+                                                                                                                  * % of promoters creating profiles
+
+                                                                                                                  * % of events linked to promoter
+
+Engagement
+                                                                                                                     * profile views per user
+
+                                                                                                                     * time spent on profile page
+
+                                                                                                                     * media views per post
+
+Monetization
+                                                                                                                        * number of featured promoters
+
+                                                                                                                        * paid boost conversions
+
+________________
+
+
+4.15 Risks
+Technical
+                                                                                                                           * Video storage cost
+
+                                                                                                                           * Upload performance on mobile
+
+                                                                                                                           * CDN latency
+
+Product
+                                                                                                                              * Low-quality content
+
+                                                                                                                              * Spam promoters
+
+                                                                                                                              * Overcomplication of Phase 0
+
+Mitigation
+                                                                                                                                 * strict upload limits
+
+                                                                                                                                 * moderation tools
+
+                                                                                                                                 * manual verification
+
+________________
+
+
+4.16 Implementation Plan
+Sprint 1 — Data Layer
+                                                                                                                                    * schemas
+
+                                                                                                                                    * storage integration
+
+                                                                                                                                    * API scaffolding
+
+Sprint 2 — Profile UI
+                                                                                                                                       * create/edit profile
+
+                                                                                                                                       * public page
+
+Sprint 3 — Media Upload
+                                                                                                                                          * multi-upload
+
+                                                                                                                                          * video handling
+
+                                                                                                                                          * preview system
+
+Sprint 4 — Feed System
+                                                                                                                                             * post creation
+
+                                                                                                                                             * feed rendering
+
+                                                                                                                                             * event linking
+
+Sprint 5 — Moderation + Monetization
+                                                                                                                                                * admin panel
+
+                                                                                                                                                * verification system
+
+                                                                                                                                                * featured flag
+
+________________
+
+
+4.17 Acceptance Criteria
+                                                                                                                                                   * Promoter can create profile
+
+                                                                                                                                                   * Promoter can upload:
+
+                                                                                                                                                      * ≥1 video
+
+                                                                                                                                                      * ≥1 photo set
+
+                                                                                                                                                         * Feed renders correctly
+
+                                                                                                                                                         * Media attaches to events
+
+                                                                                                                                                         * Public profile accessible via URL
+
+                                                                                                                                                         * Admin can moderate content
+
+                                                                                                                                                         * Upload constraints enforced
+
+________________
+
+
+Final Positioning
+WeUP Phase 0 → utility
+WeUP Phase 0.1 → identity + media layer
+This is the first step toward:
+                                                                                                                                                            * promoter ecosystem
+
+                                                                                                                                                            * nightlife graph
+
+                                                                                                                                                            * monetizable creator layer
+
+________________
+
+
+If you want next step
+I can generate:
+                                                                                                                                                               * Full .NET + EF Core schema + migrations
+
+                                                                                                                                                               * Complete Vue/Quasar component code
+
+                                                                                                                                                               * Cloudinary integration service
+
+                                                                                                                                                               * Autogen agent to auto-generate promoter feeds from scraped content
+
+                                                                                                                                                               * Houston-specific promoter onboarding playbook
+
+Just specify direction.

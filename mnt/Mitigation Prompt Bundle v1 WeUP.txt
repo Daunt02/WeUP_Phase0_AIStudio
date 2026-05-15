@@ -1,0 +1,10494 @@
+﻿This is a mitigation spec for WeUP [Yes — the **fix** is to turn the roadmap from a visionary sequence into a hard release-control system with explicit blockers, ownership, and non-negotiable gates at every phase.  The mitigation spec below closes the main gaps the documents themselves expose: operational fragility, runtime ambiguity, moderation timing, offline failure handling, schema drift, UX drift, and premature expansion beyond the core economic loop.[1][2][3][4]
+
+
+## Mitigation objective
+
+
+The roadmap should be governed by one rule: WeUP does not advance phases unless the current phase is operationally stable, testable, and founder-independent in real event conditions.  That means the product is treated first as an event operations system with a map-first interface, not as a concept platform for wearables, trust graphs, sponsors, or blockchain.[2][5][1]
+
+
+## Risk controls
+
+
+| Risk domain | Failure mode | Required mitigation | Release gate |
+|---|---|---|---|
+| Scope control | MVP absorbs vendor depth, trust layers, ghost pins, sponsor logic, and long-arc concepts too early. [1][2] | Lock v1.0 to discovery, event detail, Stripe checkout, QR issuance, door scan, moderation, observability, and operator tooling only; explicitly block OCR, invite/vouch, sponsor objects, richer commerce, city layer, wearables, and chain features until later versions. [1][2] | No blocked feature appears in active sprint scope, code paths, or release candidates before its allowed version. [1][2] |
+| Runtime integrity | Stub-first defaults, split save-state ownership, duplicate event representations, and mock-first frontend paths create ambiguity about what is real. [3][4] | Make EF-backed/API-backed execution the default local runtime, remove silent stub defaults, unify save ownership, define one canonical event model with explicit mappings, and delete deprecated runtime seams. [3][4] | App boots in real mode by default, health checks fail loudly on misconfiguration, and no core user flow depends on mock services. [4] |
+| Operator reliability | A beautiful UI can still fail at the door, which the documents identify as the fastest path to market rejection. [2] | Promote DoorOps to a first-class system with DoorSystem spec, operator runbook, escalation matrix, failure playbooks, manual-entry fallback, and trained override behavior. [2][1] | Simulated and real event runs show no operator confusion, no unsupported door collapse, and no founder intervention. [2][1] |
+| Moderation and safety | Moderation arrives too late, leaving unsafe or high-risk events able to reach publish flows. [2][6] | Move moderation earlier by adding EventRiskScore, pre-publish review gates, venue/capacity/category risk controls, immutable review history, publish eligibility rules, and moderator-only protected surfaces. [2][6] | No event can publish without passing review or explicit auto-publish thresholds, and no high-risk event bypasses review. [2][6] |
+| Offline and network resilience | Door operations degrade under poor connectivity, with possible duplicate admissions across offline scanners. [2][1] | Implement offline-capable QR display, offline scan grace rules, sync reconciliation, conflict resolution, duplicate detection post-sync, and audit trails for overlap vs fraud. [2][1] | Multi-device offline tests pass, duplicate conflicts reconcile deterministically, and audit logs capture all exceptions. [2] |
+| Performance | The map-first UX collapses if page loads, scrubbing, checkout, QR generation, and scan response lack system-wide latency budgets. [2][5] | Define and enforce SLOs for event page load, checkout init, QR generation, scan response, and map interaction, with OTEL traces, structured logs, and conversion-path telemetry. [2][1][4] | Staging and pilot environments meet the latency table before v1.0 launch gates are green. [2][1] |
+| Data integrity | Event schema drift during pilots corrupts contracts, analytics, and later ingestion/dedupe work. [2][4] | Freeze the canonical event aggregate early, enforce schema versioning, require backward compatibility, and add contract tests between TypeScript and C# models. [2][3][4] | No breaking contract change merges without version bump, migration, and passing parity tests. [4] |
+| UX doctrine | Feed-like ranking, surveillance patterns, cryptic copy, and over-ritualized WLLS semantics can break user comprehension. [1][7][8][5] | Keep the map primary, keep public copy plain, keep motion ambient and finite, avoid engagement metrics and passive tracking, and reserve WLLS rigor for internal design constraints rather than public complexity. [1][7][8][5] | Every public surface passes the anti-surveillance and anti-feed checklist, and event purchase/check-in requires no explanation. [1][2] |
+| Pilot validity | A weak pilot can “pass” without proving venue stress, density, or failure recovery. [2] | Replace the soft pilot gate with required venue diversity, one high-density event, one offline scenario, one failure simulation, and zero founder intervention. [2] | v1.0 remains blocked until the stricter pilot plan is completed successfully. [2] |
+
+
+## Phase fixes
+
+
+For v0.1, the fix is architectural hardening: activate the real runtime, freeze the canonical event aggregate, commit migrations, add DTO and API contract tests, formalize schema versioning, and instrument observability from the start.  For v0.2, the fix is product discipline: prove create-edit-publish-display on the map and calendar with plain-language UX, deterministic routing, and zero money movement until those surfaces are stable.[3][4][5][1][2]
+
+
+For v0.3, the fix is operational proof: build the economic loop end-to-end, but treat DoorScanSystem, offline conflict handling, webhook idempotency, and audit logging as the real core product before vendor/store depth.  For v1.0, the fix is launch governance: require moderation queue operations, event risk scoring, release gate matrix, telemetry pack, risk register, backup/restore, and measured SLO compliance before calling anything public MVP.[6][1][2]
+
+
+## Required workstreams
+
+
+The roadmap should be executed through six enforced workstreams: Runtime Consolidation, Economic Loop Operations, Moderation and Publish Safety, Spatial-Temporal Integrity, Observability and Release Gates, and Deferred Feature Enforcement.  That structure matches the hardening pack, the status assessment, and the roadmap more closely than the current sprawl of overlapping prompt packs and long-arc feature narratives.[4][1][2]
+
+
+Each workstream should own a fixed artifact set: one spec, one test suite, one KPI set, one risk list, and one definition-of-done tied to the phase gate.  The most important immediate documents remain DoorSystemSpec, EconomicLoopSpec, ExecutionMatrix, PilotPlan, FailureTestSuite, SLO/SLA spec, and EventRiskModel because those directly address the execution holes called out across the current roadmap set.[2][4]
+
+
+## Enforcement model
+
+
+No feature should start without dependency resolution, no merge should happen without tests, no phase should advance without KPIs, and no release should occur with silent runtime ambiguity.  That doctrine already exists in fragments across the documents, but the fix is to enforce it as the single authority for roadmap progression rather than as advisory planning language.[4][2]
+
+
+The completed mitigation posture is therefore simple: **freeze scope, harden runtime, operationalize the door, move moderation earlier, design for offline failure, enforce latency and schema budgets, and block all long-arc innovation until real events run cleanly.**  That is the version of the WeUP roadmap that is buildable under pressure instead of merely impressive on paper.[1][3][2][4]
+
+
+Sources
+[1] WEUP-MVP-ROADMAP.pdf https://ppl-ai-file-upload.s3.us-east-1.amazonaws.com/web/direct-files/attachments/5457373/2d18dd48-9a54-4e09-be56-c2562af05916/WEUP-MVP-ROADMAP.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Checksum-Mode=ENABLED&X-Amz-Credential=ASIA2F3EMEYE5FAFNPJK%2F20260415%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260415T212032Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEOX%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJGMEQCIB0Yy9giiRgb2BRCwE5gEm56vDxBlXQPOwrPEVWgBQAjAiANne0316y3ZqYolIX1BM2o5%2Buo4DMHlGXDbcSiVWL4gir0BAiu%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAEaDDY5OTc1MzMwOTcwNSIMwe1gjwbU9uVqBmC8KsgEqPqW2piPPLZ2Yvk%2Fz0LmPRhmULgN4U6yembbESxpLGHO0NlmptjMc1AXRr4vAP1VjVBrI4FklcAKd2jiELNtJN7sXrKzOiKFlI%2BRFmE3qjDKjURImGpwjGnhWmnrSEhE%2FzwkrRaZ949Ut0STbkSneh3NYK9nbEAMsrl7mei2YqWC6Cty9jkFxKawwifVLvs1LVlRDhmXj4LJX%2BX%2BWCo1M9Dt2rwMAMOu98gEDcZe4iy5YKePED1LYcoRPjXDZG97zjfuz5J8X5WA69p9ZAy7JXdDyUr3m38Fx2%2FDqXmXZnOqF%2FnKAXp8BQaA5GiStI%2Ftulw%2B%2BGd6wCsbMyC3GLJ9ApmNkJg9xG9P5a%2F5hdwC5jLeKI8edTnvmFGkKJv0rLBx7mrDlBg8%2BgOTQAZovyDWzRxymTzRDe2dLveUWYe%2BMaEWHyRHea1%2FGmNlZgLhafqzoAhSXZh9SjqPO%2BKTVv1x%2BBlRTSGdcH2vBeF7EeAhOevxNC4Tqmqddi71hbwA6TEgGB1LHAmeqq1caMlW17I1JjNnp6S2tdex9bXHfahGzrRFm6uh1a%2BQca7dwjmiZpPPy1QOjetR%2FGYFhIKu6T1psHfRRSwHM0cIMc2WNVWQUhccfua6eBwk%2BFwoc%2BGmBSfkfDykjK2yVdefjBPMgJ51jqHJC1uZNzWnnc%2FyhjJUd7nwklJYfGQoOKPiQjKrzZfL5iATJtD7lHEOUejiBokwFdOU9rKRv9vuL4khJHofuotPViZxpXQUOZ2h0nQIaeZWRU5ZmtMl%2BiEwgfj%2FzgY6mQFXs6XzD%2BRNif8yT3tjq9IsIAT2AJg1QZ27VHpPNox%2FLcy05%2BRuJ5HYqSE2mOZ25YyGeDZspbw3U4Ac3akz3goHv%2Fstci3ksuzpQyJqQWV%2BCs7Aov1O3DnMQfvkFQubjTjdsEccG83RbmmLcUccUB4GpvdJL3PsIvGv%2BPpo9%2BNY3QqCxMC6e%2B70EC7bqX9taAgOYUlLizQDnGg%3D&X-Amz-SignedHeaders=host&x-id=GetObject&X-Amz-Signature=44d581d59096a8699a2c58eb3051069304f40f53e1bcb433d39820e1683ca7d7
+[2] WeUP-Status-Assessment-MVP-to-Phase-3-Roadmap.pdf https://ppl-ai-file-upload.s3.us-east-1.amazonaws.com/web/direct-files/attachments/5457373/902a8534-9b19-4eaa-90df-231e7569eff5/WeUP-Status-Assessment-MVP-to-Phase-3-Roadmap.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Checksum-Mode=ENABLED&X-Amz-Credential=ASIA2F3EMEYE5FAFNPJK%2F20260415%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260415T212032Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEOX%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJGMEQCIB0Yy9giiRgb2BRCwE5gEm56vDxBlXQPOwrPEVWgBQAjAiANne0316y3ZqYolIX1BM2o5%2Buo4DMHlGXDbcSiVWL4gir0BAiu%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAEaDDY5OTc1MzMwOTcwNSIMwe1gjwbU9uVqBmC8KsgEqPqW2piPPLZ2Yvk%2Fz0LmPRhmULgN4U6yembbESxpLGHO0NlmptjMc1AXRr4vAP1VjVBrI4FklcAKd2jiELNtJN7sXrKzOiKFlI%2BRFmE3qjDKjURImGpwjGnhWmnrSEhE%2FzwkrRaZ949Ut0STbkSneh3NYK9nbEAMsrl7mei2YqWC6Cty9jkFxKawwifVLvs1LVlRDhmXj4LJX%2BX%2BWCo1M9Dt2rwMAMOu98gEDcZe4iy5YKePED1LYcoRPjXDZG97zjfuz5J8X5WA69p9ZAy7JXdDyUr3m38Fx2%2FDqXmXZnOqF%2FnKAXp8BQaA5GiStI%2Ftulw%2B%2BGd6wCsbMyC3GLJ9ApmNkJg9xG9P5a%2F5hdwC5jLeKI8edTnvmFGkKJv0rLBx7mrDlBg8%2BgOTQAZovyDWzRxymTzRDe2dLveUWYe%2BMaEWHyRHea1%2FGmNlZgLhafqzoAhSXZh9SjqPO%2BKTVv1x%2BBlRTSGdcH2vBeF7EeAhOevxNC4Tqmqddi71hbwA6TEgGB1LHAmeqq1caMlW17I1JjNnp6S2tdex9bXHfahGzrRFm6uh1a%2BQca7dwjmiZpPPy1QOjetR%2FGYFhIKu6T1psHfRRSwHM0cIMc2WNVWQUhccfua6eBwk%2BFwoc%2BGmBSfkfDykjK2yVdefjBPMgJ51jqHJC1uZNzWnnc%2FyhjJUd7nwklJYfGQoOKPiQjKrzZfL5iATJtD7lHEOUejiBokwFdOU9rKRv9vuL4khJHofuotPViZxpXQUOZ2h0nQIaeZWRU5ZmtMl%2BiEwgfj%2FzgY6mQFXs6XzD%2BRNif8yT3tjq9IsIAT2AJg1QZ27VHpPNox%2FLcy05%2BRuJ5HYqSE2mOZ25YyGeDZspbw3U4Ac3akz3goHv%2Fstci3ksuzpQyJqQWV%2BCs7Aov1O3DnMQfvkFQubjTjdsEccG83RbmmLcUccUB4GpvdJL3PsIvGv%2BPpo9%2BNY3QqCxMC6e%2B70EC7bqX9taAgOYUlLizQDnGg%3D&X-Amz-SignedHeaders=host&x-id=GetObject&X-Amz-Signature=e8dee4bc376a572d881952c6665cba94f7a8ecfce4faecc9328fa07f7f100aa2
+[3] WeUP-Phase-0-030-Prompt-Bundle-Pack.pdf https://ppl-ai-file-upload.s3.us-east-1.amazonaws.com/web/direct-files/attachments/5457373/2d9eef65-a3e2-4ff0-93df-7840c756c954/WeUP-Phase-0-030-Prompt-Bundle-Pack.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Checksum-Mode=ENABLED&X-Amz-Credential=ASIA2F3EMEYE5FAFNPJK%2F20260415%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260415T212032Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEOX%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJGMEQCIB0Yy9giiRgb2BRCwE5gEm56vDxBlXQPOwrPEVWgBQAjAiANne0316y3ZqYolIX1BM2o5%2Buo4DMHlGXDbcSiVWL4gir0BAiu%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAEaDDY5OTc1MzMwOTcwNSIMwe1gjwbU9uVqBmC8KsgEqPqW2piPPLZ2Yvk%2Fz0LmPRhmULgN4U6yembbESxpLGHO0NlmptjMc1AXRr4vAP1VjVBrI4FklcAKd2jiELNtJN7sXrKzOiKFlI%2BRFmE3qjDKjURImGpwjGnhWmnrSEhE%2FzwkrRaZ949Ut0STbkSneh3NYK9nbEAMsrl7mei2YqWC6Cty9jkFxKawwifVLvs1LVlRDhmXj4LJX%2BX%2BWCo1M9Dt2rwMAMOu98gEDcZe4iy5YKePED1LYcoRPjXDZG97zjfuz5J8X5WA69p9ZAy7JXdDyUr3m38Fx2%2FDqXmXZnOqF%2FnKAXp8BQaA5GiStI%2Ftulw%2B%2BGd6wCsbMyC3GLJ9ApmNkJg9xG9P5a%2F5hdwC5jLeKI8edTnvmFGkKJv0rLBx7mrDlBg8%2BgOTQAZovyDWzRxymTzRDe2dLveUWYe%2BMaEWHyRHea1%2FGmNlZgLhafqzoAhSXZh9SjqPO%2BKTVv1x%2BBlRTSGdcH2vBeF7EeAhOevxNC4Tqmqddi71hbwA6TEgGB1LHAmeqq1caMlW17I1JjNnp6S2tdex9bXHfahGzrRFm6uh1a%2BQca7dwjmiZpPPy1QOjetR%2FGYFhIKu6T1psHfRRSwHM0cIMc2WNVWQUhccfua6eBwk%2BFwoc%2BGmBSfkfDykjK2yVdefjBPMgJ51jqHJC1uZNzWnnc%2FyhjJUd7nwklJYfGQoOKPiQjKrzZfL5iATJtD7lHEOUejiBokwFdOU9rKRv9vuL4khJHofuotPViZxpXQUOZ2h0nQIaeZWRU5ZmtMl%2BiEwgfj%2FzgY6mQFXs6XzD%2BRNif8yT3tjq9IsIAT2AJg1QZ27VHpPNox%2FLcy05%2BRuJ5HYqSE2mOZ25YyGeDZspbw3U4Ac3akz3goHv%2Fstci3ksuzpQyJqQWV%2BCs7Aov1O3DnMQfvkFQubjTjdsEccG83RbmmLcUccUB4GpvdJL3PsIvGv%2BPpo9%2BNY3QqCxMC6e%2B70EC7bqX9taAgOYUlLizQDnGg%3D&X-Amz-SignedHeaders=host&x-id=GetObject&X-Amz-Signature=9b0f297579a7ca44cfe1d3e1d4041374e5dc00b3ced9079aa6d8c4678947bc7d
+[4] Hardening-Prompt-Bundle-Pack-WeUP-Phase-0-Repo-Consolidation.pdf https://ppl-ai-file-upload.s3.us-east-1.amazonaws.com/web/direct-files/attachments/5457373/54808418-dcef-4c07-97db-961af3103672/Hardening-Prompt-Bundle-Pack-WeUP-Phase-0-Repo-Consolidation.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Checksum-Mode=ENABLED&X-Amz-Credential=ASIA2F3EMEYE5FAFNPJK%2F20260415%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260415T212032Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEOX%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJGMEQCIB0Yy9giiRgb2BRCwE5gEm56vDxBlXQPOwrPEVWgBQAjAiANne0316y3ZqYolIX1BM2o5%2Buo4DMHlGXDbcSiVWL4gir0BAiu%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAEaDDY5OTc1MzMwOTcwNSIMwe1gjwbU9uVqBmC8KsgEqPqW2piPPLZ2Yvk%2Fz0LmPRhmULgN4U6yembbESxpLGHO0NlmptjMc1AXRr4vAP1VjVBrI4FklcAKd2jiELNtJN7sXrKzOiKFlI%2BRFmE3qjDKjURImGpwjGnhWmnrSEhE%2FzwkrRaZ949Ut0STbkSneh3NYK9nbEAMsrl7mei2YqWC6Cty9jkFxKawwifVLvs1LVlRDhmXj4LJX%2BX%2BWCo1M9Dt2rwMAMOu98gEDcZe4iy5YKePED1LYcoRPjXDZG97zjfuz5J8X5WA69p9ZAy7JXdDyUr3m38Fx2%2FDqXmXZnOqF%2FnKAXp8BQaA5GiStI%2Ftulw%2B%2BGd6wCsbMyC3GLJ9ApmNkJg9xG9P5a%2F5hdwC5jLeKI8edTnvmFGkKJv0rLBx7mrDlBg8%2BgOTQAZovyDWzRxymTzRDe2dLveUWYe%2BMaEWHyRHea1%2FGmNlZgLhafqzoAhSXZh9SjqPO%2BKTVv1x%2BBlRTSGdcH2vBeF7EeAhOevxNC4Tqmqddi71hbwA6TEgGB1LHAmeqq1caMlW17I1JjNnp6S2tdex9bXHfahGzrRFm6uh1a%2BQca7dwjmiZpPPy1QOjetR%2FGYFhIKu6T1psHfRRSwHM0cIMc2WNVWQUhccfua6eBwk%2BFwoc%2BGmBSfkfDykjK2yVdefjBPMgJ51jqHJC1uZNzWnnc%2FyhjJUd7nwklJYfGQoOKPiQjKrzZfL5iATJtD7lHEOUejiBokwFdOU9rKRv9vuL4khJHofuotPViZxpXQUOZ2h0nQIaeZWRU5ZmtMl%2BiEwgfj%2FzgY6mQFXs6XzD%2BRNif8yT3tjq9IsIAT2AJg1QZ27VHpPNox%2FLcy05%2BRuJ5HYqSE2mOZ25YyGeDZspbw3U4Ac3akz3goHv%2Fstci3ksuzpQyJqQWV%2BCs7Aov1O3DnMQfvkFQubjTjdsEccG83RbmmLcUccUB4GpvdJL3PsIvGv%2BPpo9%2BNY3QqCxMC6e%2B70EC7bqX9taAgOYUlLizQDnGg%3D&X-Amz-SignedHeaders=host&x-id=GetObject&X-Amz-Signature=43e03bd30a5601b3cc0207a70f12656ecfeb6a34f9cf83ace6be75954bb14932
+[5] WeUP-Calendar-Overlay-UI-Spec.pdf https://ppl-ai-file-upload.s3.us-east-1.amazonaws.com/web/direct-files/attachments/5457373/dacf1028-9d11-4583-a1f2-8f33e79b1b16/WeUP-Calendar-Overlay-UI-Spec.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Checksum-Mode=ENABLED&X-Amz-Credential=ASIA2F3EMEYE5FAFNPJK%2F20260415%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260415T212032Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEOX%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJGMEQCIB0Yy9giiRgb2BRCwE5gEm56vDxBlXQPOwrPEVWgBQAjAiANne0316y3ZqYolIX1BM2o5%2Buo4DMHlGXDbcSiVWL4gir0BAiu%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAEaDDY5OTc1MzMwOTcwNSIMwe1gjwbU9uVqBmC8KsgEqPqW2piPPLZ2Yvk%2Fz0LmPRhmULgN4U6yembbESxpLGHO0NlmptjMc1AXRr4vAP1VjVBrI4FklcAKd2jiELNtJN7sXrKzOiKFlI%2BRFmE3qjDKjURImGpwjGnhWmnrSEhE%2FzwkrRaZ949Ut0STbkSneh3NYK9nbEAMsrl7mei2YqWC6Cty9jkFxKawwifVLvs1LVlRDhmXj4LJX%2BX%2BWCo1M9Dt2rwMAMOu98gEDcZe4iy5YKePED1LYcoRPjXDZG97zjfuz5J8X5WA69p9ZAy7JXdDyUr3m38Fx2%2FDqXmXZnOqF%2FnKAXp8BQaA5GiStI%2Ftulw%2B%2BGd6wCsbMyC3GLJ9ApmNkJg9xG9P5a%2F5hdwC5jLeKI8edTnvmFGkKJv0rLBx7mrDlBg8%2BgOTQAZovyDWzRxymTzRDe2dLveUWYe%2BMaEWHyRHea1%2FGmNlZgLhafqzoAhSXZh9SjqPO%2BKTVv1x%2BBlRTSGdcH2vBeF7EeAhOevxNC4Tqmqddi71hbwA6TEgGB1LHAmeqq1caMlW17I1JjNnp6S2tdex9bXHfahGzrRFm6uh1a%2BQca7dwjmiZpPPy1QOjetR%2FGYFhIKu6T1psHfRRSwHM0cIMc2WNVWQUhccfua6eBwk%2BFwoc%2BGmBSfkfDykjK2yVdefjBPMgJ51jqHJC1uZNzWnnc%2FyhjJUd7nwklJYfGQoOKPiQjKrzZfL5iATJtD7lHEOUejiBokwFdOU9rKRv9vuL4khJHofuotPViZxpXQUOZ2h0nQIaeZWRU5ZmtMl%2BiEwgfj%2FzgY6mQFXs6XzD%2BRNif8yT3tjq9IsIAT2AJg1QZ27VHpPNox%2FLcy05%2BRuJ5HYqSE2mOZ25YyGeDZspbw3U4Ac3akz3goHv%2Fstci3ksuzpQyJqQWV%2BCs7Aov1O3DnMQfvkFQubjTjdsEccG83RbmmLcUccUB4GpvdJL3PsIvGv%2BPpo9%2BNY3QqCxMC6e%2B70EC7bqX9taAgOYUlLizQDnGg%3D&X-Amz-SignedHeaders=host&x-id=GetObject&X-Amz-Signature=034fdbf6f2c54a6f1f72a19c0f0bb7a9369952ad2897381e9b77df8f7cdd0528
+[6] WeUP-Bundle-4-Prompt-1-through-5.pdf https://ppl-ai-file-upload.s3.us-east-1.amazonaws.com/web/direct-files/attachments/5457373/c01b847d-cd28-494b-952e-073a053f01ac/WeUP-Bundle-4-Prompt-1-through-5.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Checksum-Mode=ENABLED&X-Amz-Credential=ASIA2F3EMEYE5FAFNPJK%2F20260415%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260415T212032Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEOX%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJGMEQCIB0Yy9giiRgb2BRCwE5gEm56vDxBlXQPOwrPEVWgBQAjAiANne0316y3ZqYolIX1BM2o5%2Buo4DMHlGXDbcSiVWL4gir0BAiu%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAEaDDY5OTc1MzMwOTcwNSIMwe1gjwbU9uVqBmC8KsgEqPqW2piPPLZ2Yvk%2Fz0LmPRhmULgN4U6yembbESxpLGHO0NlmptjMc1AXRr4vAP1VjVBrI4FklcAKd2jiELNtJN7sXrKzOiKFlI%2BRFmE3qjDKjURImGpwjGnhWmnrSEhE%2FzwkrRaZ949Ut0STbkSneh3NYK9nbEAMsrl7mei2YqWC6Cty9jkFxKawwifVLvs1LVlRDhmXj4LJX%2BX%2BWCo1M9Dt2rwMAMOu98gEDcZe4iy5YKePED1LYcoRPjXDZG97zjfuz5J8X5WA69p9ZAy7JXdDyUr3m38Fx2%2FDqXmXZnOqF%2FnKAXp8BQaA5GiStI%2Ftulw%2B%2BGd6wCsbMyC3GLJ9ApmNkJg9xG9P5a%2F5hdwC5jLeKI8edTnvmFGkKJv0rLBx7mrDlBg8%2BgOTQAZovyDWzRxymTzRDe2dLveUWYe%2BMaEWHyRHea1%2FGmNlZgLhafqzoAhSXZh9SjqPO%2BKTVv1x%2BBlRTSGdcH2vBeF7EeAhOevxNC4Tqmqddi71hbwA6TEgGB1LHAmeqq1caMlW17I1JjNnp6S2tdex9bXHfahGzrRFm6uh1a%2BQca7dwjmiZpPPy1QOjetR%2FGYFhIKu6T1psHfRRSwHM0cIMc2WNVWQUhccfua6eBwk%2BFwoc%2BGmBSfkfDykjK2yVdefjBPMgJ51jqHJC1uZNzWnnc%2FyhjJUd7nwklJYfGQoOKPiQjKrzZfL5iATJtD7lHEOUejiBokwFdOU9rKRv9vuL4khJHofuotPViZxpXQUOZ2h0nQIaeZWRU5ZmtMl%2BiEwgfj%2FzgY6mQFXs6XzD%2BRNif8yT3tjq9IsIAT2AJg1QZ27VHpPNox%2FLcy05%2BRuJ5HYqSE2mOZ25YyGeDZspbw3U4Ac3akz3goHv%2Fstci3ksuzpQyJqQWV%2BCs7Aov1O3DnMQfvkFQubjTjdsEccG83RbmmLcUccUB4GpvdJL3PsIvGv%2BPpo9%2BNY3QqCxMC6e%2B70EC7bqX9taAgOYUlLizQDnGg%3D&X-Amz-SignedHeaders=host&x-id=GetObject&X-Amz-Signature=951d53adcb1ca2b397af923117bfce758e3c12926ed80ae52a09afd41ec75669
+[7] WeUP-Motion-Animation-Bible.pdf https://ppl-ai-file-upload.s3.us-east-1.amazonaws.com/web/direct-files/attachments/5457373/3ac6acc1-ded2-4249-9ccd-6159205c397a/WeUP-Motion-Animation-Bible.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Checksum-Mode=ENABLED&X-Amz-Credential=ASIA2F3EMEYE5FAFNPJK%2F20260415%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260415T212032Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEOX%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJGMEQCIB0Yy9giiRgb2BRCwE5gEm56vDxBlXQPOwrPEVWgBQAjAiANne0316y3ZqYolIX1BM2o5%2Buo4DMHlGXDbcSiVWL4gir0BAiu%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAEaDDY5OTc1MzMwOTcwNSIMwe1gjwbU9uVqBmC8KsgEqPqW2piPPLZ2Yvk%2Fz0LmPRhmULgN4U6yembbESxpLGHO0NlmptjMc1AXRr4vAP1VjVBrI4FklcAKd2jiELNtJN7sXrKzOiKFlI%2BRFmE3qjDKjURImGpwjGnhWmnrSEhE%2FzwkrRaZ949Ut0STbkSneh3NYK9nbEAMsrl7mei2YqWC6Cty9jkFxKawwifVLvs1LVlRDhmXj4LJX%2BX%2BWCo1M9Dt2rwMAMOu98gEDcZe4iy5YKePED1LYcoRPjXDZG97zjfuz5J8X5WA69p9ZAy7JXdDyUr3m38Fx2%2FDqXmXZnOqF%2FnKAXp8BQaA5GiStI%2Ftulw%2B%2BGd6wCsbMyC3GLJ9ApmNkJg9xG9P5a%2F5hdwC5jLeKI8edTnvmFGkKJv0rLBx7mrDlBg8%2BgOTQAZovyDWzRxymTzRDe2dLveUWYe%2BMaEWHyRHea1%2FGmNlZgLhafqzoAhSXZh9SjqPO%2BKTVv1x%2BBlRTSGdcH2vBeF7EeAhOevxNC4Tqmqddi71hbwA6TEgGB1LHAmeqq1caMlW17I1JjNnp6S2tdex9bXHfahGzrRFm6uh1a%2BQca7dwjmiZpPPy1QOjetR%2FGYFhIKu6T1psHfRRSwHM0cIMc2WNVWQUhccfua6eBwk%2BFwoc%2BGmBSfkfDykjK2yVdefjBPMgJ51jqHJC1uZNzWnnc%2FyhjJUd7nwklJYfGQoOKPiQjKrzZfL5iATJtD7lHEOUejiBokwFdOU9rKRv9vuL4khJHofuotPViZxpXQUOZ2h0nQIaeZWRU5ZmtMl%2BiEwgfj%2FzgY6mQFXs6XzD%2BRNif8yT3tjq9IsIAT2AJg1QZ27VHpPNox%2FLcy05%2BRuJ5HYqSE2mOZ25YyGeDZspbw3U4Ac3akz3goHv%2Fstci3ksuzpQyJqQWV%2BCs7Aov1O3DnMQfvkFQubjTjdsEccG83RbmmLcUccUB4GpvdJL3PsIvGv%2BPpo9%2BNY3QqCxMC6e%2B70EC7bqX9taAgOYUlLizQDnGg%3D&X-Amz-SignedHeaders=host&x-id=GetObject&X-Amz-Signature=1374b77d1b4d0a2136c513955d979db1d22d5e6d5807b7cfb07063cc6af0ef14
+[8] WLLS-Motion-Token-System.pdf https://ppl-ai-file-upload.s3.us-east-1.amazonaws.com/web/direct-files/attachments/5457373/0e9a87b5-3e43-4afd-a0ac-5157d7f7016d/WLLS-Motion-Token-System.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Checksum-Mode=ENABLED&X-Amz-Credential=ASIA2F3EMEYE5FAFNPJK%2F20260415%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260415T212032Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEOX%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJGMEQCIB0Yy9giiRgb2BRCwE5gEm56vDxBlXQPOwrPEVWgBQAjAiANne0316y3ZqYolIX1BM2o5%2Buo4DMHlGXDbcSiVWL4gir0BAiu%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAEaDDY5OTc1MzMwOTcwNSIMwe1gjwbU9uVqBmC8KsgEqPqW2piPPLZ2Yvk%2Fz0LmPRhmULgN4U6yembbESxpLGHO0NlmptjMc1AXRr4vAP1VjVBrI4FklcAKd2jiELNtJN7sXrKzOiKFlI%2BRFmE3qjDKjURImGpwjGnhWmnrSEhE%2FzwkrRaZ949Ut0STbkSneh3NYK9nbEAMsrl7mei2YqWC6Cty9jkFxKawwifVLvs1LVlRDhmXj4LJX%2BX%2BWCo1M9Dt2rwMAMOu98gEDcZe4iy5YKePED1LYcoRPjXDZG97zjfuz5J8X5WA69p9ZAy7JXdDyUr3m38Fx2%2FDqXmXZnOqF%2FnKAXp8BQaA5GiStI%2Ftulw%2B%2BGd6wCsbMyC3GLJ9ApmNkJg9xG9P5a%2F5hdwC5jLeKI8edTnvmFGkKJv0rLBx7mrDlBg8%2BgOTQAZovyDWzRxymTzRDe2dLveUWYe%2BMaEWHyRHea1%2FGmNlZgLhafqzoAhSXZh9SjqPO%2BKTVv1x%2BBlRTSGdcH2vBeF7EeAhOevxNC4Tqmqddi71hbwA6TEgGB1LHAmeqq1caMlW17I1JjNnp6S2tdex9bXHfahGzrRFm6uh1a%2BQca7dwjmiZpPPy1QOjetR%2FGYFhIKu6T1psHfRRSwHM0cIMc2WNVWQUhccfua6eBwk%2BFwoc%2BGmBSfkfDykjK2yVdefjBPMgJ51jqHJC1uZNzWnnc%2FyhjJUd7nwklJYfGQoOKPiQjKrzZfL5iATJtD7lHEOUejiBokwFdOU9rKRv9vuL4khJHofuotPViZxpXQUOZ2h0nQIaeZWRU5ZmtMl%2BiEwgfj%2FzgY6mQFXs6XzD%2BRNif8yT3tjq9IsIAT2AJg1QZ27VHpPNox%2FLcy05%2BRuJ5HYqSE2mOZ25YyGeDZspbw3U4Ac3akz3goHv%2Fstci3ksuzpQyJqQWV%2BCs7Aov1O3DnMQfvkFQubjTjdsEccG83RbmmLcUccUB4GpvdJL3PsIvGv%2BPpo9%2BNY3QqCxMC6e%2B70EC7bqX9taAgOYUlLizQDnGg%3D&X-Amz-SignedHeaders=host&x-id=GetObject&X-Amz-Signature=16ada7902dbe4c1563d8a904e924ec69c59ff0abf41aa5ae731ba47cd715a4b5
+]
+
+
+I’m treating this as an architecture/control document review rather than a product brainstorm. I’m checking whether it is actually enforceable, not just well-written.
+
+
+Thought for 10s
+Verdict
+This is materially better than the prior roadmap framing.
+
+
+It does the right thing architecturally: it re-centers WeUP around operational truth rather than visionary feature sprawl. The strongest move is that it reframes the system as an event operations product with a spatial interface, not a speculative social/cultural protocol. That is the correct survival constraint for release.
+
+
+But it is still missing the last layer that makes specs real:
+
+
+named owners
+
+
+measurable thresholds
+
+
+machine-verifiable gates
+
+
+rollback criteria
+
+
+incident command structure
+
+
+weekly enforcement cadence
+
+
+Without those, this is still a strong doctrine document, not yet a release-control system.
+
+
+What is strong
+1. Scope discipline is finally correct
+You explicitly block:
+
+
+sponsor logic
+
+
+trust/vouch depth
+
+
+OCR
+
+
+chain features
+
+
+richer commerce
+
+
+city/deep spatial layers
+
+
+wearables
+
+
+That is not optional. It is the difference between a shippable system and a founder hallucination trap.
+
+
+Your spec correctly identifies the true MVP nucleus:
+
+
+discovery
+
+
+event detail
+
+
+checkout
+
+
+QR issuance
+
+
+scan at door
+
+
+moderation
+
+
+observability
+
+
+operator tooling
+
+
+That is the economic loop. Everything else is decorative until this loop survives reality.
+
+
+2. Runtime ambiguity is called out directly
+This is one of the most important sections.
+
+
+If the app can run in “real-ish” mode while silently falling back to stubs, then:
+
+
+telemetry is invalid
+
+
+pilot results are invalid
+
+
+operator training is invalid
+
+
+bug attribution is invalid
+
+
+release readiness is unknowable
+
+
+Your requirement that real runtime be default and failures be loud is exactly right.
+
+
+I would strengthen it further:
+
+
+No mock implementation compiled into production artifact
+
+
+No fallback provider registration for core flows
+
+
+Startup should hard-fail if Stripe, DB, queue, or scanner sync dependencies are absent
+
+
+Runtime banner must declare environment + service health + schema version
+
+
+3. DoorOps is correctly elevated to first-class status
+This is the core product, whether people like that framing or not.
+
+
+Users may remember the map, but venues will judge the product on:
+
+
+line throughput
+
+
+duplicate handling
+
+
+bad network behavior
+
+
+override ergonomics
+
+
+auditability
+
+
+staff confusion rate
+
+
+The door is where the product becomes real or gets rejected.
+
+
+Your mitigation spec finally treats that correctly.
+
+
+4. Moderation is moved earlier
+Correct again.
+
+
+If moderation is downstream of publish, then you do not have moderation. You have cleanup.
+
+
+For a nightlife/event system, publish eligibility is a security boundary, not a UI option. High-risk event classes need explicit gating before visibility and before sale eligibility.
+
+
+That said, your moderation section should go further into concrete policy mechanics.
+
+
+You need at minimum:
+
+
+risk tiers: Low, Medium, High, Restricted
+
+
+deterministic publish rules per tier
+
+
+immutable review log
+
+
+moderator override reasons
+
+
+venue verification state
+
+
+capacity anomaly detection
+
+
+geo mismatch checks
+
+
+duplicate/near-duplicate detection
+
+
+blacklist / denylist hooks
+
+
+What is still weak
+1. No ownership model
+This is the biggest gap.
+
+
+Every workstream needs a single directly accountable owner, even if one person holds multiple roles right now.
+
+
+Use this structure:
+
+
+Workstream        DRI        Backup        Evidence artifact        Gate authority
+Runtime Consolidation        Founder/Engineering        TBD        Runtime health pack        Release authority
+Economic Loop Ops        Product/Ops        Venue ops proxy        Door run report        Pilot gate
+Moderation & Publish Safety        Moderation lead        Founder        Review audit pack        Publish gate
+Spatial-Temporal Integrity        Frontend lead        Backend lead        Calendar/map integrity report        UX gate
+Observability & Release Gates        Platform lead        Founder        SLO report + trace pack        Launch gate
+Deferred Feature Enforcement        Product governance        Founder        blocked-scope report        Scope gate
+If nobody owns a gate, then nobody enforces it.
+
+
+2. Gates are conceptually correct but not numerically defined
+“Operationally stable” is too soft.
+
+
+You need threshold values.
+
+
+Example launch thresholds
+Domain        Metric        Threshold
+App startup        cold boot to usable shell        < 3.0s on staging target device
+Map interaction        pan/zoom input-to-render latency        p95 < 120ms
+Event detail open        marker tap to hydrated detail        p95 < 800ms
+Checkout init        tap to Stripe session ready        p95 < 1.5s
+QR generation        post-purchase to QR rendered        p95 < 1.0s
+Door scan response        scan to decision        p95 < 500ms online, p95 < 900ms offline-local
+Admission duplication        false duplicate rate        0 critical, < 0.25% warnings
+Offline reconciliation        deterministic conflict resolution        100% replayable
+Moderation        high-risk publish bypasses        0
+Founder intervention        pilot runs requiring founder rescue        0
+Runtime integrity        core flow using mock service        0
+Contract drift        TS/C# parity test failures        0
+Without numbers, teams rationalize failure.
+
+
+3. No rollback doctrine
+A real release-control system needs explicit rollback rules.
+
+
+Add:
+
+
+Rollback criteria
+Rollback is automatic if any of the following occur in pilot or production:
+
+
+duplicate admissions exceed threshold
+
+
+scan failure rate exceeds threshold for 5 minutes
+
+
+publish bypass occurs for high-risk event
+
+
+checkout success rate drops below threshold
+
+
+event detail hydration error rate exceeds threshold
+
+
+schema mismatch causes client/server deserialization failure
+
+
+offline sync conflict cannot reconcile deterministically
+
+
+operator must call founder to continue admissions
+
+
+And define rollback levels:
+
+
+Level 1: disable new event publish
+
+
+Level 2: disable checkout and preserve viewing
+
+
+Level 3: force door into manual audit mode
+
+
+Level 4: rollback deployment / blue-green swap
+
+
+4. No incident model
+You need an incident command layer now, not later.
+
+
+For pilots, define:
+
+
+Incident Commander
+
+
+Door Lead
+
+
+Moderator on call
+
+
+Technical on call
+
+
+Comms lead
+
+
+Escalation path
+
+
+Severity levels SEV-1 through SEV-4
+
+
+max response times
+
+
+postmortem template
+
+
+For example:
+
+
+Severity        Example        Response SLA
+SEV-1        Door admissions blocked at live event        immediate
+SEV-2        Duplicate scans causing line degradation        < 5 min
+SEV-3        Event detail/map inconsistency        < 30 min
+SEV-4        cosmetic UI issue        next sprint
+If you do not define this now, pilot failures become emotional instead of procedural.
+
+
+5. Deferred Feature Enforcement needs hard anti-creep mechanics
+This section is directionally right, but not strong enough.
+
+
+You should convert “deferred feature enforcement” into a build-time and planning-time control layer.
+
+
+Add these rules
+Every feature must declare:
+
+
+allowed version
+
+
+dependency set
+
+
+owner
+
+
+gate required
+
+
+blocked-by reason if not allowed now
+
+
+CI should fail if a PR introduces:
+
+
+blocked domain entities
+
+
+forbidden routes
+
+
+forbidden menu entries
+
+
+feature flags for out-of-scope systems without authorization record
+
+
+Example blocked modules before post-MVP
+Sponsor
+InviteGraph
+VouchTrust
+OCRIngestion
+GhostPins
+Wearables
+ChainSettlement
+AdvancedVendorCommerce
+ReputationMesh
+You need scope linting, not just scope advice.
+
+
+6. Spatial-temporal integrity needs a stricter definition
+This is underdeveloped.
+
+
+For WeUP, space and time are not presentation details. They are part of the contract.
+
+
+You need explicit invariants:
+
+
+Spatial-temporal invariants
+One canonical timezone policy for event storage and rendering
+
+
+One canonical event geolocation source of truth
+
+
+No event may render on map without valid geo state
+
+
+No event may appear in calendar overlay without valid temporal state
+
+
+Map marker, detail modal, and calendar card must resolve to the same event ID
+
+
+Event status transitions must be monotonic and auditable
+
+
+Cancelled events must never remain purchasable
+
+
+Rescheduled events must preserve prior audit state with new effective schedule version
+
+
+This needs to exist as a separate spec, not implied across documents.
+
+
+7. The spec needs founder-independence criteria that are testable
+You mention founder-independence, which is correct, but define it precisely.
+
+
+Founder-independence test
+A phase is not complete unless:
+
+
+onboarding checklist can be executed by a non-founder operator
+
+
+event publish can be reviewed/moderated by documented procedure
+
+
+door can run with runbook only
+
+
+live issue escalation can proceed without founder tribal knowledge
+
+
+daily health and KPI review can be performed from dashboard + report pack
+
+
+deployment and rollback can be executed from documented steps
+
+
+no critical action depends on unpublished context
+
+
+That is one of the most important gates in the entire system.
+
+
+What I would add immediately
+1. Release Authority Matrix
+# Release Authority Matrix
+
+
+## Gate classes
+- Scope Gate
+- Runtime Gate
+- Moderation Gate
+- Economic Loop Gate
+- DoorOps Gate
+- Pilot Gate
+- Launch Gate
+
+
+## Rule
+A gate is green only when:
+1. required tests pass
+2. required KPI thresholds are met
+3. required artifact is attached
+4. accountable owner signs off
+5. no open blocker exists in linked risk register
+2. Evidence Pack requirement
+Every phase gate should require an evidence pack with fixed contents:
+
+
+KPI snapshot
+
+
+test suite output
+
+
+runtime health output
+
+
+trace samples
+
+
+incident log
+
+
+open risks
+
+
+mitigations
+
+
+go/no-go statement
+
+
+owner sign-off
+
+
+No evidence pack, no phase advancement.
+
+
+3. Release gate YAML / JSON model
+Make the gates machine-readable.
+
+
+Example
+{
+  "phase": "v0.3",
+  "gate": "EconomicLoopOps",
+  "required": [
+    "checkout_contract_tests",
+    "qr_issue_tests",
+    "door_scan_online_tests",
+    "door_scan_offline_tests",
+    "webhook_idempotency_tests",
+    "audit_log_replay_tests"
+  ],
+  "thresholds": {
+    "checkout_success_rate": ">= 0.98",
+    "scan_p95_ms_online": "<= 500",
+    "scan_p95_ms_offline": "<= 900",
+    "duplicate_admission_critical": "== 0"
+  },
+  "artifacts": [
+    "economic-loop-spec.md",
+    "door-runbook.md",
+    "pilot-simulation-report.md",
+    "otel-trace-pack.json"
+  ],
+  "status": "blocked"
+}
+That makes the doctrine executable.
+
+
+4. A hard pre-mortem section
+You need to explicitly model how WeUP dies in pilot.
+
+
+Top 10 plausible failure modes
+Door scan duplicates under bad connectivity
+
+
+Event state mismatch between map, detail, and scan system
+
+
+Mock dependency accidentally active in pilot
+
+
+Checkout success but QR issuance lag/failure
+
+
+Moderation bypass for risky event
+
+
+Founder becomes required for door rescue
+
+
+Calendar overlay becomes visually impressive but operationally confusing
+
+
+Venue staff cannot distinguish valid override vs fraud
+
+
+Webhook replay causes duplicate entitlements
+
+
+Schema drift breaks cross-client parity
+
+
+This belongs in the mitigation spec itself.
+
+
+Brutal critique
+The only real danger left is this:
+
+
+the document sounds more controlled than the actual operating model probably is.
+
+
+That is common. Strong language creates false confidence.
+
+
+If this spec is not backed immediately by:
+
+
+CI gates
+
+
+owner table
+
+
+evidence packs
+
+
+numeric SLOs
+
+
+pilot scripts
+
+
+incident playbooks
+
+
+then it will become another high-quality WeUP doctrine PDF that does not materially reduce execution risk.
+
+
+That would be failure by sophistication.
+
+
+Recommended rewrite of the core doctrine
+Use this as the governing statement:
+
+
+WeUP advances only when the current phase proves deterministic operational behavior under real event conditions, without founder rescue, with measurable KPI compliance, explicit rollback paths, and zero ambiguity about runtime, moderation, admissions, and canonical event state.
+
+
+That is sharper than the current wording.
+
+
+Immediate next moves
+In order
+Convert this mitigation spec into a Gate Constitution
+
+
+add owners
+
+
+add numeric thresholds
+
+
+add evidence artifacts
+
+
+add rollback rules
+
+
+Create 7 concrete docs next
+
+
+RELEASE_GATE_CONSTITUTION.md
+
+
+DOOR_SYSTEM_SPEC.md
+
+
+EVENT_RISK_MODEL.md
+
+
+PILOT_EXECUTION_PLAN.md
+
+
+FAILURE_TEST_SUITE.md
+
+
+SLO_SLA_SPEC.md
+
+
+CANONICAL_EVENT_CONTRACT.md
+
+
+Make the gates executable
+
+
+machine-readable gate file
+
+
+CI enforcement
+
+
+blocked-scope linting
+
+
+parity tests between TS and C#
+
+
+Do not build any new visionary surface until DoorOps survives live stress
+
+
+no sponsor logic
+
+
+no chain layer
+
+
+no trust graph
+
+
+no OCR expansion
+
+
+no ritualized UX deepening beyond clarity
+
+
+Bottom line
+This is the first version of the WeUP mitigation posture that is architecturally credible.
+
+
+It is not finished, because it is still missing enforcement mechanics. But the direction is correct:
+WeUP should be governed like a live operations system, not narrated like a future culture platform.
+
+
+Next: turn this into a founder-enforced release constitution with numeric gates and machine-checked evidence.
+
+
+
+
+Yes
+
+
+WeUP Release Gate Constitution v1.0 (Enforceable)
+This converts your mitigation spec into a machine-enforceable control system. No ambiguity, no advisory language.
+
+
+1. Gate Model (Single Authority)
+{
+  "version": "1.0",
+  "rule": "No phase advances without all gates green",
+  "gates": [
+    "Scope",
+    "Runtime",
+    "EconomicLoop",
+    "DoorOps",
+    "Moderation",
+    "SpatialTemporal",
+    "Observability",
+    "Pilot",
+    "Launch"
+  ]
+}
+2. Gate Definitions (Hard Constraints)
+Scope Gate
+Purpose: Prevent feature creep
+
+
+blocked_modules:
+  - Sponsor
+  - InviteGraph
+  - VouchTrust
+  - OCRIngestion
+  - GhostPins
+  - Wearables
+  - ChainSettlement
+  - ReputationMesh
+
+
+rules:
+  - No blocked module in codebase
+  - No feature flag referencing blocked module
+  - No route or UI entry for blocked module
+Fail = immediate PR rejection
+
+
+Runtime Gate
+Purpose: Eliminate ambiguity
+
+
+requirements:
+  - Real DB required (no in-memory fallback)
+  - Stripe configured
+  - Queue system active
+  - Scanner sync endpoint reachable
+
+
+fail_conditions:
+  - Any mock service used in core flow
+  - Silent fallback to stub
+  - Health check not exposed
+
+
+health_endpoint: /health/runtime
+Economic Loop Gate
+Purpose: Ensure money → ticket → admission works
+
+
+flow:
+  - Create event
+  - Publish event
+  - Checkout (Stripe)
+  - QR issued
+  - Scan validated
+  - Admission recorded
+
+
+thresholds:
+  checkout_success_rate: ">= 0.98"
+  qr_generation_p95_ms: "<= 1000"
+  scan_response_p95_ms_online: "<= 500"
+
+
+tests_required:
+  - contract_tests_checkout
+  - qr_generation_tests
+  - scan_validation_tests
+  - webhook_idempotency_tests
+DoorOps Gate (CORE PRODUCT)
+requirements:
+  - Manual override supported
+  - Offline scan mode enabled
+  - Duplicate detection active
+  - Audit log immutable
+
+
+thresholds:
+  duplicate_critical: "== 0"
+  scan_latency_p95_online: "<= 500ms"
+  scan_latency_p95_offline: "<= 900ms"
+
+
+failure_modes_tested:
+  - network drop
+  - duplicate QR scan
+  - delayed sync
+  - device desync
+Moderation Gate
+risk_levels:
+  - LOW
+  - MEDIUM
+  - HIGH
+  - RESTRICTED
+
+
+rules:
+  - HIGH must be reviewed
+  - RESTRICTED cannot auto-publish
+  - All publishes logged
+
+
+thresholds:
+  high_risk_bypass: "== 0"
+
+
+artifacts:
+  - moderation_audit_log.json
+Spatial-Temporal Gate
+invariants:
+  - Event has one canonical ID
+  - Map marker == event detail == calendar entry
+  - Timezone normalized
+  - Cancelled != purchasable
+
+
+tests:
+  - map_to_detail_parity
+  - calendar_alignment_tests
+  - timezone_consistency_tests
+Observability Gate
+requirements:
+  - OpenTelemetry active
+  - Structured logging
+  - Trace per request
+
+
+thresholds:
+  trace_coverage: ">= 95%"
+  error_rate: "<= 1%"
+
+
+artifacts:
+  - otel_trace_pack.json
+  - error_report.json
+Pilot Gate (REALITY TEST)
+required_scenarios:
+  - small venue
+  - high density event
+  - offline operation
+  - failure simulation
+
+
+hard_rules:
+  founder_intervention: "== 0"
+  operator_confusion: "<= minimal"
+Launch Gate
+requires:
+  - All prior gates green
+  - SLO compliance
+  - Incident playbook ready
+  - Backup/restore verified
+
+
+blockers:
+  - any open SEV-1 risk
+3. Ownership Model (Non-Optional)
+Gate        Owner        Authority
+Scope        Product        blocks PR
+Runtime        Backend        blocks deploy
+EconomicLoop        Backend        blocks release
+DoorOps        Ops/Product        blocks pilot
+Moderation        Ops        blocks publish
+SpatialTemporal        Frontend        blocks UI merge
+Observability        Platform        blocks release
+Pilot        Founder/Ops        blocks launch
+Launch        Founder        final authority
+4. Evidence Pack (Required Per Gate)
+Every gate must produce:
+
+
+evidence_pack:
+  - test_results.json
+  - kpi_snapshot.json
+  - trace_sample.json
+  - incident_log.json
+  - risk_register.md
+  - owner_signoff.txt
+No evidence pack → gate = FAIL
+
+
+5. Rollback System (Mandatory)
+Trigger Conditions
+rollback_if:
+  - duplicate_admissions > 0
+  - scan_failure_rate > 2%
+  - checkout_success < 95%
+  - moderation_bypass_detected
+  - schema_mismatch_runtime_error
+Actions
+Level        Action
+L1        Disable publish
+L2        Disable checkout
+L3        Force manual door mode
+L4        Full rollback deployment
+6. Incident Command System
+roles:
+  incident_commander: owns response
+  door_lead: manages entry ops
+  moderator: handles risk events
+  tech_lead: fixes system
+  comms: handles messaging
+
+
+severity:
+  SEV1: door blocked
+  SEV2: degraded admission
+  SEV3: UI/data inconsistency
+  SEV4: cosmetic
+7. CI Enforcement (Critical)
+Required Checks
+ci_pipeline:
+  - build
+  - unit_tests
+  - contract_tests
+  - gate_validation
+  - scope_lint
+Example Scope Lint (C#)
+// Fail build if blocked namespace appears
+var blocked = new[]
+{
+    "WeUP.Sponsor",
+    "WeUP.Trust",
+    "WeUP.OCR",
+    "WeUP.Blockchain"
+};
+
+
+foreach (var file in Directory.GetFiles("src", "*.cs", SearchOption.AllDirectories))
+{
+    var content = File.ReadAllText(file);
+    if (blocked.Any(b => content.Contains(b)))
+    {
+        throw new Exception($"Blocked module detected: {file}");
+    }
+}
+8. Canonical Event Contract (Minimal)
+public sealed record EventAggregate(
+    Guid Id,
+    string Title,
+    DateTimeOffset StartUtc,
+    DateTimeOffset EndUtc,
+    GeoPoint Location,
+    EventStatus Status,
+    string VenueId,
+    int Capacity
+);
+
+
+public enum EventStatus
+{
+    Draft,
+    PendingReview,
+    Published,
+    Cancelled,
+    Completed
+}
+Rule: This contract cannot change without versioning + migration.
+
+
+9. Founder Independence Gate
+must_be_true:
+  - operator can run door from runbook
+  - moderation works without founder
+  - deploy/rollback documented
+  - no tribal knowledge dependency
+Fail this → no release
+
+
+10. Pre-Mortem (Explicit)
+Top risks:
+
+
+Duplicate QR acceptance
+
+
+Offline scan divergence
+
+
+Event mismatch across UI layers
+
+
+Stripe success without QR
+
+
+Moderation bypass
+
+
+Founder dependency at door
+
+
+Latency spikes breaking flow
+
+
+Each must have:
+
+
+risk:
+  description:
+  detection:
+  mitigation:
+  rollback:
+Final Assessment
+This is now:
+
+
+Enforceable
+
+
+Measurable
+
+
+Auditable
+
+
+Buildable under pressure
+
+
+Without this layer, WeUP drifts into abstraction again.
+
+
+With this layer:
+
+
+You have a system that can survive real-world event operations.
+
+
+Next (Do Not Skip)
+Implement CI gate validation immediately
+
+
+Build DoorOps first (not UI polish)
+
+
+Run 1 controlled pilot within 72 hours
+
+
+Capture full evidence pack
+
+
+Iterate only on failures
+
+
+If you want next step, I’ll generate:
+
+
+Full DoorSystemSpec (production-grade)
+
+
+Full Pilot Execution Plan (hour-by-hour runbook)
+
+
+Full Failure Test Suite (automatable)
+
+
+
+
+        •        Full DoorSystemSpec (production-grade)
+        •        Full Pilot Execution Plan (hour-by-hour runbook)
+        •        Full Failure Test Suite (automatable)
+
+
+I’m drafting these as operational artifacts, not brainstorm notes. The goal is to make them usable by a founder-plus-one crew under live venue pressure.
+
+
+Thought for 4s
+Full DoorSystemSpec v1.0
+Document status: Release-blocking
+System owner: DoorOps
+Authority: Blocks pilot and launch if incomplete
+Scope: Admissions, scan, override, offline handling, reconciliation, audit, operator workflows
+
+
+1. Purpose
+DoorSystem is the live admissions control plane for WeUP. Its job is to determine whether a person may enter an event, record that decision, preserve a replayable audit trail, and continue operating under degraded network conditions.
+
+
+This is not a “QR feature.” It is a venue-trust system. It must optimize for:
+
+
+deterministic admission decisions
+
+
+low operator confusion
+
+
+high throughput
+
+
+offline survivability
+
+
+fraud resistance
+
+
+full auditability
+
+
+zero founder dependence during live operation
+
+
+2. Non-Negotiable Product Rules
+One ticket entitlement maps to one canonical admission identity
+
+
+One scan produces one durable decision event
+
+
+No silent fallback to mock, stub, or local-only fake validation
+
+
+Offline decisions are provisional and must reconcile deterministically
+
+
+Manual override is allowed, but never unaudited
+
+
+Operator speed cannot come at the cost of state corruption
+
+
+Every admission decision must be replayable from logs
+
+
+Duplicate scans must never create duplicate valid admissions
+
+
+Cancelled, refunded, revoked, or unpublished tickets must never admit
+
+
+Door flow must remain operable by trained non-founder staff
+
+
+3. System Context
+3.1 Inputs
+Event metadata
+
+
+Ticket purchase / entitlement record
+
+
+QR payload
+
+
+Device identity
+
+
+Operator identity
+
+
+Network status
+
+
+Local device queue state
+
+
+Admission policy state
+
+
+override reason / incident flags
+
+
+3.2 Outputs
+Admission decision
+
+
+Visual operator status
+
+
+Admission audit record
+
+
+Sync queue entry
+
+
+anomaly / conflict event
+
+
+reconciliation record
+
+
+metrics and traces
+
+
+4. Core User Roles
+Role        Responsibility        Permissions
+Door Operator        scan and act on result        scan, view result, request supervisor
+Door Supervisor        handle exceptions        manual override, duplicate review, escalate
+Moderator/Ops        handle flagged events/incidents        incident review, audit inspection
+Platform Admin        system health and rollout        config, device health, rollback
+Attendee        presents QR        none
+5. Core Entities
+5.1 EventAggregate
+public sealed record EventAggregate(
+    Guid Id,
+    string Title,
+    DateTimeOffset StartUtc,
+    DateTimeOffset EndUtc,
+    string TimeZoneId,
+    string VenueId,
+    EventStatus Status,
+    int Capacity,
+    bool DoorOfflineAllowed,
+    bool ManualOverrideAllowed,
+    int OfflineGraceLimit
+);
+5.2 TicketEntitlement
+public sealed record TicketEntitlement(
+    Guid Id,
+    Guid EventId,
+    Guid OrderId,
+    Guid AttendeeId,
+    string TicketType,
+    TicketEntitlementStatus Status,
+    string QrTokenHash,
+    DateTimeOffset IssuedAtUtc,
+    DateTimeOffset? RevokedAtUtc
+);
+
+
+public enum TicketEntitlementStatus
+{
+    Issued,
+    CheckedIn,
+    Revoked,
+    Refunded,
+    Cancelled,
+    Expired
+}
+5.3 AdmissionDecision
+public sealed record AdmissionDecision(
+    Guid DecisionId,
+    Guid EventId,
+    Guid TicketEntitlementId,
+    Guid DeviceId,
+    Guid OperatorId,
+    AdmissionDecisionType DecisionType,
+    AdmissionDecisionReason Reason,
+    bool WasOffline,
+    DateTimeOffset OccurredAtUtc,
+    string EvidenceHash,
+    string? SupervisorId,
+    string? OverrideReason
+);
+
+
+public enum AdmissionDecisionType
+{
+    Allow,
+    Deny,
+    ProvisionalAllow,
+    SupervisorOverrideAllow,
+    SupervisorOverrideDeny
+}
+
+
+public enum AdmissionDecisionReason
+{
+    Valid,
+    Duplicate,
+    Revoked,
+    Refunded,
+    Cancelled,
+    EventNotPublished,
+    EventClosed,
+    InvalidQr,
+    DeviceUnsynced,
+    OfflineGraceApplied,
+    CapacityLimit,
+    ManualOverride,
+    UnknownError
+}
+5.4 ReconciliationConflict
+public sealed record ReconciliationConflict(
+    Guid ConflictId,
+    Guid EventId,
+    Guid TicketEntitlementId,
+    Guid FirstDecisionId,
+    Guid SecondDecisionId,
+    ConflictType Type,
+    ConflictResolution Resolution,
+    DateTimeOffset ResolvedAtUtc,
+    string ResolvedBy
+);
+6. Admission State Machine
+6.1 Ticket entitlement state
+Issued
+  -> CheckedIn
+  -> Revoked
+  -> Refunded
+  -> Cancelled
+  -> Expired
+6.2 Decision state
+ScanRequested
+  -> Validating
+    -> Allow
+    -> Deny
+    -> ProvisionalAllow
+    -> SupervisorOverrideAllow
+    -> SupervisorOverrideDeny
+6.3 Reconciliation state
+QueuedOffline
+  -> Synced
+  -> ConflictDetected
+    -> ResolvedKeepFirst
+    -> ResolvedKeepSupervisorOverride
+    -> ResolvedMarkFraudReview
+7. QR Contract
+7.1 Requirements
+QR must encode only what is necessary for deterministic validation and anti-tamper checks.
+
+
+7.2 Payload fields
+{
+  "v": 1,
+  "eid": "event-guid",
+  "tid": "ticket-guid",
+  "iat": "2026-04-15T20:30:00Z",
+  "exp": "2026-04-16T08:00:00Z",
+  "nonce": "random-128-bit",
+  "sig": "server-signed-token"
+}
+7.3 Rules
+signature must be server-verifiable
+
+
+QR must not expose sensitive attendee data
+
+
+QR expiry policy must be explicit
+
+
+QR regeneration invalidates old token if configured
+
+
+client must never author QR authority locally
+
+
+8. Online Scan Flow
+8.1 Happy path
+Operator opens scanner
+
+
+Device verifies local readiness
+
+
+QR scanned
+
+
+Client sends signed scan request
+
+
+Server validates event, entitlement, status, duplication, and timing
+
+
+Server emits admission decision
+
+
+UI shows clear result
+
+
+Audit event stored
+
+
+Metrics emitted
+
+
+8.2 Response contract
+{
+  "decisionId": "guid",
+  "decision": "Allow",
+  "reason": "Valid",
+  "ticketId": "guid",
+  "eventId": "guid",
+  "wasOffline": false,
+  "operatorAction": "Admit",
+  "message": "Valid ticket. Admit attendee."
+}
+8.3 Latency target
+scan-to-decision p95: <= 500ms
+
+
+9. Offline Scan Flow
+9.1 When offline mode is allowed
+Offline mode only activates if:
+
+
+event policy allows offline grace
+
+
+device has recent sync snapshot
+
+
+device clock is within tolerance
+
+
+operator is authenticated locally
+
+
+local queue storage is healthy
+
+
+9.2 Offline validation sources
+last synced ticket snapshot
+
+
+revoked/refunded blacklist snapshot
+
+
+event status snapshot
+
+
+local seen-scan set
+
+
+local device integrity state
+
+
+9.3 Offline decisions
+Allowed outcomes:
+
+
+ProvisionalAllow
+
+
+Deny
+
+
+Never use plain Allow offline.
+
+
+9.4 Offline rules
+provisional decision must be visibly distinct in UI
+
+
+decision must enter sync queue immediately
+
+
+local duplicate detection must operate on-device
+
+
+device must warn if sync freshness is beyond threshold
+
+
+if freshness exceeds hard threshold, operator must escalate to supervisor
+
+
+9.5 Offline latency target
+scan-to-decision p95: <= 900ms
+
+
+10. Duplicate Detection
+10.1 Duplicate classes
+Class        Meaning        Action
+Same-device repeat        same QR re-scanned quickly        deny, show duplicate
+Cross-device valid-first duplicate        another device already admitted        deny, escalate if disputed
+Offline conflict duplicate        two devices allowed provisionally        reconcile post-sync
+Fraud pattern        repeated attempts across entries        deny, incident flag
+10.2 Rules
+first valid admission wins unless supervisor policy says otherwise
+
+
+duplicate scan must always show prior timestamp/device if available
+
+
+no duplicate case may silently mutate original decision
+
+
+11. Manual Override
+11.1 Override is allowed only when
+supervisor role is authenticated
+
+
+reason is selected
+
+
+free-text note entered if required
+
+
+decision is auditable
+
+
+camera/scan evidence remains linked where applicable
+
+
+11.2 Override reasons
+name-match issue
+
+
+damaged QR
+
+
+verified payment, token mismatch
+
+
+venue-directed exception
+
+
+accessibility accommodation
+
+
+device desync incident
+
+
+other reviewed exception
+
+
+11.3 Override rules
+operator cannot override without supervisor
+
+
+all overrides generate alert telemetry
+
+
+override frequency above threshold triggers post-event audit
+
+
+12. Capacity Protection
+DoorSystem must be aware of venue capacity and event admission thresholds.
+
+
+Rules:
+
+
+if capacity reached, further admissions deny unless supervisor override
+
+
+capacity checks must work under online mode
+
+
+under offline mode, configurable buffer margin applies
+
+
+post-sync reconciliation must flag capacity overrun events
+
+
+13. Audit and Evidence Model
+Every scan attempt, whether valid or invalid, produces an immutable record:
+
+
+{
+  "eventId": "guid",
+  "ticketId": "guid-or-null",
+  "deviceId": "guid",
+  "operatorId": "guid",
+  "decisionType": "Deny",
+  "reason": "Duplicate",
+  "wasOffline": false,
+  "timestampUtc": "2026-04-15T22:16:09Z",
+  "requestHash": "sha256",
+  "responseHash": "sha256",
+  "traceId": "otel-trace-id",
+  "overrideReason": null
+}
+Audit requirements
+append-only
+
+
+replayable
+
+
+searchable by event/ticket/device/operator
+
+
+exportable after event
+
+
+never editable in place
+
+
+14. Device Model
+Required device state
+authenticated operator session
+
+
+assigned event context
+
+
+current sync freshness timestamp
+
+
+local decision queue size
+
+
+battery warning threshold
+
+
+camera/scanner health state
+
+
+app version
+
+
+config version
+
+
+Device hard fail states
+stale config beyond threshold
+
+
+corrupted local queue
+
+
+clock skew beyond tolerance
+
+
+unsupported app version
+
+
+unknown event assignment
+
+
+15. Operator UI Contract
+15.1 Primary scanner screen
+Must show:
+
+
+event name
+
+
+current network state
+
+
+sync freshness
+
+
+queue backlog
+
+
+operator identity
+
+
+large result state after scan
+
+
+15.2 Result states
+State        Color semantics        Operator text
+Allow        positive        Admit attendee
+ProvisionalAllow        warning-positive        Admit provisionally, will sync
+Deny Duplicate        hard warning        Already admitted
+Deny Invalid        hard warning        Invalid ticket
+Supervisor Required        neutral warning        Call supervisor
+Device Unsynced        severe        Stop and resolve device state
+Keep text plain. No WLLS ritual semantics on door surfaces.
+
+
+15.3 UI constraints
+one-tap return to scanner
+
+
+result state visible for 1.5 to 3 seconds
+
+
+no nested modal maze
+
+
+no scroll needed in core scan flow
+
+
+override path must be shorter than 4 interactions after supervisor auth
+
+
+16. Security Requirements
+signed QR payloads
+
+
+authenticated device registration
+
+
+operator auth with short session TTL
+
+
+supervisor re-auth for overrides
+
+
+no sensitive PII in QR
+
+
+replay-resistant scan request signing if feasible
+
+
+rate-limit invalid scans
+
+
+audit all auth transitions
+
+
+encrypt local offline queue at rest
+
+
+17. Observability Requirements
+Metrics
+scan attempts / min
+
+
+allow rate
+
+
+deny rate
+
+
+duplicate rate
+
+
+provisional allow rate
+
+
+override count
+
+
+queue backlog
+
+
+sync latency
+
+
+offline duration
+
+
+device freshness age
+
+
+operator confusion proxy events
+
+
+Tracing
+Each scan attempt gets:
+
+
+trace root
+
+
+validation span
+
+
+entitlement lookup span
+
+
+duplication check span
+
+
+decision write span
+
+
+queue write span
+
+
+Logs
+Structured logs only. No unstructured console dependency.
+
+
+18. SLOs
+Metric        Target
+Online scan response p95        <= 500ms
+Offline scan response p95        <= 900ms
+Duplicate critical admissions        0
+Audit write success        100%
+Admission decision durability        100%
+Offline queue loss        0
+Override without note        0
+Founder-required live rescue        0
+19. Failure Modes and Required Behavior
+Failure        Behavior
+Network loss mid-scan        fall back to offline policy if valid
+Stripe success but no QR        supervisor flow + entitlement lookup
+Duplicate cross-device        deny + show prior use
+Stale device snapshot        stop admissions on device
+Local queue full        hard stop + escalate
+Audit write failure online        deny or enter degraded mode based on policy
+Event cancelled mid-door        immediate deny future admissions
+Clock skew        force device quarantine
+20. Definition of Done
+DoorSystem is done only if:
+
+
+online scan flow passes
+
+
+offline provisional flow passes
+
+
+duplicate detection passes
+
+
+manual override passes
+
+
+reconciliation passes
+
+
+audit log replay passes
+
+
+capacity handling passes
+
+
+device stale-state fail passes
+
+
+non-founder operators complete scripted run successfully
+
+
+all failure tests green
+
+
+Pilot Execution Plan v1.0 (Hour-by-Hour Runbook)
+Purpose: Prove WeUP can run the admissions loop under real venue conditions without founder rescue.
+
+
+1. Pilot Goals
+This pilot is not for “buzz.” It is for operational validation.
+
+
+Required proofs
+attendees can discover and buy
+
+
+QR issuance works
+
+
+door can scan and admit
+
+
+duplicate scans deny correctly
+
+
+offline mode works
+
+
+overrides work and are audited
+
+
+post-event reconciliation completes
+
+
+operator team can run from runbook
+
+
+2. Pilot Success Criteria
+Pilot is considered successful only if all are true:
+
+
+checkout success rate >= 98%
+
+
+QR issuance success rate >= 99%
+
+
+scan p95 online <= 500ms
+
+
+offline provisional path succeeds in scripted test
+
+
+duplicate critical admission count = 0
+
+
+high-risk moderation bypass count = 0
+
+
+founder intervention count = 0
+
+
+full evidence pack produced within 24h
+
+
+3. Staffing Model
+Role        Count        Notes
+Incident Commander        1        owns decisions
+Door Supervisor        1        exception authority
+Door Operators        2        primary + backup
+Technical On Call        1        hidden unless needed
+Moderator/Ops        1        publish/event issues
+Venue Liaison        1        communicates with venue
+For a very small pilot, one person may hold multiple roles, but responsibilities must still be explicit.
+
+
+4. Pre-Pilot Day Checklist
+T-1 Day
+confirm event publish status
+
+
+confirm Stripe live/test mode selection
+
+
+confirm QR generation for seeded test accounts
+
+
+sync all door devices
+
+
+validate app version parity
+
+
+test battery packs and chargers
+
+
+print operator quick cards
+
+
+review incident matrix
+
+
+confirm rollback owner
+
+
+dry-run duplicate, override, and offline scenarios
+
+
+5. Event Day Hour-by-Hour Runbook
+Assume doors open at 8:00 PM. Adjust relative times as needed.
+
+
+12:00 PM – 1:00 PM: Technical readiness lock
+Owner: Technical On Call
+
+
+Tasks:
+
+
+verify production/staging target environment
+
+
+run runtime health check
+
+
+validate DB connectivity
+
+
+validate Stripe webhook receipt
+
+
+validate scan endpoint
+
+
+validate OTEL traces
+
+
+confirm feature flags are correct
+
+
+confirm blocked modules absent from release candidate
+
+
+snapshot current config version
+
+
+Exit criteria:
+
+
+runtime gate green
+
+
+observability gate green
+
+
+no open SEV-1
+
+
+1:00 PM – 2:00 PM: Event data integrity review
+Owner: Moderator/Ops
+
+
+Tasks:
+
+
+confirm canonical event data
+
+
+confirm venue, time, capacity, admission settings
+
+
+confirm offline grace policy
+
+
+verify publish status
+
+
+verify ticket types
+
+
+verify refund/revoke list integrity
+
+
+verify no duplicate event records across UI/API
+
+
+Exit criteria:
+
+
+event contract is canonical
+
+
+moderation gate green
+
+
+spatial-temporal parity confirmed
+
+
+2:00 PM – 3:00 PM: Device prep and assignment
+Owner: Door Supervisor
+
+
+Tasks:
+
+
+assign devices by operator
+
+
+authenticate each operator
+
+
+verify scanner permissions
+
+
+verify local sync freshness
+
+
+confirm queue storage healthy
+
+
+verify battery >= 90%
+
+
+label devices physically
+
+
+confirm supervisor override on one device only or by role
+
+
+Exit criteria:
+
+
+all door devices green
+
+
+one backup device available
+
+
+one charging fallback ready
+
+
+3:00 PM – 4:00 PM: Scripted scenario drill
+Owner: Incident Commander
+
+
+Run these scenarios:
+
+
+valid scan
+
+
+duplicate scan
+
+
+revoked ticket
+
+
+manual override
+
+
+network-off provisional allow
+
+
+stale device hard stop
+
+
+queue backlog alert
+
+
+supervisor escalation
+
+
+Exit criteria:
+
+
+operators complete scenarios from runbook
+
+
+no founder explanation needed
+
+
+all results match expected outcome table
+
+
+4:00 PM – 5:00 PM: Quiet period / no-code freeze
+Owner: Founder / Release authority
+
+
+Rules:
+
+
+no code deploys
+
+
+no config mutations except emergency-approved
+
+
+no data model changes
+
+
+no UI tweaks
+
+
+no late feature additions
+
+
+This freeze is mandatory.
+
+
+5:00 PM – 6:00 PM: Venue arrival and physical setup
+Owner: Venue Liaison + Door Supervisor
+
+
+Tasks:
+
+
+establish entry lane(s)
+
+
+define operator positions
+
+
+define supervisor position
+
+
+verify lighting/scanning visibility
+
+
+verify fallback manual list availability if permitted
+
+
+verify attendee wayfinding
+
+
+verify cellular/Wi-Fi conditions
+
+
+identify offline-risk area
+
+
+Exit criteria:
+
+
+physical flow is clear
+
+
+supervisor sightline to operators exists
+
+
+incident assembly point defined
+
+
+6:00 PM – 6:30 PM: Final live smoke test
+Owner: Technical On Call
+
+
+Tasks:
+
+
+live test purchase if allowed
+
+
+QR generation test
+
+
+valid scan test
+
+
+invalid scan test
+
+
+trace verification
+
+
+dashboard verification
+
+
+Exit criteria:
+
+
+economic loop gate green
+
+
+door gate green
+
+
+smoke tests archived
+
+
+6:30 PM – 7:00 PM: Staff briefing
+Owner: Incident Commander
+
+
+Cover:
+
+
+tonight’s success criteria
+
+
+no-founder principle
+
+
+escalation path
+
+
+offline policy
+
+
+override policy
+
+
+duplicate handling
+
+
+who can stop the line
+
+
+how incidents are logged
+
+
+Each operator repeats back:
+
+
+duplicate rule
+
+
+override rule
+
+
+offline rule
+
+
+escalation rule
+
+
+7:00 PM – 7:30 PM: Controlled preload period
+Owner: Door Supervisor
+
+
+Tasks:
+
+
+keep scanner open and ready
+
+
+check device freshness
+
+
+confirm queue at zero
+
+
+confirm dashboard visible to commander
+
+
+confirm venue ready for first arrivals
+
+
+7:30 PM – 8:00 PM: Soft entry / invited test arrivals
+Use a small set of known attendees or controlled participants.
+
+
+Tasks:
+
+
+validate real-world scans
+
+
+watch for operator hesitation
+
+
+measure actual scan times
+
+
+confirm decision text is understood
+
+
+validate duplicate denial behavior
+
+
+Success condition:
+no confusion, no silent failures, no unexplained result states
+
+
+8:00 PM – 10:30 PM: Live admissions window
+Primary operating rules:
+
+
+operators scan only
+
+
+supervisor handles all exceptions
+
+
+no ad hoc policy invention
+
+
+all overrides logged
+
+
+any ambiguity escalates, not guessed
+
+
+Every 15 minutes supervisor checks:
+
+
+device freshness
+
+
+queue backlog
+
+
+duplicate count
+
+
+override count
+
+
+operator fatigue/confusion
+
+
+network status
+
+
+Incident triggers during live run:
+
+
+scan p95 visibly degrading
+
+
+repeated duplicate anomalies
+
+
+device stale-state
+
+
+queue growth spike
+
+
+operator confusion repeating same issue
+
+
+offline transition on multiple devices
+
+
+10:30 PM – 11:00 PM: Closeout at door
+Tasks:
+
+
+stop new admissions per event policy
+
+
+confirm final queue sync started
+
+
+note all unresolved anomalies
+
+
+secure devices
+
+
+capture operator observations while fresh
+
+
+11:00 PM – 12:00 AM: Reconciliation window
+Owner: Technical On Call + Supervisor
+
+
+Tasks:
+
+
+sync offline queue
+
+
+detect conflicts
+
+
+resolve duplicates per rules
+
+
+verify final admission count
+
+
+verify override log
+
+
+export event audit pack
+
+
+Exit criteria:
+
+
+no unresolved critical conflict
+
+
+admission total reconciled
+
+
+audit pack generated
+
+
+12:00 AM – 12:30 AM: Incident review and handoff
+Tasks:
+
+
+classify all incidents
+
+
+assign follow-up owners
+
+
+record founder intervention count
+
+
+record operator confusion events
+
+
+record venue friction points
+
+
+6. Incident Handling Table
+Incident        Immediate action        Escalate to
+device unsynced        remove device from line        Door Supervisor
+repeated duplicate false positives        switch to backup device, log incident        Tech On Call
+network outage        enter offline policy if allowed        Incident Commander
+QR missing after payment        supervisor lookup path        Door Supervisor
+operator confusion        pause operator, swap if needed        Door Supervisor
+suspected fraud        deny, retain audit, notify supervisor        Incident Commander
+7. Founder Prohibition Rule
+Founder may observe. Founder may not rescue normal operations.
+
+
+Founder intervention is counted if founder:
+
+
+explains routine operator steps
+
+
+performs supervisor exception handling
+
+
+manually resolves expected door logic
+
+
+personally restores normal admissions flow
+
+
+If this occurs, pilot fails the founder-independence criterion.
+
+
+8. Pilot Outputs Required Within 24 Hours
+KPI snapshot
+
+
+scan latency report
+
+
+duplicate report
+
+
+override report
+
+
+incident log
+
+
+reconciliation report
+
+
+operator debrief notes
+
+
+go/no-go recommendation
+
+
+Full Failure Test Suite v1.0 (Automatable)
+Purpose: Prove DoorSystem survives expected failure modes deterministically.
+
+
+1. Test Strategy
+Three layers:
+
+
+Unit tests for decision logic
+
+
+Integration tests for API + DB + queue + reconciliation
+
+
+Scenario tests for live operational flows
+
+
+Target stack:
+
+
+C# / xUnit
+
+
+Testcontainers for DB/queue
+
+
+Playwright or mobile device harness for UI flow
+
+
+OTEL assertion hooks
+
+
+contract tests for frontend/backend parity
+
+
+2. Unit Test Matrix
+2.1 Entitlement validation
+valid entitlement returns Allow
+
+
+refunded entitlement returns Deny
+
+
+revoked entitlement returns Deny
+
+
+cancelled entitlement returns Deny
+
+
+expired QR returns Deny
+
+
+unpublished event returns Deny
+
+
+closed event returns Deny
+
+
+2.2 Duplicate logic
+same ticket scanned twice online -> second denied
+
+
+same ticket scanned twice same device offline -> second denied
+
+
+first provisional then synced valid -> keep first
+
+
+first valid then later duplicate -> deny duplicate
+
+
+duplicate with supervisor override logs distinct decision
+
+
+2.3 Override logic
+operator cannot override
+
+
+supervisor can override with reason
+
+
+supervisor override without reason fails
+
+
+override emits audit record
+
+
+override increments telemetry
+
+
+2.4 Capacity logic
+below capacity allows valid ticket
+
+
+at capacity denies unless override
+
+
+offline buffer logic respects configured threshold
+
+
+3. Integration Test Matrix
+3.1 Runtime integrity
+app startup fails if DB unavailable
+
+
+app startup fails if Stripe missing for release mode
+
+
+app startup fails if scan queue dependency unavailable
+
+
+mock provider in release build fails gate
+
+
+3.2 Economic loop
+purchase creates entitlement
+
+
+entitlement creates QR
+
+
+QR validates at door
+
+
+scan persists audit
+
+
+duplicate scan rejected
+
+
+refund after issuance blocks admission
+
+
+3.3 Offline queue
+device stores provisional decisions offline
+
+
+queue persists through app restart
+
+
+queue syncs when network returns
+
+
+sync order remains deterministic
+
+
+queue corruption triggers hard stop
+
+
+3.4 Reconciliation
+two devices provisional allow same QR offline -> conflict detected
+
+
+conflict resolution keeps first by timestamp/device policy
+
+
+audit retains both decisions + resolution record
+
+
+unresolved conflict blocks clean closeout
+
+
+4. Scenario Test Matrix
+Scenario ID        Scenario        Expected result
+S01        Valid online scan        Allow
+S02        Duplicate online scan        Deny Duplicate
+S03        Revoked ticket        Deny Revoked
+S04        Network drop, fresh snapshot        ProvisionalAllow
+S05        Network drop, stale snapshot        hard stop / supervisor
+S06        Supervisor override valid reason        SupervisorOverrideAllow
+S07        Queue full during offline        hard stop
+S08        Event cancelled during admissions        future scans deny
+S09        Two-device offline duplicate        conflict on sync
+S10        Stripe success, QR delayed        supervisor lookup path
+S11        Device clock skew        quarantine device
+S12        App restart during offline queue        queue preserved
+5. Example xUnit Skeletons
+5.1 Duplicate denial
+public sealed class AdmissionDecisionTests
+{
+    [Fact]
+    public void Second_Online_Scan_For_CheckedIn_Ticket_Should_Deny_As_Duplicate()
+    {
+        var entitlement = new TicketEntitlement(
+            Id: Guid.NewGuid(),
+            EventId: Guid.NewGuid(),
+            OrderId: Guid.NewGuid(),
+            AttendeeId: Guid.NewGuid(),
+            TicketType: "General",
+            Status: TicketEntitlementStatus.CheckedIn,
+            QrTokenHash: "hash",
+            IssuedAtUtc: DateTimeOffset.UtcNow.AddHours(-1),
+            RevokedAtUtc: null);
+
+
+        var result = AdmissionDecisionEngine.EvaluateOnline(entitlement, eventOpen: true, capacityAvailable: true);
+
+
+        Assert.Equal(AdmissionDecisionType.Deny, result.DecisionType);
+        Assert.Equal(AdmissionDecisionReason.Duplicate, result.Reason);
+    }
+}
+5.2 Offline stale snapshot hard stop
+public sealed class OfflinePolicyTests
+{
+    [Fact]
+    public void Offline_Scan_With_Stale_Snapshot_Should_Not_Provisional_Allow()
+    {
+        var snapshotAge = TimeSpan.FromHours(7);
+        var policy = new OfflinePolicy(maxSnapshotAge: TimeSpan.FromMinutes(30));
+
+
+        var result = policy.CanOperate(snapshotAge);
+
+
+        Assert.False(result.IsAllowed);
+        Assert.Equal("STALE_SNAPSHOT", result.Code);
+    }
+}
+5.3 Override requires supervisor reason
+public sealed class OverrideTests
+{
+    [Fact]
+    public void Supervisor_Override_Without_Reason_Should_Fail()
+    {
+        var command = new OverrideCommand(
+            SupervisorId: Guid.NewGuid(),
+            TicketId: Guid.NewGuid(),
+            ReasonCode: "",
+            Note: "");
+
+
+        var ex = Assert.Throws<DomainException>(() => OverrideService.Apply(command));
+        Assert.Contains("reason", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+}
+6. Contract Tests
+Frontend and backend must agree on decision envelopes.
+
+
+Example JSON contract assertions
+decision enum values identical
+
+
+reason enum values identical
+
+
+wasOffline present and boolean
+
+
+operatorAction always populated
+
+
+timestamp uses ISO-8601 UTC
+
+
+These should fail CI on drift.
+
+
+7. Observability Assertions
+Every scenario test must also verify:
+
+
+trace exists
+
+
+decision log emitted
+
+
+metric incremented
+
+
+audit record stored
+
+
+Example assertions:
+
+
+door.scan.attempt.count increments
+
+
+door.scan.decision.allow.count increments for allow path
+
+
+trace contains decision.write
+
+
+audit record has non-null evidence hash
+
+
+8. Performance Test Suite
+Load profiles
+1 scan / 3 sec steady
+
+
+burst: 20 scans / min on 2 devices
+
+
+degraded network latency injected
+
+
+offline burst queue sync after reconnect
+
+
+Pass criteria
+Test        Threshold
+scan API p95        <= 500ms
+offline local decision p95        <= 900ms
+reconciliation completion        <= 5 min after reconnect for pilot scale
+audit write success        100%
+queue loss        0
+9. Chaos / Fault Injection Tests
+Inject:
+
+
+API timeout
+
+
+DB failover
+
+
+network loss
+
+
+duplicate webhook replay
+
+
+local storage near-full
+
+
+device restart mid-queue
+
+
+clock skew
+
+
+config version mismatch
+
+
+Expected behavior must be pre-defined. No undefined degraded mode.
+
+
+10. CI Gate Mapping
+Test category        Blocks
+unit        merge
+integration        merge
+contract        merge
+scenario        pilot
+performance        release
+chaos        launch
+11. Definition of Done for Test Suite
+The suite is done only if:
+
+
+all critical scenarios automated
+
+
+CI runs unit/integration/contract on every PR
+
+
+nightly run executes scenario/perf suite
+
+
+all failing tests map to named gate
+
+
+evidence artifacts export automatically
+
+
+12. Immediate Build Order
+AdmissionDecisionEngine
+
+
+OfflinePolicy
+
+
+AuditWriter
+
+
+ReconciliationService
+
+
+OverrideService
+
+
+DeviceHealthGuard
+
+
+Contract test harness
+
+
+Scenario test harness
+
+
+Load/perf harness
+
+
+Pilot evidence exporter
+
+
+Final Operational Read
+These three artifacts now define the core release spine:
+
+
+DoorSystemSpec tells you what must exist
+
+
+Pilot Execution Plan tells you how to prove it
+
+
+Failure Test Suite tells you how to block self-deception
+
+
+Next
+The correct next artifact is either:
+
+
+DOOR_SYSTEM_API_SPEC.md with exact endpoints/request-response contracts, or
+
+
+production C# scaffolding for AdmissionDecisionEngine, OfflinePolicy, ReconciliationService, and AuditWriter
+
+
+
+
+
+
+Hardening Prompt Bundle Pack — WeUP Phase 0 Repo Consolidation.txt
+Document
+What is the exact next thing to do once this hardening bundle is finished
+
+
+Thought for 17s
+Exact next thing
+Run a single-purpose “Operational Proof Sprint” for the economic loop, starting with DoorOps.
+
+
+That is the next move because the hardening bundle is explicitly a repair/consolidation/activation pack, not the end state; its own endpoint is a final hardening report and gap matrix, after which the repo is supposed to be ready for operability and testability under real conditions, not more speculative buildout. 
+
+
+
+
+In plain terms
+Once H6-P30 is done, stop architecture work and do this:
+
+
+Phase 1: freeze
+Open a phase0-pilot-readiness branch
+
+
+Declare a code freeze except for pilot blockers
+
+
+Convert the H6-P30 gap matrix into:
+
+
+P0 must-fix before pilot
+
+
+P1 after pilot
+
+
+Deferred post-MVP
+
+
+Phase 2: build only the live economic loop
+Implement and wire the door/admission slice end to end:
+
+
+AdmissionDecisionEngine
+
+
+OfflinePolicy
+
+
+ReconciliationService
+
+
+AuditWriter
+
+
+Door scanner API
+
+
+Supervisor override flow
+
+
+Duplicate detection
+
+
+Evidence export
+
+
+This is the exact next build target because the hardening pack’s real purpose is to eliminate runtime ambiguity and make the repo operationally honest. The next proof is not another subsystem; it is whether the system can actually admit people cleanly. 
+
+
+
+
+What not to do next
+Do not go to:
+
+
+sponsors
+
+
+trust/vouch
+
+
+blockchain
+
+
+wearables
+
+
+richer city semantics
+
+
+deeper OCR expansion
+
+
+new UX spectacle
+
+
+That would violate the hardening bundle’s own “hard truth” that the repo primarily needs consolidation, activation, discipline, operability, and testability. 
+
+
+
+
+Exact deliverable sequence after the bundle
+DoorSystem API spec
+
+
+Door/admission backend implementation
+
+
+Automated failure suite for admissions
+
+
+Controlled pilot run
+
+
+Post-pilot evidence pack
+
+
+Only then decide whether WeUP is actually Phase 0 operational
+
+
+If you want the single most precise first ticket
+Create this first:
+
+
+PILOT-P0-01 — Implement Door Admission Vertical Slice
+Acceptance criteria
+valid QR admits
+
+
+duplicate QR denies
+
+
+refunded/revoked denies
+
+
+offline provisional allow works
+
+
+reconciliation detects conflicts
+
+
+override requires supervisor + audit
+
+
+every scan emits trace + immutable audit record
+
+
+no mock dependency in the scan path
+
+
+That is the exact next thing.
+Not another roadmap. Not another bundle. Operational proof of the door.
+
+
+Next: I can write DOOR_SYSTEM_API_SPEC.md as the immediate implementation artifact.
+
+
+
+
+I am only completing the MVP. The Map, Flyer Ingest, Discovery, promoter flyer incentive, and anything else set within the MVP. Ticketing, door and other advanced features are not a part of the mvp
+
+
+You’re making a critical mistake if you interpret that as “skip DoorOps entirely.”
+But you are correct that full ticketing + door hardware-grade ops ≠ MVP.
+
+
+The right move is a constrained MVP reframe, not a removal of operational integrity.
+
+
+Correct MVP Definition (Adjusted to Your Scope)
+You are building a Discovery + Ingestion + Surface System, not an event operations system yet.
+
+
+MVP Core Loop (Rewritten)
+Flyer → Ingest → Normalize → Review → Publish → Map → Discovery → Save → Share
+Not:
+
+
+Ticket → QR → Scan → Admit
+What You MUST Keep (Non-Negotiable Even Without Ticketing)
+Even without ticketing, your system still has operational risk surfaces:
+
+
+1. Canonical Event Integrity (Critical)
+If this fails, everything collapses later.
+
+
+You still need:
+
+
+single EventAggregate
+
+
+no duplicate event representations
+
+
+deterministic merge logic
+
+
+source provenance
+
+
+Reason: Flyer ingestion without canonicalization = garbage map.
+
+
+2. Moderation Gate (Must exist in MVP)
+You cannot publish raw ingestion.
+
+
+You need:
+
+
+EventRiskScore
+
+
+review queue
+
+
+publish eligibility gate
+
+
+Otherwise:
+
+
+spam floods map
+
+
+unsafe events surface
+
+
+trust collapses instantly
+
+
+3. Ingestion + Dedup (This is your real MVP core)
+This becomes your actual product differentiator
+
+
+You must have:
+
+
+OCR ingestion
+
+
+normalization layer
+
+
+deduplication engine
+
+
+merge planning
+
+
+evidence preservation
+
+
+This replaces DoorOps as your “hard system”
+
+
+4. Spatial + Temporal Accuracy
+Your map is your product.
+
+
+You need:
+
+
+correct geo placement
+
+
+timezone normalization
+
+
+“tonight / weekend” correctness
+
+
+no ghost events
+
+
+5. Observability (Still required)
+Even MVP needs:
+
+
+ingestion success rate
+
+
+dedup rate
+
+
+publish rate
+
+
+error rate
+
+
+map latency
+
+
+Otherwise you are blind.
+
+
+What You CAN Safely Defer
+You are correct to defer:
+
+
+ticketing
+
+
+QR
+
+
+door scanning
+
+
+payment systems
+
+
+capacity enforcement
+
+
+admission audit
+
+
+These are Phase 1 / v0.3+, not MVP.
+
+
+Replace DoorOps with This MVP Critical System
+“IngestionOps” becomes your MVP equivalent of DoorOps
+This is where your failure will happen instead.
+
+
+New Core System
+Ingestion → Candidate → Normalize → Score → Dedup → Review → Publish
+Exact Next Step (Given Your Direction)
+Replace the Door vertical slice with this:
+MVP-P0-01 — Ingestion → Publish Vertical Slice
+Acceptance Criteria
+user uploads flyer (image or URL)
+
+
+OCR extracts structured candidate
+
+
+normalization produces EventAggregate
+
+
+dedup checks existing events
+
+
+moderation queue receives candidate
+
+
+moderator approves/rejects
+
+
+approved event appears on map
+
+
+event appears in calendar overlay
+
+
+event can be saved
+
+
+provenance is visible (source + confidence)
+
+
+Required Systems for THIS MVP
+1. Ingestion Domain (must exist)
+From your hardening bundle:
+
+
+H3-P11 (source adapter)
+
+
+H3-P12 (OCR pipeline)
+
+
+H3-P13 (dedup + resolution)
+
+
+These are no longer optional — they are your MVP core.
+
+
+2. Moderation System (must exist)
+H3-P14 (queue)
+
+
+H3-P15 (publish eligibility)
+
+
+3. Event Canonicalization (must exist)
+H1-P01 (event consolidation)
+
+
+4. Runtime Integrity (must exist)
+H1-P03 (real runtime)
+
+
+H2-P06 (EF migrations)
+
+
+H2-P09 (fail-fast startup)
+
+
+5. Spatial/Temporal Integrity
+H5-P22 (time correctness)
+
+
+H5-P23 (geo correctness)
+
+
+MVP Risks (Now Shifted)
+Since you removed DoorOps, your failure modes change:
+
+
+New Top Risks
+Duplicate events flooding map
+
+
+OCR garbage creating fake events
+
+
+Wrong timezones (kills trust immediately)
+
+
+No moderation → unsafe content
+
+
+Map clutter / unreadability
+
+
+Ingestion confidence lies (fake certainty)
+
+
+Promoter incentive abused (spam uploads)
+
+
+Add THIS Instead of Door Failure Suite
+Ingestion Failure Test Suite
+You now need to test:
+
+
+OCR partial extraction
+
+
+OCR incorrect extraction
+
+
+duplicate flyers across sources
+
+
+same event different flyer formats
+
+
+missing fields
+
+
+ambiguous time (“Friday night”)
+
+
+conflicting locations
+
+
+malicious/spam flyer input
+
+
+Promoter Incentive (Important Constraint)
+You can include this in MVP, but only if:
+
+
+submissions go through moderation
+
+
+no auto-publish for new promoters
+
+
+abuse detection exists
+
+
+rate limits exist
+
+
+Otherwise your MVP becomes a spam engine.
+
+
+Final Reality Check
+Your MVP is now:
+
+
+A trusted event discovery surface powered by ingestion and moderation, not an event execution system.
+
+
+That is valid.
+
+
+But:
+
+
+if ingestion is weak → product dies
+
+
+if moderation is weak → product dies
+
+
+if map is wrong → product dies
+
+
+Exact Next Action
+Do THIS immediately:
+Build:
+Ingestion → Normalize → Dedup → Moderation → Publish → Map
+Then:
+run a data pilot, not a door pilot
+
+
+ingest 50–100 real Houston flyers
+
+
+measure:
+
+
+dedup accuracy
+
+
+moderation load
+
+
+map clarity
+
+
+user comprehension
+
+
+If you want the next artifact
+I can generate:
+
+
+Full IngestionSystemSpec (like DoorSystemSpec)
+
+
+Flyer OCR + normalization pipeline architecture
+
+
+Deduplication scoring model
+
+
+Moderation queue schema + API
+
+
+Promoter incentive anti-abuse system
+
+
+That is now your real battlefield, not the door.
+
+
+
+
+What other parts should be part of the MVP
+
+
+Your current MVP scope is directionally correct, but still incomplete.
+Right now you have surface + ingestion, but you’re missing several supporting systems required for it to function under real conditions.
+
+
+Below is the minimum complete MVP architecture—anything less will break in production.
+
+
+MVP = 6 Required Systems (Not Just Features)
+1. Ingestion System (Core Engine)
+You already identified this, but it must be explicit:
+
+
+Flyer upload (image / URL)
+
+
+OCR pipeline
+
+
+Normalization → EventAggregate
+
+
+Confidence scoring
+
+
+Source attribution
+
+
+Without this, there is no product.
+
+
+2. Deduplication + Resolution System (Critical)
+This is not optional—this is what makes WeUP usable.
+
+
+Required capabilities
+fuzzy matching (title, time, venue)
+
+
+geo proximity matching
+
+
+time window overlap detection
+
+
+merge planning (not auto-merge blindly)
+
+
+provenance preservation
+
+
+Failure if missing
+map becomes unusable within days
+
+
+promoter trust collapses
+
+
+3. Moderation + Publish Gate (Safety Layer)
+You cannot expose ingestion directly.
+
+
+Required
+moderation queue
+
+
+EventRiskScore
+
+
+publish eligibility rules
+
+
+immutable review history
+
+
+moderator actions (approve / reject / edit / merge)
+
+
+MVP simplification
+manual review allowed
+
+
+no need for ML moderation yet
+
+
+4. Canonical Event System (Data Integrity)
+You must enforce a single source of truth.
+
+
+Required
+EventAggregate (only canonical model)
+
+
+DTO mapping layer (no direct UI binding)
+
+
+versioning for updates
+
+
+merge lineage tracking
+
+
+Failure if missing
+frontend/backend drift
+
+
+ingestion inconsistency
+
+
+broken calendar/map sync
+
+
+5. Map + Discovery System (User Surface)
+This is your actual product surface.
+
+
+Required
+map rendering (Mapbox)
+
+
+marker clustering or density control
+
+
+time-based filtering (“tonight”, “weekend”)
+
+
+event detail modal
+
+
+calendar overlay (you already designed this)
+
+
+Critical constraint
+must remain readable at 50–200 events
+
+
+6. Save / Personal Context System (Retention Layer)
+Without this, users have no reason to return.
+
+
+Required
+save/unsave event
+
+
+lightweight user state (local or auth)
+
+
+persisted context (what events user cares about)
+
+
+MVP simplification
+can start local-only
+
+
+upgrade to auth later
+
+
+What You Are Missing (High Risk Gaps)
+These are not obvious but will break MVP if ignored.
+
+
+7. Temporal Semantics Engine
+You cannot rely on raw timestamps.
+
+
+Required
+“tonight” definition per timezone
+
+
+weekend logic
+
+
+rolling windows (next 24h, 48h, etc.)
+
+
+consistent frontend/backend interpretation
+
+
+Failure mode
+users see wrong events → instant distrust
+
+
+8. Spatial Semantics Layer
+Your current system likely uses raw lat/lng.
+
+
+That is insufficient.
+
+
+Required
+district / neighborhood model
+
+
+city boundary definition
+
+
+geo validation (no bad coordinates)
+
+
+clustering-ready responses
+
+
+9. Ingestion Observability (You will need this immediately)
+You need visibility into:
+
+
+OCR success rate
+
+
+normalization success rate
+
+
+dedup rate
+
+
+publish rate
+
+
+moderation backlog
+
+
+Without this, you cannot improve ingestion quality.
+
+
+10. Abuse + Rate Limiting (Promoter Incentive Protection)
+If you add incentives without controls, the system will be attacked.
+
+
+Required
+submission rate limits
+
+
+duplicate submission detection
+
+
+basic reputation scoring (even simple)
+
+
+moderation priority weighting
+
+
+11. Minimal Identity Layer (Even if Lightweight)
+You don’t need full auth, but you need some identity concept.
+
+
+Options
+anonymous session ID
+
+
+email-only login
+
+
+magic link
+
+
+Needed for
+tracking submissions
+
+
+moderation attribution
+
+
+save persistence
+
+
+abuse control
+
+
+12. Error + Failure Handling (Critical but ignored)
+You need defined behavior for:
+
+
+OCR failure
+
+
+partial extraction
+
+
+missing fields
+
+
+conflicting data
+
+
+ingestion timeout
+
+
+Rule
+Never fake certainty. Always expose confidence.
+
+
+MVP Architecture (Clean View)
+                ┌────────────────────┐
+                │   Flyer Input      │
+                └────────┬───────────┘
+                         │
+                ┌────────▼─────────┐
+                │  OCR Pipeline     │
+                └────────┬─────────┘
+                         │
+                ┌────────▼─────────┐
+                │ Normalization     │
+                └────────┬─────────┘
+                         │
+                ┌────────▼─────────┐
+                │ Dedup + Resolve   │
+                └────────┬─────────┘
+                         │
+                ┌────────▼─────────┐
+                │ Moderation Gate   │
+                └────────┬─────────┘
+                         │
+                ┌────────▼─────────┐
+                │ EventAggregate    │
+                └────────┬─────────┘
+                         │
+        ┌────────────────┴───────────────┐
+        │                                │
+┌───────▼────────┐              ┌────────▼────────┐
+│ Map Discovery  │              │ Calendar Overlay │
+└───────┬────────┘              └────────┬────────┘
+        │                                │
+        └──────────────┬─────────────────┘
+                       │
+               ┌───────▼────────┐
+               │ Save / Context │
+               └────────────────┘
+Strict MVP Boundary (Enforce This)
+Allowed
+ingestion
+
+
+OCR
+
+
+dedup
+
+
+moderation
+
+
+map
+
+
+calendar overlay
+
+
+save
+
+
+promoter submissions
+
+
+Blocked
+ticketing
+
+
+payments
+
+
+QR / scanning
+
+
+capacity enforcement
+
+
+advanced social graph
+
+
+blockchain
+
+
+deep incentives economy
+
+
+real-time presence systems
+
+
+Minimal KPI Set (You Need This)
+Track immediately:
+
+
+Metric        Target
+OCR usable extraction rate        > 70%
+dedup accuracy        > 90%
+moderation turnaround        < 2 hrs
+map load p95        < 1s
+event detail open        < 800ms
+duplicate event rate        < 5%
+Final Answer
+Your MVP is NOT just:
+map
+
+
+flyer ingest
+
+
+discovery
+
+
+incentives
+
+
+Your MVP MUST include:
+Ingestion system
+
+
+Dedup + resolution
+
+
+Moderation gate
+
+
+Canonical event model
+
+
+Map + calendar discovery
+
+
+Save system
+
+
+Temporal semantics
+
+
+Spatial semantics
+
+
+Observability
+
+
+Abuse protection
+
+
+Minimal identity
+
+
+Failure handling
+
+
+Exact Next Step
+You should now:
+
+
+1. Lock MVP scope with these 12 systems
+2. Build Ingestion → Publish vertical slice
+3. Run data pilot (not user growth yet)
+If you want precision next, I can generate:
+
+
+Full IngestionSystemSpec (same level as DoorSystemSpec)
+
+
+Deduplication scoring algorithm (production-grade)
+
+
+Moderation queue API + schema
+
+
+OCR normalization contracts (C# + TS parity)
+
+
+
+
+Create the titles of all of the MVP Prompt Bundles. Only the titles with sectioned and versioned titles
+
+
+WeUP MVP Prompt Bundle Registry (Titles Only)
+Bundle M1 — Ingestion Core Systems v1.0
+M1-P01 — Define Source Adapter and Input Contract v1.0
+
+
+M1-P02 — Implement Flyer OCR Pipeline v1.0
+
+
+M1-P03 — Define Normalization Engine and Event Extraction v1.0
+
+
+M1-P04 — Implement Confidence Scoring and Evidence Model v1.0
+
+
+M1-P05 — Create Ingestion Job Lifecycle and State Tracking v1.0
+
+
+Bundle M2 — Deduplication and Resolution Engine v1.0
+M2-P06 — Define Canonical Deduplication Strategy and Matching Heuristics v1.0
+
+
+M2-P07 — Implement Fuzzy Matching Across Title, Time, and Venue v1.0
+
+
+M2-P08 — Implement Geo-Spatial Proximity Matching v1.0
+
+
+M2-P09 — Create Merge Planning and Conflict Resolution System v1.0
+
+
+M2-P10 — Enforce Provenance Preservation Across Merged Events v1.0
+
+
+Bundle M3 — Moderation and Publish Control v1.0
+M3-P11 — Define EventRiskScore and Moderation Classification Model v1.0
+
+
+M3-P12 — Build Moderation Queue and Review Workflow v1.0
+
+
+M3-P13 — Implement Publish Eligibility Gate and Validation Rules v1.0
+
+
+M3-P14 — Create Immutable Moderation History and Audit Trail v1.0
+
+
+M3-P15 — Implement Moderator Actions and Review Surfaces v1.0
+
+
+Bundle M4 — Canonical Event System and Data Integrity v1.0
+M4-P16 — Define Canonical EventAggregate Contract v1.0
+
+
+M4-P17 — Establish DTO Mapping Boundaries Between Frontend and Backend v1.0
+
+
+M4-P18 — Implement Event Versioning and Update Semantics v1.0
+
+
+M4-P19 — Enforce Schema Consistency and Contract Validation v1.0
+
+
+M4-P20 — Track Merge Lineage and Event Evolution v1.0
+
+
+Bundle M5 — Map and Discovery Surface v1.0
+M5-P21 — Implement Map Rendering and Marker System v1.0
+
+
+M5-P22 — Build Marker Clustering and Density Control v1.0
+
+
+M5-P23 — Implement Event Detail Modal and Interaction Flow v1.0
+
+
+M5-P24 — Integrate Time-Based Filtering into Map Discovery v1.0
+
+
+M5-P25 — Optimize Map Performance and Rendering Latency v1.0
+
+
+Bundle M6 — Calendar Overlay and Temporal UI v1.0
+M6-P26 — Implement Calendar Overlay Layer Architecture v1.0
+
+
+M6-P27 — Build Masonry Event Layout and Time-Slot Packing v1.0
+
+
+M6-P28 — Sync Calendar Overlay with Map State v1.0
+
+
+M6-P29 — Implement Temporal Navigation and Scrubbing Controls v1.0
+
+
+M6-P30 — Optimize Calendar Interaction and Transition States v1.0
+
+
+Bundle M7 — Save System and User Context v1.0
+M7-P31 — Implement Save and Unsave Event Functionality v1.0
+
+
+M7-P32 — Define Local Persistence Model for Anonymous Users v1.0
+
+
+M7-P33 — Implement Auth-Ready Save State Migration Path v1.0
+
+
+M7-P34 — Build User Context and Preference Tracking v1.0
+
+
+M7-P35 — Create Saved Events Retrieval and Display Logic v1.0
+
+
+Bundle M8 — Temporal Semantics Engine v1.0
+M8-P36 — Define Canonical Time Window Semantics v1.0
+
+
+M8-P37 — Implement “Tonight,” “Weekend,” and Rolling Window Logic v1.0
+
+
+M8-P38 — Normalize Timezone Handling Across System Layers v1.0
+
+
+M8-P39 — Synchronize Temporal Logic Between Frontend and Backend v1.0
+
+
+M8-P40 — Validate Temporal Edge Cases and Boundary Conditions v1.0
+
+
+Bundle M9 — Spatial Semantics and City Modeling v1.0
+M9-P41 — Define Market, District, and Neighborhood Model v1.0
+
+
+M9-P42 — Implement Geo Validation and Coordinate Integrity v1.0
+
+
+M9-P43 — Build Spatial Query Semantics and Filtering Logic v1.0
+
+
+M9-P44 — Design Cluster-Ready Spatial Response Structures v1.0
+
+
+M9-P45 — Document Houston Phase 0 Spatial Model v1.0
+
+
+Bundle M10 — Ingestion Observability and Telemetry v1.0
+M10-P46 — Implement Ingestion Metrics and Success Tracking v1.0
+
+
+M10-P47 — Add OCR and Normalization Telemetry v1.0
+
+
+M10-P48 — Track Deduplication and Merge Outcomes v1.0
+
+
+M10-P49 — Monitor Moderation Throughput and Backlog v1.0
+
+
+M10-P50 — Create Ingestion Performance Dashboard v1.0
+
+
+Bundle M11 — Promoter Incentive and Abuse Protection v1.0
+M11-P51 — Define Promoter Submission Incentive Model v1.0
+
+
+M11-P52 — Implement Submission Rate Limiting and Throttling v1.0
+
+
+M11-P53 — Detect Duplicate and Spam Submissions v1.0
+
+
+M11-P54 — Implement Basic Reputation Scoring for Submitters v1.0
+
+
+M11-P55 — Integrate Incentive Logic with Moderation Gate v1.0
+
+
+Bundle M12 — Identity and Session Layer v1.0
+M12-P56 — Implement Anonymous Session Identity Model v1.0
+
+
+M12-P57 — Add Lightweight Authentication (Email/Magic Link) v1.0
+
+
+M12-P58 — Bind User Actions to Identity Context v1.0
+
+
+M12-P59 — Secure Submission and Save Flows v1.0
+
+
+M12-P60 — Validate Identity-Dependent Behaviors via Tests v1.0
+
+
+Bundle M13 — Error Handling and Failure Semantics v1.0
+M13-P61 — Define OCR Failure and Partial Extraction Handling v1.0
+
+
+M13-P62 — Implement Missing and Ambiguous Field Resolution v1.0
+
+
+M13-P63 — Handle Conflicting Data from Multiple Sources v1.0
+
+
+M13-P64 — Define Confidence Transparency and UI Exposure v1.0
+
+
+M13-P65 — Build Deterministic Failure States Across System v1.0
+
+
+Bundle M14 — MVP Integration and End-to-End Validation v1.0
+M14-P66 — Build End-to-End Ingestion-to-Map Test Harness v1.0
+
+
+M14-P67 — Validate Full Discovery Flow Across UI and Backend v1.0
+
+
+M14-P68 — Test Deduplication and Moderation in Real Data Scenarios v1.0
+
+
+M14-P69 — Validate Performance Under MVP Load Conditions v1.0
+
+
+M14-P70 — Produce MVP Readiness Report and Gap Matrix v1.0
+
+
+Final Structure
+You now have:
+
+
+14 Bundles
+
+
+70 MVP prompts
+
+
+Fully segmented by system domain
+
+
+Fully versioned and execution-ready
+
+
+Next
+If you want precision execution:
+
+
+I can expand M1 (Ingestion Core) into full deep prompts
+
+
+or generate M2 Dedup Engine with scoring algorithms + C# implementation
+
+
+or produce a full MVP execution order with dependencies and timelines
+
+
+
+
+Create Bundle M1 — Ingestion Core Systems v1.0
+M1-P01 — Define Source Adapter and Input Contract v1.0
+M1-P02 — Implement Flyer OCR Pipeline v1.0
+M1-P03 — Define Normalization Engine and Event Extraction v1.0
+M1-P04 — Implement Confidence Scoring and Evidence Model v1.0
+M1-P05 — Create Ingestion Job Lifecycle and State Tracking v1.0
+
+
+Bundle M1 — Ingestion Core Systems v1.0
+Scope: Deterministic ingestion pipeline from flyer → structured candidate → normalized event → evidence-backed output
+Constraint: No silent assumptions, no fake certainty, no direct publish bypass
+
+
+M1-P01 — Define Source Adapter and Input Contract v1.0
+Objective
+Create a strict ingestion boundary that normalizes all incoming sources into a single IngestionRequest contract.
+
+
+Input Types (MVP)
+- Image upload (primary)
+- Image URL
+- Manual form (fallback)
+Canonical Contract
+public sealed record IngestionRequest(
+    Guid RequestId,
+    IngestionSourceType SourceType,
+    string RawInput,              // URL or base64
+    string? SubmittedByUserId,
+    DateTimeOffset SubmittedAtUtc,
+    Dictionary<string, string>? Metadata
+);
+
+
+public enum IngestionSourceType
+{
+    ImageUpload,
+    ImageUrl,
+    ManualEntry
+}
+Adapter Interface
+public interface ISourceAdapter
+{
+    Task<RawIngestionPayload> AdaptAsync(IngestionRequest request);
+}
+Output Payload
+public sealed record RawIngestionPayload(
+    Guid RequestId,
+    byte[] ImageBytes,
+    string? SourceUrl,
+    string ContentHash, // SHA256 for dedup pre-check
+    DateTimeOffset ReceivedAtUtc
+);
+Rules
+All ingestion must pass through adapters
+
+
+No direct OCR invocation from controllers
+
+
+Hash computed immediately (dedup pre-filter)
+
+
+Metadata preserved (never dropped)
+
+
+M1-P02 — Implement Flyer OCR Pipeline v1.0
+Objective
+Extract structured text from flyer images with deterministic output + raw trace preservation.
+
+
+OCR Interface
+public interface IOcrService
+{
+    Task<OcrResult> ExtractAsync(RawIngestionPayload payload);
+}
+OCR Result Contract
+public sealed record OcrResult(
+    Guid RequestId,
+    string RawText,
+    IReadOnlyList<OcrTextBlock> Blocks,
+    float Confidence,
+    DateTimeOffset ProcessedAtUtc
+);
+
+
+public sealed record OcrTextBlock(
+    string Text,
+    float Confidence,
+    BoundingBox Box
+);
+Pipeline Flow
+RawPayload → OCR → RawText → Block Structure → Persist Evidence
+Required Behavior
+Preserve full raw OCR output (never discard)
+
+
+Do not “clean” aggressively at OCR stage
+
+
+Return low confidence instead of guessing
+
+
+Support async + retry (OCR can fail)
+
+
+Failure Handling
+Case        Behavior
+No text extracted        Return empty + low confidence
+Partial text        Pass forward (normalization decides)
+OCR error        Retry once, then mark failed
+M1-P03 — Define Normalization Engine and Event Extraction v1.0
+Objective
+Transform OCR output into structured EventCandidate (not yet canonical).
+
+
+Interface
+public interface INormalizationEngine
+{
+    Task<EventCandidate> NormalizeAsync(OcrResult ocr);
+}
+EventCandidate Contract
+public sealed record EventCandidate(
+    Guid CandidateId,
+    string? Title,
+    DateTimeOffset? StartUtc,
+    DateTimeOffset? EndUtc,
+    string? VenueName,
+    string? Address,
+    GeoPoint? Location,
+    IReadOnlyList<string> Tags,
+    float ExtractionConfidence,
+    IReadOnlyDictionary<string, string> RawFields
+);
+Extraction Rules
+Title: highest-weight text cluster
+
+
+Date/time: regex + pattern + context
+
+
+Venue: named entity + proximity to address
+
+
+Address: structured extraction if possible
+
+
+Tags: inferred keywords (music, party, etc.)
+
+
+Critical Constraint
+Normalization must NEVER fabricate missing fields.
+If missing:
+
+
+StartUtc = null
+NOT guessed.
+
+
+Required Subsystems
+Regex library (dates/times)
+
+
+Named entity extraction (basic NLP)
+
+
+Heuristic scoring per field
+
+
+Partial extraction allowed
+
+
+M1-P04 — Implement Confidence Scoring and Evidence Model v1.0
+Objective
+Attach explicit, explainable confidence to every extracted field and preserve evidence.
+
+
+Field-Level Confidence
+public sealed record FieldConfidence<T>(
+    T? Value,
+    float Confidence,
+    string Source, // OCR, heuristic, manual
+    string EvidenceRef
+);
+Evidence Model
+public sealed record EvidenceBundle(
+    Guid CandidateId,
+    string RawText,
+    IReadOnlyList<OcrTextBlock> Blocks,
+    string ImageHash,
+    string? SourceUrl,
+    DateTimeOffset CreatedAtUtc
+);
+EventCandidate (Upgraded)
+public sealed record EventCandidateV2(
+    Guid CandidateId,
+    FieldConfidence<string> Title,
+    FieldConfidence<DateTimeOffset?> StartUtc,
+    FieldConfidence<string> Venue,
+    FieldConfidence<string> Address,
+    float OverallConfidence,
+    EvidenceBundle Evidence
+);
+Scoring Rules
+Condition        Effect
+Strong regex match        +confidence
+Multiple matches conflict        reduce confidence
+Missing critical fields        cap max confidence
+Low OCR confidence        propagate reduction
+Rule
+Confidence is never implied. It must be computed and stored.
+M1-P05 — Create Ingestion Job Lifecycle and State Tracking v1.0
+Objective
+Track ingestion deterministically from submission → candidate → downstream systems.
+
+
+Job Entity
+public sealed record IngestionJob(
+    Guid JobId,
+    Guid RequestId,
+    IngestionJobStatus Status,
+    DateTimeOffset CreatedAtUtc,
+    DateTimeOffset UpdatedAtUtc,
+    string? ErrorMessage
+);
+
+
+public enum IngestionJobStatus
+{
+    Pending,
+    Processing,
+    OcrCompleted,
+    Normalized,
+    Failed,
+    ReadyForDedup,
+    Completed
+}
+Lifecycle
+Pending
+  → Processing
+    → OcrCompleted
+      → Normalized
+        → ReadyForDedup
+          → Completed
+  → Failed
+Orchestrator
+public interface IIngestionOrchestrator
+{
+    Task<Guid> StartAsync(IngestionRequest request);
+}
+Flow
+Request
+ → Adapter
+ → OCR
+ → Normalization
+ → Confidence Scoring
+ → Persist Candidate + Evidence
+ → Mark ReadyForDedup
+Persistence Requirements
+store job state
+
+
+store OCR output
+
+
+store candidate
+
+
+store evidence bundle
+
+
+store errors
+
+
+Observability Hooks
+Emit:
+
+
+job_started
+
+
+ocr_completed
+
+
+normalization_completed
+
+
+job_failed
+
+
+job_duration
+
+
+Failure Handling
+Stage        Behavior
+Adapter fail        fail job
+OCR fail        retry → fail
+normalization fail        fail with evidence
+partial success        continue with low confidence
+Final State of Bundle M1
+After completing M1:
+
+
+You will have:
+
+
+deterministic ingestion pipeline
+
+
+strict input contracts
+
+
+OCR extraction with traceability
+
+
+structured event candidates
+
+
+confidence + evidence model
+
+
+job lifecycle tracking
+
+
+What This Unlocks
+Only AFTER M1 is complete can you safely build:
+
+
+M2 (Deduplication)
+
+
+M3 (Moderation)
+
+
+M5 (Map surface)
+
+
+Immediate Next Step
+Implement:
+
+
+ISourceAdapter → IOcrService → INormalizationEngine → IIngestionOrchestrator
+Then run:
+
+
+10–20 real flyer ingestion tests
+Measure:
+
+
+extraction completeness
+
+
+confidence distribution
+
+
+failure rate
+
+
+If you want next:
+
+
+I’ll build M2 Deduplication Engine v1.0 with scoring math + merge logic (production-grade)
+
+
+
+
+Make these into individual copy and paste able prompts 
+
+
+Below are clean, production-grade, copy-paste prompts for each M1 item. Each is designed to be dropped into your build workflow (Copilot / GPT / Claude / internal agent) and produce deterministic, implementation-ready output.
+
+
+Bundle M1 — Ingestion Core Systems v1.0
+M1-P01 — Define Source Adapter and Input Contract v1.0
+Writing
+You are implementing the ingestion boundary for a production-grade .NET 8 backend.
+
+
+Objective:
+Create a strict, deterministic source adapter layer that converts all incoming inputs into a canonical RawIngestionPayload contract.
+
+
+Requirements:
+
+
+Define IngestionRequest and RawIngestionPayload as immutable C# records
+
+
+Support three source types: ImageUpload, ImageUrl, ManualEntry
+
+
+Compute SHA256 content hash immediately on ingestion
+
+
+Preserve all metadata without loss
+
+
+Do not allow direct OCR invocation from controllers
+
+
+Deliver:
+
+
+C# record definitions for:
+
+
+IngestionRequest
+
+
+RawIngestionPayload
+
+
+IngestionSourceType enum
+
+
+ISourceAdapter interface
+
+
+Concrete adapters:
+
+
+ImageUploadAdapter
+
+
+ImageUrlAdapter
+
+
+ManualEntryAdapter
+
+
+Validation logic for malformed inputs
+
+
+Error handling strategy (fail fast, no silent fallback)
+
+
+Constraints:
+
+
+No mutable state
+
+
+No dynamic typing
+
+
+No hidden defaults
+
+
+All inputs must pass through adapter layer
+
+
+Output format:
+
+
+Complete C# implementation with namespaces
+
+
+Minimal but production-ready (no placeholders)
+
+
+Include comments explaining boundaries and invariants
+
+
+M1-P02 — Implement Flyer OCR Pipeline v1.0
+Writing
+You are implementing a production OCR pipeline in a .NET 8 backend system.
+
+
+Objective:
+Extract structured text from flyer images while preserving full traceability and confidence.
+
+
+Requirements:
+
+
+Define IOcrService interface
+
+
+Implement OcrResult and OcrTextBlock contracts
+
+
+Preserve raw OCR text and bounding boxes
+
+
+Support async processing with retry
+
+
+Never fabricate or “clean” text at this stage
+
+
+Deliver:
+
+
+IOcrService interface
+
+
+OcrResult and OcrTextBlock records
+
+
+Example implementation using a pluggable OCR provider (abstracted)
+
+
+Retry logic (max 1 retry)
+
+
+Failure handling (return low confidence, not fake data)
+
+
+Rules:
+
+
+OCR stage must be lossless (no aggressive transformations)
+
+
+Confidence must be passed through, not recalculated
+
+
+Empty OCR result is valid and must propagate
+
+
+Constraints:
+
+
+No business logic in OCR layer
+
+
+No normalization here
+
+
+No inference beyond OCR provider output
+
+
+Output:
+
+
+Full C# implementation
+
+
+Clear separation between extraction and downstream processing
+
+
+M1-P03 — Define Normalization Engine and Event Extraction v1.0
+Writing
+You are implementing the normalization engine for an ingestion pipeline.
+
+
+Objective:
+Transform OCR output into a structured EventCandidate without fabricating missing data.
+
+
+Requirements:
+
+
+Define INormalizationEngine interface
+
+
+Create EventCandidate record
+
+
+Extract:
+
+
+Title
+
+
+StartUtc / EndUtc
+
+
+Venue
+
+
+Address
+
+
+Tags
+
+
+Use deterministic heuristics (regex, positional logic, simple NLP)
+
+
+Allow partial extraction (nulls are valid)
+
+
+Deliver:
+
+
+INormalizationEngine interface
+
+
+EventCandidate record
+
+
+NormalizationEngine implementation
+
+
+Extraction methods:
+
+
+ExtractTitle
+
+
+ExtractDateTime
+
+
+ExtractVenue
+
+
+ExtractAddress
+
+
+ExtractTags
+
+
+Heuristic scoring per field
+
+
+Rules:
+
+
+NEVER fabricate missing values
+
+
+NEVER assume timezone silently
+
+
+Return null instead of guessing
+
+
+All raw fields must be preserved in RawFields
+
+
+Constraints:
+
+
+No external ML dependency required
+
+
+Must be deterministic and testable
+
+
+Must operate on OcrResult only
+
+
+Output:
+
+
+Full C# implementation
+
+
+Clear separation of extraction logic per field
+
+
+M1-P04 — Implement Confidence Scoring and Evidence Model v1.0
+Writing
+You are implementing confidence scoring and evidence tracking for an ingestion system.
+
+
+Objective:
+Attach explicit, explainable confidence to every extracted field and preserve evidence for audit and review.
+
+
+Requirements:
+
+
+Define FieldConfidence generic record
+
+
+Define EvidenceBundle record
+
+
+Upgrade EventCandidate to include field-level confidence
+
+
+Compute overall confidence score deterministically
+
+
+Deliver:
+
+
+FieldConfidence record
+
+
+EvidenceBundle record
+
+
+EventCandidateV2 record
+
+
+ConfidenceScorer service
+
+
+Rules for confidence aggregation:
+
+
+OCR confidence propagation
+
+
+heuristic strength adjustments
+
+
+conflict penalties
+
+
+missing field penalties
+
+
+Rules:
+
+
+Confidence must always be explicit
+
+
+No “implicit confidence”
+
+
+Evidence must include:
+
+
+raw text
+
+
+OCR blocks
+
+
+source hash
+
+
+timestamp
+
+
+Constraints:
+
+
+No probabilistic ML scoring (deterministic only)
+
+
+Must be explainable per field
+
+
+Output:
+
+
+Full C# implementation
+
+
+Clear scoring functions with comments
+
+
+M1-P05 — Create Ingestion Job Lifecycle and State Tracking v1.0
+Writing
+You are implementing ingestion orchestration and lifecycle tracking for a production system.
+
+
+Objective:
+Create a deterministic ingestion job pipeline with explicit state transitions and observability.
+
+
+Requirements:
+
+
+Define IngestionJob record
+
+
+Define IngestionJobStatus enum
+
+
+Implement IIngestionOrchestrator
+
+
+Track lifecycle:
+Pending → Processing → OCR → Normalized → ReadyForDedup → Completed / Failed
+
+
+Deliver:
+
+
+IngestionJob record
+
+
+IngestionJobStatus enum
+
+
+IIngestionOrchestrator interface
+
+
+IngestionOrchestrator implementation
+
+
+Persistence strategy (repository interface)
+
+
+Observability hooks:
+
+
+job_started
+
+
+ocr_completed
+
+
+normalization_completed
+
+
+job_failed
+
+
+job_duration
+
+
+Rules:
+
+
+Every stage must be persisted
+
+
+No silent failure transitions
+
+
+Partial success must still persist evidence
+
+
+Failed jobs must include error message
+
+
+Failure Handling:
+
+
+Adapter failure → fail job
+
+
+OCR failure → retry once → fail
+
+
+normalization failure → fail but preserve OCR output
+
+
+Constraints:
+
+
+No in-memory-only tracking
+
+
+Must support async execution
+
+
+Must be replayable/debuggable
+
+
+Output:
+
+
+Full C# implementation
+
+
+Clean orchestration flow with logging points
+
+
+What You Do Next
+Run these prompts in this exact order:
+
+
+M1-P01 → M1-P02 → M1-P03 → M1-P04 → M1-P05
+Then immediately test with:
+
+
+10–20 real flyers → inspect outputs manually
+If you want the next step
+I’ll generate:
+
+
+M2 Dedup Engine prompts (same format, production-grade)
+
+
+or
+
+
+Full working .NET project scaffold wiring all M1 components together
+
+
+
+
+Create M2 Dedup Engine prompts (same format, production-grade)
+
+
+Thought for a couple of seconds
+Bundle M2 — Deduplication and Resolution Engine v1.0
+Below are individual copy-paste prompts for the M2 dedup engine, in the same format and at the same rigor level.
+
+
+M2-P06 — Define Canonical Deduplication Strategy and Matching Heuristics v1.0
+Writing
+You are implementing the canonical deduplication strategy for a production-grade .NET 8 backend.
+
+
+Objective:
+Define a deterministic deduplication and resolution model that compares incoming EventCandidate records against existing canonical EventAggregate records and produces a scored duplicate assessment.
+
+
+Requirements:
+
+
+Define the overall deduplication strategy document in code-oriented form
+
+
+Establish weighted matching dimensions:
+
+
+title similarity
+
+
+venue similarity
+
+
+address similarity
+
+
+temporal overlap
+
+
+geo proximity
+
+
+source hash / evidence overlap
+
+
+Define score bands:
+
+
+ExactDuplicate
+
+
+ProbableDuplicate
+
+
+PossibleDuplicate
+
+
+Distinct
+
+
+Define hard blockers against unsafe auto-merge
+
+
+Ensure all scoring is deterministic and explainable
+
+
+Deliver:
+
+
+C# enums and records for:
+
+
+DuplicateAssessmentLevel
+
+
+MatchDimension
+
+
+MatchScoreBreakdown
+
+
+DuplicateAssessment
+
+
+IDeduplicationStrategy interface
+
+
+A weighted scoring model with exact thresholds
+
+
+Merge safety rules and no-auto-merge conditions
+
+
+Comments documenting invariants and operational intent
+
+
+Rules:
+
+
+No ML black box scoring
+
+
+No hidden thresholds
+
+
+Every score contribution must be inspectable
+
+
+Distinct must be a first-class outcome, not a low score accident
+
+
+Constraints:
+
+
+Must work with EventCandidate from ingestion pipeline
+
+
+Must compare against canonical EventAggregate only
+
+
+Must be testable with pure unit tests
+
+
+Output:
+
+
+Full C# implementation of contracts and strategy types
+
+
+Include comments showing how the strategy should be consumed by downstream resolution services
+
+
+M2-P07 — Implement Fuzzy Matching Across Title, Time, and Venue v1.0
+Writing
+You are implementing deterministic fuzzy matching for a production-grade .NET 8 deduplication engine.
+
+
+Objective:
+Build a fuzzy matching subsystem that compares EventCandidate and EventAggregate across title, venue, and time dimensions with explainable scores.
+
+
+Requirements:
+
+
+Implement title similarity scoring
+
+
+Implement venue similarity scoring
+
+
+Implement temporal overlap scoring
+
+
+Support normalization for:
+
+
+punctuation
+
+
+casing
+
+
+common abbreviations
+
+
+whitespace collapse
+
+
+Temporal logic must account for:
+
+
+exact match
+
+
+overlapping ranges
+
+
+close-start proximity
+
+
+unknown/null times
+
+
+Deliver:
+
+
+IFuzzyMatcher interface
+
+
+TitleMatcher service
+
+
+VenueMatcher service
+
+
+TemporalMatcher service
+
+
+Match result contracts for each dimension
+
+
+Utility normalization helpers
+
+
+Rules:
+
+
+Never silently “fix” missing values into valid matches
+
+
+Null or missing fields must reduce certainty explicitly
+
+
+Time matching must not assume timezone silently
+
+
+Matching logic must be deterministic, documented, and unit-testable
+
+
+Constraints:
+
+
+No external AI service
+
+
+Use algorithmic similarity only
+
+
+Avoid overfitting to one flyer style
+
+
+Output:
+
+
+Full C# implementation
+
+
+Include unit-test-ready helper methods
+
+
+Include comments explaining how score ranges should be interpreted
+
+
+M2-P08 — Implement Geo-Spatial Proximity Matching v1.0
+Writing
+You are implementing geospatial proximity matching for a production-grade .NET 8 deduplication engine.
+
+
+Objective:
+Determine whether two event records are likely duplicates based on spatial proximity, venue/address coherence, and geographic confidence.
+
+
+Requirements:
+
+
+Implement geo distance calculation between two points
+
+
+Score proximity across defined distance bands
+
+
+Incorporate address and venue cross-check signals
+
+
+Handle missing coordinates safely
+
+
+Distinguish:
+
+
+same venue / same coordinates
+
+
+nearby likely duplicate
+
+
+nearby but distinct venue
+
+
+no meaningful geo match
+
+
+Deliver:
+
+
+IGeoMatcher interface
+
+
+GeoMatchResult record
+
+
+GeoMatcher implementation
+
+
+Distance utility (Haversine or equivalent)
+
+
+Threshold configuration for:
+
+
+exact proximity
+
+
+near proximity
+
+
+weak proximity
+
+
+no match
+
+
+Rules:
+
+
+Geographic closeness alone must not force duplicate classification
+
+
+Venue/address disagreement must reduce geo confidence
+
+
+Missing coordinates must not be treated as neutral-positive
+
+
+Geo scoring must be explainable and bounded
+
+
+Constraints:
+
+
+No dependency on full GIS engine required
+
+
+Must support future PostGIS upgrade seam
+
+
+Keep logic deterministic and pure where possible
+
+
+Output:
+
+
+Full C# implementation
+
+
+Include comments explaining scoring thresholds and conflict handling
+
+
+M2-P09 — Create Merge Planning and Conflict Resolution System v1.0
+Writing
+You are implementing merge planning and conflict resolution for a production-grade .NET 8 event deduplication system.
+
+
+Objective:
+Create a merge planning layer that takes duplicate assessments and produces safe, reviewable merge plans without blindly mutating canonical events.
+
+
+Requirements:
+
+
+Define MergePlan contract
+
+
+Define field-by-field resolution actions:
+
+
+KeepExisting
+
+
+ReplaceWithCandidate
+
+
+MergeValues
+
+
+RequireReview
+
+
+RejectMerge
+
+
+Generate merge plans from DuplicateAssessment inputs
+
+
+Detect conflicting fields:
+
+
+different start times
+
+
+different venue names
+
+
+conflicting addresses
+
+
+divergent titles
+
+
+Preserve evidence and provenance for every recommended merge action
+
+
+Deliver:
+
+
+MergePlan record
+
+
+MergeFieldAction enum
+
+
+ConflictDescriptor record
+
+
+IMergePlanner interface
+
+
+MergePlanner implementation
+
+
+Rules for safe merge vs manual review vs reject
+
+
+Rules:
+
+
+No direct auto-merge of unsafe conflicts
+
+
+Merge planning must be separate from merge execution
+
+
+Every field decision must cite why it was chosen
+
+
+Provenance must survive every merge recommendation
+
+
+Constraints:
+
+
+Must operate on canonical EventAggregate + EventCandidate
+
+
+Must be deterministic and auditable
+
+
+Must support future moderation workflow integration
+
+
+Output:
+
+
+Full C# implementation
+
+
+Include comments explaining field precedence and conflict escalation rules
+
+
+M2-P10 — Enforce Provenance Preservation Across Merged Events v1.0
+Writing
+You are implementing provenance preservation for a production-grade .NET 8 event resolution system.
+
+
+Objective:
+Ensure that when duplicate candidates are associated with existing canonical events, all source evidence, field lineage, and merge history are preserved immutably.
+
+
+Requirements:
+
+
+Define provenance model for canonical events
+
+
+Track:
+
+
+source request IDs
+
+
+candidate IDs
+
+
+evidence bundle references
+
+
+field-level lineage
+
+
+merge timestamps
+
+
+merge actor / system reason
+
+
+Preserve both prior and current values when fields change
+
+
+Make provenance queryable for moderation and audit workflows
+
+
+Deliver:
+
+
+ProvenanceEntry record
+
+
+FieldLineage record
+
+
+MergeHistoryEntry record
+
+
+IProvenanceService interface
+
+
+ProvenanceService implementation
+
+
+Append-only provenance rules
+
+
+Rules:
+
+
+Provenance must never be overwritten in place
+
+
+Merge history must be immutable
+
+
+Field lineage must preserve original source and confidence
+
+
+Canonical event state must remain explainable after multiple merges
+
+
+Constraints:
+
+
+Must integrate with EventAggregate, EventCandidate, MergePlan, and EvidenceBundle
+
+
+No destructive update pattern for provenance
+
+
+Must be suitable for EF Core persistence later
+
+
+Output:
+
+
+Full C# implementation
+
+
+Include comments explaining lineage semantics, audit expectations, and append-only guarantees
+
+
+Execution Order
+Run these in this order:
+
+
+M2-P06 → M2-P07 → M2-P08 → M2-P09 → M2-P10
+What M2 should produce
+After M2 is complete, you should have:
+
+
+a canonical duplicate assessment model
+
+
+deterministic fuzzy matching
+
+
+geospatial duplicate scoring
+
+
+safe merge planning
+
+
+immutable provenance preservation
+
+
+What comes after M2
+Only after M2 is stable should you move to:
+
+
+M3 — Moderation and Publish Control v1.0
+Because moderation without reliable dedup is operationally weak.
+
+
+Next: I can generate M3 Moderation and Publish Control prompts in the same format.
+
+
+
+
+Continue with M3 Moderation and Publish Control prompts in the same format.
+
+
+Bundle M3 — Moderation and Publish Control v1.0
+Below are production-grade, copy-paste prompts for moderation and publish gating. This layer converts ingestion + dedup into a controlled, safe publishing system.
+
+
+M3-P11 — Define EventRiskScore and Moderation Classification Model v1.0
+Writing
+You are implementing the risk classification model for a production-grade event ingestion system in .NET 8.
+
+
+Objective:
+Define a deterministic EventRiskScore model that classifies EventCandidate records into moderation tiers and drives publish eligibility.
+
+
+Requirements:
+
+
+Define EventRiskLevel enum:
+
+
+Low
+
+
+Medium
+
+
+High
+
+
+Restricted
+
+
+Compute risk based on:
+
+
+missing critical fields
+
+
+low confidence scores
+
+
+conflicting extracted data
+
+
+unknown venue/address
+
+
+suspicious keywords (basic rule-based)
+
+
+duplicate ambiguity (from dedup engine)
+
+
+Define EventRiskScore record with:
+
+
+overall score
+
+
+contributing factors
+
+
+explanation string
+
+
+Deliver:
+
+
+EventRiskLevel enum
+
+
+EventRiskScore record
+
+
+IRiskScoringService interface
+
+
+RiskScoringService implementation
+
+
+Rule-based scoring logic with weighted factors
+
+
+Human-readable explanation builder
+
+
+Rules:
+
+
+Risk scoring must be deterministic
+
+
+No ML or probabilistic black box
+
+
+Every risk score must be explainable
+
+
+Missing data must increase risk, not be ignored
+
+
+Constraints:
+
+
+Must operate on EventCandidateV2 + DuplicateAssessment
+
+
+Must not depend on external moderation services
+
+
+Must be unit-testable
+
+
+Output:
+
+
+Full C# implementation
+
+
+Include comments explaining each risk factor and its impact
+
+
+M3-P12 — Build Moderation Queue and Review Workflow v1.0
+Writing
+You are implementing a moderation queue system for a production-grade ingestion platform.
+
+
+Objective:
+Create a moderation queue that receives candidates, supports review workflows, and enforces controlled transitions before publishing.
+
+
+Requirements:
+
+
+Define ModerationQueueItem record
+
+
+Define ModerationStatus enum:
+
+
+Pending
+
+
+InReview
+
+
+Approved
+
+
+Rejected
+
+
+NeedsEdit
+
+
+Implement queue operations:
+
+
+enqueue candidate
+
+
+fetch next item (by priority)
+
+
+assign reviewer
+
+
+update status
+
+
+Support prioritization:
+
+
+high-risk first
+
+
+low-confidence next
+
+
+Include timestamps for all transitions
+
+
+Deliver:
+
+
+ModerationQueueItem record
+
+
+ModerationStatus enum
+
+
+IModerationQueueService interface
+
+
+ModerationQueueService implementation
+
+
+Priority sorting logic
+
+
+Reviewer assignment logic
+
+
+Rules:
+
+
+Queue must be explicit (no hidden flows)
+
+
+Every status change must be persisted
+
+
+No auto-approval through queue
+
+
+Reviewer identity must be tracked
+
+
+Constraints:
+
+
+Must integrate with EventRiskScore
+
+
+Must not publish directly from queue
+
+
+Must support future UI integration
+
+
+Output:
+
+
+Full C# implementation
+
+
+Include comments explaining queue prioritization and workflow transitions
+
+
+M3-P13 — Implement Publish Eligibility Gate and Validation Rules v1.0
+Writing
+You are implementing the publish eligibility gate for a production-grade event system.
+
+
+Objective:
+Prevent unsafe or incomplete events from being published by enforcing strict validation and moderation rules.
+
+
+Requirements:
+
+
+Define PublishEligibilityResult record
+
+
+Implement IPublishEligibilityService
+
+
+Validate:
+
+
+required fields present (title, time, location)
+
+
+minimum confidence thresholds met
+
+
+moderation status = Approved
+
+
+risk level allowed for auto-publish (Low only)
+
+
+Return:
+
+
+eligible / not eligible
+
+
+list of blockers
+
+
+required actions
+
+
+Deliver:
+
+
+PublishEligibilityResult record
+
+
+IPublishEligibilityService interface
+
+
+PublishEligibilityService implementation
+
+
+Validation rule set
+
+
+Blocker definitions (enum or structured list)
+
+
+Rules:
+
+
+No event may publish without passing this gate
+
+
+No implicit approval allowed
+
+
+All blockers must be explicit and returned
+
+
+Risk level must directly influence eligibility
+
+
+Constraints:
+
+
+Must operate on canonical EventAggregate or approved candidate
+
+
+Must integrate with ModerationStatus and EventRiskScore
+
+
+Must be deterministic and testable
+
+
+Output:
+
+
+Full C# implementation
+
+
+Include comments explaining gating logic and failure conditions
+
+
+M3-P14 — Create Immutable Moderation History and Audit Trail v1.0
+Writing
+You are implementing moderation audit logging for a production-grade event ingestion system.
+
+
+Objective:
+Create an immutable audit trail of all moderation actions, ensuring full traceability of decisions.
+
+
+Requirements:
+
+
+Define ModerationHistoryEntry record
+
+
+Capture:
+
+
+candidate ID
+
+
+reviewer ID
+
+
+previous status
+
+
+new status
+
+
+action timestamp
+
+
+reason/comment
+
+
+Ensure append-only behavior
+
+
+Provide query methods for:
+
+
+full history by candidate
+
+
+history by reviewer
+
+
+history by event
+
+
+Deliver:
+
+
+ModerationHistoryEntry record
+
+
+IModerationAuditService interface
+
+
+ModerationAuditService implementation
+
+
+Append-only persistence logic
+
+
+Query methods for audit retrieval
+
+
+Rules:
+
+
+No mutation of existing records
+
+
+Every moderation action must produce an audit entry
+
+
+History must be reconstructable in order
+
+
+Comments/reasons must be preserved
+
+
+Constraints:
+
+
+Must integrate with ModerationQueueService
+
+
+Must support future compliance/audit requirements
+
+
+Must be efficient for retrieval
+
+
+Output:
+
+
+Full C# implementation
+
+
+Include comments explaining immutability guarantees and audit expectations
+
+
+M3-P15 — Implement Moderator Actions and Review Surfaces v1.0
+Writing
+You are implementing moderator action logic for a production-grade event ingestion system.
+
+
+Objective:
+Define and implement all moderator actions that operate on moderation queue items and candidates.
+
+
+Requirements:
+
+
+Supported actions:
+
+
+Approve
+
+
+Reject
+
+
+Edit (modify candidate fields)
+
+
+Merge (apply merge plan from dedup)
+
+
+Each action must:
+
+
+update moderation status
+
+
+create audit entry
+
+
+optionally update candidate data
+
+
+Edits must:
+
+
+preserve original values in provenance
+
+
+update confidence if needed
+
+
+Deliver:
+
+
+ModeratorAction enum
+
+
+IModerationActionService interface
+
+
+ModerationActionService implementation
+
+
+Action handlers:
+
+
+ApproveHandler
+
+
+RejectHandler
+
+
+EditHandler
+
+
+MergeHandler
+
+
+Validation logic per action
+
+
+Rules:
+
+
+No action may bypass audit logging
+
+
+Edit must not overwrite provenance
+
+
+Merge must respect MergePlan rules
+
+
+Reject must include reason
+
+
+Constraints:
+
+
+Must integrate with:
+
+
+ModerationQueue
+
+
+PublishEligibilityService
+
+
+ProvenanceService (from M2)
+
+
+Must be deterministic and role-aware
+
+
+Output:
+
+
+Full C# implementation
+
+
+Include comments explaining action flows and safety constraints
+
+
+Execution Order
+M3-P11 → M3-P12 → M3-P13 → M3-P14 → M3-P15
+What M3 Produces
+After completion, you will have:
+
+
+deterministic risk classification
+
+
+structured moderation queue
+
+
+enforced publish gate
+
+
+immutable audit trail
+
+
+safe moderator action system
+
+
+What This Unlocks
+You can now safely:
+
+
+Publish → Map → Discovery
+Without:
+
+
+spam flooding
+
+
+unsafe events
+
+
+ingestion garbage leaking to users
+
+
+Next
+The correct next bundle is:
+
+
+M5 — Map and Discovery Surface v1.0
+Or if you want tighter control:
+
+
+M4 (Canonical Event System hardening)
+
+
+If you want, next I can generate:
+
+
+M5 Map + Calendar prompts (UI + backend contract aligned)
+
+
+or
+
+
+Full vertical slice wiring (M1 + M2 + M3 → API + Vue integration)
+
+
+
+
+M5 Map + Calendar prompts (UI + backend contract aligned)
+
+
+Thought for a couple of seconds
+Bundle M5 — Map and Discovery Surface v1.0
+Bundle M6 — Calendar Overlay and Temporal UI v1.0
+Below are production-grade, copy-paste prompts aligned across Vue 3 + Quasar frontend, .NET 8 backend contracts, and Mapbox-based discovery surfaces.
+
+
+M5-P21 — Implement Map Rendering and Marker System v1.0
+Writing
+You are implementing the primary map discovery surface for a production-grade Vue 3 + Quasar frontend with a .NET 8 backend.
+
+
+Objective:
+Build the canonical WeUP map surface that renders approved events as markers using a backend-driven event feed contract.
+
+
+Requirements:
+
+
+Use Vue 3 Composition API
+
+
+Use Quasar for shell/UI controls
+
+
+Use Mapbox GL JS for rendering
+
+
+Consume a real backend API contract, not mock-first service logic
+
+
+Render event markers from canonical event feed data
+
+
+Support marker states:
+
+
+default
+
+
+selected
+
+
+saved
+
+
+low-confidence-hidden (not rendered in public feed)
+
+
+Keep map as the primary surface, not a subordinate widget
+
+
+Deliver:
+
+
+Backend DTO contract for EventMapItemDto
+
+
+API endpoint contract for map feed query
+
+
+Frontend TypeScript interfaces aligned to backend DTOs
+
+
+Vue component for MapSurface
+
+
+Marker rendering layer with selection handling
+
+
+Minimal service/composable for fetching map events
+
+
+Required backend DTO fields:
+
+
+eventId
+
+
+title
+
+
+startUtc
+
+
+endUtc
+
+
+latitude
+
+
+longitude
+
+
+venueName
+
+
+district
+
+
+primaryCategory
+
+
+savedByCurrentUser
+
+
+markerState
+
+
+Required query fields:
+
+
+bbox
+
+
+timeWindowPreset
+
+
+fromUtc
+
+
+toUtc
+
+
+district
+
+
+categories
+
+
+includeSavedOnly
+
+
+Rules:
+
+
+No direct frontend dependency on EF/domain models
+
+
+No local mock shape may drift from the API contract
+
+
+Marker selection must resolve by canonical eventId only
+
+
+Map load and marker rendering must degrade gracefully under empty result sets
+
+
+Constraints:
+
+
+No ticketing or door logic
+
+
+No feed-style ranking UI
+
+
+No hidden fallback to mock data
+
+
+Keep map interaction deterministic and traceable
+
+
+Output:
+
+
+Full C# DTOs and endpoint contract shape
+
+
+Full TypeScript interfaces
+
+
+Vue 3 + Quasar component scaffold
+
+
+Mapbox integration code
+
+
+Comments explaining contract boundaries and marker rendering invariants
+
+
+M5-P22 — Build Marker Clustering and Density Control v1.0
+Writing
+You are implementing marker clustering and density management for a production-grade map-first event discovery application.
+
+
+Objective:
+Prevent marker overload and preserve usability by implementing deterministic clustering and density control aligned between backend responses and frontend rendering.
+
+
+Requirements:
+
+
+Support cluster rendering for dense urban areas
+
+
+Distinguish:
+
+
+single event marker
+
+
+multi-event cluster
+
+
+selected marker bypass behavior
+
+
+Preserve click-through flow:
+
+
+cluster click zooms or expands
+
+
+marker click opens event detail
+
+
+Support backend-ready response structure for clusterable map items
+
+
+Allow future server-side clustering upgrade without breaking contracts
+
+
+Deliver:
+
+
+Cluster-capable DTO additions or parallel response model
+
+
+Frontend cluster rendering logic
+
+
+Density thresholds for when clustering activates
+
+
+Marker expansion / zoom behavior rules
+
+
+Selection preservation when clusters recompute
+
+
+Rules:
+
+
+Selected event must remain discoverable even when density changes
+
+
+Cluster rendering must not obscure saved state or active filters
+
+
+No random cluster behavior
+
+
+Clustering must not mutate canonical event identity
+
+
+Constraints:
+
+
+Implement in a way that can start frontend-side but preserve backend seam
+
+
+No feed fallback list as primary overflow mechanism
+
+
+Must perform acceptably at 50–200 visible events
+
+
+Output:
+
+
+Full backend response model update
+
+
+Full TypeScript interfaces
+
+
+Vue / Mapbox clustering logic
+
+
+Comments explaining density invariants, expansion behavior, and identity preservation
+
+
+M5-P23 — Implement Event Detail Modal and Interaction Flow v1.0
+Writing
+You are implementing the event detail interaction flow for a production-grade map-first event discovery application.
+
+
+Objective:
+Build the canonical event detail modal that opens from map marker selection, displays normalized event data, shows provenance-aware content where appropriate, and supports save/share actions.
+
+
+Requirements:
+
+
+Use Vue 3 Composition API + Quasar
+
+
+Event detail opens from marker click and resolves by eventId
+
+
+Modal must support:
+
+
+title
+
+
+date/time
+
+
+venue
+
+
+address
+
+
+flyer image
+
+
+categories/tags
+
+
+source/provenance summary
+
+
+save/unsave action
+
+
+share action placeholder
+
+
+Modal state must be synchronized with map selection state
+
+
+Close action must return user cleanly to map context
+
+
+Deliver:
+
+
+Backend DTO for EventDetailDto
+
+
+API endpoint contract for event detail by eventId
+
+
+Frontend TS interface aligned to DTO
+
+
+Vue component for EventDetailModal
+
+
+State/composable logic for open/close/select behavior
+
+
+Save action wiring seam
+
+
+Rules:
+
+
+Event detail must consume canonical normalized data only
+
+
+No direct rendering of raw OCR garbage
+
+
+Provenance should be present but not overwhelm public UX
+
+
+Save state must reflect backend or local persistence truth, not a fake local toggle
+
+
+Constraints:
+
+
+No ticket purchase UI
+
+
+No door/admission UI
+
+
+No social graph complexity
+
+
+Keep modal readable in one viewport without turning into a scroll maze
+
+
+Output:
+
+
+Full backend DTO + endpoint shape
+
+
+Full TypeScript interface
+
+
+Full Vue 3 + Quasar modal scaffold
+
+
+Comments explaining state synchronization and modal interaction rules
+
+
+M5-P24 — Integrate Time-Based Filtering into Map Discovery v1.0
+Writing
+You are implementing temporal filtering for a production-grade map-first event discovery system.
+
+
+Objective:
+Integrate canonical time-based filtering into the map feed so the frontend and backend agree exactly on what event windows are shown.
+
+
+Requirements:
+
+
+Support preset windows:
+
+
+now
+
+
+tonight
+
+
+tomorrow
+
+
+thisWeekend
+
+
+custom
+
+
+Define backend query contract for temporal filtering
+
+
+Define frontend filter state model aligned to backend
+
+
+Ensure map reloads deterministically on filter changes
+
+
+Preserve selected event behavior when filters change and selected event leaves scope
+
+
+Deliver:
+
+
+TimeWindowPreset enum in C# and TypeScript
+
+
+MapFeedQuery DTO with temporal fields
+
+
+Frontend filter composable
+
+
+Backend controller/query binding example
+
+
+Rules for when selection clears or persists
+
+
+Example filter UI component using Quasar
+
+
+Rules:
+
+
+Frontend and backend must not derive different window semantics
+
+
+Timezone handling must be explicit
+
+
+Custom range must validate before request dispatch
+
+
+Temporal filtering must apply to both map and downstream calendar overlay contracts
+
+
+Constraints:
+
+
+No relative-date guessing in UI without backend alignment
+
+
+No duplicated time logic across components
+
+
+Must be unit-testable on both client and server
+
+
+Output:
+
+
+Full C# enums/DTOs
+
+
+Full TS enums/interfaces
+
+
+Vue composable + filter component scaffold
+
+
+Comments explaining temporal contract alignment and selection behavior
+
+
+M5-P25 — Optimize Map Performance and Rendering Latency v1.0
+Writing
+You are implementing performance and rendering discipline for a production-grade map-first event discovery application.
+
+
+Objective:
+Optimize the map surface so event loading, marker rendering, filter changes, and detail interactions remain responsive under MVP load.
+
+
+Requirements:
+
+
+Reduce unnecessary rerenders
+
+
+Debounce viewport-driven fetches
+
+
+Cache recent query results safely
+
+
+Avoid full marker re-creation on trivial state changes
+
+
+Support loading, empty, and degraded states explicitly
+
+
+Define performance instrumentation points
+
+
+Deliver:
+
+
+Frontend composable or service optimizations for map feed fetching
+
+
+Debounced viewport query logic
+
+
+Marker diff/update strategy
+
+
+Loading state model
+
+
+Instrumentation hooks for:
+
+
+map feed request duration
+
+
+marker render count
+
+
+detail open latency
+
+
+Backend considerations for efficient map query responses
+
+
+Rules:
+
+
+No fake performance through stale or misleading data
+
+
+Cache keys must include temporal + spatial query dimensions
+
+
+Empty state must be explicit, not treated as failure
+
+
+Performance optimization must not break correctness
+
+
+Constraints:
+
+
+No premature overengineering
+
+
+No infinite fetch loops tied to reactive map state
+
+
+Keep logic understandable and testable
+
+
+Output:
+
+
+Vue 3 composable/service code
+
+
+Example backend response shaping guidance
+
+
+Instrumentation examples
+
+
+Comments explaining fetch strategy, caching boundaries, and rendering tradeoffs
+
+
+M6-P26 — Implement Calendar Overlay Layer Architecture v1.0
+Writing
+You are implementing the calendar overlay architecture for a production-grade map-first event discovery application.
+
+
+Objective:
+Build the calendar overlay as a layered temporal interface on top of the map, not as a separate disconnected page.
+
+
+Requirements:
+
+
+Calendar overlay must be synchronized with map state
+
+
+Overlay opens above map while preserving spatial continuity
+
+
+Support layered states:
+
+
+closed
+
+
+partial overlay
+
+
+expanded overlay
+
+
+event-selected overlay
+
+
+Define backend contract for calendar feed items
+
+
+Use Vue 3 + Quasar with clean component boundaries
+
+
+Deliver:
+
+
+Backend DTO for CalendarEventItemDto
+
+
+API contract for calendar feed query
+
+
+Frontend TS interfaces
+
+
+Vue components for:
+
+
+CalendarOverlayShell
+
+
+CalendarTimelineHeader
+
+
+CalendarEventGrid
+
+
+Overlay state model/composable
+
+
+Rules for interaction with map selection state
+
+
+Rules:
+
+
+Calendar is an alternate temporal projection of the same canonical events
+
+
+Map remains present beneath the overlay
+
+
+Event identity must remain consistent across map and calendar
+
+
+Overlay states must be deterministic and finite
+
+
+Constraints:
+
+
+No separate route required for core overlay behavior
+
+
+No feed-style scrolling substitute for temporal structure
+
+
+No divergence between map event contract and calendar event contract
+
+
+Output:
+
+
+Full backend DTO/API shapes
+
+
+Full TS interfaces
+
+
+Vue scaffolding for overlay architecture
+
+
+Comments explaining state layers and map/calendar synchronization
+
+
+M6-P27 — Build Masonry Event Layout and Time-Slot Packing v1.0
+Writing
+You are implementing the event layout engine for a production-grade calendar overlay in a map-first discovery application.
+
+
+Objective:
+Render events in a masonry-like temporal layout that packs events into visible time structures without visual collapse or overlap confusion.
+
+
+Requirements:
+
+
+Accept canonical calendar event items
+
+
+Group events into time buckets
+
+
+Pack event cards into a masonry/bin-packing style layout
+
+
+Handle:
+
+
+overlapping events
+
+
+simultaneous start times
+
+
+sparse periods
+
+
+dense periods
+
+
+Preserve click target clarity and readable density
+
+
+Deliver:
+
+
+Time bucket model
+
+
+Layout computation utility/composable
+
+
+Vue component for CalendarEventGrid
+
+
+Event card component contract
+
+
+Rules for dense-period handling and overflow signaling
+
+
+Rules:
+
+
+Layout must remain deterministic for the same input
+
+
+Dense periods must not destroy readability
+
+
+Events must remain selectable by canonical eventId
+
+
+Layout logic must not silently reorder events in semantically confusing ways
+
+
+Constraints:
+
+
+No pseudo-random packing
+
+
+No collapsing all dense windows into useless stacks
+
+
+Keep implementation testable and separable from rendering
+
+
+Output:
+
+
+TypeScript layout utilities
+
+
+Vue component scaffolding
+
+
+Comments explaining bucket logic, packing rules, and density tradeoffs
+
+
+M6-P28 — Sync Calendar Overlay with Map State v1.0
+Writing
+You are implementing state synchronization between the map surface and calendar overlay for a production-grade event discovery application.
+
+
+Objective:
+Ensure that map state, calendar state, filter state, and selected event state remain consistent and predictable across overlay transitions.
+
+
+Requirements:
+
+
+Shared state must include:
+
+
+selected eventId
+
+
+active temporal filter
+
+
+active district/category filters
+
+
+visible event set reference
+
+
+overlay mode
+
+
+Define synchronization rules for:
+
+
+marker click → calendar highlight
+
+
+calendar click → map selection
+
+
+filter change → both surfaces refresh
+
+
+selected event removed from scope → selection reset or fallback
+
+
+Use Vue composables/store discipline
+
+
+Deliver:
+
+
+Shared state model
+
+
+useDiscoveryState composable or equivalent store
+
+
+Synchronization methods and event handlers
+
+
+Clear state transition rules
+
+
+Examples of component integration points
+
+
+Rules:
+
+
+There must be one source of truth for selected event state
+
+
+Calendar and map must not compete for ownership
+
+
+State transitions must be explicit and testable
+
+
+No hidden watcher loops that mutate each other recursively
+
+
+Constraints:
+
+
+Avoid overcoupled components
+
+
+Avoid duplicated filter state across map and calendar
+
+
+Keep it production-readable
+
+
+Output:
+
+
+TypeScript composable/store code
+
+
+Example component integration
+
+
+Comments explaining synchronization invariants and anti-loop protections
+
+
+M6-P29 — Implement Temporal Navigation and Scrubbing Controls v1.0
+Writing
+You are implementing temporal navigation controls for a production-grade map-plus-calendar event discovery application.
+
+
+Objective:
+Create a temporal navigation system that allows users to move across event windows using presets, date shifts, and scrubbing interactions while staying aligned with backend time semantics.
+
+
+Requirements:
+
+
+Support:
+
+
+preset buttons
+
+
+date step forward/back
+
+
+timeline scrub interaction
+
+
+reset to now
+
+
+Align control output to canonical TimeWindowPreset / custom range contracts
+
+
+Drive both map and calendar queries from the same temporal navigation state
+
+
+Provide accessible and visibly understandable interactions
+
+
+Deliver:
+
+
+Vue component for TemporalNavigationControls
+
+
+TS state/composable integration with shared discovery state
+
+
+Scrubbing logic
+
+
+Backend query examples showing how controls map to API requests
+
+
+Guardrails for invalid ranges and window transitions
+
+
+Rules:
+
+
+Controls must not invent time windows independent of backend logic
+
+
+Scrubbing must have bounded, understandable semantics
+
+
+State changes must be debounced where appropriate
+
+
+Selected event behavior under temporal shift must be defined explicitly
+
+
+Constraints:
+
+
+No overly decorative time control without operational clarity
+
+
+No duplicated date logic in multiple components
+
+
+Keep controls usable on mobile viewport sizes
+
+
+Output:
+
+
+Vue 3 + Quasar component scaffold
+
+
+TS composable logic
+
+
+Example API query mapping
+
+
+Comments explaining time navigation semantics and UX constraints
+
+
+M6-P30 — Optimize Calendar Interaction and Transition States v1.0
+Writing
+You are implementing interaction polish and transition discipline for a production-grade calendar overlay in a map-first event discovery application.
+
+
+Objective:
+Optimize calendar overlay transitions, event selection interactions, and panel motion so the temporal interface feels responsive, readable, and operationally clear.
+
+
+Requirements:
+
+
+Define transition states for:
+
+
+overlay open
+
+
+overlay close
+
+
+partial to expanded
+
+
+event select
+
+
+event deselect
+
+
+filter refresh
+
+
+Keep motion finite, ambient, and non-disorienting
+
+
+Ensure performance remains acceptable during transitions
+
+
+Preserve user orientation relative to the map beneath
+
+
+Deliver:
+
+
+Transition state model
+
+
+Vue transition wrappers or motion integration guidance
+
+
+Loading/degraded/empty interaction states
+
+
+Selection transition rules
+
+
+Comments describing where motion should stop and where clarity takes precedence
+
+
+Rules:
+
+
+Motion must support comprehension, not distract from event discovery
+
+
+No infinite or excessive animation loops
+
+
+Empty and loading states must be explicit
+
+
+Transition logic must not break state synchronization with map
+
+
+Constraints:
+
+
+No cinematic excess at the expense of usability
+
+
+No feed-like behavior hidden behind transition tricks
+
+
+Keep implementation maintainable
+
+
+Output:
+
+
+Vue transition scaffolding
+
+
+State diagrams or inline transition comments
+
+
+Recommendations for motion discipline within Quasar/Vue
+
+
+Execution Order
+M5-P21 → M5-P22 → M5-P23 → M5-P24 → M5-P25
+M6-P26 → M6-P27 → M6-P28 → M6-P29 → M6-P30
+What these bundles produce
+After M5 + M6, you should have:
+
+
+canonical backend contracts for map + calendar feeds
+
+
+Vue/Quasar map surface aligned to .NET DTOs
+
+
+marker rendering + clustering
+
+
+event detail modal flow
+
+
+calendar overlay architecture
+
+
+temporal navigation and synchronized discovery state
+
+
+What should come after this
+The correct next move is either:
+
+
+M4 Canonical Event System hardening, if contracts are still drifting
+or
+
+
+M7 Save System and User Context, if discovery retention is the next priority
+
+
+
+
+M7 Save System and User Context,
+
+
+Thought for a couple of seconds
+Bundle M7 — Save System and User Context v1.0
+Below are production-grade, copy-paste prompts for the save system and lightweight user context layer, aligned across Vue 3 + Quasar frontend and .NET 8 backend contracts.
+
+
+M7-P31 — Implement Save and Unsave Event Functionality v1.0
+Writing
+You are implementing the event save and unsave capability for a production-grade Vue 3 + Quasar frontend with a .NET 8 backend.
+
+
+Objective:
+Build a deterministic save/unsave system for canonical events that works for both authenticated users and anonymous fallback mode, with explicit boundaries between UI state and persistence state.
+
+
+Requirements:
+
+
+Define backend DTOs and endpoint contracts for:
+
+
+save event
+
+
+unsave event
+
+
+get saved state by eventId
+
+
+Define TypeScript interfaces aligned to backend DTOs
+
+
+Implement Vue composable/service for save/unsave behavior
+
+
+Wire saved state to:
+
+
+map marker state
+
+
+event detail modal
+
+
+saved events list surfaces
+
+
+Use canonical eventId only
+
+
+Deliver:
+
+
+C# DTOs:
+
+
+SaveEventRequestDto
+
+
+SaveEventResponseDto
+
+
+UnsaveEventRequestDto
+
+
+SavedStateDto
+
+
+Backend endpoint contract examples
+
+
+TS interfaces aligned to DTOs
+
+
+Vue composable for save state mutations
+
+
+Example save button component or integration snippet
+
+
+Error handling and optimistic update strategy
+
+
+Rules:
+
+
+Save state must reflect actual persistence result, not a fake local toggle
+
+
+No direct UI mutation without mutation result handling
+
+
+Canonical eventId is the only identifier for save ownership
+
+
+Backend and frontend must agree on saved-state truth model
+
+
+Constraints:
+
+
+No ticketing or checkout logic
+
+
+No social or collaborative saved-state features
+
+
+No mock-first fallback hidden in production paths
+
+
+Output:
+
+
+Full C# DTOs and endpoint contract shapes
+
+
+Full TS interfaces
+
+
+Vue composable/service code
+
+
+Comments explaining persistence truth, optimistic update rollback, and eventId invariants
+
+
+M7-P32 — Define Local Persistence Model for Anonymous Users v1.0
+Writing
+You are implementing anonymous local persistence for a production-grade event discovery application.
+
+
+Objective:
+Define a local persistence model for anonymous users that stores saved events and lightweight discovery context without pretending to be the system of record.
+
+
+Requirements:
+
+
+Store anonymous saved events locally
+
+
+Store lightweight discovery context such as:
+
+
+last viewed district
+
+
+last temporal filter
+
+
+recent map viewport
+
+
+Define a strict browser storage schema
+
+
+Add expiration/versioning strategy
+
+
+Make local persistence explicitly separate from authenticated backend persistence
+
+
+Deliver:
+
+
+TypeScript interfaces for:
+
+
+AnonymousSavedState
+
+
+AnonymousDiscoveryContext
+
+
+LocalStorageEnvelope
+
+
+Storage key strategy
+
+
+Versioning and migration rules
+
+
+Local persistence service/composable
+
+
+Guardrails for corrupted local state handling
+
+
+Rules:
+
+
+Local state is convenience state, not system-of-record truth
+
+
+Corrupt or invalid local state must be discarded safely
+
+
+Local persistence must be schema-versioned
+
+
+No hidden coupling between anonymous state and authenticated state
+
+
+Constraints:
+
+
+Browser-only persistence
+
+
+No silent merge into backend
+
+
+No long-lived assumptions without version checks
+
+
+Output:
+
+
+Full TS interfaces
+
+
+Vue composable/service code
+
+
+Storage strategy and validation helpers
+
+
+Comments explaining local-vs-authoritative boundaries and migration handling
+
+
+M7-P33 — Implement Auth-Ready Save State Migration Path v1.0
+Writing
+You are implementing the save-state migration path from anonymous local persistence to authenticated backend persistence for a production-grade event discovery application.
+
+
+Objective:
+Create a deterministic migration path that allows anonymous saved events and lightweight context to be reconciled into authenticated user state without duplicate corruption or split-brain ownership.
+
+
+Requirements:
+
+
+Define migration strategy for:
+
+
+saved event IDs
+
+
+local discovery context
+
+
+Support migration trigger on sign-in
+
+
+Prevent duplicate saves during migration
+
+
+Preserve user intent where possible
+
+
+Make migration explicit and auditable
+
+
+Deliver:
+
+
+Backend DTOs and endpoint shape for save-state migration
+
+
+TypeScript interfaces aligned to migration contract
+
+
+Migration service/composable
+
+
+Conflict resolution rules:
+
+
+local saved + backend saved
+
+
+local saved + backend absent
+
+
+invalid local eventId
+
+
+Migration result model with counts and status
+
+
+Rules:
+
+
+Migration must be one-way into authenticated ownership
+
+
+No silent partial migration without reporting
+
+
+Duplicate event IDs must collapse deterministically
+
+
+Invalid or missing local IDs must not poison backend state
+
+
+Constraints:
+
+
+No magical cross-device reconciliation beyond contract scope
+
+
+No destructive delete of local state until migration result is confirmed
+
+
+Keep migration logic testable and idempotent
+
+
+Output:
+
+
+Full C# DTOs and endpoint contract shape
+
+
+Full TS interfaces
+
+
+Migration composable/service code
+
+
+Comments explaining migration invariants, idempotency, and conflict handling
+
+
+M7-P34 — Build User Context and Preference Tracking v1.0
+Writing
+You are implementing lightweight user context and preference tracking for a production-grade event discovery application.
+
+
+Objective:
+Create a minimal but coherent user context model that tracks discovery preferences and interaction state relevant to the MVP.
+
+
+Requirements:
+
+
+Track:
+
+
+preferred districts
+
+
+preferred categories
+
+
+preferred temporal presets
+
+
+last-used map state
+
+
+saved count summary
+
+
+Define backend-ready preference contract
+
+
+Define frontend state model and composable
+
+
+Keep preferences separate from ephemeral UI-only component state
+
+
+Deliver:
+
+
+C# DTOs for user preferences/context
+
+
+TS interfaces aligned to DTOs
+
+
+Vue composable for user context
+
+
+Update methods for preference changes
+
+
+Example integration points with:
+
+
+map discovery filters
+
+
+calendar overlay filters
+
+
+saved events surfaces
+
+
+Rules:
+
+
+Context must support anonymous and authenticated modes with explicit ownership
+
+
+Preferences are not raw analytics exhaust
+
+
+UI-only temporary state must not leak into persisted preferences
+
+
+Category/district preferences must use canonical values, not arbitrary strings
+
+
+Constraints:
+
+
+No recommendation engine
+
+
+No behavioral profiling complexity
+
+
+No feed-ranking dependency
+
+
+Output:
+
+
+Full C# DTOs
+
+
+Full TS interfaces
+
+
+Vue composable/store code
+
+
+Comments explaining preference ownership, persistence boundaries, and canonical taxonomy usage
+
+
+M7-P35 — Create Saved Events Retrieval and Display Logic v1.0
+Writing
+You are implementing saved events retrieval and display logic for a production-grade event discovery application.
+
+
+Objective:
+Build the retrieval flow and UI logic for displaying saved events consistently across authenticated and anonymous contexts.
+
+
+Requirements:
+
+
+Define backend API contract for retrieving saved events
+
+
+Define TS interfaces aligned to backend DTOs
+
+
+Build Vue composable/service for loading saved events
+
+
+Support display surfaces:
+
+
+saved list panel
+
+
+saved count badge
+
+
+saved markers on map
+
+
+Ensure saved event retrieval uses canonical normalized event data
+
+
+Deliver:
+
+
+C# DTOs for saved event list response
+
+
+Endpoint contract for saved event retrieval
+
+
+TS interfaces aligned to DTOs
+
+
+Vue composable/service for saved events loading
+
+
+Example Vue component scaffold for a saved events panel/list
+
+
+Empty, loading, and degraded state handling
+
+
+Rules:
+
+
+Saved event retrieval must not depend on raw local shapes when authenticated
+
+
+Saved list items must resolve from canonical event data
+
+
+Missing/deleted saved events must be handled explicitly
+
+
+Saved surfaces must remain consistent with current save state mutations
+
+
+Constraints:
+
+
+No recommendation logic in saved list
+
+
+No social sharing or collaborative lists
+
+
+Keep display logic compatible with both map and calendar workflows
+
+
+Output:
+
+
+Full C# DTOs and endpoint contract shapes
+
+
+Full TS interfaces
+
+
+Vue composable/service code
+
+
+Vue component scaffold
+
+
+Comments explaining retrieval consistency, deleted-event handling, and save-state coherence
+
+
+Execution Order
+M7-P31 → M7-P32 → M7-P33 → M7-P34 → M7-P35
+What M7 produces
+After M7, you should have:
+
+
+deterministic save/unsave behavior
+
+
+anonymous local persistence with schema discipline
+
+
+authenticated migration path
+
+
+lightweight user context and preferences
+
+
+saved event retrieval and display surfaces
+
+
+What should come after M7
+The correct next move is one of these:
+
+
+M8 Temporal Semantics Engine, if time filtering still has ambiguity
+
+
+M10 Ingestion Observability and Telemetry, if you need operational visibility before broader use
+
+
+full vertical slice wiring across M1 + M2 + M3 + M5 + M6 + M7
+
+
+Next: I can generate M8 Temporal Semantics Engine prompts in the same format.
+
+
+
+
+M8 Temporal Semantics Engine prompts in the same format.
+
+
+Thought for a couple of seconds
+Bundle M8 — Temporal Semantics Engine v1.0
+Below are production-grade, copy-paste prompts for the temporal semantics engine, aligned across .NET 8 backend contracts, Vue 3 + Quasar frontend state, and the map/calendar discovery surfaces.
+
+
+M8-P36 — Define Canonical Time Window Semantics v1.0
+Writing
+You are implementing the canonical temporal semantics model for a production-grade event discovery system using .NET 8 on the backend and Vue 3 + Quasar on the frontend.
+
+
+Objective:
+Define a single authoritative time-window model so the frontend and backend interpret discovery windows identically.
+
+
+Requirements:
+
+
+Define canonical window types:
+
+
+Now
+
+
+Tonight
+
+
+Tomorrow
+
+
+ThisWeekend
+
+
+Next24Hours
+
+
+Next48Hours
+
+
+CustomRange
+
+
+Define exact semantic meaning for each window
+
+
+Define how windows are resolved relative to:
+
+
+market timezone
+
+
+request timestamp
+
+
+explicit custom range input
+
+
+Define a backend-first contract so frontend does not invent its own time meaning
+
+
+Deliver:
+
+
+C# enum for TimeWindowPreset
+
+
+C# record for ResolvedTimeWindow
+
+
+TypeScript enum/interface aligned to backend
+
+
+Canonical semantic rules for each preset
+
+
+Validation rules for invalid ranges and unsupported combinations
+
+
+Comments documenting invariants and market-timezone assumptions
+
+
+Rules:
+
+
+Time window meaning must be explicit and deterministic
+
+
+Frontend and backend must not each resolve windows independently in different ways
+
+
+All relative windows must be resolved against an explicit timezone-aware reference instant
+
+
+CustomRange must always resolve to explicit UTC bounds
+
+
+Constraints:
+
+
+No silent browser-local timezone assumptions
+
+
+No duplicated time-window rule sets across components
+
+
+Must be unit-testable and contract-testable
+
+
+Output:
+
+
+Full C# enums/records
+
+
+Full TypeScript enums/interfaces
+
+
+Clear semantic documentation in comments
+
+
+Example resolved outputs for each preset
+
+
+M8-P37 — Implement “Tonight,” “Weekend,” and Rolling Window Logic v1.0
+Writing
+You are implementing the temporal window resolution engine for a production-grade event discovery system.
+
+
+Objective:
+Build deterministic logic for resolving relative discovery presets such as Tonight, Tomorrow, ThisWeekend, Next24Hours, and Next48Hours into explicit UTC ranges.
+
+
+Requirements:
+
+
+Implement ITimeWindowResolver interface
+
+
+Resolve all relative presets using:
+
+
+reference instant
+
+
+market timezone
+
+
+canonical preset rules
+
+
+Support:
+
+
+Tonight
+
+
+Tomorrow
+
+
+ThisWeekend
+
+
+Next24Hours
+
+
+Next48Hours
+
+
+Define edge-case behavior for:
+
+
+late-night requests
+
+
+weekend boundary transitions
+
+
+daylight saving transitions
+
+
+invalid timezone input
+
+
+Deliver:
+
+
+ITimeWindowResolver interface
+
+
+TimeWindowResolver implementation
+
+
+Resolution methods per preset
+
+
+Unit-test-ready helper methods
+
+
+Explicit examples for Houston-style market-timezone use
+
+
+Rules:
+
+
+“Tonight” must not be vague; define exact start/end behavior
+
+
+“ThisWeekend” must have exact day/time boundaries
+
+
+Rolling windows must use exact duration math, not fuzzy calendar logic
+
+
+DST transitions must not silently distort intended window bounds
+
+
+Constraints:
+
+
+Must use DateTimeOffset / timezone-aware backend logic
+
+
+No frontend-only derivation of preset bounds
+
+
+No hidden fallback to server local timezone
+
+
+Output:
+
+
+Full C# implementation
+
+
+Comments explaining edge-case handling and weekend/tonight semantics
+
+
+Example unit test cases
+
+
+M8-P38 — Normalize Timezone Handling Across System Layers v1.0
+Writing
+You are implementing timezone normalization for a production-grade event discovery system.
+
+
+Objective:
+Create a consistent timezone handling model across ingestion, canonical event storage, backend query resolution, and frontend display.
+
+
+Requirements:
+
+
+Define a single timezone policy for:
+
+
+event storage
+
+
+event querying
+
+
+event display
+
+
+time window resolution
+
+
+Use UTC as canonical storage time
+
+
+Preserve market timezone context for display and preset resolution
+
+
+Define frontend formatting rules aligned to backend semantics
+
+
+Define handling for events with incomplete timezone certainty during ingestion
+
+
+Deliver:
+
+
+C# timezone policy documentation in code comments and supporting types if needed
+
+
+TypeScript display model and formatting helper contract
+
+
+Backend rules for UTC storage + market timezone projection
+
+
+Frontend date formatting utility contract
+
+
+Rules for incomplete or ambiguous event time inputs
+
+
+Rules:
+
+
+Canonical event time storage must be UTC
+
+
+Public display must respect market/event timezone semantics
+
+
+Ingestion ambiguity must not be hidden behind false precision
+
+
+Frontend must not reinterpret already-normalized UTC values as raw local timestamps
+
+
+Constraints:
+
+
+No mixed storage strategy
+
+
+No dependence on browser locale as source-of-truth for event semantics
+
+
+Must align map, calendar, detail modal, and filters
+
+
+Output:
+
+
+C# supporting types and policy comments
+
+
+TypeScript interfaces/helpers
+
+
+Examples showing UTC storage and local market display conversion
+
+
+M8-P39 — Synchronize Temporal Logic Between Frontend and Backend v1.0
+Writing
+You are implementing temporal contract synchronization for a production-grade event discovery application using .NET 8 and Vue 3 + Quasar.
+
+
+Objective:
+Ensure that frontend filter state, calendar overlay state, and backend discovery queries all use the same temporal contract with no silent drift.
+
+
+Requirements:
+
+
+Define a shared contract for temporal queries:
+
+
+preset
+
+
+fromUtc
+
+
+toUtc
+
+
+marketTimezone
+
+
+referenceInstantUtc
+
+
+Align frontend filter composables to backend DTOs
+
+
+Prevent duplicate temporal rule logic across components
+
+
+Support both preset-driven and custom-range-driven queries
+
+
+Define how selected event behavior responds when temporal scope changes
+
+
+Deliver:
+
+
+C# DTO for TemporalQueryDto
+
+
+TS interface aligned to DTO
+
+
+Vue composable for temporal state
+
+
+Backend controller/query binding example
+
+
+Contract drift prevention guidance
+
+
+Example state flow for map + calendar + saved views
+
+
+Rules:
+
+
+Backend owns authoritative window resolution
+
+
+Frontend may request presets or explicit custom ranges, but must not invent separate semantics
+
+
+Contract must be usable by map feed, calendar feed, and saved-event retrieval
+
+
+Selection-reset behavior must be explicit when event leaves current time scope
+
+
+Constraints:
+
+
+No duplicated preset logic in multiple Vue components
+
+
+No hidden conversion from local display values to query values without validation
+
+
+Must be compatible with contract tests
+
+
+Output:
+
+
+Full C# DTO
+
+
+Full TS interface
+
+
+Vue composable/store code
+
+
+Comments explaining ownership boundaries and anti-drift rules
+
+
+M8-P40 — Validate Temporal Edge Cases and Boundary Conditions v1.0
+Writing
+You are implementing temporal edge-case validation and test coverage for a production-grade event discovery system.
+
+
+Objective:
+Create a deterministic validation and test layer that proves the temporal semantics engine behaves correctly at boundaries and under ambiguous conditions.
+
+
+Requirements:
+
+
+Define validation rules for:
+
+
+invalid custom ranges
+
+
+end before start
+
+
+unsupported timezone
+
+
+null preset with no explicit range
+
+
+preset + conflicting explicit range
+
+
+Create test coverage for:
+
+
+midnight rollover
+
+
+late-night “Tonight” requests
+
+
+Friday/Saturday/Sunday weekend boundaries
+
+
+DST forward shift
+
+
+DST backward shift
+
+
+cross-day event rendering
+
+
+events near query boundary edges
+
+
+Include both backend unit tests and frontend contract-awareness examples
+
+
+Deliver:
+
+
+C# validation service or helper
+
+
+Unit test matrix for temporal edge cases
+
+
+TS validation helpers where necessary
+
+
+Example contract test scenarios
+
+
+Expected pass/fail outcomes for each edge case
+
+
+Rules:
+
+
+Boundary behavior must be documented and test-backed
+
+
+Invalid ranges must fail explicitly, not self-correct silently
+
+
+Event inclusion/exclusion at boundaries must be deterministic
+
+
+DST behavior must be defined, not left to incidental library behavior alone
+
+
+Constraints:
+
+
+No fuzzy “best guess” handling for invalid input
+
+
+Keep validation logic production-readable
+
+
+Must support future regression testing
+
+
+Output:
+
+
+C# validation helpers and test scaffolds
+
+
+TS validation helpers if needed
+
+
+Clear edge-case table in comments or test names
+
+
+Comments explaining exact inclusion/exclusion rules
+
+
+Execution Order
+M8-P36 → M8-P37 → M8-P38 → M8-P39 → M8-P40
+What M8 produces
+After M8, you should have:
+
+
+canonical preset semantics
+
+
+deterministic window resolution
+
+
+unified timezone policy
+
+
+aligned frontend/backend temporal contracts
+
+
+edge-case validation and regression coverage
+
+
+What should come after M8
+The correct next move is usually one of these:
+
+
+M9 Spatial Semantics and City Modeling, if district and market semantics still drift
+
+
+M10 Ingestion Observability and Telemetry, if ingestion quality needs operational visibility
+
+
+full vertical slice wiring, if you now want the MVP path fully stitched together end-to-end
+
+
+
+
+M9 Spatial Semantics and City Modeling, if district and market semantics still drift
+
+
+Thought for a couple of seconds
+Bundle M9 — Spatial Semantics and City Modeling v1.0
+Below are production-grade, copy-paste prompts for spatial semantics and city modeling, aligned across .NET 8 backend contracts, Vue 3 + Quasar frontend filters, and the map/calendar discovery surfaces.
+
+
+M9-P41 — Define Market, District, and Neighborhood Model v1.0
+Writing
+You are implementing the spatial domain model for a production-grade event discovery system using .NET 8 on the backend and Vue 3 + Quasar on the frontend.
+
+
+Objective:
+Define a canonical spatial semantics model for market, district, and neighborhood so the entire system uses one authoritative geographic taxonomy.
+
+
+Requirements:
+
+
+Define the spatial hierarchy:
+
+
+Market
+
+
+District
+
+
+Neighborhood
+
+
+Establish canonical identifiers, display names, slugs, and parent-child relationships
+
+
+Support Houston Phase 0 as the initial market
+
+
+Define how events reference spatial entities
+
+
+Define how filters and queries use spatial entities
+
+
+Distinguish clearly between:
+
+
+user-facing labels
+
+
+canonical IDs/slugs
+
+
+internal geometry or boundary references
+
+
+Deliver:
+
+
+C# records/entities for:
+
+
+Market
+
+
+District
+
+
+Neighborhood
+
+
+TypeScript interfaces aligned to backend DTOs
+
+
+Spatial taxonomy rules and parent-child invariants
+
+
+Example seed data structure for Houston Phase 0
+
+
+Guidelines for how EventAggregate should reference spatial semantics
+
+
+Comments documenting the difference between market, district, and neighborhood semantics
+
+
+Rules:
+
+
+District and neighborhood must not be treated as freeform strings
+
+
+One event must resolve to one canonical market and zero-or-one canonical district/neighborhood records according to current confidence
+
+
+User-facing display labels must not become the source of truth
+
+
+Spatial taxonomy must be stable and versionable
+
+
+Constraints:
+
+
+No placeholder hacks such as mapping district to city name
+
+
+No raw frontend-only district lists independent of backend truth
+
+
+Must support future expansion to additional markets without breaking Houston
+
+
+Output:
+
+
+Full C# contracts/entities
+
+
+Full TypeScript interfaces
+
+
+Example Houston seed taxonomy
+
+
+Comments explaining hierarchy, IDs, slugs, and event linkage rules
+
+
+M9-P42 — Implement Geo Validation and Coordinate Integrity v1.0
+Writing
+You are implementing geospatial validation and coordinate integrity controls for a production-grade event discovery system.
+
+
+Objective:
+Ensure that event coordinates, addresses, and spatial references are valid, bounded, and safe to use in map and discovery queries.
+
+
+Requirements:
+
+
+Define canonical GeoPoint contract
+
+
+Validate latitude and longitude ranges
+
+
+Detect missing, zeroed, or obviously invalid coordinates
+
+
+Define confidence-aware location integrity rules for ingestion output
+
+
+Support validation of:
+
+
+event coordinates
+
+
+viewport coordinates
+
+
+bbox query parameters
+
+
+Distinguish:
+
+
+valid coordinate
+
+
+valid but low-confidence coordinate
+
+
+invalid coordinate
+
+
+missing coordinate
+
+
+Deliver:
+
+
+C# GeoPoint record
+
+
+IGeoValidationService interface
+
+
+GeoValidationService implementation
+
+
+Validation result contracts
+
+
+TypeScript interfaces/helpers for client-side guardrails where appropriate
+
+
+Rules for when an event may appear on map versus requiring moderation or fallback treatment
+
+
+Rules:
+
+
+Invalid coordinates must never silently render on the map
+
+
+Missing coordinates must not default to arbitrary city center
+
+
+Coordinate validation must be deterministic and explicit
+
+
+Ingestion confidence must influence downstream spatial trust
+
+
+Constraints:
+
+
+No hidden geocoding assumptions in validation stage
+
+
+No frontend-only recovery logic that bypasses backend truth
+
+
+Must be unit-testable and reusable across ingestion, API, and UI guardrails
+
+
+Output:
+
+
+Full C# implementation
+
+
+Supporting TypeScript helpers if needed
+
+
+Comments explaining integrity categories and rendering eligibility rules
+
+
+M9-P43 — Build Spatial Query Semantics and Filtering Logic v1.0
+Writing
+You are implementing canonical spatial query semantics for a production-grade event discovery application using .NET 8 and Vue 3 + Quasar.
+
+
+Objective:
+Define and implement consistent spatial filtering behavior across map feed, calendar feed, and saved discovery surfaces.
+
+
+Requirements:
+
+
+Support query dimensions:
+
+
+marketId
+
+
+districtIds
+
+
+neighborhoodIds
+
+
+bbox
+
+
+proximity-ready seam if needed
+
+
+Define how filters interact when multiple spatial dimensions are present
+
+
+Establish precedence and validation rules for:
+
+
+bbox-only queries
+
+
+market + district queries
+
+
+district + neighborhood combinations
+
+
+invalid or conflicting spatial combinations
+
+
+Ensure frontend filter state aligns exactly to backend query DTOs
+
+
+Deliver:
+
+
+C# SpatialQueryDto
+
+
+TypeScript interface aligned to DTO
+
+
+Backend validation rules for spatial query combinations
+
+
+Frontend composable/filter model for spatial filters
+
+
+Example controller/query-binding usage
+
+
+Rules for empty results, invalid filters, and conflicting filters
+
+
+Rules:
+
+
+Spatial filters must not be treated as loose strings
+
+
+Backend must own authoritative query interpretation
+
+
+Bbox queries and taxonomy filters must have explicit composition rules
+
+
+Invalid combinations must fail or normalize explicitly, not ambiguously
+
+
+Constraints:
+
+
+No duplicate filter logic spread across components
+
+
+No hidden fallback from district filter to raw text matching
+
+
+Must align map, calendar, and saved views to one spatial contract
+
+
+Output:
+
+
+Full C# DTO and validation scaffolding
+
+
+Full TypeScript interface/composable scaffold
+
+
+Comments explaining filter precedence, composition rules, and invalid query handling
+
+
+M9-P44 — Design Cluster-Ready Spatial Response Structures v1.0
+Writing
+You are implementing cluster-ready spatial response structures for a production-grade map-first event discovery system.
+
+
+Objective:
+Design backend and frontend contracts that support current event marker rendering while preserving a clean upgrade path to richer clustering and spatial aggregation.
+
+
+Requirements:
+
+
+Define spatial response structures for:
+
+
+single event marker
+
+
+grouped/cluster-ready marker envelope
+
+
+metadata for visible area summaries if needed
+
+
+Preserve canonical event identity for single-event cases
+
+
+Allow cluster response structure to coexist with current event-item rendering
+
+
+Support future server-side clustering without breaking frontend contracts
+
+
+Deliver:
+
+
+C# DTOs for:
+
+
+SpatialFeedResponseDto
+
+
+EventSpatialItemDto
+
+
+ClusterSpatialItemDto
+
+
+TypeScript interfaces aligned to DTOs
+
+
+Rules for when a response item is a cluster vs single event
+
+
+Frontend type guards / rendering helpers
+
+
+Comments documenting upgrade path from frontend clustering to server-aware clustering
+
+
+Rules:
+
+
+Cluster responses must never obscure canonical event identity for single items
+
+
+Response structures must be explicit, not polymorphic by accident
+
+
+Saved/selected state must remain interpretable under clustering
+
+
+Spatial response model must remain compatible with temporal filtering contracts
+
+
+Constraints:
+
+
+No random aggregation behavior
+
+
+No contract shape drift between frontend and backend
+
+
+Keep structures readable and testable
+
+
+Output:
+
+
+Full C# DTOs
+
+
+Full TypeScript interfaces and type guards
+
+
+Comments explaining clustering readiness, identity preservation, and response semantics
+
+
+M9-P45 — Document Houston Phase 0 Spatial Model v1.0
+Writing
+You are creating the authoritative Houston Phase 0 spatial model document for a production-grade event discovery system.
+
+
+Objective:
+Produce a single canonical specification that explains how Houston market boundaries, districts, neighborhoods, and spatial query semantics must be represented across ingestion, canonical event storage, backend APIs, and frontend discovery UI.
+
+
+Requirements:
+
+
+Document:
+
+
+Houston Phase 0 market definition
+
+
+district taxonomy
+
+
+neighborhood taxonomy policy
+
+
+event-to-spatial resolution rules
+
+
+filter/query semantics
+
+
+coordinate integrity rules
+
+
+fallback behavior for uncertain spatial assignments
+
+
+Make the document implementation-oriented, not aspirational
+
+
+Ensure the document aligns with M9-P41 through M9-P44 outputs
+
+
+Deliver:
+
+
+A pasteable markdown document named:
+WEUP_HOUSTON_PHASE0_SPATIAL_MODEL_v1.md
+
+
+Sections covering:
+
+
+purpose
+
+
+canonical entities
+
+
+IDs and slugs
+
+
+hierarchy
+
+
+query semantics
+
+
+event linkage rules
+
+
+moderation implications
+
+
+future expansion notes
+
+
+Example Houston taxonomy entries
+
+
+Example event resolution scenarios
+
+
+Spatial edge-case examples
+
+
+Rules:
+
+
+This document must be the single authority for Houston Phase 0 spatial semantics
+
+
+It must be specific enough to drive implementation and tests
+
+
+It must avoid vague “city vibes” language
+
+
+It must clearly separate canonical taxonomy from UI presentation and ingestion confidence
+
+
+Constraints:
+
+
+No speculative multi-city architecture essay
+
+
+No reliance on undocumented tribal knowledge
+
+
+Keep it implementation-ready and testable
+
+
+Output:
+
+
+Full markdown specification
+
+
+Clearly sectioned headings
+
+
+Example tables where useful
+
+
+Comments only where they materially improve implementation clarity
+
+
+Execution Order
+M9-P41 → M9-P42 → M9-P43 → M9-P44 → M9-P45
+What M9 produces
+After M9, you should have:
+
+
+canonical market/district/neighborhood taxonomy
+
+
+validated coordinate integrity rules
+
+
+aligned spatial query contracts
+
+
+cluster-ready spatial response structures
+
+
+one authoritative Houston Phase 0 spatial spec
+
+
+What should come after M9
+The next rational move is usually:
+
+
+M10 Ingestion Observability and Telemetry, if you need operational visibility before broader rollout
+
+
+M11 Promoter Incentive and Abuse Protection, if promoter submissions are entering MVP scope now
+
+
+full vertical slice wiring, if you want the MVP stack stitched end-to-end from ingest to map/calendar/save
+
+
+
+
+M10 Ingestion Observability and Telemetry, if you need operational visibility before broader rollout
+
+
+Bundle M10 — Ingestion Observability and Telemetry v1.0
+Below are production-grade, copy-paste prompts for observability across the ingestion pipeline (M1 → M2 → M3), aligned with .NET 8 + OpenTelemetry + Prometheus/Grafana, and compatible with your deterministic runtime philosophy.
+
+
+M10-P46 — Implement Ingestion Metrics and Success Tracking v1.0
+Writing
+You are implementing ingestion metrics and success tracking for a production-grade .NET 8 backend using OpenTelemetry and Prometheus.
+
+
+Objective:
+Define and emit core ingestion metrics that allow visibility into system health, throughput, and failure rates across the ingestion pipeline.
+
+
+Requirements:
+
+
+Track metrics for:
+
+
+ingestion_requests_total
+
+
+ingestion_jobs_completed_total
+
+
+ingestion_jobs_failed_total
+
+
+ingestion_success_rate (derived)
+
+
+ingestion_job_duration_ms (histogram)
+
+
+Tag metrics with:
+
+
+sourceType
+
+
+status
+
+
+market
+
+
+Integrate with OpenTelemetry Meter API
+
+
+Export metrics in Prometheus-compatible format
+
+
+Deliver:
+
+
+C# MetricsService using OpenTelemetry
+
+
+Meter + Counter + Histogram definitions
+
+
+Instrumentation hooks in:
+
+
+IngestionOrchestrator
+
+
+Example Prometheus metric output
+
+
+Documentation comments on metric meaning
+
+
+Rules:
+
+
+Metrics must be emitted at every job lifecycle transition
+
+
+Success/failure must be explicit, not inferred indirectly
+
+
+Duration must measure full ingestion pipeline, not partial steps
+
+
+No silent failures without metric emission
+
+
+Constraints:
+
+
+No reliance on logs for core metrics
+
+
+Must be lightweight and low overhead
+
+
+Must work without full distributed tracing enabled
+
+
+Output:
+
+
+Full C# implementation
+
+
+Metric definitions + usage examples
+
+
+Comments explaining metric cardinality and usage
+
+
+M10-P47 — Add OCR and Normalization Telemetry v1.0
+Writing
+You are implementing detailed telemetry for OCR and normalization stages in a production ingestion pipeline.
+
+
+Objective:
+Expose internal visibility into OCR extraction quality and normalization success rates to detect degradation early.
+
+
+Requirements:
+
+
+Track:
+
+
+ocr_extraction_success_rate
+
+
+ocr_confidence_avg
+
+
+normalization_success_rate
+
+
+field_extraction_completeness
+
+
+Emit metrics per field:
+
+
+title_extracted
+
+
+time_extracted
+
+
+venue_extracted
+
+
+Track distribution of confidence scores
+
+
+Integrate telemetry directly into:
+
+
+IOcrService implementation
+
+
+INormalizationEngine implementation
+
+
+Deliver:
+
+
+Metric definitions and instrumentation hooks
+
+
+Field-level extraction tracking model
+
+
+Histogram for confidence distribution
+
+
+Sample dashboard query definitions
+
+
+Comments explaining how to interpret signal degradation
+
+
+Rules:
+
+
+Missing fields must be tracked explicitly, not silently ignored
+
+
+Confidence must be observable at aggregate level
+
+
+OCR and normalization must not share ambiguous metrics
+
+
+Field-level metrics must align with EventCandidate structure
+
+
+Constraints:
+
+
+No sampling for MVP (capture all events)
+
+
+No log-only visibility
+
+
+Keep overhead minimal
+
+
+Output:
+
+
+Full C# instrumentation code
+
+
+Metric naming conventions
+
+
+Comments explaining operational signals and thresholds
+
+
+M10-P48 — Track Deduplication and Merge Outcomes v1.0
+Writing
+You are implementing observability for deduplication and merge outcomes in a production event ingestion system.
+
+
+Objective:
+Track how ingestion results interact with the deduplication engine to identify duplication rates, merge frequency, and ambiguity.
+
+
+Requirements:
+
+
+Track:
+
+
+dedup_assessment_total by level:
+
+
+ExactDuplicate
+
+
+ProbableDuplicate
+
+
+PossibleDuplicate
+
+
+Distinct
+
+
+merge_plans_created_total
+
+
+merge_auto_approved_total
+
+
+merge_requires_review_total
+
+
+merge_rejected_total
+
+
+Track conflict frequency by field:
+
+
+title_conflicts
+
+
+time_conflicts
+
+
+venue_conflicts
+
+
+Integrate instrumentation into:
+
+
+DeduplicationStrategy
+
+
+MergePlanner
+
+
+Deliver:
+
+
+Metric definitions for dedup + merge
+
+
+Instrumentation in M2 services
+
+
+Conflict tracking model
+
+
+Example Prometheus queries for:
+
+
+duplicate rate
+
+
+merge pressure
+
+
+Comments explaining system health signals
+
+
+Rules:
+
+
+Duplicate classification must be observable at system level
+
+
+Merge conflicts must not be hidden
+
+
+Review pressure must be measurable
+
+
+Metrics must align with moderation queue workload
+
+
+Constraints:
+
+
+No ambiguous “dedup success” metric without breakdown
+
+
+No aggregation that hides edge-case conflicts
+
+
+Must remain deterministic and reproducible
+
+
+Output:
+
+
+Full C# instrumentation
+
+
+Metric definitions
+
+
+Comments explaining interpretation and thresholds
+
+
+M10-P49 — Monitor Moderation Throughput and Backlog v1.0
+Writing
+You are implementing moderation observability for a production-grade event ingestion system.
+
+
+Objective:
+Track moderation queue health, throughput, and backlog to ensure safe publish flow does not degrade under load.
+
+
+Requirements:
+
+
+Track:
+
+
+moderation_queue_size
+
+
+moderation_items_processed_total
+
+
+moderation_items_pending_total
+
+
+moderation_processing_time_ms
+
+
+moderation_backlog_age_ms
+
+
+Track breakdown by:
+
+
+risk level
+
+
+moderation status
+
+
+Integrate instrumentation into:
+
+
+ModerationQueueService
+
+
+ModerationActionService
+
+
+Deliver:
+
+
+Metric definitions for moderation system
+
+
+Instrumentation in queue operations
+
+
+Backlog age calculation logic
+
+
+Example alert conditions:
+
+
+backlog exceeds threshold
+
+
+processing latency too high
+
+
+Comments explaining moderation system health signals
+
+
+Rules:
+
+
+Backlog must be visible at all times
+
+
+Queue depth must be measurable by risk tier
+
+
+Processing time must reflect actual reviewer or system action time
+
+
+Moderation must not become a blind spot in ingestion pipeline
+
+
+Constraints:
+
+
+No reliance on UI inspection alone
+
+
+Must support automated alerting later
+
+
+Must be efficient under high ingestion rate
+
+
+Output:
+
+
+Full C# instrumentation
+
+
+Metric definitions and tags
+
+
+Comments explaining queue health interpretation
+
+
+M10-P50 — Create Ingestion Performance Dashboard v1.0
+Writing
+You are designing the ingestion observability dashboard for a production-grade event discovery system using Prometheus and Grafana.
+
+
+Objective:
+Define a minimal but complete dashboard that gives immediate visibility into ingestion pipeline health, quality, and bottlenecks.
+
+
+Requirements:
+
+
+Dashboard must include:
+
+
+ingestion throughput
+
+
+success vs failure rate
+
+
+OCR confidence distribution
+
+
+normalization completeness
+
+
+dedup classification breakdown
+
+
+merge conflict frequency
+
+
+moderation queue size and backlog
+
+
+Provide example PromQL queries for each panel
+
+
+Define alert thresholds for:
+
+
+ingestion failure spike
+
+
+OCR degradation
+
+
+moderation backlog growth
+
+
+Keep dashboard focused on actionable signals
+
+
+Deliver:
+
+
+Dashboard panel definitions
+
+
+PromQL queries for each metric
+
+
+Alert rule examples
+
+
+Suggested layout structure
+
+
+Comments explaining how to interpret each panel
+
+
+Rules:
+
+
+Dashboard must prioritize operational clarity over aesthetics
+
+
+No vanity metrics
+
+
+Every panel must map to a real decision or action
+
+
+Must support rapid debugging of ingestion failures
+
+
+Constraints:
+
+
+No over-complex dashboards for MVP
+
+
+Must align exactly with metrics defined in M10-P46–M10-P49
+
+
+Must be usable without deep tribal knowledge
+
+
+Output:
+
+
+Full dashboard specification (markdown or JSON-style)
+
+
+PromQL queries
+
+
+Comments explaining usage and expected ranges
+
+
+Execution Order
+M10-P46 → M10-P47 → M10-P48 → M10-P49 → M10-P50
+What M10 produces
+After M10, you will have:
+
+
+full ingestion pipeline observability
+
+
+OCR + normalization quality visibility
+
+
+dedup + merge transparency
+
+
+moderation queue health tracking
+
+
+actionable dashboard + alerting baseline
+
+
+What this unlocks
+You can now:
+
+
+Run real ingestion → detect failures → improve system → iterate safely
+Without:
+
+
+guessing why ingestion fails
+
+
+silent data degradation
+
+
+moderation bottlenecks going unnoticed
+
+
+Next
+You now have two viable next moves:
+
+
+1. Production Readiness
+Release gates
+
+
+SLO enforcement
+
+
+pilot readiness
+
+
+2. System Expansion
+M11 Promoter Incentive + Abuse Protection
+
+
+full vertical slice (end-to-end user flow)
+
+
+If you want the highest leverage next step, I recommend:
+
+
+Full Vertical Slice Wiring (M1–M10 → working system)
+I can generate that as a step-by-step execution plan + repo structure + endpoints + Vue integration.
+
+
+
+
+
+
+Pasted markdown(1).md
+File
+Create a scientific hardening prompt bundle pack, only the titles based upon this hardening profile. 
+
+
+You’re missing one layer: scientific hardening ≠ feature completion.
+It’s about enforcing invariants, proofs, and failure bounds across everything you just built.
+
+
+Below are only titles, but structured as a true hardening bundle registry—not generic cleanup.
+
+
+WeUP Scientific Hardening Prompt Bundle Pack v1.0
+Bundle H1 — Deterministic System Invariants v1.0
+H1-P01 — Define Global System Invariants and Non-Negotiable Constraints v1.0
+
+
+H1-P02 — Enforce Deterministic Pipeline Execution Guarantees v1.0
+
+
+H1-P03 — Eliminate Non-Deterministic State Transitions Across All Services v1.0
+
+
+H1-P04 — Define Idempotency Contracts for All Ingestion and Mutation Paths v1.0
+
+
+H1-P05 — Validate Pure Function Boundaries Across Core Engines v1.0
+
+
+Bundle H2 — Canonical Data Integrity and Convergence v1.0
+H2-P06 — Prove Canonical Event Uniqueness Under Arbitrary Ingestion Order v1.0
+
+
+H2-P07 — Enforce EventAggregate Consistency and Version Convergence v1.0
+
+
+H2-P08 — Validate Schema Locking and Backward Compatibility Constraints v1.0
+
+
+H2-P09 — Detect and Prevent Data Drift Across DTO Boundaries v1.0
+
+
+H2-P10 — Implement Contract-Level Consistency Verification Tests v1.0
+
+
+Bundle H3 — Deduplication Stability and Mathematical Guarantees v1.0
+H3-P11 — Formalize Deduplication Scoring Function and Weight Stability v1.0
+
+
+H3-P12 — Prove Deduplication Convergence Under Noisy Input Conditions v1.0
+
+
+H3-P13 — Validate Similarity Function Monotonicity and Boundedness v1.0
+
+
+H3-P14 — Detect Degenerate Matching Cases and Collision Scenarios v1.0
+
+
+H3-P15 — Stress Test Dedup Engine Against Adversarial Input v1.0
+
+
+Bundle H4 — Confidence, Risk, and Moderation Correctness v1.0
+H4-P16 — Prove Confidence Propagation Consistency Across Pipeline v1.0
+
+
+H4-P17 — Validate Risk Function Monotonicity and Sensitivity v1.0
+
+
+H4-P18 — Enforce PublishEligibility Soundness and Completeness v1.0
+
+
+H4-P19 — Detect Risk Model Exploitation and Evasion Patterns v1.0
+
+
+H4-P20 — Validate Moderation Queue Ordering and Priority Correctness v1.0
+
+
+Bundle H5 — Provenance, Lineage, and Audit Immutability v1.0
+H5-P21 — Enforce Append-Only Provenance Model Across All Merges v1.0
+
+
+H5-P22 — Prove Lineage Graph Acyclicity and Completeness v1.0
+
+
+H5-P23 — Validate Field-Level Lineage Preservation Through Edits v1.0
+
+
+H5-P24 — Detect Provenance Corruption or Loss Conditions v1.0
+
+
+H5-P25 — Implement Full Audit Reconstruction Validation Tests v1.0
+
+
+Bundle H6 — Temporal Semantics Formal Validation v1.0
+H6-P26 — Prove Time Window Resolution Idempotency v1.0
+
+
+H6-P27 — Validate Temporal Boundary Conditions Across All Presets v1.0
+
+
+H6-P28 — Detect DST and Timezone Drift Failure Modes v1.0
+
+
+H6-P29 — Enforce Temporal Contract Consistency Across UI and API v1.0
+
+
+H6-P30 — Stress Test Temporal Engine Under Edge-Case Conditions v1.0
+
+
+Bundle H7 — Spatial Semantics and Geo Integrity Hardening v1.0
+H7-P31 — Validate Spatial Taxonomy Consistency and Hierarchy Integrity v1.0
+
+
+H7-P32 — Enforce GeoPoint Validity and Boundary Constraints v1.0
+
+
+H7-P33 — Detect Spatial Query Ambiguity and Conflict Conditions v1.0
+
+
+H7-P34 — Validate Cluster Identity Preservation Under Density v1.0
+
+
+H7-P35 — Stress Test Spatial Engine with Invalid and Adversarial Coordinates v1.0
+
+
+Bundle H8 — Pipeline Liveness and Failure Guarantees v1.0
+H8-P36 — Prove Ingestion Pipeline Liveness Under Load Conditions v1.0
+
+
+H8-P37 — Validate Failure State Coverage Across All Pipeline Stages v1.0
+
+
+H8-P38 — Enforce Retry and Backoff Correctness Without Duplication v1.0
+
+
+H8-P39 — Detect Deadlock and Starvation Scenarios in Orchestrators v1.0
+
+
+H8-P40 — Validate End-to-End Pipeline Completion Guarantees v1.0
+
+
+Bundle H9 — Observability Completeness and Signal Integrity v1.0
+H9-P41 — Prove Metric Coverage for All State Transitions v1.0
+
+
+H9-P42 — Validate Metric Cardinality and Tag Explosion Constraints v1.0
+
+
+H9-P43 — Detect Silent Failure Paths Not Reflected in Telemetry v1.0
+
+
+H9-P44 — Validate Trace-to-Metric Correlation Integrity v1.0
+
+
+H9-P45 — Stress Test Observability Under High Throughput v1.0
+
+
+Bundle H10 — Performance, Latency, and Throughput Guarantees v1.0
+H10-P46 — Define and Enforce System-Wide Latency SLOs v1.0
+
+
+H10-P47 — Validate Map and Calendar Feed Response Time Bounds v1.0
+
+
+H10-P48 — Stress Test Ingestion Throughput Under Peak Load v1.0
+
+
+H10-P49 — Detect Performance Degradation Under Data Growth v1.0
+
+
+H10-P50 — Validate Caching and Query Optimization Correctness v1.0
+
+
+Bundle H11 — Abuse Resistance and Adversarial Hardening v1.0
+H11-P51 — Model Adversarial Ingestion Attack Scenarios v1.0
+
+
+H11-P52 — Validate Rate Limiting and Throttling Effectiveness v1.0
+
+
+H11-P53 — Detect Duplicate Injection and Spam Flood Patterns v1.0
+
+
+H11-P54 — Stress Test Reputation System Under Manipulation Attempts v1.0
+
+
+H11-P55 — Validate System Stability Under Coordinated Abuse v1.0
+
+
+Bundle H12 — End-to-End System Proof and Validation v1.0
+H12-P56 — Construct Full System Correctness Proof Harness v1.0
+
+
+H12-P57 — Validate End-to-End Determinism Across All Bundles v1.0
+
+
+H12-P58 — Execute Multi-Run Consistency Verification Tests v1.0
+
+
+H12-P59 — Detect Cross-Bundle Contract Violations v1.0
+
+
+H12-P60 — Produce Scientific Readiness and Stability Report v1.0
+
+
+What This Actually Is (Critical)
+This is not “QA”.
+
+
+This is:
+
+
+Formal system validation layer
++ adversarial testing
++ mathematical constraint enforcement
++ runtime correctness guarantees
+Immediate Next Step
+Run:
+
+
+H1 → H3 → H4 → H5 → H12
+Those 5 bundles alone will expose 80% of hidden system failures before launch.
+
+
+If you want, next I can:
+
+
+Expand H1–H5 into full prompts (same style as M-bundles)
+
+
+Or build a deterministic test harness (C# + xUnit + property-based testing)
+
+
+Or generate a “go/no-go launch gate matrix” tied to these hardening bundles
+
+
+
+
+Is this MVP necessary or should I put this into the hardening spec vault? What do I need for the MVP
+
+
+Short answer: most of H1–H12 is not MVP-critical.
+If you try to execute that entire hardening pack now, you will stall the product.
+
+
+You’re mixing research-grade guarantees with market validation stage. That’s a mismatch.
+
+
+What Actually Belongs in MVP vs Vault
+❌ Move to Hardening Vault (Post-MVP)
+These are overkill right now:
+
+
+Formal proofs (H2, H3, H4, H5, H12)
+
+
+Full adversarial modeling (H11)
+
+
+System-wide mathematical guarantees
+
+
+Full observability completeness proofs (H9)
+
+
+Deep performance modeling beyond basic SLOs (H10)
+
+
+These assume:
+
+
+high traffic
+
+
+multi-market scale
+
+
+adversarial actors
+
+
+You don’t have those yet.
+
+
+✅ What You ACTUALLY Need for MVP
+You need operational correctness, not theoretical completeness.
+
+
+Minimum Hardening Set (MVP-Safe)
+H-lite Bundle (Required)
+1. Determinism (critical)
+Deterministic ingestion pipeline (no randomness)
+
+
+Idempotent ingestion (no duplicate job effects)
+
+
+Single canonical EventAggregate path
+
+
+👉 If this breaks, your entire system collapses.
+
+
+2. Dedup Stability (critical)
+Stable scoring thresholds
+
+
+No duplicate explosion
+
+
+No oscillating merge behavior
+
+
+👉 Without this, your map becomes unusable.
+
+
+3. Publish Safety (critical)
+Hard publish gate:
+
+
+required fields present
+
+
+minimum confidence
+
+
+Manual moderation fallback
+
+
+👉 This prevents garbage content going live.
+
+
+4. Temporal + Spatial Consistency (critical)
+One time window definition (M8)
+
+
+One spatial taxonomy (M9)
+
+
+👉 If these drift, UX breaks immediately.
+
+
+5. Basic Observability (critical but minimal)
+ingestion success/failure
+
+
+OCR confidence
+
+
+dedup classification
+
+
+moderation queue size
+
+
+👉 Not full dashboards—just enough to debug.
+
+
+6. Failure Handling (critical)
+Jobs fail loudly (no silent drops)
+
+
+Retry once
+
+
+Dead-letter queue
+
+
+👉 Otherwise you’ll never know what’s broken.
+
+
+What Your MVP Actually Is (Reality Check)
+Your MVP is:
+
+
+Flyer → OCR → Event → Dedup → Moderation → Map → Save
+That’s it.
+
+
+Not:
+
+
+full scientific guarantees
+
+
+not abuse-proof
+
+
+not globally consistent forever
+
+
+Correct Architecture Priority (In Order)
+Tier 1 — Must Exist Before Launch
+M1 Ingestion (working end-to-end)
+
+
+M2 Dedup (stable enough)
+
+
+M3 Moderation (basic gate)
+
+
+M5 Map (fast + usable)
+
+
+M8 Temporal (correct windows)
+
+
+M9 Spatial (Houston only)
+
+
+M7 Save (basic)
+
+
+Tier 2 — Must Exist Before Public Use
+M10 Observability (basic metrics)
+
+
+Minimal rate limiting (M11-lite)
+
+
+Failure logging + retry
+
+
+Tier 3 — Vault (Do NOT Build Yet)
+Formal proofs
+
+
+adversarial modeling
+
+
+full audit reconstruction systems
+
+
+cluster-level guarantees
+
+
+optimization layers
+
+
+Brutal Truth
+If you try to:
+
+
+Build MVP + Scientific Guarantees simultaneously
+You will:
+
+
+→ never ship
+→ over-engineer early
+→ solve problems that don’t exist yet
+What You SHOULD Do Instead
+Freeze MVP Hardening Scope to This:
+H-lite = {determinism, dedup stability, publish gate, basic observability, failure handling}
+Everything else:
+
+
+→ goes into Hardening Spec Vault
+→ only unlocked AFTER real usage
+Decision Rule (Use This)
+For every hardening item, ask:
+
+
+“If this fails, will users immediately notice?”
+YES → include in MVP
+
+
+NO → vault it
+
+
+Final Position
+Your scientific bundle is correct
+
+
+But it is phase-misaligned
+
+
+You are currently at:
+
+
+Phase: System Validation Through Reality
+Not:
+
+
+Phase: Formal System Proof
+Next Action
+Do this immediately:
+
+
+1. Freeze MVP scope (M1–M10 + H-lite)
+2. Move H1–H12 → Hardening Vault
+3. Build full vertical slice
+4. Run real ingestion on real flyers
+5. Observe failures
+6. THEN unlock hardening bundles selectively
+If you want, I can:
+
+
+Convert H-lite into exact executable prompts
+
+
+Or build a vertical slice execution plan (day-by-day build order)
+
+
+Or define your Go/No-Go MVP launch gate matrix

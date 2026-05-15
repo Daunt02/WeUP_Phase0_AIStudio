@@ -1,0 +1,681 @@
+﻿WeUP Phase 0 Feature Addition
+Promoter Profiles + Media Feed (Video + Multi-Photo Uploads)
+This is a strong Phase 0.1 extension. It moves WeUP from flyer ingestion + discovery into identity-driven promotion. That matters because users do not just follow events—they follow who consistently curates good events.
+What this feature should be
+Add a Promoter Profile system where a promoter can:
+* create a named profile
+
+* upload a profile image / banner
+
+* add multiple photos
+
+* add short-form videos
+
+* publish these into a profile feed
+
+* attach media to:
+
+   * their profile generally
+
+   * a specific event
+
+   * a venue relationship
+
+   * a recurring brand identity
+
+This gives WeUP three things immediately:
+      1. Trust layer
+
+Users begin to recognize promoters, not just random flyers.
+
+      2. Retention loop
+
+Users revisit profiles and feeds, not only one-off event pages.
+
+      3. Monetization surface
+
+Featured media, boosted profiles, premium uploads, profile analytics, verified promoter badges.
+
+________________
+
+
+Product framing
+New Phase 0 capability
+Promoter Identity Feed
+A promoter becomes a lightweight creator account with a public-facing media presence.
+Core user story
+As a promoter, I want a named profile where I can upload event photos and short videos so people can understand my vibe, trust my brand, and follow my events.
+End-user story
+As a user, I want to browse a promoter’s profile and media feed so I can decide whether their events match my taste.
+________________
+
+
+Recommended Phase 0 scope
+Keep this tight. Do not turn this into Instagram yet.
+Must-have
+         * named promoter profile
+
+         * profile avatar
+
+         * cover image / header
+
+         * bio
+
+         * social links
+
+         * photo gallery
+
+         * short video uploads
+
+         * media feed timeline
+
+         * event tagging
+
+         * profile page visible to users
+
+Should-have
+            * follow / favorite promoter
+
+            * featured media pin
+
+            * profile verification badge (manual/admin-driven)
+
+            * moderation queue for uploads
+
+            * upload limits based on account tier
+
+Not yet for Phase 0
+               * live streaming
+
+               * stories
+
+               * DMs
+
+               * public comments
+
+               * complex creator monetization
+
+               * long-form video hosting
+
+               * algorithmic recommendation engine
+
+That would bloat the MVP.
+________________
+
+
+Exact feature model
+1. Promoter Profile
+Each promoter gets a public profile.
+Fields
+                  * Id
+
+                  * DisplayName
+
+                  * Slug
+
+                  * Bio
+
+                  * ProfileImageUrl
+
+                  * BannerImageUrl
+
+                  * City
+
+                  * InstagramUrl
+
+                  * TikTokUrl
+
+                  * WebsiteUrl
+
+                  * VerificationStatus
+
+                  * IsActive
+
+                  * CreatedAt
+
+                  * UpdatedAt
+
+Notes
+                     * Slug should be unique and human-readable
+
+Example: weup.com/promoters/houston-afterdark
+
+                     * DisplayName is what users see
+
+                     * verification should be manual at first
+
+________________
+
+
+2. Media Asset
+Each uploaded piece of media is an asset.
+Fields
+                        * Id
+
+                        * PromoterProfileId
+
+                        * EventId nullable
+
+                        * VenueId nullable
+
+                        * MediaType (Photo, Video)
+
+                        * Url
+
+                        * ThumbnailUrl
+
+                        * Caption
+
+                        * AltText
+
+                        * SortOrder
+
+                        * VisibilityStatus (Draft, Published, Hidden, Flagged)
+
+                        * DurationSeconds nullable
+
+                        * Width
+
+                        * Height
+
+                        * FileSizeBytes
+
+                        * CreatedAt
+
+                        * UpdatedAt
+
+Constraints
+                           * photos: jpg, jpeg, png, webp
+
+                           * videos: mp4, mov, webm
+
+                           * max video length for Phase 0: 15–30 seconds
+
+                           * max number of images per post or batch: 5–10
+
+                           * always generate thumbnails
+
+________________
+
+
+3. Feed Post
+Do not make media itself the feed item. Make a post that can contain media.
+Fields
+                              * Id
+
+                              * PromoterProfileId
+
+                              * Title
+
+                              * Body
+
+                              * LinkedEventId nullable
+
+                              * PostType (General, EventPromo, Recap, VenueHighlight)
+
+                              * PublishedAt
+
+                              * Status (Draft, Published, Archived, Flagged)
+
+                              * CreatedAt
+
+                              * UpdatedAt
+
+Child relation
+FeedPostMedia
+                                 * FeedPostId
+
+                                 * MediaAssetId
+
+                                 * SortOrder
+
+This gives clean structure. One post can contain:
+                                    * 1 video + 4 photos
+
+                                    * 5 photos
+
+                                    * just 1 photo
+
+                                    * just 1 short promo clip
+
+________________
+
+
+UX flow
+Promoter side
+A. Create profile
+                                       * enter promoter name
+
+                                       * upload avatar
+
+                                       * upload banner
+
+                                       * write short bio
+
+                                       * add social links
+
+B. Create feed post
+                                          * select Create Post
+
+                                          * choose:
+
+                                             * General Promo
+
+                                             * Event Promo
+
+                                             * Event Recap
+
+                                             * Venue Highlight
+
+                                                * upload media
+
+                                                * add caption
+
+                                                * optionally attach to an existing event
+
+                                                * publish
+
+C. Manage media
+                                                   * reorder
+
+                                                   * delete
+
+                                                   * save draft
+
+                                                   * preview public profile
+
+                                                   * pin featured post
+
+________________
+
+
+User side
+Public promoter profile page
+Sections:
+                                                      * banner
+
+                                                      * profile image
+
+                                                      * promoter name
+
+                                                      * bio
+
+                                                      * socials
+
+                                                      * upcoming events
+
+                                                      * recent feed posts
+
+                                                      * gallery highlights
+
+Feed behavior
+A user can:
+                                                         * tap a promoter from an event card
+
+                                                         * land on promoter page
+
+                                                         * see event vibe through media
+
+                                                         * browse associated events
+
+                                                         * optionally follow or save promoter
+
+________________
+
+
+Best Phase 0 UI structure
+Public profile layout
+Hero section
+                                                            * banner
+
+                                                            * avatar
+
+                                                            * display name
+
+                                                            * short bio
+
+                                                            * verify badge if applicable
+
+                                                            * follow/save button
+
+                                                            * social icons
+
+Tabs
+                                                               * Feed
+
+                                                               * Events
+
+                                                               * Gallery
+
+Feed tab
+                                                                  * card-based vertical stream
+
+                                                                  * each card contains:
+
+                                                                     * title
+
+                                                                     * caption
+
+                                                                     * media carousel or inline video
+
+                                                                     * linked event chip
+
+                                                                     * date
+
+Events tab
+                                                                        * promoter’s upcoming and past events
+
+Gallery tab
+                                                                           * media grid only
+
+________________
+
+
+Admin and moderation requirements
+This is necessary immediately if users upload video.
+Moderation rules
+                                                                              * every upload should pass through:
+
+                                                                                 * file type validation
+
+                                                                                 * size validation
+
+                                                                                 * duration validation for video
+
+                                                                                 * virus/malware scan if available
+
+                                                                                 * basic content moderation queue
+
+                                                                                    * flagged uploads should become invisible until reviewed
+
+Admin capabilities
+                                                                                       * suspend promoter profile
+
+                                                                                       * hide media
+
+                                                                                       * approve verification
+
+                                                                                       * pin featured profiles
+
+                                                                                       * remove abusive content
+
+________________
+
+
+Storage and backend design
+Storage
+Use object storage for media:
+                                                                                          * Supabase Storage
+
+                                                                                          * Cloudinary
+
+                                                                                          * Firebase Storage
+
+                                                                                          * S3-compatible bucket
+
+For Phase 0, Cloudinary or Supabase Storage is practical.
+Video handling
+Do not serve raw uploads directly without transformation if avoidable.
+You need:
+                                                                                             * compression/transcoding
+
+                                                                                             * thumbnail generation
+
+                                                                                             * max duration enforcement
+
+                                                                                             * mobile-friendly playback
+
+For Phase 0, Cloudinary is the easiest path because it handles:
+                                                                                                * image optimization
+
+                                                                                                * video delivery
+
+                                                                                                * transformations
+
+                                                                                                * thumbnails
+
+________________
+
+
+Suggested API surface
+Promoter profile endpoints
+                                                                                                   * POST /api/promoters
+
+                                                                                                   * GET /api/promoters/{slug}
+
+                                                                                                   * PUT /api/promoters/{id}
+
+                                                                                                   * GET /api/promoters/{id}/events
+
+                                                                                                   * GET /api/promoters/{id}/feed
+
+Feed endpoints
+                                                                                                      * POST /api/promoter-feed
+
+                                                                                                      * PUT /api/promoter-feed/{id}
+
+                                                                                                      * DELETE /api/promoter-feed/{id}
+
+                                                                                                      * GET /api/promoter-feed/{id}
+
+Media endpoints
+                                                                                                         * POST /api/media/upload
+
+                                                                                                         * POST /api/media/attach-to-post
+
+                                                                                                         * DELETE /api/media/{id}
+
+                                                                                                         * PUT /api/media/{id}/sort-order
+
+Admin endpoints
+                                                                                                            * POST /api/admin/promoters/{id}/verify
+
+                                                                                                            * POST /api/admin/media/{id}/hide
+
+                                                                                                            * POST /api/admin/media/{id}/flag
+
+                                                                                                            * POST /api/admin/promoters/{id}/suspend
+
+________________
+
+
+Database additions
+Tables
+                                                                                                               * PromoterProfiles
+
+                                                                                                               * FeedPosts
+
+                                                                                                               * MediaAssets
+
+                                                                                                               * FeedPostMedia
+
+                                                                                                               * PromoterFollowers optional
+
+                                                                                                               * PromoterVerificationRequests optional
+
+                                                                                                               * MediaModerationLogs
+
+Key relationships
+                                                                                                                  * one promoter → many feed posts
+
+                                                                                                                  * one promoter → many media assets
+
+                                                                                                                  * one feed post → many media assets
+
+                                                                                                                  * one event → many feed posts
+
+                                                                                                                  * one promoter → many events
+
+________________
+
+
+Monetization paths unlocked
+This feature is commercially useful fast.
+Immediate monetization options
+                                                                                                                     * paid verified promoter profile
+
+                                                                                                                     * featured promoter placement
+
+                                                                                                                     * paid video flyer slot
+
+                                                                                                                     * premium media upload limits
+
+                                                                                                                     * analytics dashboard for promoters
+
+                                                                                                                     * “top promoter in area” sponsored ranking
+
+Example tiering
+Free
+                                                                                                                        * 1 profile
+
+                                                                                                                        * 3 posts/month
+
+                                                                                                                        * 5 photos/post
+
+                                                                                                                        * 1 short video/week
+
+Pro
+                                                                                                                           * unlimited posts
+
+                                                                                                                           * more media per post
+
+                                                                                                                           * featured profile tools
+
+                                                                                                                           * analytics
+
+                                                                                                                           * custom banner
+
+                                                                                                                           * profile badge request
+
+Boost
+                                                                                                                              * pay per featured post
+
+                                                                                                                              * pay per boosted event linked to profile
+
+________________
+
+
+Why this is strategically important
+Without promoter profiles, WeUP remains mostly a flyer utility.
+With promoter profiles and media feeds, WeUP becomes:
+                                                                                                                                 * a local nightlife identity layer
+
+                                                                                                                                 * a trust + taste graph
+
+                                                                                                                                 * a creator/promoter marketplace seed
+
+                                                                                                                                 * a stronger foundation for later:
+
+                                                                                                                                    * ticketing
+
+                                                                                                                                    * influencer campaigns
+
+                                                                                                                                    * brand partnerships
+
+                                                                                                                                    * venue-promoter relationship graphs
+
+That is a materially better business.
+________________
+
+
+Recommended implementation order
+Sprint order
+Sprint A — data + storage
+                                                                                                                                       * create promoter profile schema
+
+                                                                                                                                       * create feed post schema
+
+                                                                                                                                       * create media asset schema
+
+                                                                                                                                       * set up storage bucket/provider
+
+                                                                                                                                       * enforce file validation
+
+Sprint B — promoter profile UI
+                                                                                                                                          * create/edit promoter profile page
+
+                                                                                                                                          * public promoter page
+
+                                                                                                                                          * feed tab
+
+                                                                                                                                          * gallery tab
+
+Sprint C — upload workflow
+                                                                                                                                             * multi-photo upload
+
+                                                                                                                                             * short video upload
+
+                                                                                                                                             * thumbnail generation
+
+                                                                                                                                             * progress indicators
+
+                                                                                                                                             * publish flow
+
+Sprint D — moderation + monetization hooks
+                                                                                                                                                * admin review tools
+
+                                                                                                                                                * verification status
+
+                                                                                                                                                * featured promoter flag
+
+                                                                                                                                                * upload quotas by plan
+
+________________
+
+
+Concrete Phase 0 guardrails
+To avoid feature sprawl, I would lock these rules:
+                                                                                                                                                   * max 30 sec video
+
+                                                                                                                                                   * max 10 media items per post
+
+                                                                                                                                                   * no public comments
+
+                                                                                                                                                   * no messaging
+
+                                                                                                                                                   * no livestreaming
+
+                                                                                                                                                   * no editing after publish beyond caption/media order
+
+                                                                                                                                                   * one promoter profile per account at first
+
+                                                                                                                                                   * manual verification only
+
+That keeps the implementation realistic.
+________________
+
+
+The clean product language for this feature
+Use this framing internally:
+Feature Name: Promoter Profiles & Media Feed
+Goal: Give promoters a branded identity surface where they can publish short videos and photo sets tied to their events, venues, and community presence.
+Business Outcome: Increase trust, return visits, promoter adoption, and premium monetization opportunities.
+________________
+
+
+My blunt assessment
+This is a good addition.
+It is one of the better next moves for WeUP Phase 0 because it improves:
+                                                                                                                                                      * content richness
+
+                                                                                                                                                      * promoter stickiness
+
+                                                                                                                                                      * social proof
+
+                                                                                                                                                      * monetization readiness
+
+But it should be implemented as a controlled profile + feed system, not as a full social network.
+If you want, I can turn this into a full WeUP Phase 0.2 PRD with:
+                                                                                                                                                         * schema tables
+
+                                                                                                                                                         * API contracts
+
+                                                                                                                                                         * Vue component map
+
+                                                                                                                                                         * uploader flow
+
+                                                                                                                                                         * admin moderation flow
+
+                                                                                                                                                         * monetization hooks
+
+                                                                                                                                                         * Copilot build prompts

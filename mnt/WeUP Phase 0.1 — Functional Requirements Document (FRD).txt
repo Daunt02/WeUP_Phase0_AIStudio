@@ -1,0 +1,667 @@
+﻿WeUP Phase 0.1 — Functional Requirements Document (FRD)
+Feature: Promoter Profiles + Media Feed (Photos + Short Video)
+System Context: WeUP Phase 0 (Flyer ingestion + Map + Calendar)
+________________
+
+
+0. Document Purpose
+This FRD defines the functional behavior, system interactions, data flows, constraints, and validation logic for implementing:
+Promoter Profiles + Media Feed System
+This document is implementation-aligned and intended for:
+* Backend engineers (.NET / EF Core / gRPC)
+
+* Frontend engineers (Vue 3 + Quasar)
+
+* AI/automation layer (Autogen / Crawl4AI)
+
+* QA and system validation
+
+________________
+
+
+1. System Overview
+1.1 Functional Scope
+The system introduces:
+   * Promoter identity layer
+
+   * Media ingestion (photo + short video)
+
+   * Feed-based publishing model
+
+   * Event-media association
+
+   * Moderation + validation layer
+
+________________
+
+
+1.2 Functional Boundary
+Included
+	Excluded
+	Profile creation
+	Messaging
+	Media upload
+	Comments
+	Feed posts
+	Likes/reactions
+	Event linking
+	Live streaming
+	Public profile view
+	Recommendation engine
+	________________
+
+
+2. Functional Modules
+________________
+
+
+2.1 Promoter Profile Management
+FR-1: Create Promoter Profile
+Description
+System shall allow authenticated users to create a promoter profile.
+Inputs
+      * DisplayName (required)
+
+      * Bio (optional)
+
+      * Profile Image (optional)
+
+      * Banner Image (optional)
+
+      * Social links (optional)
+
+Processing
+         * Generate unique Slug
+
+         * Store profile in DB
+
+         * Validate image formats
+
+Output
+            * Profile created
+
+            * Accessible via /promoters/{slug}
+
+________________
+
+
+FR-2: Update Promoter Profile
+Behavior
+               * User can update:
+
+                  * Bio
+
+                  * Images
+
+                  * Social links
+
+Constraints
+                     * Slug cannot be modified
+
+                     * Changes reflect immediately
+
+________________
+
+
+FR-3: Retrieve Promoter Profile
+Behavior
+System returns:
+                        * Profile metadata
+
+                        * Feed posts
+
+                        * Associated events
+
+________________
+
+
+FR-4: Verification Status
+Behavior
+                           * Admin can set:
+
+                              * Pending
+
+                              * Verified
+
+                              * Rejected
+
+UI Effect
+                                 * Verified badge visible
+
+________________
+
+
+2.2 Media Upload System
+FR-5: Upload Media
+Description
+Promoter uploads media to system.
+Inputs
+                                    * File (image/video)
+
+                                    * Caption (optional)
+
+Validation Rules
+                                       * File type must be allowed
+
+                                       * File size must be within limits
+
+                                       * Video duration ≤ 30 seconds
+
+Processing
+                                          * Upload to storage provider
+
+                                          * Generate thumbnail
+
+                                          * Store metadata
+
+Output
+                                             * MediaAsset created
+
+________________
+
+
+FR-6: Media Constraints
+Type
+	Limit
+	Images per post
+	≤ 10
+	Video length
+	≤ 30 sec
+	Max file size
+	configurable
+	________________
+
+
+FR-7: Media Status Handling
+States
+                                                * Draft
+
+                                                * Published
+
+                                                * Flagged
+
+                                                * Hidden
+
+Behavior
+                                                   * Flagged media is not visible publicly
+
+                                                   * Admin can override visibility
+
+________________
+
+
+2.3 Feed Post System
+FR-8: Create Feed Post
+Inputs
+                                                      * Title (optional)
+
+                                                      * Body (optional)
+
+                                                      * MediaAssets (required ≥1)
+
+                                                      * PostType
+
+                                                      * LinkedEventId (optional)
+
+Processing
+                                                         * Validate media count
+
+                                                         * Associate media with post
+
+                                                         * Persist post
+
+Output
+                                                            * FeedPost created
+
+________________
+
+
+FR-9: Publish Feed Post
+Behavior
+                                                               * Post becomes visible
+
+                                                               * Timestamp assigned
+
+                                                               * Appears in:
+
+                                                                  * Promoter profile feed
+
+                                                                  * Event page (if linked)
+
+________________
+
+
+FR-10: Edit Feed Post
+Behavior
+                                                                     * Allowed only before publish OR limited edits after publish:
+
+                                                                        * caption
+
+                                                                        * media order
+
+________________
+
+
+FR-11: Delete Feed Post
+Behavior
+                                                                           * Soft delete
+
+                                                                           * Media remains stored but hidden
+
+________________
+
+
+2.4 Event Integration
+FR-12: Link Post to Event
+Behavior
+                                                                              * Promoter selects event during post creation
+
+                                                                              * System validates event exists
+
+Output
+                                                                                 * Post appears on:
+
+                                                                                    * Promoter feed
+
+                                                                                    * Event detail page
+
+________________
+
+
+FR-13: Event Page Media Display
+Behavior
+                                                                                       * Event page shows:
+
+                                                                                          * Associated promoter posts
+
+                                                                                          * Media preview section
+
+________________
+
+
+2.5 Public Profile Experience
+FR-14: View Promoter Profile
+Components
+                                                                                             * Header
+
+                                                                                             * Feed
+
+                                                                                             * Events
+
+                                                                                             * Gallery
+
+________________
+
+
+FR-15: Feed Rendering
+Behavior
+                                                                                                * Chronological order
+
+                                                                                                * Media-first rendering
+
+                                                                                                * Supports:
+
+                                                                                                   * carousel (images)
+
+                                                                                                   * inline video playback
+
+________________
+
+
+FR-16: Gallery Rendering
+Behavior
+                                                                                                      * Grid layout
+
+                                                                                                      * Lazy loading
+
+                                                                                                      * Click-to-expand modal
+
+________________
+
+
+2.6 Upload Workflow
+FR-17: Multi-Upload Support
+Behavior
+                                                                                                         * User can upload multiple files simultaneously
+
+                                                                                                         * System queues uploads
+
+________________
+
+
+FR-18: Upload Progress Tracking
+Behavior
+                                                                                                            * UI displays progress
+
+                                                                                                            * Errors surfaced immediately
+
+________________
+
+
+FR-19: Thumbnail Generation
+Behavior
+                                                                                                               * System generates:
+
+                                                                                                                  * image thumbnails
+
+                                                                                                                  * video preview frames
+
+________________
+
+
+2.7 Moderation System
+FR-20: Media Validation
+Behavior
+System shall validate:
+                                                                                                                     * file type
+
+                                                                                                                     * size
+
+                                                                                                                     * duration
+
+________________
+
+
+FR-21: Flagging Mechanism
+Behavior
+                                                                                                                        * Media can be flagged by:
+
+                                                                                                                           * system
+
+                                                                                                                           * admin
+
+________________
+
+
+FR-22: Admin Moderation
+Admin Actions
+                                                                                                                              * hide media
+
+                                                                                                                              * remove media
+
+                                                                                                                              * suspend promoter
+
+                                                                                                                              * verify promoter
+
+________________
+
+
+2.8 Monetization Hooks
+FR-23: Featured Promoter
+Behavior
+                                                                                                                                 * Admin can mark promoter as featured
+
+                                                                                                                                 * UI highlights promoter
+
+________________
+
+
+FR-24: Boosted Post
+Behavior
+                                                                                                                                    * Posts can be flagged as promoted
+
+                                                                                                                                    * Higher visibility placement (future)
+
+________________
+
+
+2.9 Storage & Media Delivery
+FR-25: Media Storage
+Requirements
+                                                                                                                                       * All uploads stored in object storage
+
+                                                                                                                                       * URLs stored in DB
+
+________________
+
+
+FR-26: CDN Delivery
+Behavior
+                                                                                                                                          * Media served via CDN
+
+                                                                                                                                          * Optimized formats returned
+
+________________
+
+
+2.10 API Functional Requirements
+FR-27: Promoter APIs
+                                                                                                                                             * Create promoter
+
+                                                                                                                                             * Update promoter
+
+                                                                                                                                             * Get promoter by slug
+
+                                                                                                                                             * Get promoter feed
+
+________________
+
+
+FR-28: Feed APIs
+                                                                                                                                                * Create post
+
+                                                                                                                                                * Update post
+
+                                                                                                                                                * Delete post
+
+                                                                                                                                                * Retrieve post
+
+________________
+
+
+FR-29: Media APIs
+                                                                                                                                                   * Upload media
+
+                                                                                                                                                   * Attach media to post
+
+                                                                                                                                                   * Delete media
+
+________________
+
+
+FR-30: Admin APIs
+                                                                                                                                                      * Verify promoter
+
+                                                                                                                                                      * Flag media
+
+                                                                                                                                                      * Suspend promoter
+
+________________
+
+
+2.11 Error Handling
+FR-31: Upload Errors
+Cases
+                                                                                                                                                         * invalid format
+
+                                                                                                                                                         * size exceeded
+
+                                                                                                                                                         * upload failure
+
+Behavior
+                                                                                                                                                            * return error code
+
+                                                                                                                                                            * display UI feedback
+
+________________
+
+
+FR-32: Validation Errors
+Behavior
+                                                                                                                                                               * block submission
+
+                                                                                                                                                               * show inline validation messages
+
+________________
+
+
+2.12 Performance Requirements
+FR-33: Upload Performance
+                                                                                                                                                                  * Upload initiation ≤ 2 seconds
+
+                                                                                                                                                                  * Processing (thumbnail) ≤ 5 seconds
+
+________________
+
+
+FR-34: Feed Load Time
+                                                                                                                                                                     * First content render ≤ 2 seconds
+
+                                                                                                                                                                     * Lazy load additional media
+
+________________
+
+
+2.13 Security Requirements
+FR-35: Authentication
+                                                                                                                                                                        * Only authenticated users can:
+
+                                                                                                                                                                           * create profiles
+
+                                                                                                                                                                           * upload media
+
+                                                                                                                                                                           * create posts
+
+________________
+
+
+FR-36: Authorization
+                                                                                                                                                                              * Users can only modify:
+
+                                                                                                                                                                                 * their own profiles
+
+                                                                                                                                                                                 * their own media
+
+________________
+
+
+FR-37: File Security
+                                                                                                                                                                                    * Validate MIME types
+
+                                                                                                                                                                                    * Reject malicious uploads
+
+________________
+
+
+2.14 Data Integrity
+FR-38: Referential Integrity
+                                                                                                                                                                                       * Media must belong to a valid promoter
+
+                                                                                                                                                                                       * Posts must reference valid media
+
+________________
+
+
+FR-39: Soft Deletes
+                                                                                                                                                                                          * Posts and media not physically deleted immediately
+
+________________
+
+
+2.15 Logging & Observability
+FR-40: Upload Logs
+                                                                                                                                                                                             * track:
+
+                                                                                                                                                                                                * user id
+
+                                                                                                                                                                                                * file type
+
+                                                                                                                                                                                                * upload status
+
+________________
+
+
+FR-41: Moderation Logs
+                                                                                                                                                                                                   * track:
+
+                                                                                                                                                                                                      * action type
+
+                                                                                                                                                                                                      * admin id
+
+                                                                                                                                                                                                      * timestamp
+
+________________
+
+
+2.16 Acceptance Criteria
+Profile
+                                                                                                                                                                                                         * user can create profile
+
+                                                                                                                                                                                                         * profile accessible via slug
+
+Media
+                                                                                                                                                                                                            * upload photo + video
+
+                                                                                                                                                                                                            * validation enforced
+
+Feed
+                                                                                                                                                                                                               * create post with media
+
+                                                                                                                                                                                                               * visible in feed
+
+Event
+                                                                                                                                                                                                                  * post linked to event displays correctly
+
+Moderation
+                                                                                                                                                                                                                     * flagged media hidden
+
+________________
+
+
+2.17 Edge Cases
+                                                                                                                                                                                                                        * uploading large video → rejected
+
+                                                                                                                                                                                                                        * deleting media attached to post → handled gracefully
+
+                                                                                                                                                                                                                        * linking invalid event → blocked
+
+                                                                                                                                                                                                                        * duplicate slug → rejected
+
+________________
+
+
+2.18 Future Extension Hooks
+                                                                                                                                                                                                                           * follower system
+
+                                                                                                                                                                                                                           * analytics dashboard
+
+                                                                                                                                                                                                                           * AI-generated captions (Autogen)
+
+                                                                                                                                                                                                                           * Crawl4AI ingestion into promoter feed
+
+                                                                                                                                                                                                                           * recommendation engine
+
+________________
+
+
+Final Functional Position
+This FRD defines a controlled, high-signal media layer that:
+                                                                                                                                                                                                                              * upgrades WeUP from static listings → dynamic identity system
+
+                                                                                                                                                                                                                              * maintains strict boundaries to prevent product bloat
+
+                                                                                                                                                                                                                              * creates a foundation for:
+
+                                                                                                                                                                                                                                 * monetization
+
+                                                                                                                                                                                                                                 * promoter ecosystems
+
+                                                                                                                                                                                                                                 * AI-driven content ingestion
+
+________________
+
+
+Next Step (Recommended)
+If you want to move this into execution cleanly:
+I can generate:
+                                                                                                                                                                                                                                    * TRD (Technical Requirements Document)
+
+                                                                                                                                                                                                                                    * Full .NET 8 backend implementation
+
+                                                                                                                                                                                                                                    * Vue/Quasar component scaffolding
+
+                                                                                                                                                                                                                                    * Cloudinary integration service
+
+                                                                                                                                                                                                                                    * Autogen agent to auto-populate promoter feeds
+
+Just specify the layer you want next.

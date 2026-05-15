@@ -1,0 +1,419 @@
+﻿WeUP Phase 0 — Product Requirements Document (PRD)
+Product: WeUP (Event Discovery + Cultural Radar)
+Phase: 0 (MVP)
+Positioning: Real-time nightlife discovery via flyer ingestion, OCR, parsing, and geospatial visualization
+________________
+
+
+0. Executive Summary
+Objective
+Build a zero-friction event discovery system that transforms raw flyers into structured, searchable, map-based experiences.
+Core Insight
+Users do not want to “search for events.”
+They want to see what’s happening right now around them.
+Solution
+WeUP Phase 0 ingests:
+* flyer images
+* social media posts
+* manual uploads
+Then converts them into:
+* structured event data
+* map-based visualization
+* time-aware calendar system
+________________
+
+
+1. Product Vision
+What WeUP is
+A live cultural radar for nightlife:
+* real-time
+* location-aware
+* visually intuitive
+What WeUP is NOT (Phase 0)
+* not a ticketing platform
+* not a social network
+* not an influencer system (yet)
+________________
+
+
+2. Goals & Non-Goals
+2.1 Goals
+* ingest event flyers
+* extract structured data via OCR + parsing
+* display events on a map
+* provide time-based filtering
+* allow event saving/bookmarking
+* deliver a single-screen, no-scroll UI
+________________
+
+
+2.2 Non-Goals
+* no user-generated event editing (beyond upload)
+* no promoter profiles (Phase 0.1)
+* no ticket purchasing
+* no messaging or comments
+* no complex recommendation engine
+________________
+
+
+3. Core User Personas
+3.1 Explorer (Primary)
+* wants to find something to do quickly
+* prefers visual discovery over search
+3.2 Promoter (Secondary)
+* uploads flyers for visibility
+* not yet identity-driven (Phase 0.1)
+3.3 Admin
+* moderates content
+* ensures data quality
+________________
+
+
+4. Core User Stories
+Explorer
+* “Show me what’s happening tonight near me”
+* “Let me filter events by time”
+* “Let me quickly scan vibes”
+Promoter
+* “I want to upload a flyer and have it show up instantly”
+________________
+
+
+5. Core Features
+________________
+
+
+5.1 Flyer Upload System
+Description
+Users upload flyer images.
+Inputs
+* image file
+* optional metadata (title override)
+Behavior
+* store image
+* trigger OCR pipeline
+* extract text
+________________
+
+
+5.2 OCR + Parsing Engine
+Description
+Convert raw flyer into structured event data.
+Extracted Fields
+* event name
+* date
+* time
+* venue name
+* address
+* performers (optional)
+Pipeline
+Upload → OCR → Text Extraction → NLP Parsing → Structured Event
+
+
+________________
+
+
+5.3 Event Data Model
+{
+  "id": "guid",
+  "title": "string",
+  "date": "datetime",
+  "startTime": "time",
+  "endTime": "time",
+  "venueName": "string",
+  "address": "string",
+  "latitude": "float",
+  "longitude": "float",
+  "sourceImageUrl": "string",
+  "createdAt": "datetime"
+}
+
+
+________________
+
+
+5.4 Map-Based Discovery
+Description
+Primary UI surface.
+Features
+* events plotted as markers
+* clustering at zoom levels
+* click → event preview
+________________
+
+
+Interaction
+* pan
+* zoom
+* tap marker → open modal
+________________
+
+
+5.5 Time Slider
+Description
+Filter events by time window.
+Behavior
+* horizontal slider
+* updates map in real-time
+* filters:
+   * current events
+   * upcoming events
+________________
+
+
+5.6 Event Modal
+Description
+Overlay card for event details.
+Fields
+* event name
+* date/time
+* venue
+* flyer image
+* save button
+________________
+
+
+5.7 Calendar View
+Description
+Alternative visualization.
+Requirements
+* masonry layout (not linear list)
+* modal-based expansion
+* grouped by day
+________________
+
+
+5.8 Save / Bookmark System
+Behavior
+* user can save event
+* stored locally or in account
+* accessible via “Saved” view
+________________
+
+
+5.9 Admin Moderation
+Capabilities
+* delete event
+* edit parsed data
+* flag incorrect OCR
+________________
+
+
+6. UX Requirements
+________________
+
+
+6.1 Core Principle
+Single-screen, no-scroll UI
+Everything must:
+* exist in one viewport
+* use overlays/modals
+* avoid vertical scroll
+________________
+
+
+6.2 Layout Structure
+Base Layer
+* full-screen map
+Overlay Layers
+* event modal
+* calendar modal
+* upload modal
+* saved events modal
+________________
+
+
+6.3 Navigation Model
+* no page reloads
+* SPA only
+* overlay-driven navigation
+________________
+
+
+7. System Architecture
+________________
+
+
+7.1 High-Level
+Frontend (Vue + Quasar)
+        |
+API (.NET Core)
+        |
+Services:
+- OCR Service
+- Event Parser
+- Event API
+        |
+Database (Postgres)
+        |
+Storage (Images)
+
+
+________________
+
+
+7.2 Services
+Service
+	Role
+	Upload Service
+	handles file intake
+	OCR Service
+	text extraction
+	Parser Service
+	structure extraction
+	Event Service
+	CRUD
+	Map Service
+	geolocation
+	________________
+
+
+8. AI / OCR Pipeline
+________________
+
+
+8.1 OCR Options
+* Tesseract (baseline)
+* Azure Vision (recommended)
+* Google Vision (optional)
+________________
+
+
+8.2 Parsing
+* rule-based extraction (Phase 0)
+* regex + heuristics
+________________
+
+
+8.3 Future (Phase 1+)
+* LLM-assisted parsing
+* semantic understanding
+________________
+
+
+9. API Design
+________________
+
+
+Event API
+POST /api/events/upload
+GET  /api/events
+GET  /api/events/{id}
+DELETE /api/events/{id}
+
+
+________________
+
+
+OCR API
+POST /api/ocr/process
+
+
+________________
+
+
+10. Performance Requirements
+Metric
+	Target
+	OCR processing
+	< 5 sec
+	map load
+	< 2 sec
+	event modal open
+	< 300ms
+	________________
+
+
+11. Constraints
+* must support mobile-first
+* must function in low bandwidth
+* must not exceed single-screen paradigm
+________________
+
+
+12. Risks
+Technical
+* OCR inaccuracies
+* parsing errors
+* geolocation mismatches
+UX
+* cluttered UI
+* confusing navigation
+________________
+
+
+Mitigation
+* admin editing tools
+* simple parsing fallback
+* strong visual hierarchy
+________________
+
+
+13. Success Metrics
+Engagement
+* events viewed per session
+* map interaction frequency
+Ingestion
+* flyers uploaded per day
+Retention
+* repeat usage rate
+________________
+
+
+14. Monetization (Phase 0 Soft)
+* paid flyer priority
+* featured placement on map
+* premium ingestion slots
+________________
+
+
+15. Roadmap Context
+Phase
+	Focus
+	Phase 0
+	ingestion + discovery
+	Phase 0.1
+	promoter identity + media
+	Phase 1
+	ticketing + monetization
+	Phase 2
+	social + network effects
+	________________
+
+
+16. Acceptance Criteria
+* user uploads flyer → event created
+* OCR extracts usable data
+* event appears on map
+* time slider filters correctly
+* modal displays correct data
+* calendar view functional
+* save system works
+________________
+
+
+Final Product Position
+Phase 0 establishes:
+* data ingestion engine
+* visual discovery layer
+* real-time cultural interface
+It is intentionally narrow but high leverage.
+________________
+
+
+Strategic Reality
+If Phase 0 works:
+* you control event data ingestion
+* you become the first touchpoint of nightlife discovery
+* everything else (profiles, tickets, monetization) layers on top cleanly
+________________
+
+
+Next Step
+If you want to move forward cleanly:
+I can generate:
+* Phase 0 TRD (deep infra + OCR pipeline code)
+* Full OCR + parser implementation (C# + Python hybrid)
+* Vue UI full implementation (map + overlays)
+* Houston-specific ingestion strategy + scraping agents
+Specify direction.

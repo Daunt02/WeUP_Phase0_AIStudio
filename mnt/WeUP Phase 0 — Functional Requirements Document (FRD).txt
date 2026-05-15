@@ -1,0 +1,744 @@
+﻿WeUP Phase 0 — Functional Requirements Document (FRD)
+Product: WeUP
+Phase: 0
+Scope: Flyer ingestion, OCR extraction, event parsing, geospatial discovery, calendar visualization, save/bookmarking, and admin review
+________________
+
+
+0. Purpose
+This FRD defines the functional behavior of WeUP Phase 0.
+Phase 0 is the event-ingestion and discovery layer of WeUP. Its job is to convert flyer uploads into structured event records and present them through a map-first, time-aware interface.
+This document is intended for:
+* product
+* frontend engineering
+* backend engineering
+* QA
+* operations
+* admin tooling design
+________________
+
+
+1. Functional Scope
+WeUP Phase 0 includes the following functional areas:
+1. flyer upload
+2. OCR processing
+3. event parsing and normalization
+4. geocoding
+5. event record creation
+6. map-based event discovery
+7. time filtering
+8. calendar view
+9. event detail modal
+10. save/bookmarking
+11. admin moderation and correction
+________________
+
+
+2. Functional Boundary
+Included
+* image-based flyer uploads
+* OCR extraction from flyer text
+* parsed event records
+* map rendering of events
+* calendar rendering of events
+* saved events
+* admin review queue for low-confidence parses
+Excluded
+* promoter profiles
+* promoter media feeds
+* comments
+* messaging
+* ticket sales
+* social graph
+* full recommendation engine
+* long-form user-generated content
+Those begin later, especially in Phase 0.1 and beyond.
+________________
+
+
+3. User Roles
+3.1 Explorer
+Primary user. Wants to find events visually and quickly.
+3.2 Uploader
+A user who uploads flyers for ingestion.
+3.3 Admin
+A moderator/operator who reviews failed or low-confidence event candidates.
+________________
+
+
+4. Functional Modules
+________________
+
+
+4.1 Flyer Upload
+FR-001 — Upload Flyer Image
+Description
+The system shall allow an authenticated user to upload a flyer image for event ingestion.
+Inputs
+* image file
+* optional upload source metadata
+Accepted file types
+* JPG / JPEG
+* PNG
+* WEBP
+Validation
+* file must not be empty
+* file must be within max file size
+* MIME type must be allowed
+Expected result
+* upload is stored
+* upload record is created
+* OCR job is queued
+* user receives accepted/pending response
+________________
+
+
+FR-002 — Reject Invalid Uploads
+Description
+The system shall reject unsupported or invalid uploads.
+Failure cases
+* unsupported MIME type
+* empty file
+* oversized file
+* malformed upload payload
+Expected result
+* upload not persisted
+* user receives validation error
+________________
+
+
+FR-003 — Persist Upload Metadata
+Description
+The system shall persist upload metadata for each accepted flyer.
+Stored metadata
+* upload id
+* original filename
+* storage key
+* MIME type
+* file size
+* uploader id
+* timestamp
+* upload source type
+________________
+
+
+4.2 OCR Processing
+FR-004 — Queue OCR Job
+Description
+The system shall create an OCR-processing job after a flyer upload is accepted.
+Expected result
+* upload transitions to OCR queued state
+________________
+
+
+FR-005 — Extract Raw Text from Flyer
+Description
+The OCR subsystem shall extract text from the uploaded flyer image.
+Outputs
+* raw extracted text
+* OCR confidence score if available
+* OCR engine identifier
+________________
+
+
+FR-006 — Persist OCR Output
+Description
+The system shall store OCR output for later parsing and admin review.
+Stored output
+* upload id
+* raw OCR text
+* OCR confidence
+* engine name
+* structured OCR payload if available
+________________
+
+
+FR-007 — Handle OCR Failure
+Description
+The system shall mark an upload as failed or review-required when OCR produces no usable result.
+Failure cases
+* OCR engine error
+* empty OCR output
+* unreadable flyer
+* timeout
+Expected result
+* upload moves to failed or review-needed state
+* failure reason is logged
+________________
+
+
+4.3 Parsing and Normalization
+FR-008 — Parse Event Candidate from OCR Text
+Description
+The parser shall attempt to derive structured event data from OCR text.
+Target fields
+* title
+* event date
+* start time
+* end time if present
+* venue name
+* raw address
+* optional performers or supporting text
+________________
+
+
+FR-009 — Normalize Parsed Date
+Description
+The parser shall normalize event dates into a machine-readable format.
+Expected behavior
+* detect month/day patterns
+* infer year based on system context/rules
+* store parsed date if confidence is sufficient
+________________
+
+
+FR-010 — Normalize Parsed Time
+Description
+The parser shall normalize time expressions into structured time values.
+Expected behavior
+* support time ranges
+* support AM/PM expressions
+* support start-only scenarios when end time is missing
+________________
+
+
+FR-011 — Extract Venue and Address
+Description
+The parser shall attempt to identify venue name and address.
+Expected behavior
+* detect address-like strings
+* infer venue from nearby lines or known patterns
+* preserve raw extracted address for review
+________________
+
+
+FR-012 — Calculate Parsing Confidence
+Description
+The system shall compute a confidence score for parsed event candidates.
+Confidence inputs
+* OCR confidence
+* title extraction confidence
+* date extraction confidence
+* time extraction confidence
+* venue extraction confidence
+* geocoding confidence
+________________
+
+
+FR-013 — Persist Parsed Event Candidate
+Description
+The system shall store parsed candidate data before final publication.
+Stored fields
+* upload id
+* parsed values
+* confidence metrics
+* parse notes
+* review status
+* timestamp
+________________
+
+
+FR-014 — Route Candidate by Confidence
+Description
+The system shall determine whether a parsed event candidate is auto-published or routed to review.
+Routing outcomes
+* auto-approved
+* needs human review
+* failed
+________________
+
+
+4.4 Geocoding
+FR-015 — Resolve Address to Coordinates
+Description
+The system shall attempt to geocode the parsed address or venue into latitude and longitude.
+Resolution order
+1. full address
+2. venue plus city bias
+3. venue only
+4. unresolved
+________________
+
+
+FR-016 — Persist Geocode Result
+Description
+The system shall store the geocoded address and coordinates associated with the parsed candidate or final event.
+Stored fields
+* resolved address
+* latitude
+* longitude
+* geocoding confidence
+________________
+
+
+FR-017 — Cache Geocode Results
+Description
+The system shall reuse previously resolved addresses when possible.
+Expected behavior
+* normalized address lookup
+* cached result returned when available
+________________
+
+
+FR-018 — Handle Geocoding Failure
+Description
+The system shall handle ambiguous or failed geocoding attempts gracefully.
+Expected result
+* candidate is routed to review if other data is insufficient
+* event is not auto-published if spatial confidence is too low
+________________
+
+
+4.5 Event Record Creation
+FR-019 — Create Published Event Record
+Description
+The system shall create a final event record when a candidate meets publication requirements.
+Required minimums
+* title or acceptable title fallback
+* valid date
+* valid start time
+* acceptable location confidence or admin override
+________________
+
+
+FR-020 — Store Final Event Data
+Description
+The system shall persist final event records for discovery.
+Stored fields
+* event id
+* title
+* start datetime
+* end datetime if available
+* venue
+* address
+* latitude
+* longitude
+* flyer image reference
+* event state
+* source upload reference
+________________
+
+
+FR-021 — Prevent Duplicate Event Explosion
+Description
+The system should reduce duplicate final event creation when the same flyer is uploaded repeatedly.
+Expected behavior
+* compare likely duplicate events using time/title/venue heuristics
+* route uncertain duplicates to review or merge logic
+________________
+
+
+4.6 Public Event Discovery
+FR-022 — Query Events by Time Window
+Description
+The system shall return events within a requested date/time range.
+Inputs
+* from datetime
+* to datetime
+Outputs
+* event list ordered by start time
+________________
+
+
+FR-023 — Query Events for Map Rendering
+Description
+The system shall return map-ready event data.
+Required fields
+* id
+* title
+* coordinates
+* venue
+* time
+* flyer image reference
+________________
+
+
+FR-024 — Query Events for Calendar Rendering
+Description
+The system shall return calendar-ready event data grouped or filterable by day and time range.
+________________
+
+
+FR-025 — Retrieve Event Detail
+Description
+The system shall return full detail for a selected event.
+Returned data
+* title
+* date/time
+* venue
+* address
+* coordinates
+* flyer image
+* saved status if user is authenticated
+________________
+
+
+4.7 Map Interface
+FR-026 — Render Event Markers on Map
+Description
+The frontend shall display published events as markers on the primary map surface.
+Behavior
+* events appear based on active time filter
+* marker interaction opens event detail view
+________________
+
+
+FR-027 — Support Marker Selection
+Description
+The user shall be able to tap/click an event marker and open the corresponding event modal.
+________________
+
+
+FR-028 — Support Pan and Zoom
+Description
+The map shall allow standard navigation interactions without losing currently loaded event context.
+________________
+
+
+FR-029 — Support Marker Clustering
+Description
+The frontend should cluster nearby markers when zoom level or density requires it.
+________________
+
+
+4.8 Time Filtering
+FR-030 — Filter Events by Time Slider
+Description
+The user shall be able to filter visible events using a time-based control.
+Expected behavior
+* updates visible event set
+* updates map markers
+* updates derived lists/calendar where applicable
+________________
+
+
+FR-031 — Support Current and Upcoming Time Windows
+Description
+The system shall support filtering for:
+* happening now
+* upcoming today
+* broader selected time windows
+________________
+
+
+4.9 Calendar View
+FR-032 — Provide Calendar-Based Event View
+Description
+The frontend shall provide a calendar visualization of events as an alternative to map-first discovery.
+________________
+
+
+FR-033 — Group Events by Day
+Description
+The calendar view shall organize events by day.
+________________
+
+
+FR-034 — Open Event Details from Calendar
+Description
+The user shall be able to open event detail from a calendar item.
+________________
+
+
+4.10 Event Detail Modal
+FR-035 — Display Event Modal
+Description
+The frontend shall present event details in an overlay/modal.
+Required fields
+* title
+* date/time
+* venue
+* address
+* flyer image
+* save button
+________________
+
+
+FR-036 — Support Modal Close and Return
+Description
+The user shall be able to dismiss the event modal and return to the prior discovery context without a full page transition.
+________________
+
+
+4.11 Save / Bookmark
+FR-037 — Save Event
+Description
+An authenticated user shall be able to save an event.
+Expected result
+* saved association is persisted
+* UI reflects saved state
+________________
+
+
+FR-038 — Unsave Event
+Description
+An authenticated user shall be able to remove a saved event from their list.
+________________
+
+
+FR-039 — View Saved Events
+Description
+The user shall be able to access a saved-events view or overlay.
+Displayed fields
+* event title
+* date/time
+* venue
+* flyer preview
+________________
+
+
+4.12 Admin Review and Moderation
+FR-040 — Review Low-Confidence Candidates
+Description
+Admin users shall be able to review parsed event candidates requiring human validation.
+Review data
+* original flyer image
+* OCR text
+* parsed fields
+* confidence scores
+* parse notes
+________________
+
+
+FR-041 — Approve Candidate
+Description
+Admin shall be able to approve a candidate and publish it as an event.
+________________
+
+
+FR-042 — Edit Candidate Data
+Description
+Admin shall be able to correct parsed fields before approval.
+Editable fields
+* title
+* date
+* start/end time
+* venue
+* address
+* coordinates
+________________
+
+
+FR-043 — Reject Candidate
+Description
+Admin shall be able to reject invalid candidates.
+Expected result
+* candidate marked rejected
+* event not published
+________________
+
+
+FR-044 — Hide or Remove Published Event
+Description
+Admin shall be able to hide or remove a published event if it is incorrect, duplicate, or inappropriate.
+________________
+
+
+4.13 System Status and State Management
+FR-045 — Track Ingestion State
+Description
+The system shall track lifecycle state for each upload.
+Possible states
+* pending
+* uploaded
+* OCR queued
+* OCR complete
+* parse queued
+* parsed
+* geocoded
+* published
+* failed
+* needs review
+________________
+
+
+FR-046 — Expose Processing Status to User
+Description
+The system should provide an upload response or status indicator that reflects whether an uploaded flyer is still processing, published, or under review.
+________________
+
+
+4.14 Error Handling
+FR-047 — Return Validation Errors Clearly
+Description
+The system shall provide clear validation errors for bad uploads or malformed input.
+________________
+
+
+FR-048 — Fail Safely on Worker Errors
+Description
+Background pipeline failures shall not corrupt event data.
+Expected behavior
+* partial state is logged
+* upload remains traceable
+* retries or review routing may occur
+________________
+
+
+FR-049 — Preserve Auditability
+Description
+The system shall preserve enough processing data to diagnose why an event was or was not published.
+________________
+
+
+4.15 Performance and Responsiveness
+FR-050 — Accept Upload Quickly
+Description
+The upload endpoint shall acknowledge accepted uploads without blocking on full OCR/parsing completion.
+________________
+
+
+FR-051 — Return Event Queries Efficiently
+Description
+The system shall return public event lists and map payloads fast enough for interactive filtering.
+________________
+
+
+FR-052 — Lazy/Incremental Frontend Rendering
+Description
+The frontend should render discovery results without blocking the entire UI on all secondary assets.
+________________
+
+
+4.16 Security and Access Control
+FR-053 — Restrict Upload to Authenticated Users
+Description
+Only authenticated users shall be allowed to upload flyers.
+________________
+
+
+FR-054 — Allow Public Event Discovery
+Description
+Published events shall be publicly readable unless business rules later change.
+________________
+
+
+FR-055 — Restrict Admin Endpoints
+Description
+Admin review, correction, rejection, and moderation endpoints shall be restricted to authorized admin users.
+________________
+
+
+4.17 Observability and Logging
+FR-056 — Log Pipeline Stages
+Description
+The system shall log important processing steps.
+Logged context
+* upload id
+* job id if applicable
+* stage
+* success/failure
+* error code/message
+* duration
+________________
+
+
+FR-057 — Track Operational Metrics
+Description
+The system should expose or record metrics for:
+* upload count
+* OCR success rate
+* parse success rate
+* review queue size
+* publish rate
+* processing latency
+________________
+
+
+4.18 UX Functional Constraints
+FR-058 — Single-Screen Discovery Paradigm
+Description
+The frontend shall preserve the Phase 0 product behavior of map-first discovery with modal/overlay interactions rather than multi-page content sprawl.
+________________
+
+
+FR-059 — Mobile-First Usability
+Description
+All primary flows shall function on mobile devices.
+Critical flows
+* upload flyer
+* browse map
+* adjust time filter
+* open event modal
+* save event
+________________
+
+
+4.19 Data Retention and State Integrity
+FR-060 — Preserve Source-to-Event Linkage
+Description
+Each published event shall retain a link to its originating upload.
+________________
+
+
+FR-061 — Preserve OCR and Parse Artifacts
+Description
+OCR text and parsed candidate records shall remain available for review and debugging even after publication, subject to retention policy.
+________________
+
+
+5. Acceptance Criteria
+Upload
+* authenticated user can upload a valid flyer image
+* invalid uploads are rejected
+OCR
+* OCR output is persisted for accepted uploads
+* OCR failures are traceable
+Parsing
+* parser produces structured candidates when sufficient text exists
+* low-confidence candidates route to review
+Geocoding
+* resolved events have usable coordinates when auto-published
+* ambiguous location data does not silently publish bad results
+Event publication
+* valid candidates create published event records
+* published events appear in public queries
+Discovery
+* events display on map
+* time filter updates visible results
+* calendar view displays usable grouped event data
+* event modal opens from map and calendar
+Save/bookmark
+* user can save and unsave an event
+* saved events are retrievable
+Admin
+* admin can review, edit, approve, reject, and hide candidate/published records
+________________
+
+
+6. Edge Cases
+* flyer contains stylized text with low OCR confidence
+* flyer omits address but includes venue only
+* flyer includes multiple dates or multiple rooms
+* duplicate flyer uploaded by multiple users
+* flyer is a recap image, not an event flyer
+* geocoder resolves to wrong city
+* flyer has title but no clear start time
+* event date has already passed at ingestion time
+These cases must either:
+* be handled deterministically, or
+* be routed to admin review
+________________
+
+
+7. Future Hooks
+This FRD intentionally leaves extension points for later phases:
+* promoter identity layer
+* promoter feeds and media
+* ticketing
+* paid placement
+* scraped ingestion from social/web
+* AI-assisted parsing
+* semantic recommendations
+________________
+
+
+8. Final Functional Position
+WeUP Phase 0 is functionally a flyer-to-event transformation system plus a map-first event discovery client.
+Its core functional obligation is not merely to show events. It must:
+1. ingest noisy flyer input,
+2. transform it into usable structured data,
+3. expose that data through a fast visual interface,
+4. preserve a human correction path when automation is weak.
+That is the correct functional foundation for everything that follows in WeUP.
+If you want the next artifact, the natural follow-up is a Phase 0 API contract spec or a full QA test matrix.

@@ -1,0 +1,6322 @@
+﻿Below is a **production-grade GitHub Copilot Prompt Bundle system** for **WeUP Phase 0 + Phase 0.1**, explicitly grounded in your uploaded documents and using **direct quoted anchors** to enforce correctness and prevent drift.
+
+
+This is structured as **multi-pack prompt bundles** so you can paste them into Copilot Chat / Cursor / VS Code and generate the system deterministically.
+
+
+---
+
+
+# 🔷 MASTER SYSTEM PROMPT (USE FIRST)
+
+
+```text
+You are generating the full WeUP system based on strict product, functional, technical, and UX specifications.
+
+
+You MUST follow these constraints:
+
+
+CORE PRODUCT INTENT:
+"Build a zero-friction event discovery system that transforms raw flyers into structured, searchable, map-based experiences." :contentReference[oaicite:0]{index=0}
+
+
+CORE UX RULE:
+"The entire application must fit within one viewport at all times." :contentReference[oaicite:1]{index=1}
+
+
+CORE ARCHITECTURE:
+"WeUP Phase 0 ingests flyer images and converts them into structured events rendered on a geospatial discovery UI." :contentReference[oaicite:2]{index=2}
+
+
+PIPELINE:
+"Upload → OCR → Text Extraction → NLP Parsing → Structured Event" :contentReference[oaicite:3]{index=3}
+
+
+SYSTEM RULES:
+- No feature outside PRD/FRD/TRD
+- No UI outside single-viewport layered system
+- No social features in Phase 0
+- Phase 0.1 adds promoter identity + media ONLY
+
+
+OUTPUT REQUIREMENTS:
+- Production-ready code
+- No pseudocode
+- Modular architecture
+- Explicit file paths
+- .NET 8 backend + Vue 3 Quasar frontend
+
+
+You are building a real system, not examples.
+```
+
+
+---
+
+
+# 🧱 BUNDLE PACK 1 — FULL BACKEND FOUNDATION (.NET)
+
+
+## Prompt 1.1 — Solution Scaffold
+
+
+```text
+Generate a full .NET 8 multi-project solution using this exact structure:
+
+
+"src/
+  WeUp.Api/
+  WeUp.Application/
+  WeUp.Domain/
+  WeUp.Infrastructure/
+  WeUp.Contracts/
+  WeUp.Workers.Ocr/
+  WeUp.Workers.Parser/
+  WeUp.Admin.Api/" :contentReference[oaicite:4]{index=4}
+
+
+Requirements:
+- Clean architecture
+- Dependency injection configured
+- EF Core configured
+- PostgreSQL provider
+- Redis integration placeholder
+- Background worker registration
+
+
+Output:
+- full folder structure
+- Program.cs for each service
+- DI setup
+- csproj files
+```
+
+
+---
+
+
+## Prompt 1.2 — Domain Models
+
+
+```text
+Generate full domain models based on:
+
+
+"FlyerUpload, OcrExtraction, ParsedEventCandidate, EventRecord" :contentReference[oaicite:5]{index=5}
+
+
+Include:
+- enums:
+"IngestionStatus, CandidateReviewStatus, EventState" :contentReference[oaicite:6]{index=6}
+
+
+Requirements:
+- proper relationships
+- validation attributes
+- timestamps
+- indexing hints
+
+
+Output:
+- Domain/Entities/*.cs
+- Domain/Enums/*.cs
+```
+
+
+---
+
+
+## Prompt 1.3 — EF Core + Migrations
+
+
+```text
+Create full EF Core setup with:
+
+
+"FlyerUploads, OcrExtractions, ParsedEventCandidates, EventRecords" :contentReference[oaicite:7]{index=7}
+
+
+Include:
+- DbContext
+- Fluent API configuration
+- indexes:
+"composite index on (StartDateTimeLocal, State)" :contentReference[oaicite:8]{index=8}
+
+
+Generate:
+- initial migration
+- database seeding (optional dev data)
+```
+
+
+---
+
+
+# ⚙️ BUNDLE PACK 2 — OCR + PARSER PIPELINE
+
+
+## Prompt 2.1 — Upload Pipeline
+
+
+```text
+Implement upload flow based on:
+
+
+"The system shall allow an authenticated user to upload a flyer image for event ingestion." :contentReference[oaicite:9]{index=9}
+
+
+Requirements:
+- POST /api/events/upload
+- file validation
+- storage adapter
+- enqueue OCR job
+
+
+Return:
+{
+  uploadId,
+  jobId,
+  status: "OcrQueued"
+}
+```
+
+
+---
+
+
+## Prompt 2.2 — OCR Worker
+
+
+```text
+Build OCR worker system:
+
+
+"OCR worker extracts text and stores raw OCR output" :contentReference[oaicite:10]{index=10}
+
+
+Requirements:
+- BackgroundService
+- IOcrEngine interface:
+"Task<OcrResult> ExtractTextAsync(...)" :contentReference[oaicite:11]{index=11}
+- store OcrExtraction
+- enqueue parse job
+
+
+Include:
+- Tesseract stub
+- Azure Vision adapter interface
+```
+
+
+---
+
+
+## Prompt 2.3 — Parser Engine
+
+
+```text
+Implement parser using:
+
+
+"The parser shall attempt to derive structured event data from OCR text." :contentReference[oaicite:12]{index=12}
+
+
+Extract:
+- title
+- date
+- time
+- venue
+- address
+
+
+Use:
+- regex
+- heuristics
+- deterministic parsing
+
+
+Include:
+confidence scoring:
+
+
+"OCR 30%, title 20%, date/time 20%, venue 10%, geocode 20%" :contentReference[oaicite:13]{index=13}
+```
+
+
+---
+
+
+## Prompt 2.4 — Geocoding
+
+
+```text
+Implement geocoding service:
+
+
+"The system shall attempt to geocode the parsed address or venue into latitude and longitude." :contentReference[oaicite:14]{index=14}
+
+
+Requirements:
+- cache layer
+- fallback strategy
+- external adapter interface
+
+
+Include:
+- Google Maps adapter
+- stub fallback
+```
+
+
+---
+
+
+## Prompt 2.5 — Event Creation
+
+
+```text
+Implement final event creation:
+
+
+"The system shall create a final event record when a candidate meets publication requirements." :contentReference[oaicite:15]{index=15}
+
+
+Rules:
+- confidence >= 0.85 auto publish
+- else → review queue
+
+
+Persist EventRecord
+```
+
+
+---
+
+
+# 🗺️ BUNDLE PACK 3 — MAP + DISCOVERY API
+
+
+## Prompt 3.1 — Event Query API
+
+
+```text
+Create API:
+
+
+GET /api/events
+GET /api/events/map
+GET /api/events/calendar
+
+
+Requirements:
+"events plotted as markers" :contentReference[oaicite:16]{index=16}
+"time-based filtering" :contentReference[oaicite:17]{index=17}
+
+
+Return optimized DTOs
+```
+
+
+---
+
+
+## Prompt 3.2 — Save System
+
+
+```text
+Implement:
+
+
+"user can save event" :contentReference[oaicite:18]{index=18}
+
+
+Endpoints:
+POST /save
+DELETE /save
+GET /saved
+
+
+Include:
+SavedEvents table
+```
+
+
+---
+
+
+# 🎨 BUNDLE PACK 4 — VUE + QUASAR FRONTEND
+
+
+## Prompt 4.1 — Core Layout
+
+
+```text
+Build UI following:
+
+
+"The map is the default state" :contentReference[oaicite:19]{index=19}  
+"Single-viewport, no-scroll UI" :contentReference[oaicite:20]{index=20}
+
+
+Components:
+- MapView.vue
+- EventModal.vue
+- TimeSlider.vue
+- BottomNav.vue
+
+
+Rules:
+- no vertical scroll
+- overlay-based navigation
+```
+
+
+---
+
+
+## Prompt 4.2 — Map Mode
+
+
+```text
+Implement Map Mode:
+
+
+"events plotted as markers" :contentReference[oaicite:21]{index=21}
+
+
+Features:
+- clustering
+- click → modal
+- time filtering
+
+
+Use Mapbox or Leaflet
+```
+
+
+---
+
+
+## Prompt 4.3 — Calendar Mode
+
+
+```text
+Implement:
+
+
+"masonry layout (not linear list)" :contentReference[oaicite:22]{index=22}
+
+
+Modal takeover:
+"Calendar Mode → full modal takeover" :contentReference[oaicite:23]{index=23}
+```
+
+
+---
+
+
+## Prompt 4.4 — Upload Flow UI
+
+
+```text
+Implement guided flow:
+
+
+"Upload → OCR → Parse → Edit → Preview → Save" :contentReference[oaicite:24]{index=24}
+
+
+Include:
+- progress states
+- inline correction
+- error surfacing
+```
+
+
+---
+
+
+# 🧠 BUNDLE PACK 5 — PHASE 0.1 (PROMOTER SYSTEM)
+
+
+## Prompt 5.1 — Promoter Profiles
+
+
+```text
+Implement:
+
+
+"System shall allow authenticated users to create a promoter profile." :contentReference[oaicite:25]{index=25}
+
+
+Include:
+- slug system
+- profile page
+- verification status
+```
+
+
+---
+
+
+## Prompt 5.2 — Media Upload
+
+
+```text
+Implement media system:
+
+
+"Promoter uploads media to system" :contentReference[oaicite:26]{index=26}
+
+
+Constraints:
+- video ≤ 30 sec
+- images ≤ 10
+
+
+Storage:
+- Cloudinary integration
+```
+
+
+---
+
+
+## Prompt 5.3 — Feed System
+
+
+```text
+Implement feed:
+
+
+"One post → many media assets" :contentReference[oaicite:27]{index=27}
+
+
+Features:
+- create post
+- attach media
+- link to event
+- publish
+```
+
+
+---
+
+
+## Prompt 5.4 — Profile UI
+
+
+```text
+Build promoter UI:
+
+
+"profile feed timeline" :contentReference[oaicite:28]{index=28}
+
+
+Tabs:
+- Feed
+- Events
+- Gallery
+
+
+Display:
+- media-first
+```
+
+
+---
+
+
+# 🤖 BUNDLE PACK 6 — AUTOGEN / AI LAYER
+
+
+## Prompt 6.1 — Crawl + Auto Feed
+
+
+```text
+Create Autogen agent:
+
+
+Purpose:
+- scrape event sources
+- generate posts
+- attach to promoter
+
+
+Align with:
+"AI orchestration (Autogen / Crawl4AI)" :contentReference[oaicite:29]{index=29}
+```
+
+
+---
+
+
+## Prompt 6.2 — Caption Generator
+
+
+```text
+Generate captions from OCR + parsed data
+
+
+Use:
+- event title
+- performers
+- venue
+```
+
+
+---
+
+
+# 🧪 BUNDLE PACK 7 — TESTING + QA
+
+
+## Prompt 7.1 — Integration Tests
+
+
+```text
+Create tests for:
+
+
+- upload → OCR → parse → event
+- API endpoints
+- save system
+- promoter feed
+
+
+Use xUnit
+```
+
+
+---
+
+
+## Prompt 7.2 — Load Testing
+
+
+```text
+Simulate:
+- 1000 uploads/day
+- concurrent map queries
+
+
+Measure:
+- latency
+- failure rate
+```
+
+
+---
+
+
+# 🚀 FINAL EXECUTION ORDER
+
+
+Run prompts in this order:
+
+
+1. MASTER PROMPT
+2. Pack 1 (Backend)
+3. Pack 2 (Pipeline)
+4. Pack 3 (API)
+5. Pack 4 (Frontend)
+6. Pack 5 (Phase 0.1)
+7. Pack 6 (AI)
+8. Pack 7 (Testing)
+
+
+---
+
+
+# 🔥 Final Reality
+
+
+This bundle is:
+
+
+* deterministic
+* architecture-aligned
+* scoped to your documents
+* production viable
+
+
+It directly encodes:
+
+
+* PRD → product intent
+* FRD → behavior
+* TRD → execution
+
+
+---
+
+
+## If you want next level
+
+
+I can generate:
+
+
+* **Repo-ready folder + file-by-file code output**
+* **n8n workflow version of ingestion pipeline**
+* **Full CI/CD GitHub Actions**
+* **Investor-ready system architecture diagrams**
+
+
+Just tell me.
+
+
+Below is an extended, production-grade expansion of Bundle Pack 1 (Backend Foundation). This goes beyond scaffolding into real execution readiness, including:
+* Application layer (CQRS + orchestration)
+* Infrastructure adapters (Cloudinary, Redis, Queue)
+* API layer (controllers + DTOs)
+* Worker wiring
+* Cross-cutting concerns (logging, validation, error handling)
+All prompts remain Copilot-ready, modular, and anchored to your documents.
+________________
+
+
+🧱 EXTENDED BUNDLE PACK 1 — BACKEND FOUNDATION (DEEP BUILD)
+________________
+
+
+🔷 Prompt 1.4 — Application Layer (CQRS + Use Cases)
+Generate the WeUp.Application layer using CQRS pattern.
+
+
+Reference:
+"WeUp.Application → use cases, orchestration logic, validation" :contentReference[oaicite:0]{index=0}
+
+
+Requirements:
+
+
+Structure:
+/Application
+  /Commands
+  /Queries
+  /Handlers
+  /Validators
+  /Interfaces
+
+
+Implement:
+
+
+1. UploadFlyerCommand
+2. ProcessOcrResultCommand
+3. ParseEventCommand
+4. PublishEventCommand
+5. GetEventsQuery
+6. GetMapEventsQuery
+
+
+Use MediatR pattern.
+
+
+Each handler must:
+- validate input
+- call domain services
+- call infrastructure via interfaces
+- return DTOs
+
+
+Include:
+- FluentValidation validators
+- Result<T> pattern (success/failure)
+
+
+No business logic in controllers.
+
+
+________________
+
+
+🔷 Prompt 1.5 — Domain Services (Core Logic)
+Create domain services inside WeUp.Domain.
+
+
+Reference:
+"core entities + business rules + confidence logic" :contentReference[oaicite:1]{index=1}
+
+
+Implement:
+
+
+1. EventParsingService
+- normalize title/date/time
+- clean OCR text
+- extract structured fields
+
+
+2. ConfidenceScoringService
+Use:
+"OCR 30%, title 20%, date/time 20%, venue 10%, geocode 20%" :contentReference[oaicite:2]{index=2}
+
+
+3. EventDeduplicationService
+- compare title + date + venue
+- detect duplicates
+
+
+4. EventPublicationService
+- determine:
+  - auto publish
+  - needs review
+  - reject
+
+
+All services must be:
+- pure logic (no EF, no HTTP)
+- testable
+
+
+________________
+
+
+🔷 Prompt 1.6 — Infrastructure: Storage + Cloudinary
+Implement media storage service.
+
+
+Reference:
+"File stored in object storage" :contentReference[oaicite:3]{index=3}
+
+
+Create:
+
+
+Interface:
+IFileStorageService
+
+
+Implementation:
+CloudinaryStorageService
+
+
+Features:
+- upload image
+- return URL
+- generate thumbnail
+- delete file
+
+
+Config:
+- API key
+- secret
+- cloud name
+
+
+Also create:
+LocalStorageService (dev fallback)
+
+
+Use DI to swap providers.
+
+
+________________
+
+
+🔷 Prompt 1.7 — Infrastructure: Queue + Background Jobs
+Implement ingestion pipeline queue.
+
+
+Reference:
+"OCR job queued → parser job queued" :contentReference[oaicite:4]{index=4}
+
+
+Create:
+
+
+Interface:
+IJobQueue
+
+
+Implementations:
+- InMemoryQueue (dev)
+- RedisQueue (prod)
+
+
+Jobs:
+- OcrJob
+- ParseJob
+
+
+Include:
+- enqueue
+- dequeue
+- retry handling
+- dead-letter support
+
+
+Workers must:
+- consume queue
+- log failures
+- update ingestion status
+
+
+________________
+
+
+🔷 Prompt 1.8 — Infrastructure: Redis Caching
+Implement Redis caching layer.
+
+
+Reference:
+"[Redis] cache for geocode + query" :contentReference[oaicite:5]{index=5}
+
+
+Create:
+
+
+Interface:
+ICacheService
+
+
+Methods:
+- GetAsync<T>
+- SetAsync<T>
+- RemoveAsync
+
+
+Use cases:
+- geocode caching
+- event query caching
+
+
+Include:
+- TTL strategy
+- cache key builder
+
+
+________________
+
+
+🔷 Prompt 1.9 — API Layer (Controllers)
+Build API controllers in WeUp.Api.
+
+
+Reference:
+"upload endpoints, public event query endpoints" :contentReference[oaicite:6]{index=6}
+
+
+Controllers:
+
+
+1. UploadController
+POST /api/upload
+
+
+2. EventsController
+GET /api/events
+GET /api/events/map
+GET /api/events/{id}
+
+
+3. SavedController
+POST /api/save
+DELETE /api/save/{id}
+GET /api/save
+
+
+4. AdminController
+GET /api/admin/review
+POST /api/admin/approve
+POST /api/admin/reject
+
+
+Requirements:
+- no business logic
+- call MediatR
+- return DTOs
+- proper HTTP codes
+
+
+________________
+
+
+🔷 Prompt 1.10 — DTOs + Contracts
+Create DTO layer in WeUp.Contracts.
+
+
+Reference:
+"DTO mapping boundary" :contentReference[oaicite:7]{index=7}
+
+
+Create:
+
+
+UploadResponseDto
+EventDto
+MapEventDto
+CalendarEventDto
+ParsedCandidateDto
+SavedEventDto
+
+
+Rules:
+- no domain entities exposed
+- flatten nested structures
+- include only required frontend fields
+
+
+________________
+
+
+🔷 Prompt 1.11 — Mapping Layer (AutoMapper)
+Implement AutoMapper profiles.
+
+
+Map:
+- Domain → DTO
+- Command → Domain
+
+
+Include:
+- EventRecord → EventDto
+- ParsedEventCandidate → DTO
+
+
+Ensure:
+- consistent mapping
+- null safety
+
+
+________________
+
+
+🔷 Prompt 1.12 — Authentication + Authorization
+Implement authentication layer.
+
+
+Requirements:
+- JWT-based auth
+- roles:
+  - User
+  - Admin
+
+
+Apply:
+- [Authorize] on upload
+- admin-only endpoints for moderation
+
+
+Future-ready for:
+- OAuth (Google/GitHub)
+
+
+________________
+
+
+🔷 Prompt 1.13 — Global Error Handling
+Implement global error handler middleware.
+
+
+Requirements:
+- catch all exceptions
+- return standardized response
+
+
+Format:
+{
+  success: false,
+  error: {
+    code,
+    message,
+    traceId
+  }
+}
+
+
+Include:
+- validation errors
+- domain errors
+- system errors
+
+
+________________
+
+
+🔷 Prompt 1.14 — Logging + Observability
+Implement logging system.
+
+
+Reference:
+"log pipeline stages + failures" :contentReference[oaicite:8]{index=8}
+
+
+Use:
+- Serilog
+
+
+Log:
+- upload start/end
+- OCR execution
+- parsing results
+- failures
+- admin actions
+
+
+Include:
+- correlation IDs
+- structured logging
+
+
+________________
+
+
+🔷 Prompt 1.15 — Health Checks
+Implement health endpoints.
+
+
+Endpoints:
+GET /health
+GET /health/ready
+
+
+Check:
+- database
+- Redis
+- storage
+
+
+Return:
+- status
+- dependencies
+
+
+________________
+
+
+🔷 Prompt 1.16 — Worker Registration
+Wire background workers into solution.
+
+
+Reference:
+"OCR Worker + Parser Worker" :contentReference[oaicite:9]{index=9}
+
+
+Register:
+- OcrWorker
+- ParserWorker
+
+
+Ensure:
+- graceful shutdown
+- retry policy
+- concurrency control
+
+
+________________
+
+
+🔷 Prompt 1.17 — Docker + Local Dev
+Create full Docker setup.
+
+
+Services:
+- API
+- OCR worker
+- Parser worker
+- Postgres
+- Redis
+
+
+Include:
+- docker-compose.yml
+- environment variables
+- volume mounts
+
+
+Ensure:
+- one-command startup
+
+
+________________
+
+
+🔷 Prompt 1.18 — CI/CD (GitHub Actions)
+Create GitHub Actions pipeline.
+
+
+Steps:
+- restore
+- build
+- test
+- publish
+
+
+Optional:
+- Docker build
+- push to registry
+
+
+________________
+
+
+🔷 Prompt 1.19 — Seed Data + Dev Tools
+Create dev seed system.
+
+
+Seed:
+- sample events
+- sample uploads
+- test users
+
+
+Include:
+- CLI command
+- dev-only execution
+
+
+________________
+
+
+🔷 Prompt 1.20 — Full Integration Wiring
+Connect entire backend system.
+
+
+Flow must match:
+
+
+"Upload → OCR → Parse → Geocode → Publish → Query" :contentReference[oaicite:10]{index=10}
+
+
+Ensure:
+- each stage updates status
+- retries work
+- admin review works
+- API returns correct data
+
+
+Deliver:
+- fully runnable backend
+
+
+________________
+
+
+🧠 What This Extension Actually Unlocks
+This extended Pack 1 now gives you:
+✔ Real backend, not scaffold
+* CQRS orchestration
+* Domain-driven logic
+* Worker pipeline
+✔ Production-ready infra
+* storage
+* queue
+* caching
+* logging
+✔ Clean separation of concerns
+* Domain = rules
+* Application = orchestration
+* Infrastructure = external systems
+________________
+
+
+🔥 If You Want the Next Level
+You’re now at the point where this can become:
+1. Full Repo Output
+I can generate:
+* every file fully written
+* zero gaps
+2. Autogen-Orchestrated Build System
+* agents generate + validate code
+* pipeline becomes self-building
+3. Phase 0 → Phase 1 Expansion
+* ticketing
+* monetization
+* promoter analytics
+* AI ranking layer
+________________
+
+
+If you want, I can now:
+👉 Extend Pack 2 (Pipeline) to the same depth
+👉 Or generate the entire repo in one shot (file-by-file)
+Below is Extended Pack 2, focused on the ingestion, OCR, parsing, geocoding, review, and publication pipeline, plus the Phase 0.1 media-ingestion/feed pipeline that sits on top of it. This stays inside the product boundary: Phase 0 is a “flyer-to-event transformation system plus a map-first event discovery client,” and Phase 0.1 adds “Promoter Profiles + Media Feed” without becoming a social network.
+I am keeping the prompt format Copilot-friendly and using direct quoted anchors from your uploaded specs so the generated code stays pinned to the documents.
+________________
+
+
+⚙️ EXTENDED BUNDLE PACK 2 — PIPELINE, OCR, PARSER, GEOCODER, REVIEW, PUBLICATION
+Prompt 2.6 — Ingestion State Machine
+Generate the full ingestion state machine for WeUP Phase 0.
+
+
+Use this exact state model:
+"Pending, Uploaded, OcrQueued, OcrComplete, ParseQueued, Parsed, Geocoded, Published, Failed, NeedsReview" :contentReference[oaicite:2]{index=2}
+
+
+Requirements:
+- Implement a strongly typed state model in .NET 8
+- Use enum + transition guard service
+- Invalid transitions must throw domain errors
+- Every state transition must be logged
+- Preserve source-to-event linkage and OCR/parse artifacts after publication :contentReference[oaicite:3]{index=3}
+
+
+Create:
+- IngestionStatus enum
+- IngestionStateMachine service
+- Transition methods:
+  - MarkUploaded
+  - QueueOcr
+  - CompleteOcr
+  - QueueParse
+  - CompleteParse
+  - CompleteGeocode
+  - Publish
+  - Fail
+  - RouteToReview
+
+
+Output:
+- file paths
+- production-ready code
+- tests for valid and invalid transitions
+
+
+________________
+
+
+Prompt 2.7 — Upload Validation + Intake Hardening
+Implement the upload intake hardening layer for WeUP Phase 0.
+
+
+Use these exact constraints:
+"The system shall allow an authenticated user to upload a flyer image for event ingestion." :contentReference[oaicite:4]{index=4}
+"Reject: non-image content, oversized files, malformed headers, dangerous content types" :contentReference[oaicite:5]{index=5}
+"Allowed: image/jpeg, image/png, image/webp" :contentReference[oaicite:6]{index=6}
+
+
+Requirements:
+- ASP.NET Core upload endpoint
+- MIME validation
+- extension validation
+- max file size enforcement
+- random object key generation
+- do not trust client filename
+- accepted uploads must return quickly without blocking on OCR/parsing :contentReference[oaicite:7]{index=7}
+
+
+Create:
+- UploadValidator
+- UploadIntakeService
+- UploadController endpoint
+- standardized error responses
+- audit logging for intake failures
+
+
+________________
+
+
+Prompt 2.8 — OCR Orchestrator
+Build the OCR orchestration layer for WeUP Phase 0.
+
+
+Use these anchors:
+"The OCR subsystem shall extract text from the uploaded flyer image." :contentReference[oaicite:8]{index=8}
+"OCR worker extracts text and stores raw OCR output" :contentReference[oaicite:9]{index=9}
+"Task<OcrResult> ExtractTextAsync(Stream fileStream, string fileName, CancellationToken ct);" :contentReference[oaicite:10]{index=10}
+
+
+Requirements:
+- IOcrEngine abstraction
+- OcrOrchestrator application service
+- worker-safe retry behavior
+- confidence extraction
+- store raw OCR text and engine metadata
+- if OCR is empty or unreadable, route to failed or review-needed state and log failure reason :contentReference[oaicite:11]{index=11}
+
+
+Implement:
+- IOcrEngine
+- OcrResult
+- TesseractOcrEngine
+- AzureVisionOcrEngine placeholder
+- OcrOrchestrator
+- persistence for OcrExtraction
+- telemetry around OCR duration and failure rate
+
+
+________________
+
+
+Prompt 2.9 — OCR Normalization Layer
+Create an OCR text normalization layer before parsing.
+
+
+Ground it in the fact that WeUP must "ingest noisy flyer input" and preserve a "human correction path when automation is weak." :contentReference[oaicite:12]{index=12}
+
+
+Requirements:
+- normalize whitespace
+- collapse duplicate lines
+- preserve line order
+- clean OCR artifacts
+- detect obvious junk tokens
+- preserve original raw text separately
+- output:
+  - rawText
+  - normalizedText
+  - lineTokens
+  - blockTokens
+
+
+Create:
+- OcrTextNormalizer
+- OcrLineSegmenter
+- OcrArtifactCleaner
+
+
+Ensure this layer is deterministic, testable, and independent of EF Core.
+
+
+________________
+
+
+Prompt 2.10 — Deterministic Parser Core
+Implement the deterministic parser core for WeUP Phase 0.
+
+
+Use these exact targets:
+"The parser shall attempt to derive structured event data from OCR text." :contentReference[oaicite:13]{index=13}
+Target fields:
+"title, event date, start time, end time if present, venue name, raw address" :contentReference[oaicite:14]{index=14}
+
+
+Behavior must support:
+- "detect month/day patterns"
+- "support time ranges"
+- "support AM/PM expressions"
+- "support start-only scenarios when end time is missing"
+- "detect address-like strings"
+- "infer venue from nearby lines or known patterns" :contentReference[oaicite:15]{index=15}
+
+
+Requirements:
+- no LLM dependency
+- regex + heuristics only
+- pure domain/application service
+- deterministic outputs
+
+
+Create:
+- IFlyerParser
+- ParsedFlyerResult
+- RegexFlyerParser
+- DateExtractor
+- TimeExtractor
+- VenueExtractor
+- AddressExtractor
+- optional PerformerExtractor
+
+
+Return:
+- parsed fields
+- extraction confidences
+- parse notes
+
+
+________________
+
+
+Prompt 2.11 — Confidence Scoring Engine
+Implement the Phase 0 confidence scoring engine.
+
+
+Use this exact weighting model:
+"OCR confidence: 30%"
+"title extraction confidence: 20%"
+"date/time confidence: 20%"
+"venue confidence: 10%"
+"geocode confidence: 20%" :contentReference[oaicite:16]{index=16}
+
+
+Use this exact routing:
+"score >= 0.85 => auto publish"
+"0.60 - 0.84 => needs admin review"
+"< 0.60 => failed / needs manual correction" :contentReference[oaicite:17]{index=17}
+
+
+Requirements:
+- implement a ConfidenceScoringService
+- accept component confidence inputs
+- compute overall score
+- return:
+  - overall score
+  - routing decision
+  - explanation payload for admin review
+
+
+Create:
+- ConfidenceScoreBreakdown model
+- PublicationDecision enum
+- ConfidenceScoringService
+- tests for boundary values
+
+
+________________
+
+
+Prompt 2.12 — Geocoding Resolver + Cache
+Implement the geocoding pipeline for WeUP Phase 0.
+
+
+Use these anchors:
+"The system shall attempt to geocode the parsed address or venue into latitude and longitude." :contentReference[oaicite:18]{index=18}
+Resolution order:
+"1. full address 2. venue plus city bias 3. venue only 4. unresolved" :contentReference[oaicite:19]{index=19}
+"The system shall reuse previously resolved addresses when possible." :contentReference[oaicite:20]{index=20}
+
+
+Requirements:
+- IGeocodingService abstraction
+- GeocodeCache lookup
+- normalized address hashing
+- cache miss fallback to provider
+- confidence score on geocode result
+- if geocoding is ambiguous, do not auto-publish silently :contentReference[oaicite:21]{index=21}
+
+
+Create:
+- IGeocodingService
+- GeocodeResult
+- GeocodeCacheService
+- GoogleGeocodingAdapter placeholder
+- StubGeocodingService
+- GeocodeResolverOrchestrator
+
+
+Include:
+- Redis caching
+- DB cache fallback
+- TTL strategy
+
+
+________________
+
+
+Prompt 2.13 — Duplicate Detection + Merge Guard
+Implement duplicate-event prevention for Phase 0.
+
+
+Use this requirement:
+"The system should reduce duplicate final event creation when the same flyer is uploaded repeatedly." :contentReference[oaicite:22]{index=22}
+
+
+Requirements:
+- compare candidate events on:
+  - normalized title
+  - date
+  - start time
+  - venue
+  - address
+- produce:
+  - duplicate
+  - possible duplicate
+  - unique
+
+
+Behavior:
+- unique => continue
+- possible duplicate => admin review
+- duplicate => link to existing record or reject creation
+
+
+Create:
+- EventDeduplicationService
+- NormalizedEventFingerprint
+- duplicate heuristics tests
+
+
+________________
+
+
+Prompt 2.14 — Candidate Persistence + Admin Review Queue
+Implement parsed candidate persistence and review routing.
+
+
+Use these anchors:
+"The system shall store parsed candidate data before final publication." :contentReference[oaicite:23]{index=23}
+Routing outcomes:
+"auto-approved, needs human review, failed" :contentReference[oaicite:24]{index=24}
+"admin can review, edit, approve, reject, and hide candidate/published records" :contentReference[oaicite:25]{index=25}
+
+
+Requirements:
+- persist ParsedEventCandidate
+- persist parse notes
+- persist confidence metrics
+- queue candidate for admin review
+- expose review APIs
+- preserve OCR and parse artifacts for debugging after publication :contentReference[oaicite:26]{index=26}
+
+
+Create:
+- ParsedCandidateRepository
+- AdminReviewQueueService
+- AdminReviewController
+- DTOs for review payloads
+- approve/reject/edit flows
+
+
+________________
+
+
+Prompt 2.15 — Publication Orchestrator
+Implement the publication orchestrator for WeUP Phase 0.
+
+
+Use these requirements:
+"The system shall create a final event record when a candidate meets publication requirements." :contentReference[oaicite:27]{index=27}
+Required minimums:
+"title or acceptable title fallback"
+"valid date"
+"valid start time"
+"acceptable location confidence or admin override" :contentReference[oaicite:28]{index=28}
+
+
+Requirements:
+- create EventRecord from candidate
+- keep SourceUploadId linkage
+- persist flyer image reference
+- set event state
+- publish only after duplicate check and confidence pass
+- make published events queryable by map and calendar APIs
+
+
+Create:
+- EventPublicationService
+- EventRecordFactory
+- publication command handler
+- integration tests for auto-publish and review-routed candidates
+
+
+________________
+
+
+Prompt 2.16 — End-to-End Pipeline Coordinator
+Implement a single pipeline coordinator that executes:
+
+
+"Upload accepted -> OCR job queued -> OCR worker extracts text -> Raw OCR stored -> Parse job queued -> Parser extracts title/date/time/address/venue -> Geocoder resolves lat/lng -> Candidate auto-published or flagged -> Public API returns event" :contentReference[oaicite:29]{index=29}
+
+
+Requirements:
+- orchestrate stage progression
+- update ingestion status at each stage
+- log duration and failure codes
+- support retries
+- keep pipeline idempotent
+- allow replay of failed jobs
+
+
+Create:
+- IngestionPipelineCoordinator
+- background job contracts
+- retry policy
+- idempotency guards
+- trace/correlation propagation
+
+
+________________
+
+
+Prompt 2.17 — Pipeline Telemetry + SLO Enforcement
+Implement observability for the entire Phase 0 pipeline.
+
+
+Use these anchors:
+"The system shall log important processing steps." :contentReference[oaicite:30]{index=30}
+Track:
+"upload count, OCR success rate, parse success rate, review queue size, publish rate, processing latency" :contentReference[oaicite:31]{index=31}
+
+
+Performance targets:
+"Upload API response < 500 ms"
+"OCR stage median < 5 s"
+"Parse stage median < 1 s"
+"Geocode median < 1.5 s cached miss"
+"Event query API < 200 ms"
+"Map payload query < 300 ms" :contentReference[oaicite:32]{index=32}
+
+
+Requirements:
+- OpenTelemetry spans
+- Prometheus counters and histograms
+- Serilog structured logs
+- correlation id per upload/job
+- metrics tags by pipeline stage
+
+
+Create:
+- PipelineMetrics service
+- tracing middleware
+- worker instrumentation
+- dashboard-ready metric names
+
+
+________________
+
+
+📹 EXTENDED PACK 2.1 — PHASE 0.1 MEDIA INGESTION PIPELINE
+Prompt 2.18 — Promoter Media Intake Validator
+Implement the Phase 0.1 media upload validation layer.
+
+
+Use these exact constraints:
+"Promoter uploads media to system." 
+Supported types:
+"Images: JPG, PNG, WEBP"
+"Video: MP4, MOV, WEBM" :contentReference[oaicite:34]{index=34}
+Constraints:
+"Max video length: 30 seconds"
+"Max media per post: 10"
+"Images: 5MB"
+"Video: 25MB" :contentReference[oaicite:35]{index=35}
+
+
+Requirements:
+- validate image/video MIME types
+- validate file size
+- validate duration for video
+- reject invalid media before persistence
+- generate admin-friendly error payloads
+
+
+Create:
+- MediaUploadValidator
+- MediaConstraintsOptions
+- validation tests
+
+
+________________
+
+
+Prompt 2.19 — Media Processing Pipeline
+Implement the Phase 0.1 media processing pipeline.
+
+
+Use these anchors:
+"Upload to storage provider"
+"Generate thumbnail"
+"Store metadata" 
+
+
+Requirements:
+- Cloudinary-first implementation
+- image upload
+- video upload
+- thumbnail generation
+- duration extraction
+- media metadata persistence
+
+
+Persist:
+- MediaAsset
+- ThumbnailUrl
+- Caption
+- DurationSeconds
+- Status
+- CreatedAt 
+
+
+Create:
+- IMediaStorageService
+- CloudinaryMediaService
+- MediaAssetRepository
+- metadata extraction service
+- retry-safe upload orchestration
+
+
+________________
+
+
+Prompt 2.20 — Feed Post Composition Pipeline
+Implement the feed-post composition pipeline for Phase 0.1.
+
+
+Use these anchors:
+"One post -> many media assets" :contentReference[oaicite:38]{index=38}
+Inputs:
+"Title (optional), Body (optional), MediaAssets (required >=1), PostType, LinkedEventId (optional)" 
+
+
+Requirements:
+- create draft post
+- attach media assets
+- validate media count
+- order media with SortOrder
+- optionally link post to an existing event
+- support publish flow with timestamp assignment
+
+
+Create:
+- FeedPostDraftService
+- FeedPostPublishService
+- FeedPostMedia join persistence
+- event link validator
+
+
+________________
+
+
+Prompt 2.21 — Event-Media Association
+Implement event-media association for Phase 0.1.
+
+
+Use these anchors:
+"Promoter can link post -> event" 
+"Post appears on: Promoter feed, Event detail page" 
+"Event page shows associated promoter posts and media preview section" 
+
+
+Requirements:
+- verify linked event exists
+- verify promoter has permission to link
+- hydrate event detail with promoter media preview section
+- keep link nullable and removable
+
+
+Create:
+- EventMediaAssociationService
+- event detail query enrichment
+- DTOs for "From Promoter" media section
+
+
+________________
+
+
+Prompt 2.22 — Moderation Pipeline for Media + Feed
+Implement the moderation pipeline for Phase 0.1.
+
+
+Use these anchors:
+"Flagged media is not visible publicly" 
+"Admin can override visibility" 
+Phase 0.1 goals include "basic moderation + verification" :contentReference[oaicite:45]{index=45}
+
+
+Requirements:
+- media states:
+  - Draft
+  - Published
+  - Flagged
+  - Hidden
+- feed post moderation
+- admin actions:
+  - flag media
+  - hide media
+  - verify promoter
+  - suspend promoter
+- immutable moderation log entries
+
+
+Create:
+- MediaModerationService
+- PromoterVerificationService
+- ModerationLog entity
+- admin controllers
+- public query filters excluding flagged/hidden content
+
+
+________________
+
+
+Prompt 2.23 — Pipeline Acceptance Test Suite
+Generate end-to-end integration tests for the whole Pack 2 pipeline.
+
+
+Phase 0 acceptance must prove:
+"authenticated user can upload a valid flyer image"
+"OCR output is persisted for accepted uploads"
+"low-confidence candidates route to review"
+"resolved events have usable coordinates when auto-published"
+"published events appear in public queries" :contentReference[oaicite:46]{index=46}
+
+
+Phase 0.1 acceptance must prove:
+"profile created"
+"media upload succeeds under constraints"
+"feed renders correctly"
+"media attaches to events"
+"admin can moderate content" based on the PRD/FRD system definitions :contentReference[oaicite:47]{index=47} 
+
+
+Create:
+- xUnit integration tests
+- test containers for Postgres/Redis
+- fake storage and OCR/geocode adapters
+- end-to-end publish and review cases
+
+
+________________
+
+
+Recommended execution order
+Run these after your original Pack 2 prompts:
+1. 2.6 Ingestion State Machine
+2. 2.7 Upload Validation + Intake Hardening
+3. 2.8 OCR Orchestrator
+4. 2.9 OCR Normalization
+5. 2.10 Deterministic Parser Core
+6. 2.11 Confidence Scoring
+7. 2.12 Geocoding Resolver + Cache
+8. 2.13 Duplicate Detection
+9. 2.14 Candidate Persistence + Review Queue
+10. 2.15 Publication Orchestrator
+11. 2.16 End-to-End Pipeline Coordinator
+12. 2.17 Telemetry + SLO
+13. 2.18–2.22 Phase 0.1 media/feed pipeline
+14. 2.23 Pipeline Acceptance Tests
+This extension turns Pack 2 from “OCR + parser prompts” into a full operational ingestion system with deterministic routing, admin recovery, and the promoter-media layer that cleanly sits on top of the Phase 0 event graph.
+Next logical move is Extend Pack 3 so the public/event/feed query surface matches the pipeline contracts exactly.
+Below is Extended Pack 3, covering the public query surface, map/calendar delivery layer, saved-event APIs, admin review APIs, promoter/feed query APIs, BFF shaping, caching, and query performance contracts for WeUP Phase 0 + Phase 0.1.
+This pack is the read/query counterpart to Packs 1 and 2. Pack 2 builds the ingestion and publication pipeline; Pack 3 turns published data into the map-first discovery client and promoter identity/feed surfaces required by the PRD/FRD/TRD. Phase 0 is centered on “map-based visualization” and a “time-aware calendar system,” while Phase 0.1 extends that with “public profiles,” “feed-based content model,” and event-linked media.
+________________
+
+
+🗺️ EXTENDED BUNDLE PACK 3 — QUERY SURFACE, MAP/CALENDAR DELIVERY, SAVED, ADMIN, PROMOTER FEEDS
+Prompt 3.3 — Query Architecture + BFF Layer
+Design and implement the full read/query architecture for WeUP Phase 0 and Phase 0.1.
+
+
+Ground the implementation in these product requirements:
+"WeUP Phase 0 ingests flyer images ... then converts them into structured event data, map-based visualization, time-aware calendar system." :contentReference[oaicite:2]{index=2}
+"WeUP Phase 0.1 ... introduces Promoter Profiles with media feeds (photos + short-form video)." :contentReference[oaicite:3]{index=3}
+
+
+Requirements:
+- Query side must be optimized for frontend rendering, not domain purity
+- Introduce a BFF/read-model layer in .NET 8
+- Separate write entities from read DTOs
+- Aggregate across:
+  - EventRecords
+  - SavedEvents
+  - PromoterProfiles
+  - FeedPosts
+  - MediaAssets
+- Support both REST and internal service-query abstractions
+
+
+Create:
+- /Application/Queries
+- /Application/ReadModels
+- /Infrastructure/Queries
+- QueryDispatcher or MediatR query handlers
+- BffAggregationService
+
+
+Output:
+- file paths
+- contracts
+- production-ready code
+
+
+________________
+
+
+Prompt 3.4 — Public Events Query API
+Implement the full public events query API for Phase 0.
+
+
+Use these exact requirements:
+"The system shall return events within a requested date/time range." :contentReference[oaicite:4]{index=4}
+"The system shall return map-ready event data." :contentReference[oaicite:5]{index=5}
+"The system shall return calendar-ready event data grouped or filterable by day and time range." :contentReference[oaicite:6]{index=6}
+
+
+Create endpoints:
+- GET /api/events
+- GET /api/events/{id}
+- GET /api/events/map
+- GET /api/events/calendar
+
+
+Support query parameters:
+- from
+- to
+- lat
+- lng
+- radiusKm
+- page
+- pageSize
+- genre (optional future-safe)
+- venue (optional future-safe)
+
+
+Requirements:
+- public reads only return published events
+- sort by StartDateTimeLocal ascending
+- compact DTOs for list/map endpoints
+- expanded DTO for event detail endpoint
+- safe null handling
+- pagination support for dense time windows
+
+
+________________
+
+
+Prompt 3.5 — Map Payload Optimizer
+Implement the map payload optimizer for WeUP Phase 0.
+
+
+Ground it in:
+"Primary UI surface" = map-based discovery :contentReference[oaicite:7]{index=7}
+"events plotted as markers" with "clustering at zoom levels" :contentReference[oaicite:8]{index=8}
+"Map as Primary Surface" and "The map is the default state" :contentReference[oaicite:9]{index=9}
+
+
+Requirements:
+- create a dedicated MapEventDto
+- return only map-essential fields:
+  - id
+  - title
+  - latitude
+  - longitude
+  - start time
+  - venue
+  - flyer thumbnail URL
+  - promoted/featured flag if present
+- support clustering-friendly response shape
+- support windowed geo queries
+- keep response size minimized for mobile
+
+
+Create:
+- MapEventDto
+- MapClusterHint model
+- GetMapEventsQuery
+- MapQueryService
+- controller endpoint
+- tests validating payload compactness
+
+
+________________
+
+
+Prompt 3.6 — Time Window Query Engine
+Implement the time-window query engine for WeUP.
+
+
+Use these anchors:
+"provide time-based filtering" :contentReference[oaicite:10]{index=10}
+"Time as Map Filter (not global state)" :contentReference[oaicite:11]{index=11}
+"Filter visible events using a time-based control" :contentReference[oaicite:12]{index=12}
+
+
+Requirements:
+- support:
+  - happening now
+  - tonight
+  - weekend
+  - custom from/to
+- treat time filtering as query-layer behavior, not a global mutable singleton
+- centralize time-window resolution in one service
+- timezone-safe handling with default America/Chicago for local event projection
+
+
+Create:
+- TimeWindowPreset enum
+- TimeWindowResolver
+- GetEventsByTimeWindowQuery
+- unit tests for:
+  - now
+  - overnight events
+  - weekend boundaries
+  - DST-safe local rendering assumptions
+
+
+________________
+
+
+Prompt 3.7 — Calendar Query Model
+Implement the calendar query model for WeUP Phase 0.
+
+
+Use these requirements:
+"Alternative visualization" = calendar view :contentReference[oaicite:13]{index=13}
+Requirements:
+"masonry layout (not linear list)"
+"modal-based expansion"
+"grouped by day" :contentReference[oaicite:14]{index=14}
+
+
+Requirements:
+- return grouped-by-day response
+- each day contains compact event cards
+- include density metadata for masonry rendering
+- support month query and arbitrary date-range query
+- event cards must include enough data to open Event Detail modal without a second roundtrip if configured
+
+
+Create:
+- CalendarDayDto
+- CalendarEventDto
+- GetCalendarEventsQuery
+- CalendarQueryService
+- endpoint: GET /api/events/calendar
+
+
+________________
+
+
+Prompt 3.8 — Event Detail Query + Modal Payload
+Implement the event detail query endpoint and DTO.
+
+
+Use these anchors:
+"The frontend shall present event details in an overlay/modal." :contentReference[oaicite:15]{index=15}
+Required fields:
+"title, date/time, venue, address, flyer image, save button" :contentReference[oaicite:16]{index=16}
+"Event Modal" fields: "event name, date/time, venue, flyer image, save button" :contentReference[oaicite:17]{index=17}
+
+
+Requirements:
+- build EventDetailDto
+- include:
+  - id
+  - title
+  - formatted and raw datetime fields
+  - venue
+  - address
+  - coordinates
+  - flyer image URL
+  - saved state if authenticated
+  - parse-corrected vs source-origin metadata if available
+- detail endpoint must be fast enough for modal opening
+- support optional enrichment with promoter media section in Phase 0.1
+
+
+Create:
+- GET /api/events/{id}
+- EventDetailDto
+- EventDetailQueryHandler
+- tests
+
+
+________________
+
+
+Prompt 3.9 — Saved Events Query/API
+Implement the full saved events system query surface.
+
+
+Use these requirements:
+"user can save event" and it is "accessible via 'Saved' view" :contentReference[oaicite:18]{index=18}
+"An authenticated user shall be able to save an event" and "remove a saved event from their list." :contentReference[oaicite:19]{index=19}
+
+
+Create endpoints:
+- POST /api/events/{id}/save
+- DELETE /api/events/{id}/save
+- GET /api/me/saved-events
+
+
+Requirements:
+- authenticated only
+- idempotent save behavior
+- compact SavedEventDto for saved list
+- sort saved events by soonest upcoming event first
+- return flyer preview and venue
+- support future grouping models:
+  - tonight
+  - week
+  - custom collections
+- do not expose unpublished/hidden events in saved list
+
+
+________________
+
+
+Prompt 3.10 — Admin Review Query Surface
+Implement the admin review query/read surface for Phase 0.
+
+
+Use these anchors:
+"Admin users shall be able to review parsed event candidates requiring human validation." :contentReference[oaicite:20]{index=20}
+Review data:
+"original flyer image, OCR text, parsed fields, confidence scores, parse notes" :contentReference[oaicite:21]{index=21}
+
+
+Create endpoints:
+- GET /api/admin/review/candidates
+- GET /api/admin/review/candidates/{uploadId}
+- POST /api/admin/review/candidates/{uploadId}/approve
+- POST /api/admin/review/candidates/{uploadId}/reject
+- PUT /api/admin/review/candidates/{uploadId}
+
+
+Requirements:
+- admin authorization
+- list endpoint supports filters:
+  - reviewStatus
+  - date range
+  - confidence band
+- detail payload includes:
+  - source upload metadata
+  - OCR raw text
+  - normalized text if available
+  - parsed candidate fields
+  - geocode result
+  - confidence breakdown
+  - duplicate suspicion flags
+- audit admin actions
+
+
+________________
+
+
+Prompt 3.11 — Query Caching Layer
+Implement the query caching layer for Pack 3.
+
+
+Use these anchors:
+Redis is part of the architecture and should support query performance. :contentReference[oaicite:22]{index=22}
+Performance targets:
+"Event query API < 200 ms"
+"Map payload query < 300 ms" :contentReference[oaicite:23]{index=23}
+
+
+Requirements:
+- cache list/map/calendar reads
+- cache keys must include:
+  - route
+  - time window
+  - geospatial params
+  - page/pageSize
+  - auth-sensitive flags when needed
+- invalidate relevant caches when:
+  - event published
+  - event hidden
+  - event corrected
+  - promoter feed published or moderated
+- short TTLs for time-sensitive windows
+- no caching for admin review detail unless explicitly safe
+
+
+Create:
+- QueryCacheService
+- key builder
+- invalidation hooks
+- decorator pattern around query services
+
+
+________________
+
+
+Prompt 3.12 — Geo Query Engine
+Implement geospatial filtering for public event queries.
+
+
+Use these requirements:
+"The system shall return map-ready event data."
+Map queries may include lat/lng/radius windows. :contentReference[oaicite:24]{index=24}
+The technical model includes lat/lng and spatial indexing considerations. :contentReference[oaicite:25]{index=25}
+
+
+Requirements:
+- support distance-based filtering from user-supplied center
+- fallback bounding-box prefilter + in-memory precise haversine if needed
+- optimized query path for PostgreSQL
+- safe defaults when lat/lng not provided
+- do not return events with invalid zeroed coordinates unless explicitly requested for diagnostics
+
+
+Create:
+- GeoQueryService
+- Haversine utility
+- spatial filter extensions
+- tests for radius filtering and ordering
+
+
+________________
+
+
+Prompt 3.13 — Deduplicated Event Read Model
+Implement a read-model layer that hides duplicate or superseded event records from public discovery.
+
+
+Ground it in:
+"The system should reduce duplicate final event creation when the same flyer is uploaded repeatedly." :contentReference[oaicite:26]{index=26}
+
+
+Requirements:
+- read layer must prefer canonical/published event over duplicate/superseded records
+- support hidden/archived filtering
+- keep admin visibility of duplicates but not public visibility
+- expose duplicate status only to admin endpoints
+
+
+Create:
+- PublicEventReadModel
+- AdminEventReadModel
+- query filters
+- merge resolution strategy
+
+
+________________
+
+
+🎭 PHASE 0.1 QUERY SURFACE — PROMOTER / FEED / GALLERY / EVENT-MEDIA
+Prompt 3.14 — Promoter Public Query API
+Implement the public promoter profile query API for Phase 0.1.
+
+
+Use these anchors:
+"System shall allow authenticated users to create a promoter profile." :contentReference[oaicite:27]{index=27}
+"Profile created" and "Accessible via /promoters/{slug}" :contentReference[oaicite:28]{index=28}
+"A public identity page for promoters." :contentReference[oaicite:29]{index=29}
+
+
+Create endpoints:
+- GET /api/promoters/{slug}
+- GET /api/promoters/{slug}/events
+- GET /api/promoters/{slug}/gallery
+- GET /api/promoters/{slug}/feed
+
+
+Requirements:
+- resolve by slug
+- return only active/public-safe data
+- include verification badge state
+- include public profile metadata:
+  - displayName
+  - bio
+  - profileImageUrl
+  - bannerImageUrl
+  - city
+  - social links
+- do not expose hidden/suspended status publicly beyond omission
+
+
+________________
+
+
+Prompt 3.15 — Promoter Feed Query Model
+Implement the promoter feed query model for Phase 0.1.
+
+
+Use these anchors:
+"Feed-based publishing model" :contentReference[oaicite:30]{index=30}
+"Feed Behavior: Chronological, No ranking algorithm, Mobile-first scroll, Media-first rendering" :contentReference[oaicite:31]{index=31}
+"Post becomes visible ... Appears in promoter profile feed and event page (if linked)" :contentReference[oaicite:32]{index=32}
+
+
+Requirements:
+- chronological ordering only
+- no algorithmic ranking
+- media-first DTOs
+- include:
+  - post metadata
+  - ordered media list
+  - linked event summary if present
+- exclude flagged/hidden content
+- pagination/cursor support for long feeds
+
+
+Create:
+- FeedPostDto
+- FeedMediaDto
+- PromoterFeedQueryService
+- GET /api/promoters/{slug}/feed
+
+
+________________
+
+
+Prompt 3.16 — Promoter Gallery Query Model
+Implement the promoter gallery query API.
+
+
+Use these anchors:
+"Header, Feed, Events, Gallery" are part of the public profile experience. :contentReference[oaicite:33]{index=33}
+Gallery is a media grid with images/videos and click-to-expand interaction in the UI model. :contentReference[oaicite:34]{index=34}
+
+
+Requirements:
+- return flattened media assets for gallery rendering
+- include thumbnails, media type, caption, duration if video
+- support filters:
+  - all
+  - photos
+  - videos
+  - linked to event
+- exclude flagged/hidden items
+- sort newest first by default
+
+
+Create:
+- PromoterGalleryItemDto
+- PromoterGalleryQueryService
+- GET /api/promoters/{slug}/gallery
+
+
+________________
+
+
+Prompt 3.17 — Event Detail Enrichment with Promoter Media
+Extend the event detail query to support Phase 0.1 event-media enrichment.
+
+
+Use these anchors:
+"Event page shows associated promoter posts and media preview section" :contentReference[oaicite:35]{index=35}
+Event integration should allow media linked from promoter feed to an existing event. :contentReference[oaicite:36]{index=36}
+
+
+Requirements:
+- enrich EventDetailDto with:
+  - fromPromoter section
+  - linked promoter summary
+  - media preview cards
+  - feed post ids
+- only include public-safe media/posts
+- preserve fast modal performance with optional query flag:
+  - includePromoterMedia=true
+
+
+Create:
+- EventPromoterMediaDto
+- enrichment query service
+- optional include flag on GET /api/events/{id}
+
+
+________________
+
+
+Prompt 3.18 — Authenticated Promoter Management Query API
+Implement the authenticated promoter management query surface.
+
+
+Ground it in the Phase 0.1 management flows:
+- create profile
+- manage feed
+- manage media
+- preview public profile 
+
+
+Create endpoints:
+- GET /api/me/promoter-profile
+- GET /api/me/promoter-posts
+- GET /api/me/promoter-media
+- GET /api/me/promoter-dashboard-summary
+
+
+Requirements:
+- owner-only access
+- dashboard summary includes:
+  - profile completeness
+  - post counts
+  - media counts
+  - flagged content counts
+  - linked events counts
+- do not mix admin-only moderation views into owner dashboard
+
+
+________________
+
+
+Prompt 3.19 — Admin Promoter Moderation Query/API
+Implement admin moderation query endpoints for promoter/media/feed review.
+
+
+Use these anchors:
+"Admin can set Pending, Verified, Rejected" for promoter verification :contentReference[oaicite:38]{index=38}
+"Flagged media is not visible publicly" and "Admin can override visibility" :contentReference[oaicite:39]{index=39}
+
+
+Create endpoints:
+- GET /api/admin/promoters
+- GET /api/admin/promoters/{id}
+- POST /api/admin/promoters/{id}/verify
+- POST /api/admin/promoters/{id}/suspend
+- GET /api/admin/media/review
+- POST /api/admin/media/{id}/flag
+- POST /api/admin/media/{id}/hide
+
+
+Requirements:
+- filters by verification status, moderation state, date range
+- include moderation logs and reason fields
+- all actions auditable
+
+
+________________
+
+
+Prompt 3.20 — Unified Discovery Query (Phase 0 + 0.1)
+Implement a unified discovery query that allows the frontend to fetch event discovery results enriched with promoter identity when available.
+
+
+Ground it in:
+Phase 0 = event discovery via flyers, OCR, map, calendar :contentReference[oaicite:40]{index=40}
+Phase 0.1 = promoter identity and media attached to events :contentReference[oaicite:41]{index=41}
+
+
+Requirements:
+- keep base event discovery intact
+- if promoter/feed data exists, include lightweight promoter summary:
+  - promoter slug
+  - display name
+  - profile image
+  - verified status
+- do not turn the event list into a social feed
+- event remains primary object
+
+
+Create:
+- DiscoverEventDto
+- GET /api/discover
+- feature flag to include/exclude promoter enrichment
+
+
+________________
+
+
+Prompt 3.21 — Query Contracts for Frontend Modes
+Create dedicated read DTO contracts for the frontend modes defined in the UI/UX Bible.
+
+
+Use these anchors:
+The system is composed of discrete modes:
+Map, Calendar, Event Detail, Upload, Saved, Profile :contentReference[oaicite:42]{index=42}
+"Only one mode may dominate user attention." :contentReference[oaicite:43]{index=43}
+
+
+Requirements:
+- create mode-specific DTOs, not one giant universal DTO
+- contracts:
+  - MapModeDto
+  - CalendarModeDto
+  - EventDetailDto
+  - SavedModeDto
+  - ProfileModeDto
+  - UploadStatusDto
+- each DTO contains only the fields necessary for that mode
+- maintain explicit contracts to reduce overfetching
+
+
+Output:
+- WeUp.Contracts/Queries/*
+- mapping profiles
+- example controller responses
+
+
+________________
+
+
+Prompt 3.22 — Query Performance Test Suite
+Generate performance-oriented tests for the Pack 3 query surface.
+
+
+Use these targets:
+"Event query API < 200 ms"
+"Map payload query < 300 ms" :contentReference[oaicite:44]{index=44}
+
+
+Test:
+- public events query under typical density
+- map query under clustered city window
+- calendar month query
+- event detail query
+- promoter feed query
+- enriched event detail with promoter media
+
+
+Include:
+- DB-backed integration tests
+- cache-hit vs cache-miss scenarios
+- pagination edge cases
+- duplicate suppression validation
+
+
+________________
+
+
+Prompt 3.23 — OpenAPI / Swagger Contracts
+Generate full OpenAPI/Swagger definitions for Pack 3 endpoints.
+
+
+Cover:
+Phase 0:
+- /api/events
+- /api/events/{id}
+- /api/events/map
+- /api/events/calendar
+- /api/events/{id}/save
+- /api/me/saved-events
+- admin review endpoints
+
+
+Phase 0.1:
+- /api/promoters/{slug}
+- /api/promoters/{slug}/feed
+- /api/promoters/{slug}/gallery
+- /api/promoters/{slug}/events
+- /api/me/promoter-*
+- admin promoter/media moderation endpoints
+
+
+Requirements:
+- response examples
+- auth requirements
+- query param docs
+- error schemas
+- pagination schemas
+
+
+________________
+
+
+Recommended execution order
+Run these after the original Pack 3 prompts:
+1. 3.3 Query Architecture + BFF Layer
+2. 3.4 Public Events Query API
+3. 3.5 Map Payload Optimizer
+4. 3.6 Time Window Query Engine
+5. 3.7 Calendar Query Model
+6. 3.8 Event Detail Query
+7. 3.9 Saved Events API
+8. 3.10 Admin Review Query Surface
+9. 3.11 Query Caching
+10. 3.12 Geo Query Engine
+11. 3.13 Deduplicated Read Model
+12. 3.14–3.19 Promoter/feed/gallery/admin Phase 0.1 query surface
+13. 3.20 Unified Discovery Query
+14. 3.21 Mode-specific query contracts
+15. 3.22 Query performance tests
+16. 3.23 OpenAPI contracts
+This extends Pack 3 from a few event endpoints into the full read-side contract system needed to drive the WeUP frontend modes, admin review tooling, and Phase 0.1 promoter/feed surfaces without violating the original product boundary. The event remains the primary discovery object in Phase 0, and Phase 0.1 adds promoter identity and linked media without collapsing into a social feed.
+Next logical step is Extend Pack 4 so the Vue/Quasar frontend contracts match these APIs exactly.
+Below is Extended Pack 4, focused on the Vue 3 + Quasar frontend realization of WeUP Phase 0 + Phase 0.1, explicitly aligned to the uploaded PRD/FRD/TRD/UI-UX Bible.
+This pack turns the product into an actual client system with:
+* mode-driven SPA architecture
+* single-viewport map-first interaction
+* upload → OCR → parse → edit → preview → save flow
+* calendar modal system
+* saved view
+* event detail chamber
+* Phase 0.1 promoter profile/feed/gallery/media flows
+The frontend must obey the UX doctrine that the map is primary, the app is layered rather than page-based, and the interface must remain within a single viewport.
+________________
+
+
+🎨 EXTENDED BUNDLE PACK 4 — VUE 3 + QUASAR FRONTEND REALIZATION
+Prompt 4.5 — Frontend Architecture + App Shell
+Design and implement the full Vue 3 + Quasar frontend architecture for WeUP Phase 0 and Phase 0.1.
+
+
+Ground it in these exact requirements:
+"The system is not a collection of screens. It is a spatial operating layer over a city." :contentReference[oaicite:1]{index=1}
+"The entire application must fit within one viewport at all times." :contentReference[oaicite:2]{index=2}
+"The map is the default state" and "The map is the main interaction layer" :contentReference[oaicite:3]{index=3}
+
+
+Requirements:
+- Vue 3 + Quasar SPA
+- Pinia state management
+- Vue Router only where appropriate, but mode transitions should be layered/UI-state driven, not page-heavy
+- single viewport app shell
+- global overlay manager
+- finite-state mode controller
+- mobile-first
+- dark cinematic visual baseline
+
+
+Create:
+- AppShell.vue
+- MainLayout.vue
+- composables for mode/state control
+- overlay registry
+- route config
+- Pinia stores
+- architecture notes in comments
+
+
+The app must support these discrete modes:
+Map, Calendar, Event Detail, Upload, Saved, Profile :contentReference[oaicite:4]{index=4}
+
+
+________________
+
+
+Prompt 4.6 — Finite State Machine for UI Modes
+Implement the WeUP frontend mode state machine.
+
+
+Use these exact anchors:
+"The system must behave as a finite state machine (FSM)." :contentReference[oaicite:5]{index=5}
+"Only one mode may dominate user attention." :contentReference[oaicite:6]{index=6}
+
+
+Required mode transitions:
+MAP → EVENT
+MAP → CALENDAR
+MAP → UPLOAD
+MAP → SAVED
+MAP → PROFILE
+CALENDAR → EVENT
+EVENT → MAP
+UPLOAD → MAP
+SAVED → EVENT → MAP :contentReference[oaicite:7]{index=7}
+
+
+Requirements:
+- create a Pinia store or composable-driven FSM
+- explicit transition methods
+- invalid transitions blocked
+- transition animations can be attached later
+- modal depth/layer awareness built in
+
+
+Create:
+- useWeupModeMachine.ts
+- mode enums
+- transition guards
+- tests for valid/invalid transitions
+
+
+________________
+
+
+Prompt 4.7 — Z-Layer / Overlay System
+Implement the layered UI system for WeUP.
+
+
+Use these exact layer definitions:
+"Layer 0 — World Surface: Map"
+"Layer 1 — Context HUD"
+"Layer 2 — Controls"
+"Layer 3 — Mode Containers"
+"Layer 4 — Focused Content"
+"Layer 5 — System Dialogs" :contentReference[oaicite:8]{index=8}
+
+
+Requirements:
+- create a reusable overlay manager
+- z-layered components
+- prevent modal stacking ambiguity
+- support:
+  - Calendar modal
+  - Upload flow
+  - Event detail chamber
+  - OCR correction dialog
+  - confirmations and errors
+
+
+Create:
+- OverlayHost.vue
+- FocusModal.vue
+- LayerContainer.vue
+- useOverlayManager.ts
+
+
+Every overlay must declare:
+- mode
+- layer
+- close behavior
+- whether bottom nav/time controls are suppressed
+
+
+________________
+
+
+Prompt 4.8 — Map Mode (Primary Surface)
+Implement WeUP Map Mode as the primary surface.
+
+
+Use these anchors:
+"Primary UI surface." :contentReference[oaicite:9]{index=9}
+"Map Mode (Default): Full map visibility, minimal UI, time filtering active, event signals visible" :contentReference[oaicite:10]{index=10}
+"events plotted as markers" and "clustering at zoom levels" :contentReference[oaicite:11]{index=11}
+
+
+Requirements:
+- dark map theme
+- marker rendering
+- clustering
+- pan/zoom
+- marker click opens event preview/detail
+- minimal HUD
+- time filtering active in this mode
+- keep breathing room and avoid UI crowding
+
+
+Create:
+- MapMode.vue
+- MapCanvas.vue
+- EventMarkerLayer.vue
+- ClusterLayer.vue
+- MapHud.vue
+- useMapEvents.ts
+
+
+Support Mapbox or Leaflet via adapter component.
+
+
+________________
+
+
+Prompt 4.9 — Time System UI
+Implement the WeUP time control system.
+
+
+Use these anchors:
+"Time as Map Filter (not global state)" :contentReference[oaicite:12]{index=12}
+"Filter events by time window" with a "horizontal slider" that "updates map in real-time" :contentReference[oaicite:13]{index=13}
+Default states:
+"Now / Tonight / Weekend" :contentReference[oaicite:14]{index=14}
+
+
+Requirements:
+- create:
+  - compact time pill
+  - expanded time tray
+  - slider/timeline control
+- the time system must be visible only when contextually relevant
+- avoid bottom-zone collision with navigation
+- map results should refresh from time filter changes
+
+
+Create:
+- TimePill.vue
+- TimeTray.vue
+- TimeSlider.vue
+- useTimeWindow.ts
+- preset handling:
+  - now
+  - tonight
+  - weekend
+  - custom range
+
+
+________________
+
+
+Prompt 4.10 — Event Preview + Event Detail Chamber
+Implement the event preview and event detail system.
+
+
+Use these anchors:
+"Event Detail Mode: immersive modal, strong content hierarchy, clear CTA cluster" :contentReference[oaicite:15]{index=15}
+"The frontend shall present event details in an overlay/modal." :contentReference[oaicite:16]{index=16}
+Required fields:
+"title, date/time, venue, address, flyer image, save button" 
+
+
+Requirements:
+- map marker tap can open lightweight preview or directly open event chamber
+- detail chamber must include:
+  - hero/flyer image
+  - title
+  - date/time
+  - venue
+  - address
+  - CTA cluster:
+    - Save
+    - Route
+    - Share
+    - External Link
+- background recession via blur/dim
+- quick return to prior context
+
+
+Create:
+- EventPeekCard.vue
+- EventDetailModal.vue
+- EventMetaBlock.vue
+- EventActionsBar.vue
+- useEventDetail.ts
+
+
+________________
+
+
+Prompt 4.11 — Calendar Mode (True Modal System)
+Implement Calendar Mode as a full modal takeover.
+
+
+Use these anchors:
+"Calendar Mode: Full modal takeover" :contentReference[oaicite:18]{index=18}
+Requirements:
+"masonry layout (not linear list)"
+"modal-based expansion"
+"grouped by day" :contentReference[oaicite:19]{index=19}
+"Internal Scroll Region (contained, not page scroll)" :contentReference[oaicite:20]{index=20}
+
+
+Requirements:
+- true modal takeover over map
+- masonry/grid event layout
+- grouped by day
+- contained internal scroll region only
+- click event card to open Event Detail
+- date chips / date navigation
+
+
+Create:
+- CalendarMode.vue
+- CalendarDayGroup.vue
+- CalendarEventCard.vue
+- MasonryCalendarGrid.vue
+- CalendarHeaderChips.vue
+- useCalendarEvents.ts
+
+
+________________
+
+
+Prompt 4.12 — Upload / OCR / Parser Flow UI
+Implement the full upload flow UI for Phase 0.
+
+
+Use these anchors:
+"Guided Steps (Upload → OCR → Parse → Edit → Preview → Save)" :contentReference[oaicite:21]{index=21}
+"The system shall allow an authenticated user to upload a flyer image for event ingestion." :contentReference[oaicite:22]{index=22}
+"The system shall provide an upload response or status indicator that reflects whether an uploaded flyer is still processing, published, or under review." :contentReference[oaicite:23]{index=23}
+
+
+Requirements:
+- step-based contained flow
+- progress states
+- async polling or websocket-ready status
+- OCR confidence and parse confidence surfaced
+- manual correction form for low-confidence fields
+- preview before save/publish
+- successful upload returns to map/calendar discover loop
+
+
+Create:
+- UploadMode.vue
+- FlyerDropzone.vue
+- OcrProcessingStep.vue
+- ParseEditStep.vue
+- EventPreviewStep.vue
+- UploadStatusToast.vue
+- useFlyerUpload.ts
+
+
+________________
+
+
+Prompt 4.13 — OCR Correction / Manual Edit UX
+Implement the OCR correction and manual edit experience.
+
+
+Use these anchors:
+"Confidence & Error Surfacing"
+"Inline Editing UX (fast correction)" :contentReference[oaicite:24]{index=24}
+Admin and user correction flow must preserve a human correction path when automation is weak. 
+
+
+Requirements:
+- editable parsed fields:
+  - title
+  - date
+  - start time
+  - end time
+  - venue
+  - address
+- display confidence badges
+- show raw OCR text in expandable region
+- fast correction without leaving the upload flow
+- field-level validation feedback
+
+
+Create:
+- ParsedFieldEditor.vue
+- ConfidenceBadge.vue
+- RawOcrPanel.vue
+- CorrectionSummary.vue
+
+
+________________
+
+
+Prompt 4.14 — Saved Mode
+Implement Saved Mode.
+
+
+Use these anchors:
+"user can save event"
+"accessible via 'Saved' view" :contentReference[oaicite:26]{index=26}
+"Saved Mode: Event collection view, quick access to saved signals" :contentReference[oaicite:27]{index=27}
+
+
+Requirements:
+- saved events overlay/mode
+- compact and expanded card layouts
+- quick actions:
+  - unsave
+  - open detail
+  - route
+- empty state and first-time state
+- return back to prior map context
+
+
+Create:
+- SavedMode.vue
+- SavedEventCard.vue
+- SavedEmptyState.vue
+- useSavedEvents.ts
+
+
+________________
+
+
+Prompt 4.15 — Bottom Navigation + Control Visibility Contract
+Implement the bottom navigation and control visibility system.
+
+
+Use these anchors:
+"Bottom Navigation (roles, compression rules)" :contentReference[oaicite:28]{index=28}
+"Every control must declare which mode it belongs to, when it is visible, when it is hidden" :contentReference[oaicite:29]{index=29}
+"No stacked vertical bars competing for space" :contentReference[oaicite:30]{index=30}
+
+
+Requirements:
+- create bottom nav for:
+  - Map
+  - Calendar
+  - Upload
+  - Saved
+  - Profile
+- suppress bottom nav in deep modal states like Event Detail or Upload substeps where appropriate
+- time controls and bottom nav must never visually collide
+- one active bottom zone contract only
+
+
+Create:
+- BottomNav.vue
+- useControlVisibility.ts
+- visibility matrix config
+- tests for visibility by mode
+
+
+________________
+
+
+Prompt 4.16 — Profile Mode (Phase 0 Base + Phase 0.1 Expansion Point)
+Implement Profile Mode.
+
+
+Use these anchors:
+"Profile Mode: Identity & preferences, Account management, Settings, No discovery clutter" :contentReference[oaicite:31]{index=31}
+"Preferences (radar, notifications, genres)"
+"Content ownership (uploads, saved)" :contentReference[oaicite:32]{index=32}
+
+
+Requirements:
+- Phase 0:
+  - account basics
+  - preferences
+  - saved count
+  - uploads history
+- must remain isolated from discovery clutter
+- designed to expand cleanly into promoter profile management for Phase 0.1
+
+
+Create:
+- ProfileMode.vue
+- PreferencesPanel.vue
+- UploadHistoryList.vue
+- AccountPanel.vue
+
+
+________________
+
+
+📹 PHASE 0.1 FRONTEND EXTENSION — PROMOTER / FEED / GALLERY / MEDIA
+Prompt 4.17 — Promoter Public Profile UI
+Implement the public promoter profile page for Phase 0.1.
+
+
+Use these anchors:
+"A public identity page for promoters." :contentReference[oaicite:33]{index=33}
+Public profile components:
+"Header, Feed, Events, Gallery" :contentReference[oaicite:34]{index=34}
+
+
+Requirements:
+- header includes:
+  - banner image
+  - profile image
+  - display name
+  - bio
+  - city
+  - social links
+  - verification badge
+- tabs:
+  - Feed
+  - Events
+  - Gallery
+- mobile-first layout
+- event remains primary discovery object when coming from event context
+
+
+Create:
+- PromoterProfilePage.vue
+- PromoterHeader.vue
+- PromoterTabs.vue
+- PromoterVerificationBadge.vue
+- usePromoterProfile.ts
+
+
+________________
+
+
+Prompt 4.18 — Promoter Feed UI
+Implement the promoter feed UI for Phase 0.1.
+
+
+Use these anchors:
+"Feed Behavior: Chronological, No ranking algorithm, Mobile-first scroll, Media-first rendering" :contentReference[oaicite:35]{index=35}
+"Post becomes visible ... Appears in promoter profile feed and event page (if linked)" :contentReference[oaicite:36]{index=36}
+
+
+Requirements:
+- chronological feed only
+- media-first feed cards
+- support:
+  - single photo
+  - multi-photo carousel
+  - short video
+  - linked event chip
+- clean mobile scroll inside profile/feed context
+- no comments, no likes, no DM affordances
+
+
+Create:
+- PromoterFeedTab.vue
+- FeedPostCard.vue
+- FeedMediaCarousel.vue
+- FeedVideoCard.vue
+- LinkedEventChip.vue
+
+
+________________
+
+
+Prompt 4.19 — Promoter Gallery UI
+Implement the promoter gallery UI.
+
+
+Use these anchors:
+"Gallery" is one of the public profile components. :contentReference[oaicite:37]{index=37}
+Phase 0.1 includes multi-photo + short video uploads and a gallery-like media surface. 
+
+
+Requirements:
+- grid of media
+- filters:
+  - all
+  - photos
+  - videos
+- click-to-expand modal
+- video duration labels
+- clean thumbnail loading
+- exclude hidden/flagged items by API contract
+
+
+Create:
+- PromoterGalleryTab.vue
+- GalleryGrid.vue
+- GalleryMediaCard.vue
+- GalleryLightboxModal.vue
+
+
+________________
+
+
+Prompt 4.20 — Promoter Events Tab
+Implement the promoter events tab.
+
+
+Use these anchors:
+User story:
+"Discover events from promoter -> I want consistency" :contentReference[oaicite:39]{index=39}
+Public profile includes an Events section. :contentReference[oaicite:40]{index=40}
+
+
+Requirements:
+- list events associated with promoter
+- upcoming and past segmentation
+- event cards open Event Detail modal
+- keep promoter identity context visible
+
+
+Create:
+- PromoterEventsTab.vue
+- PromoterEventCard.vue
+- usePromoterEvents.ts
+
+
+________________
+
+
+Prompt 4.21 — Promoter Media Upload + Feed Composer
+Implement the promoter media upload and feed composer UI.
+
+
+Use these anchors:
+"Promoter uploads media to system" :contentReference[oaicite:41]{index=41}
+Create post flow includes:
+- upload media
+- add caption
+- optionally attach to existing event
+- publish :contentReference[oaicite:42]{index=42}
+
+
+Constraints:
+- images up to 10 per post
+- short videos only, max 30 seconds 
+
+
+Requirements:
+- create post modal/page
+- drag/drop + mobile picker
+- media preview strip
+- reorder media
+- caption/body/title
+- post type selector:
+  - General
+  - Event Promo
+  - Recap
+  - Venue Highlight
+- optional link to existing event
+- publish/draft actions
+
+
+Create:
+- FeedPostComposer.vue
+- MediaUploader.vue
+- MediaPreviewStrip.vue
+- PostTypeSelector.vue
+- EventLinkSelector.vue
+- usePromoterComposer.ts
+
+
+________________
+
+
+Prompt 4.22 — Event Detail Enrichment with Promoter Media
+Extend the Event Detail UI to support Phase 0.1 promoter enrichment.
+
+
+Use these anchors:
+"Event page shows associated promoter posts and media preview section" :contentReference[oaicite:44]{index=44}
+This should improve vibe/trust without turning the product into a social feed. :contentReference[oaicite:45]{index=45}
+
+
+Requirements:
+- optional "From Promoter" section inside Event Detail modal
+- show promoter identity summary
+- media preview cards
+- tap through to promoter profile
+- preserve event as primary object
+- section hidden when no promoter-linked media exists
+
+
+Create:
+- EventPromoterMediaSection.vue
+- PromoterMiniCard.vue
+- MediaPreviewRail.vue
+
+
+________________
+
+
+Prompt 4.23 — Owner Dashboard for Promoter Management
+Implement the authenticated promoter owner dashboard.
+
+
+Ground it in Phase 0.1 management behavior:
+create profile, manage feed, manage media, preview public profile 
+
+
+Requirements:
+- dashboard summary
+- profile completeness
+- post count
+- media count
+- linked events count
+- flagged content warnings
+- quick links:
+  - Edit Profile
+  - Create Post
+  - View Public Profile
+  - Review Drafts
+
+
+Create:
+- PromoterDashboardPage.vue
+- DashboardSummaryCards.vue
+- DraftPostList.vue
+- MediaStatusPanel.vue
+- usePromoterDashboard.ts
+
+
+________________
+
+
+🎛️ SYSTEM / VISUAL / MOTION / INFRA FRONTEND LAYER
+Prompt 4.24 — Design Tokens + Theme System
+Implement the WeUP design token system.
+
+
+Use these anchors:
+"Cinematic Minimalism"
+"Deep black base"
+"Neon green signal accents"
+"Glass + blur materials"
+"Strong typography" :contentReference[oaicite:47]{index=47}
+
+
+Requirements:
+- Quasar theme tokens
+- CSS variables
+- color roles:
+  - background
+  - surface
+  - accent
+  - signal
+  - warning
+  - success
+- typography scale
+- spacing tokens
+- elevation/blur tokens
+
+
+Create:
+- tokens.scss
+- quasar.variables.scss
+- theme composable
+- design token JSON if helpful
+
+
+________________
+
+
+Prompt 4.25 — Motion System
+Implement the WeUP motion system.
+
+
+Use these anchors:
+"Principles (calm, cinematic, directional)"
+"Mode Transitions (map ↔ calendar ↔ detail)"
+"Reduced Motion Fallbacks" :contentReference[oaicite:48]{index=48}
+
+
+Requirements:
+- transition presets for:
+  - overlay open/close
+  - map to detail
+  - calendar takeover
+  - feed/gallery lightbox
+- no flashy or noisy animation
+- support reduced-motion mode
+- durations optimized for mobile performance
+
+
+Create:
+- motion.ts
+- reusable transition wrappers
+- reduced-motion composable
+
+
+________________
+
+
+Prompt 4.26 — Frontend API Client Layer
+Implement the frontend API client layer that matches Pack 3 contracts.
+
+
+Requirements:
+- typed API client
+- modules:
+  - eventsApi
+  - uploadsApi
+  - savedApi
+  - promotersApi
+  - adminApi
+- use Axios
+- abort support for rapid filter changes
+- error normalization
+- auth header injection
+
+
+Create:
+- /src/services/api/*
+- TypeScript interfaces matching DTOs
+- composables for fetching and mutation
+
+
+________________
+
+
+Prompt 4.27 — Frontend Error / Empty / Loading States
+Implement consistent frontend status states.
+
+
+Use these anchors:
+"Loading & Empty States"
+"Error Handling (network, parse failures)" :contentReference[oaicite:49]{index=49}
+
+
+Requirements:
+- global and local loading states
+- empty states for:
+  - map no results
+  - calendar empty day
+  - saved empty
+  - promoter gallery empty
+- error toasts/dialogs
+- retry affordances
+- upload under-review state
+
+
+Create:
+- LoadingState.vue
+- EmptyState.vue
+- ErrorState.vue
+- AppToastHost.vue
+
+
+________________
+
+
+Prompt 4.28 — Frontend Performance Hardening
+Implement frontend performance optimizations for WeUP.
+
+
+Use these anchors:
+"Rendering Budgets (map + overlays)"
+"Image Handling (thumbnails, compression)"
+"Network Strategy (pagination, caching)" :contentReference[oaicite:50]{index=50}
+
+
+Requirements:
+- virtualize where appropriate
+- lazy load images/videos
+- throttle map query updates
+- debounce time filter API calls
+- cache recent queries in memory
+- prevent modal lag
+- optimize carousel rendering on mobile
+
+
+Create:
+- useDebouncedQuery.ts
+- useInMemoryQueryCache.ts
+- lazy media components
+- performance notes in comments
+
+
+________________
+
+
+Prompt 4.29 — Frontend Acceptance Test Suite
+Generate frontend component/integration tests for Pack 4.
+
+
+Use these Phase 0 acceptance criteria:
+"Mode Clarity (one dominant mode)"
+"No Viewport Overflow"
+"Control Visibility Compliance"
+"End-to-End Upload → Event → Discover Loop" :contentReference[oaicite:51]{index=51}
+
+
+Also verify:
+- map mode renders correctly
+- time control visibility rules
+- calendar modal takeover behavior
+- event detail modal content
+- upload flow progression
+- saved mode interactions
+- promoter profile/feed/gallery rendering
+- event detail promoter enrichment
+
+
+Use:
+- Vitest
+- Vue Test Utils
+- Playwright for critical flows if needed
+
+
+________________
+
+
+Prompt 4.30 — Frontend File Structure Blueprint
+Generate the final frontend file structure for WeUP Phase 0 + 0.1.
+
+
+Ground it in:
+"Component System"
+"Core Components (Nav, Time Pill, Cards, Modals)"
+"Overlays & Sheets"
+"Reusability & Props Contracts" :contentReference[oaicite:52]{index=52}
+
+
+Produce:
+- /src/pages
+- /src/components/map
+- /src/components/calendar
+- /src/components/event
+- /src/components/upload
+- /src/components/saved
+- /src/components/profile
+- /src/components/promoter
+- /src/stores
+- /src/composables
+- /src/services
+- /src/styles
+
+
+Include a brief note for each folder’s responsibility.
+
+
+________________
+
+
+Recommended execution order
+Run these after your original Pack 4 prompts:
+1. 4.5 Frontend Architecture + App Shell
+2. 4.6 FSM for UI Modes
+3. 4.7 Z-Layer / Overlay System
+4. 4.8 Map Mode
+5. 4.9 Time System
+6. 4.10 Event Preview + Detail Chamber
+7. 4.11 Calendar Mode
+8. 4.12 Upload / OCR / Parser Flow
+9. 4.13 OCR Correction UX
+10. 4.14 Saved Mode
+11. 4.15 Bottom Navigation + Visibility Contract
+12. 4.16 Profile Mode
+13. 4.17–4.23 Phase 0.1 promoter/feed/gallery/dashboard flows
+14. 4.24 Design Tokens
+15. 4.25 Motion System
+16. 4.26 API Client Layer
+17. 4.27 Error / Empty / Loading States
+18. 4.28 Performance Hardening
+19. 4.29 Frontend Tests
+20. 4.30 File Structure Blueprint
+This extension gives you the full frontend realization layer that matches the Pack 3 API/query contracts and the Pack 0/0.1 product definitions: a single-viewport, map-first, layered cultural radar with a constrained promoter identity/media extension rather than a generic social app.
+Next logical step is Extend Pack 5 so the Phase 0.1 promoter/media/feed implementation is expanded to the same depth as Packs 2–4.
+Below is Extended Pack 5, focused on the Phase 0.1 promoter identity/media/feed system at implementation depth. It expands the earlier Pack 5 from basic profile/media/feed prompts into a full promoter-domain build pack covering domain model, write-side APIs, moderation, verification, storage rules, monetization hooks, analytics, and acceptance tests.
+This stays inside the Phase 0.1 boundary. The uploaded specs are explicit that this phase adds a “Promoter identity layer,” “Media ingestion (photo + short video),” “Feed-based publishing model,” “Event-media association,” and “Moderation + validation layer,” while excluding messaging, comments, likes, live streaming, and recommendation engines. The PRD also fixes the product direction as “Promoter Profiles with media feeds (photos + short-form video)” and states that this is “NOT a social network buildout. No comments, no DMs, no algorithmic feed.”
+________________
+
+
+🎭 EXTENDED BUNDLE PACK 5 — PHASE 0.1 PROMOTER / MEDIA / FEED DOMAIN
+Prompt 5.5 — Promoter Domain Model + EF Core
+Implement the full Phase 0.1 promoter-domain model in .NET 8 with EF Core.
+
+
+Use these exact anchors:
+"The system introduces: Promoter identity layer, Media ingestion (photo + short video), Feed-based publishing model, Event-media association, Moderation + validation layer." :contentReference[oaicite:2]{index=2}
+Required promoter fields:
+"displayName, slug, bio, profileImageUrl, bannerImageUrl, city, instagramUrl, tiktokUrl, websiteUrl, verificationStatus, createdAt" 
+Required tables:
+"PromoterProfiles, FeedPosts, MediaAssets, FeedPostMedia, Events (existing), ModerationLogs" 
+
+
+Requirements:
+- create entities:
+  - PromoterProfile
+  - FeedPost
+  - MediaAsset
+  - FeedPostMedia
+  - ModerationLog
+- proper relationships:
+  - one promoter -> many feed posts
+  - one promoter -> many media assets
+  - one feed post -> many media assets
+  - one event -> many feed posts 
+- include enums:
+  - VerificationStatus
+  - MediaStatus
+  - PostStatus
+  - PostType
+- Fluent API configuration
+- initial migration
+
+
+Output:
+- entity files
+- DbContext updates
+- migration code
+
+
+________________
+
+
+Prompt 5.6 — Promoter Profile Write APIs
+Implement the promoter profile write-side API for Phase 0.1.
+
+
+Use these anchors:
+"System shall allow authenticated users to create a promoter profile." 
+Processing:
+"Generate unique Slug, Store profile in DB, Validate image formats" 
+Constraints:
+"Slug cannot be modified" and "Changes reflect immediately." 
+
+
+Create endpoints:
+- POST /api/promoters
+- PUT /api/promoters/{id}
+
+
+Requirements:
+- authenticated only
+- one profile per account
+- unique slug generation
+- editable:
+  - bio
+  - images
+  - social links
+  - city
+- slug immutable after creation
+- standardized validation and error responses
+
+
+Create:
+- CreatePromoterProfileCommand
+- UpdatePromoterProfileCommand
+- validators
+- handlers
+- controller
+
+
+________________
+
+
+Prompt 5.7 — Slug Generation + Identity Integrity
+Implement the slug and promoter identity integrity subsystem.
+
+
+Use these anchors:
+"Accessible via /promoters/{slug}" 
+Rules:
+"Unique slug per promoter" and "One profile per account" 
+
+
+Requirements:
+- deterministic slug generation from DisplayName
+- uniqueness resolution strategy
+- reserved word blocklist
+- case-insensitive uniqueness
+- slug immutability after create
+- owner/account linkage enforcement
+
+
+Create:
+- IPromoterSlugService
+- PromoterSlugService
+- reserved words config
+- tests for collisions and edge cases
+
+
+________________
+
+
+Prompt 5.8 — Media Asset Write Pipeline
+Implement the Phase 0.1 media asset write pipeline.
+
+
+Use these anchors:
+"Promoter uploads media to system." 
+Supported types:
+"Images: JPG, PNG, WEBP" and "Video: MP4, MOV, WEBM" 
+Constraints:
+"Max video length: 30 seconds"
+"Max media per post: 10"
+"Images: 5MB"
+"Video: 25MB" 
+
+
+Create endpoints:
+- POST /api/media/upload
+- DELETE /api/media/{id}
+
+
+Requirements:
+- authenticated promoter owner only
+- validate MIME type, size, and duration
+- upload to storage provider
+- generate thumbnail
+- persist metadata:
+  - url
+  - thumbnailUrl
+  - caption
+  - durationSeconds
+  - status
+  - createdAt 
+- support both image and short video
+- owner-only delete
+
+
+________________
+
+
+Prompt 5.9 — Cloudinary-First Media Service
+Implement the Cloudinary-first media storage service for Phase 0.1.
+
+
+Use these anchors:
+Cloudinary is preferred, with "Image optimization, Video compression, CDN delivery, Thumbnail generation." 
+
+
+Requirements:
+- CloudinaryMediaService
+- upload image
+- upload video
+- generate thumbnail URL
+- extract duration
+- support delete
+- local/dev fallback implementation
+- provider-agnostic interface
+
+
+Create:
+- IMediaStorageService
+- CloudinaryMediaService
+- LocalMediaStorageService
+- provider config models
+- DI registration
+
+
+________________
+
+
+Prompt 5.10 — Feed Post Draft/Publish Workflow
+Implement the feed post draft and publish workflow.
+
+
+Use these anchors:
+Inputs for post creation:
+"Title (optional), Body (optional), MediaAssets (required ≥1), PostType, LinkedEventId (optional)" 
+Behavior:
+"Post becomes visible, Timestamp assigned, Appears in promoter profile feed and event page (if linked)." 
+Relationship:
+"One post → many media assets." 
+
+
+Create endpoints:
+- POST /api/feed
+- PUT /api/feed/{id}
+- DELETE /api/feed/{id}
+- GET /api/feed/{id}
+
+
+Requirements:
+- create draft post
+- attach ordered media
+- validate media count
+- optional linked event
+- publish sets PublishedAt and status
+- delete is soft delete
+- media remains stored but hidden on post deletion
+
+
+________________
+
+
+Prompt 5.11 — Feed Media Ordering + Join Model
+Implement FeedPostMedia ordering logic.
+
+
+Use these anchors:
+"FeedPostMedia (Join Table)" with:
+"FeedPostId, MediaAssetId, SortOrder" 
+
+
+Requirements:
+- ordered media attachments per post
+- reorder command
+- duplicate media attach prevention
+- ensure media belongs to same promoter profile as post
+- support:
+  - 1 video + multiple photos
+  - photo-only post
+  - short clip-only post, as allowed by the feature model 
+
+
+Create:
+- AttachMediaToFeedPostCommand
+- ReorderFeedPostMediaCommand
+- validators
+- tests
+
+
+________________
+
+
+Prompt 5.12 — Event Linking Rules
+Implement event-linking rules for promoter feed posts.
+
+
+Use these anchors:
+"Allow media to be linked to events." 
+"Promoter selects event during post creation" and "System validates event exists." 
+Output:
+"Post appears on: Promoter feed, Event detail page." 
+
+
+Requirements:
+- linkedEventId optional
+- verify event exists and is publishable
+- verify link is permitted
+- unlink allowed
+- event detail page enrichment hook
+- query-side projection compatibility
+
+
+Create:
+- LinkFeedPostToEventCommand
+- EventLinkValidator
+- event-link audit logging
+
+
+________________
+
+
+Prompt 5.13 — Verification + Suspension Domain
+Implement the verification and suspension domain.
+
+
+Use these anchors:
+FR-4:
+"Admin can set: Pending, Verified, Rejected" and "Verified badge visible." 
+Admin persona:
+"Moderates content, Verifies promoters, Manages abuse and quality." 
+
+
+Create endpoints:
+- POST /api/admin/promoters/{id}/verify
+- POST /api/admin/promoters/{id}/suspend
+
+
+Requirements:
+- admin only
+- verification status transitions enforced
+- suspension hides promoter content from public surfaces
+- moderation logs immutable
+- owner dashboard can see suspension/verification state appropriately
+
+
+________________
+
+
+Prompt 5.14 — Media Moderation Domain
+Implement the media moderation subsystem.
+
+
+Use these anchors:
+States:
+"Draft, Published, Flagged, Hidden" 
+Behavior:
+"Flagged media is not visible publicly" and "Admin can override visibility." 
+Admin API:
+"POST /api/admin/media/{id}/flag" 
+
+
+Requirements:
+- admin flag action
+- hide action
+- publish/unpublish controls if needed
+- immutable moderation reason log
+- public query filters must exclude flagged/hidden media
+- feed post visibility must degrade safely when constituent media is hidden
+
+
+Create:
+- MediaModerationService
+- FlagMediaCommand
+- HideMediaCommand
+- ModerationReason model
+- audit tests
+
+
+________________
+
+
+Prompt 5.15 — Feed Moderation + Public Safety
+Implement feed-post moderation and public-safety behavior.
+
+
+Ground it in:
+Phase 0.1 includes "basic moderation + verification" and must avoid becoming an uncontrolled social surface. 
+
+
+Requirements:
+- feed post statuses:
+  - Draft
+  - Published
+  - Archived
+  - Flagged
+- admin can flag/hide post
+- public query layer excludes unsafe posts
+- if all media on a post is hidden, the post should be suppressed or shown in a safe degraded form by explicit rule
+- maintain separation from comments/likes/messaging, which are excluded from scope 
+
+
+Create:
+- FeedModerationService
+- FeedVisibilityResolver
+- admin endpoints and handlers
+
+
+________________
+
+
+Prompt 5.16 — Promoter Ownership + AuthZ
+Implement authorization rules for promoter-domain writes.
+
+
+Ground it in:
+Profile creation and media/feed management are authenticated flows, while public profile/feed/gallery are read-only public surfaces. 
+
+
+Requirements:
+- promoter owner can:
+  - update own profile
+  - upload/delete own media
+  - create/edit/delete own posts
+  - preview own public profile
+- admins can moderate and verify
+- non-owners cannot mutate promoter resources
+- one account -> one promoter profile enforcement
+
+
+Create:
+- authorization policies
+- resource ownership handlers
+- tests for owner/admin/unauthorized cases
+
+
+________________
+
+
+Prompt 5.17 — Promoter Dashboard Summary Read/Write Coordination
+Implement the promoter dashboard summary layer.
+
+
+Ground it in the implementation plan and owner-management needs:
+"profile UI, media upload, feed system, moderation + monetization" are separate sprints and need one management surface. 
+
+
+Requirements:
+- dashboard summary should include:
+  - profile completeness
+  - media count
+  - post count
+  - linked events count
+  - flagged media count
+  - draft count
+  - verification state
+- owner-only
+- read-model optimized
+
+
+Create:
+- PromoterDashboardSummaryDto
+- GetPromoterDashboardSummaryQuery
+- dashboard query handler
+
+
+________________
+
+
+Prompt 5.18 — Featured Promoter + Boost Hooks
+Implement monetization hooks for featured promoters and boosted content.
+
+
+Use these anchors:
+Phase 0.1 should "Establish foundation for monetization." 
+Immediate monetization options include:
+"paid verified promoter profile, featured promoter placement, paid video flyer slot" :contentReference[oaicite:34]{index=34}
+PRD success metrics include:
+"number of featured promoters" and "paid boost conversions." 
+
+
+Requirements:
+- featured promoter flag
+- boosted post flag
+- no payment processor implementation yet
+- admin/manual toggle first
+- query/read model hooks for featured placement
+- analytics events for impression/click/open
+
+
+Create:
+- FeaturedPromoterService
+- BoostedFeedPostService
+- flags on entities/read DTOs
+- admin endpoints
+
+
+________________
+
+
+Prompt 5.19 — Promoter Analytics Event Model
+Implement the analytics event model for Phase 0.1 promoter surfaces.
+
+
+Use these anchors:
+Success metrics:
+"% of promoters creating profiles"
+"% of events linked to promoter"
+"profile views per user"
+"time spent on profile page"
+"media views per post"
+"paid boost conversions" 
+
+
+Requirements:
+- define analytics events:
+  - promoter_profile_view
+  - promoter_feed_view
+  - promoter_gallery_view
+  - promoter_media_open
+  - promoter_post_open
+  - event_link_click_from_feed
+  - featured_promoter_impression
+  - boosted_post_impression
+- backend event contract + ingestion endpoint or logging adapter
+- privacy-safe payloads
+
+
+Create:
+- AnalyticsEvent model
+- analytics service interface
+- strongly typed event emitters
+
+
+________________
+
+
+Prompt 5.20 — Acceptance Test Suite for Pack 5
+Generate the Pack 5 acceptance and integration test suite.
+
+
+Use these anchors:
+Acceptance criteria:
+"Promoter can create profile"
+"Promoter can upload: ≥1 video, ≥1 photo set"
+"Feed renders correctly"
+"Media attaches to events"
+"Public profile accessible via URL"
+"Admin can moderate content"
+"Upload constraints enforced" 
+
+
+Also validate:
+- slug uniqueness
+- one profile per account
+- media duration and size constraints
+- ownership authorization
+- moderation visibility rules
+- verification badge propagation to public profile
+- linked event feed projection
+
+
+Use:
+- xUnit
+- integration tests with Postgres
+- fake or local media storage
+
+
+________________
+
+
+Prompt 5.21 — OpenAPI / Swagger for Promoter Domain
+Generate OpenAPI/Swagger documentation for all Pack 5 promoter-domain write APIs.
+
+
+Cover:
+- POST /api/promoters
+- PUT /api/promoters/{id}
+- POST /api/media/upload
+- DELETE /api/media/{id}
+- POST /api/feed
+- PUT /api/feed/{id}
+- DELETE /api/feed/{id}
+- GET /api/feed/{id}
+- POST /api/admin/promoters/{id}/verify
+- POST /api/admin/promoters/{id}/suspend
+- POST /api/admin/media/{id}/flag
+
+
+Requirements:
+- auth requirements
+- request/response examples
+- validation error schemas
+- media constraint docs
+- moderation status docs
+
+
+________________
+
+
+Prompt 5.22 — Implementation Sequencing for Pack 5
+Generate an implementation sequence for Pack 5 that matches the PRD plan.
+
+
+Use this exact implementation plan:
+"Sprint 1 — Data Layer: schemas, storage integration, API scaffolding"
+"Sprint 2 — Profile UI: create/edit profile, public page"
+"Sprint 3 — Media Upload: multi-upload, video handling, preview system"
+"Sprint 4 — Feed System: post creation, feed rendering, event linking"
+"Sprint 5 — Moderation + Monetization: admin panel, verification system, featured flag" 
+
+
+Requirements:
+- convert this into backend-first execution order
+- identify dependencies between profile, media, feed, moderation, analytics, and read-side projections
+- output as a developer task graph
+
+
+________________
+
+
+Recommended execution order
+Run these after the earlier Pack 5 prompts:
+1. 5.5 Promoter Domain Model + EF Core
+2. 5.6 Promoter Profile Write APIs
+3. 5.7 Slug Generation + Identity Integrity
+4. 5.8 Media Asset Write Pipeline
+5. 5.9 Cloudinary-First Media Service
+6. 5.10 Feed Post Draft/Publish Workflow
+7. 5.11 Feed Media Ordering
+8. 5.12 Event Linking Rules
+9. 5.13 Verification + Suspension Domain
+10. 5.14 Media Moderation
+11. 5.15 Feed Moderation
+12. 5.16 Promoter Ownership + AuthZ
+13. 5.17 Dashboard Summary
+14. 5.18 Featured Promoter + Boost Hooks
+15. 5.19 Analytics Event Model
+16. 5.20 Acceptance Tests
+17. 5.21 OpenAPI / Swagger
+18. 5.22 Implementation Sequencing
+This extends Pack 5 from “build promoter profiles/media/feed” into a full promoter-domain implementation pack with persistence, write APIs, auth, moderation, monetization hooks, and test coverage, which is exactly where Phase 0.1 is headed: from utility to “identity + media layer” and the first step toward a “promoter ecosystem,” “nightlife graph,” and “monetizable creator layer.”
+Next logical step is Extend Pack 6 so the AI/Autogen/Crawl4AI layer is pinned to the Phase 0/0.1 constraints instead of floating as generic automation.
+Below is Extended Pack 6, focused on the AI / Autogen / Crawl4AI / automation layer for WeUP Phase 0 + Phase 0.1.
+This pack is intentionally constrained by the uploaded specs. The AI layer must serve the product, not distort it. Phase 0 is still fundamentally a flyer-to-event transformation system and map-first discovery client, while Phase 0.1 adds a promoter identity + media layer. The documents explicitly defer deep recommendation engines and social-network behavior, so the automation layer here is built around ingestion, parsing assistance, moderation assistance, captioning, enrichment, analytics support, and operations, not an uncontrolled engagement engine.
+________________
+
+
+🤖 EXTENDED BUNDLE PACK 6 — AI / AUTOGEN / CRAWL4AI / ENRICHMENT LAYER
+Prompt 6.3 — AI Layer Architecture + Boundaries
+Design the AI/automation layer for WeUP Phase 0 and Phase 0.1 with strict product-boundary enforcement.
+
+
+Ground it in these exact constraints:
+Phase 0 objective:
+"Build a zero-friction event discovery system that transforms raw flyers into structured, searchable, map-based experiences." :contentReference[oaicite:2]{index=2}
+Phase 0.1 objective:
+"Extend WeUP Phase 0 ... into an identity-driven platform by introducing Promoter Profiles with media feeds (photos + short-form video)." :contentReference[oaicite:3]{index=3}
+Phase 0 exclusions:
+"no complex recommendation engine" :contentReference[oaicite:4]{index=4}
+Phase 0.1 exclusions:
+"No comments, no DMs, no algorithmic feed" :contentReference[oaicite:5]{index=5}
+
+
+Requirements:
+- AI layer must be assistive, not primary product logic
+- deterministic core pipeline remains authoritative
+- AI can enrich, classify, summarize, caption, cluster, or assist moderation
+- AI cannot silently replace required deterministic validation logic
+- create a service architecture that can run with AI disabled
+
+
+Create:
+- /src/WeUp.Ai/
+- /src/WeUp.Ai.Contracts/
+- AI orchestration interfaces
+- feature flags for all AI features
+- fallback behavior for no-AI mode
+
+
+________________
+
+
+Prompt 6.4 — Autogen Orchestrator for Ingestion Assistance
+Implement an Autogen-based orchestration layer to assist, but not replace, the Phase 0 ingestion pipeline.
+
+
+Ground it in:
+Phase 0 pipeline:
+"Upload → OCR → Text Extraction → NLP Parsing → Structured Event" :contentReference[oaicite:6]{index=6}
+Technical objective includes:
+"support human/admin correction when OCR/parsing confidence is low" :contentReference[oaicite:7]{index=7}
+
+
+Requirements:
+- create an AutogenOrchestrator service
+- agents may assist with:
+  - OCR artifact cleanup suggestions
+  - ambiguous field extraction suggestions
+  - candidate review summaries
+- deterministic parser remains source of truth
+- AI suggestions must be explicit and reviewable
+- no AI-only auto-publish path
+
+
+Create:
+- IAutogenOrchestrator
+- AutogenIngestionAssistService
+- IngestionAssistResult models
+- feature flag:
+  - AiAssistOnLowConfidenceOnly
+- audit logging for every AI suggestion
+
+
+________________
+
+
+Prompt 6.5 — Crawl4AI Event Source Ingestion Agent
+Implement a Crawl4AI-based source ingestion agent for future and optional Phase 0/0.1 expansion.
+
+
+Ground it in:
+Phase 0 solution ingests:
+"flyer images, social media posts, manual uploads" :contentReference[oaicite:8]{index=8}
+Phase 0.1 AI layer is expected to be compatible with:
+"Autogen / Crawl4AI / embeddings" :contentReference[oaicite:9]{index=9}
+
+
+Requirements:
+- crawl public event/flyer sources
+- extract candidate flyer/image URLs and event-related text
+- create ingestion candidates, not direct published events
+- route crawled results into the same reviewable ingestion pipeline as uploads
+- dedupe against existing uploads/events
+- support source allowlist
+- respect robots.txt and crawl politeness configuration
+
+
+Create:
+- CrawlSource entity
+- CrawlJob entity
+- Crawl4AiEventSourceAgent
+- Crawl normalization pipeline
+- adapter to create FlyerIngestionJobs or external-source candidates
+
+
+________________
+
+
+Prompt 6.6 — OCR Cleanup Suggestion Agent
+Implement an AI OCR-cleanup suggestion agent.
+
+
+Ground it in:
+WeUP must ingest noisy flyer input while preserving a human correction path when automation is weak. :contentReference[oaicite:10]{index=10}
+OCR output is persisted for later parsing and review. :contentReference[oaicite:11]{index=11}
+
+
+Requirements:
+- input:
+  - raw OCR text
+  - normalized OCR text
+- output:
+  - suggested cleaned lines
+  - suspected venue line
+  - suspected date line
+  - suspected time line
+  - confidence comments
+- suggestions only; never overwrite raw OCR
+- AI output stored separately from deterministic OCR records
+- visible in admin review tooling as optional aid
+
+
+Create:
+- OcrCleanupSuggestionAgent
+- OcrCleanupSuggestion model
+- persistence table for AI suggestions
+- review DTO enrichment
+
+
+________________
+
+
+Prompt 6.7 — Ambiguous Parse Suggestion Agent
+Implement an AI agent that assists with ambiguous event parsing.
+
+
+Ground it in:
+The parser must attempt to derive:
+"title, event date, start time, end time if present, venue name, raw address" :contentReference[oaicite:12]{index=12}
+Low-confidence candidates route to review rather than silent bad publication. 
+
+
+Requirements:
+- accept:
+  - raw OCR text
+  - deterministic parsed candidate
+  - confidence breakdown
+- produce:
+  - alternative title suggestion
+  - alternative venue suggestion
+  - possible datetime interpretations
+  - rationale text
+- AI suggestions cannot directly publish
+- admin must explicitly approve or ignore
+
+
+Create:
+- ParseSuggestionAgent
+- ParseSuggestionResult
+- admin review panel payload integration
+
+
+________________
+
+
+Prompt 6.8 — Venue Normalization + Alias Agent
+Implement an AI-assisted venue normalization layer.
+
+
+Ground it in:
+Phase 0 parser extracts venue name/address, and geocoding can be ambiguous. 
+
+
+Requirements:
+- build venue alias suggestion system
+- detect when:
+  - OCR venue line may be stylized
+  - known venue aliases likely refer to same place
+- AI may suggest normalized venue names
+- deterministic geocoding remains authoritative
+- maintain a VenueAlias table with approval flow
+- no silent mutation of canonical venue names
+
+
+Create:
+- VenueAliasSuggestionAgent
+- VenueAlias entity
+- VenueNormalizationReview workflow
+
+
+________________
+
+
+Prompt 6.9 — Caption Generation Agent for Phase 0.1
+Implement a caption generation agent for promoter posts.
+
+
+Ground it in:
+Phase 0.1 includes:
+"Upload photos/videos -> I want to show event vibe"
+"Feed-based publishing model" 
+
+
+Requirements:
+- input:
+  - linked event metadata
+  - promoter profile summary
+  - uploaded media metadata
+  - optional OCR/event text
+- output:
+  - short caption suggestions
+  - alternative promotional variations
+- tone should be brand-safe and concise
+- no spammy/engagement-bait output
+- promoter must explicitly select or edit suggested caption before publish
+- store generated suggestions separately from final post body
+
+
+Create:
+- CaptionSuggestionAgent
+- CaptionSuggestionResult
+- API endpoint for caption suggestions
+- composer UI integration hooks
+
+
+________________
+
+
+Prompt 6.10 — Feed Post Title/Body Assist Agent
+Implement a promoter-post writing assist agent for Phase 0.1.
+
+
+Ground it in:
+Feed post inputs include:
+"Title (optional), Body (optional), MediaAssets (required ≥1), PostType, LinkedEventId (optional)" :contentReference[oaicite:16]{index=16}
+Feed post types:
+"General | EventPromo | Recap | VenueHighlight" :contentReference[oaicite:17]{index=17}
+
+
+Requirements:
+- generate title/body suggestions based on post type
+- support:
+  - Event Promo
+  - Recap
+  - General
+  - Venue Highlight
+- avoid generating claims not present in source data
+- output multiple short variants
+- keep promoter in control; no auto-publish
+
+
+Create:
+- FeedWritingAssistAgent
+- FeedWritingPromptBuilder
+- output moderation-safe variants
+
+
+________________
+
+
+Prompt 6.11 — Media Moderation Assist Agent
+Implement an AI moderation-assist agent for Phase 0.1 media.
+
+
+Ground it in:
+Phase 0.1 includes "basic moderation + verification." :contentReference[oaicite:18]{index=18}
+Media can be "Flagged" or "Hidden," and flagged media is not publicly visible. :contentReference[oaicite:19]{index=19}
+
+
+Requirements:
+- classify media risk into:
+  - likely safe
+  - needs human review
+  - likely unsafe
+- AI does not hard-delete or permanently hide content by itself
+- AI may auto-route to admin review queue if configured
+- store moderation signals and reasons separately from final admin decision
+- explainability payload required
+
+
+Create:
+- MediaModerationAssistAgent
+- MediaModerationSignal model
+- moderation assist persistence
+- admin review enrichment DTOs
+
+
+________________
+
+
+Prompt 6.12 — Feed Moderation Assist Agent
+Implement an AI moderation-assist agent for promoter feed posts.
+
+
+Ground it in:
+Phase 0.1 excludes comments, likes, DMs, and recommendation engines, so moderation must stay scoped to feed content safety and abuse mitigation. 
+
+
+Requirements:
+- analyze post title/body/captions
+- classify:
+  - likely safe
+  - promotional exaggeration
+  - needs human review
+  - likely abusive or policy-sensitive
+- suggestions only
+- admin remains authority
+- integrate with FeedModerationService from Pack 5
+
+
+Create:
+- FeedModerationAssistAgent
+- FeedModerationAssistResult
+- admin moderation queue integration
+
+
+________________
+
+
+Prompt 6.13 — Event/Promoter Linking Suggestion Agent
+Implement an AI agent that suggests likely promoter-event links.
+
+
+Ground it in:
+Phase 0.1 goal:
+"Allow media to be linked to events" and "Provide user-facing promoter discovery." :contentReference[oaicite:21]{index=21}
+Promoter post linking is optional and validated. :contentReference[oaicite:22]{index=22}
+
+
+Requirements:
+- input:
+  - promoter profile
+  - feed post
+  - caption/title/body
+  - media metadata
+  - nearby event candidates
+- output:
+  - ranked event-link suggestions
+- suggestion only; user or admin must confirm link
+- useful for recap posts and event promos
+
+
+Create:
+- EventLinkSuggestionAgent
+- EventLinkSuggestion model
+- integration into composer and admin correction workflows
+
+
+________________
+
+
+Prompt 6.14 — Promoter Profile Bio Assist Agent
+Implement a promoter bio assist agent.
+
+
+Ground it in:
+Promoter profiles require:
+"displayName, bio, profileImageUrl, bannerImageUrl, city, social links..." :contentReference[oaicite:23]{index=23}
+The promoter wants a branded identity, but this is still not a full influencer marketplace. :contentReference[oaicite:24]{index=24}
+
+
+Requirements:
+- generate concise bio suggestions
+- support multiple identity styles:
+  - nightlife curator
+  - venue partner
+  - event collective
+  - community promoter
+- brand-safe
+- no unverifiable claims
+- explicit user approval required
+
+
+Create:
+- PromoterBioAssistAgent
+- BioSuggestionResult
+- profile form integration contract
+
+
+________________
+
+
+Prompt 6.15 — Discoverability Tag Suggestion Agent
+Implement a discoverability tag suggestion agent for events and promoter posts.
+
+
+Ground it in:
+Phase 0 wants users to "see what's happening right now" through clear visual discovery, not deep recommendation complexity. :contentReference[oaicite:25]{index=25}
+Phase 0.1 wants users to assess event "vibe" through promoter/media context. :contentReference[oaicite:26]{index=26}
+
+
+Requirements:
+- suggest lightweight tags from existing source content:
+  - genre
+  - vibe
+  - venue type
+  - time-of-night cues
+- tags are optional metadata
+- no opaque ranking engine
+- tags improve filtering and display only
+
+
+Create:
+- DiscoverabilityTagAgent
+- EventTagSuggestion
+- FeedTagSuggestion
+- moderation-safe tag whitelist
+
+
+________________
+
+
+Prompt 6.16 — AI Analytics Summary Agent
+Implement an analytics summary agent for internal ops and promoter dashboard insights.
+
+
+Ground it in:
+Phase 0 metrics include:
+"events viewed per session, map interaction frequency, flyers uploaded per day, repeat usage rate" :contentReference[oaicite:27]{index=27}
+Phase 0.1 metrics include:
+"profile views per user, time spent on profile page, media views per post, paid boost conversions" :contentReference[oaicite:28]{index=28}
+
+
+Requirements:
+- summarize analytics trends into short human-readable summaries
+- separate outputs for:
+  - admin ops
+  - promoter owner dashboard
+- no decision automation
+- summaries must be traceable to underlying metrics
+- avoid hallucinated causal claims
+
+
+Create:
+- AnalyticsSummaryAgent
+- AdminAnalyticsSummary
+- PromoterAnalyticsSummary
+- prompt builder with metric guards
+
+
+________________
+
+
+Prompt 6.17 — AI-Assisted Admin Review Summaries
+Implement admin-review summary generation for low-confidence event candidates and moderated promoter content.
+
+
+Ground it in:
+Admin review must display:
+"original flyer image, OCR text, parsed fields, confidence scores, parse notes" :contentReference[oaicite:29]{index=29}
+Phase 0.1 moderation similarly requires explainable review. :contentReference[oaicite:30]{index=30}
+
+
+Requirements:
+- generate short review summaries for:
+  - low-confidence event candidates
+  - flagged media
+  - flagged feed posts
+  - promoter verification reviews
+- summaries must cite source fields used
+- summaries must not hide raw data from admins
+- summary is supplementary, not authoritative
+
+
+Create:
+- AdminReviewSummaryAgent
+- ReviewSummaryResult
+- DTO enrichment for admin review screens
+
+
+________________
+
+
+Prompt 6.18 — Embeddings / Similarity Layer (Constrained)
+Implement a constrained embeddings/similarity layer for internal utility only.
+
+
+Ground it in:
+Phase 0 excludes a "complex recommendation engine." :contentReference[oaicite:31]{index=31}
+Phase 0.1 excludes "recommendation algorithms." :contentReference[oaicite:32]{index=32}
+But the technical direction leaves room for embeddings and vector integration later. :contentReference[oaicite:33]{index=33}
+
+
+Requirements:
+- do not build public recommender feeds
+- use embeddings only for:
+  - duplicate assistance
+  - venue alias assistance
+  - promoter-event link suggestion
+  - similar OCR candidate clustering in admin review
+- feature-flagged and optional
+- vector store abstraction only
+
+
+Create:
+- IEmbeddingService
+- EmbeddingVector model
+- SimilarityAssistService
+- vector store interface (Qdrant-ready, but optional)
+
+
+________________
+
+
+Prompt 6.19 — AI Feature Flag Matrix
+Implement a strict AI feature-flag matrix.
+
+
+Ground it in:
+The core system must remain usable without AI, and AI must never silently override deterministic rules. This follows the technical and functional documents, which place the authoritative logic in upload/OCR/parse/geocode/review/publish flows. 
+
+
+Requirements:
+- feature flags for:
+  - OCR cleanup suggestions
+  - parse suggestions
+  - caption assist
+  - bio assist
+  - moderation assist
+  - analytics summary
+  - embeddings similarity assist
+  - Crawl4AI source ingestion
+- environment-specific defaults:
+  - local
+  - staging
+  - production
+- all AI outputs clearly labeled as AI-generated
+
+
+Create:
+- AiFeatureFlags options class
+- config binding
+- helper service for flag checks
+- UI/API response labels for AI-generated content
+
+
+________________
+
+
+Prompt 6.20 — AI Auditability + Safety Ledger
+Implement an AI auditability ledger for WeUP AI features.
+
+
+Ground it in:
+WeUP must preserve auditability and traceability for why data was or was not published/reviewed, and AI suggestions must never become invisible hidden logic. 
+
+
+Requirements:
+- every AI call logs:
+  - feature name
+  - input record id
+  - model/provider
+  - prompt template id
+  - response id
+  - timestamp
+  - human accepted/rejected status if applicable
+- store AI outputs separately from canonical data
+- admin can inspect suggestion history
+- privacy-safe storage rules
+
+
+Create:
+- AiAuditLog entity
+- AiAuditRepository
+- acceptance/rejection tracking service
+- admin audit endpoint
+
+
+________________
+
+
+Prompt 6.21 — Autogen Workflow Graph
+Implement a modular Autogen workflow graph for WeUP.
+
+
+Ground it in:
+The technical architecture is "future AI orchestration (Autogen / Crawl4AI / vector DB)" friendly. :contentReference[oaicite:36]{index=36}
+
+
+Requirements:
+- define agents as modular capabilities, not hardcoded monoliths
+- orchestrator should support:
+  - OCR cleanup suggestion
+  - parse suggestion
+  - caption suggestion
+  - moderation assist
+  - analytics summary
+  - crawl ingestion
+- support sequential and conditional steps
+- support disabling any node via feature flags
+- expose workflow traces for debugging
+
+
+Create:
+- WeupAutogenWorkflow.cs
+- agent registry
+- workflow node contracts
+- trace model
+
+
+________________
+
+
+Prompt 6.22 — AI API Surface
+Design the API surface for Pack 6 AI features.
+
+
+Requirements:
+- do not expose everything publicly
+- user-facing endpoints only for assistive actions, such as:
+  - POST /api/ai/captions/suggest
+  - POST /api/ai/promoter-bio/suggest
+  - POST /api/ai/feed-post/suggest
+- admin/internal endpoints for:
+  - OCR cleanup suggestions
+  - parse suggestions
+  - review summaries
+  - moderation assist
+  - crawl ingestion ops
+- clear authorization boundaries
+- standard AI suggestion response schema
+
+
+Create:
+- controllers
+- DTOs
+- error schema
+- auth annotations
+- OpenAPI-ready contracts
+
+
+________________
+
+
+Prompt 6.23 — AI Acceptance Test Suite
+Generate the Pack 6 acceptance and integration test suite.
+
+
+Validate:
+- AI features are optional and feature-flagged
+- deterministic core works with AI fully disabled
+- AI suggestions never directly publish events or feed posts
+- AI outputs are stored separately from canonical records
+- AI moderation assist cannot hide content without admin workflow
+- caption/bio/feed-writing suggestions require user confirmation
+- crawl ingestion enters the same reviewable pipeline as uploads
+- audit logs are created for all AI calls
+
+
+Use:
+- xUnit
+- fake model providers
+- fake Autogen orchestrator
+- integration tests with feature flag permutations
+
+
+________________
+
+
+Prompt 6.24 — Implementation Sequence for Pack 6
+Generate an implementation sequence for Pack 6.
+
+
+Requirements:
+- backend-first execution order
+- separate:
+  - core assistive features
+  - moderation assist
+  - promoter content assist
+  - crawl ingestion
+  - embeddings/similarity
+- identify dependencies on:
+  - Pack 2 ingestion pipeline
+  - Pack 3 query surface
+  - Pack 5 promoter/media/feed domain
+- output a developer task graph with milestones
+
+
+Prioritize:
+1. auditability + feature flags
+2. OCR/parse assist
+3. caption/feed/bio assist
+4. moderation assist
+5. crawl ingestion
+6. embeddings similarity
+7. analytics summaries
+
+
+________________
+
+
+Recommended execution order
+Run these after the earlier Pack 6 prompts:
+1. 6.3 AI Layer Architecture + Boundaries
+2. 6.19 AI Feature Flag Matrix
+3. 6.20 AI Auditability + Safety Ledger
+4. 6.4 Autogen Orchestrator for Ingestion Assistance
+5. 6.6 OCR Cleanup Suggestion Agent
+6. 6.7 Ambiguous Parse Suggestion Agent
+7. 6.8 Venue Normalization + Alias Agent
+8. 6.9 Caption Generation Agent
+9. 6.10 Feed Post Title/Body Assist Agent
+10. 6.14 Promoter Profile Bio Assist Agent
+11. 6.11 Media Moderation Assist Agent
+12. 6.12 Feed Moderation Assist Agent
+13. 6.13 Event/Promoter Linking Suggestion Agent
+14. 6.15 Discoverability Tag Suggestion Agent
+15. 6.18 Embeddings / Similarity Layer
+16. 6.5 Crawl4AI Event Source Ingestion Agent
+17. 6.16 AI Analytics Summary Agent
+18. 6.17 AI-Assisted Admin Review Summaries
+19. 6.21 Autogen Workflow Graph
+20. 6.22 AI API Surface
+21. 6.23 AI Acceptance Tests
+22. 6.24 Implementation Sequence
+This extends Pack 6 from a loose “AI layer” into a constrained, auditable, feature-flagged automation system that fits the actual WeUP product shape: AI helps with cleanup, enrichment, moderation assistance, captioning, ops summaries, and crawl intake, but the canonical event/promoter/feed system remains grounded in the deterministic product and technical flows defined in your documents.
+The next logical move is to consolidate Packs 1–6 into a single master GitHub Copilot mega-bundle grouped by build order and repo file paths.
+Yes. Below is a Master Reference Glossary + Definition Spec designed to sit in front of the full Copilot bundle so GitHub Copilot has a stable vocabulary, avoids drift, and maps terms back to the exact intent of the uploaded WeUP documents.
+This is not product copy. It is a canonical interpretation layer for generation.
+________________
+
+
+WeUP Master Reference Glossary + Definition Spec
+Applies to: Phase 0 + Phase 0.1
+Purpose: Give GitHub Copilot a strict semantic map for all major terms, entities, modes, flows, and constraints used across the WeUP PRD / FRD / TRD / UI-UX Bible.
+Primary system identity: WeUP is a “map-first nightlife radar system” and “spatial operating layer over a city,” not a conventional CRUD app or social feed.
+________________
+
+
+0. How Copilot should use this spec
+Use this glossary as the canonical semantic authority for all generated code, comments, DTOs, state names, event names, API contracts, and UI labels.
+
+
+Rules:
+1. If a term appears in this glossary, use this glossary’s meaning first.
+2. If a generated feature conflicts with this glossary, the glossary wins.
+3. If there is ambiguity between a generic software meaning and a WeUP meaning, prefer the WeUP meaning.
+4. Do not invent features outside the glossary unless explicitly requested.
+5. Phase 0 and Phase 0.1 are constrained scopes, not open-ended product spaces.
+
+
+________________
+
+
+1. Canonical Product Definitions
+1.1 WeUP
+Definition: A nightlife discovery system that converts flyers and related event-source inputs into structured, geospatially discoverable events.
+Anchor: “Build a zero-friction event discovery system that transforms raw flyers into structured, searchable, map-based experiences.”
+Copilot interpretation:
+* WeUP is not primarily a social network.
+* WeUP is not primarily a ticketing platform.
+* WeUP is not primarily a messaging product.
+* The core object in Phase 0 is the event.
+* The core surface in Phase 0 is the map.
+________________
+
+
+1.2 Phase 0
+Definition: The MVP ingestion and discovery layer.
+Includes: flyer upload, OCR, parsing, geocoding, event creation, map discovery, time filtering, calendar mode, event modal, save/bookmark, admin review.
+Copilot interpretation:
+Any Phase 0 code should bias toward:
+* ingestion
+* structured event extraction
+* map delivery
+* single-viewport UX
+* moderation/review support
+________________
+
+
+1.3 Phase 0.1
+Definition: Identity and media extension layered onto Phase 0.
+Includes: promoter profiles, media assets, feed posts, event-linked promoter content, moderation, verification, monetization hooks.
+Copilot interpretation:
+* Phase 0.1 extends the event system; it does not replace it.
+* The promoter layer is additive.
+* Event discovery remains primary.
+* This is not a full influencer/social product.
+________________
+
+
+2. Non-Negotiable System Constraints
+2.1 Map-First
+Definition: The map is the primary discovery surface and default state.
+Anchor: “The map is the default state” and “The map is the main interaction layer.”
+Copilot interpretation:
+* Frontend architecture must privilege map mode.
+* Event browsing should emerge from map context.
+* Secondary modes should return cleanly to map state.
+________________
+
+
+2.2 Single-Viewport Doctrine
+Definition: The app must fit in one viewport without page-level scroll.
+Anchor: “The entire application must fit within one viewport at all times.”
+Copilot interpretation:
+* No long page-scroll layouts for core surfaces.
+* Use overlays, modals, trays, contained internal scroll regions.
+* Avoid multi-panel clutter.
+________________
+
+
+2.3 One Active Mode Rule
+Definition: Only one dominant mode may control user attention at a time.
+Anchor: “Only one mode may dominate user attention.”
+Copilot interpretation:
+* Do not show map, full calendar, upload flow, and deep detail all as equal active surfaces simultaneously.
+* Use explicit state transitions.
+________________
+
+
+2.4 No Social Feed Drift
+Definition: Phase 0.1 promoter feed is not a social algorithmic timeline.
+Anchor: “No comments, no DMs, no algorithmic feed.”
+Copilot interpretation:
+* No likes
+* No comments
+* No DM inbox
+* No feed ranking engine
+* No creator economy overbuild in this phase
+________________
+
+
+3. Canonical User Roles
+3.1 Explorer
+Definition: Primary discovery user seeking things to do visually and quickly.
+Copilot interpretation:
+UI and query design should optimize for:
+* speed
+* clarity
+* scanability
+* low friction
+________________
+
+
+3.2 Uploader
+Definition: Authenticated user uploading flyer images for ingestion.
+Copilot interpretation:
+* Upload flow must be fast.
+* Upload status must be visible.
+* OCR and parsing confidence must be reviewable.
+________________
+
+
+3.3 Admin
+Definition: Moderator/operator reviewing candidates, correcting records, verifying promoters, and controlling visibility.
+Copilot interpretation:
+Admin surfaces need:
+* raw data
+* confidence breakdown
+* override tools
+* auditability
+________________
+
+
+3.4 Promoter
+Definition: Public-facing identity actor in Phase 0.1 who manages a profile and posts media tied to event culture.
+Copilot interpretation:
+* Promoter tools are constrained and practical.
+* Focus on branded identity, media, and event linkage.
+________________
+
+
+4. Canonical Domain Objects
+4.1 FlyerUpload
+Definition: Original uploaded flyer image and its metadata.
+Required semantics:
+* source artifact
+* immutable reference to intake
+* linked to ingestion status and downstream OCR
+________________
+
+
+4.2 FlyerIngestionJob
+Definition: Processing lifecycle record for an upload.
+Copilot interpretation:
+Use this for:
+* pipeline orchestration
+* retries
+* failure reasons
+* timestamps
+* audit state
+________________
+
+
+4.3 OcrExtraction
+Definition: Stored OCR output including raw text and confidence.
+Copilot interpretation:
+* Never overwrite raw OCR.
+* AI cleanup or normalization is additive, not destructive.
+________________
+
+
+4.4 ParsedEventCandidate
+Definition: Structured but pre-publication event candidate derived from OCR/parsing.
+Copilot interpretation:
+This is not yet a public event. It is a reviewable intermediate object.
+________________
+
+
+4.5 EventRecord
+Definition: Final published event entity used by public discovery surfaces.
+Copilot interpretation:
+EventRecord is the canonical public event object for Phase 0.
+________________
+
+
+4.6 SavedEvent
+Definition: User-to-event bookmark relationship. Implied by save/bookmark requirements and saved view.
+Copilot interpretation:
+* This is not a collection of notes or social interactions.
+* It is a lightweight user-curation primitive.
+________________
+
+
+4.7 PromoterProfile
+Definition: Public identity page for a promoter in Phase 0.1.
+Copilot interpretation:
+Minimum semantic fields:
+* displayName
+* slug
+* bio
+* media identity
+* socials
+* verification state
+________________
+
+
+4.8 MediaAsset
+Definition: Uploaded image or video owned by a promoter profile.
+Copilot interpretation:
+* A media asset is not necessarily a post.
+* It can be attached to a post.
+* It may be linked to an event.
+________________
+
+
+4.9 FeedPost
+Definition: Structured promoter content container that references one or more media assets.
+Copilot interpretation:
+A feed post is the public content unit.
+A media asset is the media unit.
+Do not collapse them into the same entity.
+________________
+
+
+4.10 FeedPostMedia
+Definition: Join model binding media assets to feed posts with sort order.
+Copilot interpretation:
+Necessary for:
+* carousel ordering
+* mixed image/video posts
+* reorder support
+________________
+
+
+4.11 ModerationLog
+Definition: Immutable record of admin safety/moderation actions. Implied by moderation requirements and table list.
+________________
+
+
+5. Canonical Pipeline Definitions
+5.1 Ingestion Pipeline
+Definition: The end-to-end transformation chain from flyer upload to published event.
+Anchor: “Upload → OCR → Text Extraction → NLP Parsing → Structured Event.”
+Expanded technical version:
+upload accepted → file stored → OCR queued → OCR complete → parse queued → parsed → geocoded → confidence scored → auto-published or review-routed → public queryable event
+Copilot interpretation:
+* This pipeline is authoritative.
+* Sidecar AI may assist but not replace it.
+________________
+
+
+5.2 Review Queue
+Definition: Human-admin review surface for low-confidence or problematic candidates.
+Copilot interpretation:
+Every ambiguous candidate should have:
+* source upload
+* OCR text
+* parsed fields
+* confidence breakdown
+* edit/approve/reject actions
+________________
+
+
+5.3 Publication
+Definition: Promotion of a candidate into a public EventRecord once minimum validity and confidence conditions are met.
+________________
+
+
+6. Canonical State Definitions
+6.1 IngestionStatus
+Canonical values:
+Pending, Uploaded, OcrQueued, OcrComplete, ParseQueued, Parsed, Geocoded, Published, Failed, NeedsReview.
+Copilot interpretation:
+Use these names exactly where possible for:
+* enums
+* workflow logs
+* dashboards
+* telemetry
+________________
+
+
+6.2 CandidateReviewStatus
+Canonical values:
+Pending, AutoApproved, NeedsHumanReview, Approved, Rejected.
+________________
+
+
+6.3 EventState
+Canonical values:
+Draft, Published, Hidden, Archived.
+________________
+
+
+6.4 VerificationStatus
+Canonical values:
+Pending, Verified, Rejected.
+________________
+
+
+6.5 MediaStatus / VisibilityStatus
+Canonical values:
+Draft, Published, Flagged, Hidden.
+________________
+
+
+6.6 PostStatus
+Canonical values:
+Draft, Published, Archived, Flagged. This is used in the Phase 0.1 feature expansion and moderation framing.
+________________
+
+
+7. Canonical UX Mode Definitions
+7.1 Map Mode
+Definition: Default exploration mode with visible event signals and time filtering.
+________________
+
+
+7.2 Calendar Mode
+Definition: Full modal takeover for temporal browsing with masonry/grouped event layout.
+________________
+
+
+7.3 Event Detail Mode
+Definition: Focused modal chamber for a single event.
+________________
+
+
+7.4 Upload Mode
+Definition: Guided step flow for flyer intake, OCR, parse, correction, preview, and save.
+________________
+
+
+7.5 Saved Mode
+Definition: Personal event curation surface.
+________________
+
+
+7.6 Profile Mode
+Definition: User account/preferences surface; later expands into promoter management context.
+________________
+
+
+8. Canonical API Surface Concepts
+8.1 Public Event Query API
+Definition: Read layer for event discovery by time, map window, calendar grouping, and event detail.
+Expected core endpoints:
+GET /api/events, GET /api/events/{id}, GET /api/events/map, GET /api/events/calendar
+________________
+
+
+8.2 Upload API
+Definition: Authenticated flyer intake endpoint.
+Expected endpoint: POST /api/events/upload
+________________
+
+
+8.3 Saved API
+Definition: Authenticated bookmark interface for save/unsave/list-saved. Implied by save requirements and technical shape.
+________________
+
+
+8.4 Admin Review API
+Definition: Candidate review/correction/approval/rejection endpoints for event ingestion and promoter moderation.
+________________
+
+
+8.5 Promoter API
+Definition: CRUD-lite profile and public slug-based retrieval surface.
+Expected endpoints: POST /api/promoters, GET /api/promoters/{slug}, PUT /api/promoters/{id}
+________________
+
+
+8.6 Feed API
+Definition: Feed post creation, update, delete, fetch surface.
+________________
+
+
+8.7 Media API
+Definition: Media upload, attach, delete, moderation surface.
+________________
+
+
+9. Canonical Data Extraction Definitions
+9.1 Title
+Definition: The most likely human-facing event name extracted from flyer OCR text.
+________________
+
+
+9.2 Event Date
+Definition: Normalized machine-readable event date inferred from flyer text.
+________________
+
+
+9.3 Start Time / End Time
+Definition: Structured local-time interpretations of flyer text.
+Rules: support time ranges, AM/PM, and start-only scenarios.
+________________
+
+
+9.4 Venue Name
+Definition: Best inferred venue label from flyer text, possibly adjacent to address-like lines.
+________________
+
+
+9.5 Raw Address
+Definition: Address-like extracted text before canonical geocoding normalization.
+________________
+
+
+9.6 Geocode Result
+Definition: Resolved address, latitude, longitude, and geocoding confidence returned by the resolver.
+________________
+
+
+10. Canonical Confidence Definitions
+10.1 OCR Confidence
+Definition: Confidence of OCR engine text extraction.
+Weight: 30%.
+________________
+
+
+10.2 Title Confidence
+Definition: Confidence in extracted title.
+Weight: 20%.
+________________
+
+
+10.3 Date/Time Confidence
+Definition: Confidence in extracted temporal fields.
+Weight: 20%.
+________________
+
+
+10.4 Venue Confidence
+Definition: Confidence in venue inference.
+Weight: 10%.
+________________
+
+
+10.5 Geocode Confidence
+Definition: Confidence in resolved coordinates/address.
+Weight: 20%.
+________________
+
+
+10.6 Publication Thresholds
+Definition:
+* >= 0.85 auto publish
+* 0.60–0.84 needs admin review
+* < 0.60 failed/manual correction
+________________
+
+
+11. Canonical Phase 0.1 Feed Definitions
+11.1 Feed
+Definition: Chronological, media-first, promoter-owned public post stream.
+Constraints: no algorithmic ranking.
+________________
+
+
+11.2 Gallery
+Definition: Grid-like public media view for a promoter’s images/videos.
+________________
+
+
+11.3 Event Link
+Definition: Optional association between a promoter feed post and an existing event.
+________________
+
+
+11.4 Verification Badge
+Definition: Public UI indication of promoter verification state.
+________________
+
+
+11.5 Featured Promoter / Boosted Post
+Definition: Monetization hook flags for later manual/admin promotion. These are hooks, not a full ad system.
+________________
+
+
+12. Canonical AI / Automation Definitions
+12.1 AI Assist
+Definition: Optional, feature-flagged enrichment/support behavior that never replaces deterministic core validation/publication logic. This interpretation follows the deterministic Phase 0/0.1 technical and functional specs.
+________________
+
+
+12.2 Crawl Ingestion
+Definition: External-source discovery that must route into the same reviewable ingestion pipeline as normal uploads, not a bypass. This is consistent with Phase 0 ingestion sources and the AI/Crawl4AI expansion direction.
+________________
+
+
+12.3 Caption Suggestion
+Definition: Optional AI-generated promoter caption draft for Phase 0.1 post composition. It is suggestive, not auto-publishing. This is compatible with the promoter media/feed model and non-social constraints.
+________________
+
+
+13. Naming Conventions Copilot Should Prefer
+13.1 Prefer these exact terms
+* FlyerUpload
+* FlyerIngestionJob
+* OcrExtraction
+* ParsedEventCandidate
+* EventRecord
+* SavedEvent
+* PromoterProfile
+* MediaAsset
+* FeedPost
+* FeedPostMedia
+* ModerationLog
+* VerificationStatus
+* IngestionStatus
+* CandidateReviewStatus
+* EventState
+These are the closest stable canonical names from the technical and functional docs.
+13.2 Avoid vague alternatives
+Avoid generic substitutes unless adapting existing code:
+* Item
+* PostEntity
+* UploadThing
+* MarkerItem
+* ProfileContent
+* SocialPost
+* CreatorPost
+________________
+
+
+14. Red-Line Exclusions
+Copilot should not infer or generate these unless explicitly requested:
+* DM systems
+* comments
+* likes/reactions
+* algorithmic ranking feeds
+* livestreaming
+* long-form video hosting
+* influencer marketplace mechanics
+* native ticketing infrastructure in Phase 0
+* deep recommendation engine in Phase 0/0.1
+________________
+
+
+15. Master Copilot Prefix Block
+Use this before the mega-bundle:
+CANONICAL REFERENCE MODE ENABLED
+
+
+You are generating WeUP Phase 0 + Phase 0.1 code strictly according to the uploaded WeUP documents.
+
+
+Canonical truths:
+- WeUP is a "map-first nightlife radar system" and a "spatial operating layer over a city." 
+- Phase 0 is flyer ingestion + OCR + parsing + geocoding + map/calendar discovery + save + admin review. 
+- Phase 0.1 adds promoter profiles + media assets + feed posts + event-linked promoter media. 
+- The app must obey the "single viewport" rule and "one active mode" rule. :contentReference[oaicite:71]{index=71}
+- Do not generate out-of-scope social features such as comments, DMs, likes, livestreaming, or algorithmic ranking. 
+- Deterministic ingestion pipeline is authoritative. AI may assist but not replace it. This follows the technical ingestion and review model. 
+
+
+When naming files, classes, DTOs, services, and states:
+- Prefer glossary-defined names exactly.
+- Prefer document-aligned structures over generic framework defaults.
+- Keep event discovery primary, promoter media secondary.
+
+
+________________
+
+
+16. Recommended placement in your bundle
+Place this glossary in the final master bundle in this order:
+1. Master Copilot Prefix Block
+2. Master Reference Glossary + Definition Spec
+3. Build order / execution order
+4. Pack 1
+5. Pack 2
+6. Pack 3
+7. Pack 4
+8. Pack 5
+9. Pack 6
+10. Testing / validation / acceptance prompts
+That gives Copilot:
+* semantic grounding first
+* implementation sequencing second
+* generation prompts third
+________________
+
+
+17. Blunt recommendation
+Do not hand Copilot only the packs.
+Hand it:
+* the master prefix
+* this glossary
+* then the packs
+Without the glossary, Copilot will drift into:
+* generic social app assumptions
+* generic admin-dashboard layouts
+* generic CRUD naming
+* fuzzy AI-agent overreach
+With the glossary, it has a stable ontology.
+If you want, I’ll consolidate Packs 1–6 + this glossary into one single master GitHub Copilot mega-bundle in execution order.
+Below is the single master GitHub Copilot mega-bundle for WeUP Phase 0 + Phase 0.1, with the reference glossary, execution order, and the consolidated prompt system in one place.
+This bundle is grounded in the uploaded documents’ core definitions: WeUP Phase 0 is a map-first nightlife radar with flyer ingestion, OCR, parsing, geocoding, event creation, map discovery, time filtering, calendar view, save/bookmarking, and admin review, while Phase 0.1 extends that foundation with promoter profiles, media ingestion, feed posts, event-media association, moderation, and verification—without becoming a social network.
+________________
+
+
+WeUP Master GitHub Copilot Mega-Bundle
+1. Use this in this exact order
+1. Master Prefix Block
+2. Master Reference Glossary + Definition Spec
+3. Execution Order / Build Graph
+4. Pack 1 — Backend Foundation
+5. Pack 2 — Ingestion / OCR / Parser / Geocode / Publication
+6. Pack 3 — Query Surface / BFF / Read Models
+7. Pack 4 — Vue 3 + Quasar Frontend
+8. Pack 5 — Promoter / Media / Feed Domain
+9. Pack 6 — AI / Autogen / Crawl4AI / Assistive Automation
+10. Acceptance / Validation / Test Prompts
+That ordering mirrors the document structure: deterministic ingestion and discovery first, identity/media extension second, optional AI assist last.
+________________
+
+
+2. MASTER PREFIX BLOCK
+WEUP CANONICAL GENERATION MODE ENABLED
+
+
+You are generating the full WeUP Phase 0 + Phase 0.1 system from strict product, functional, technical, and UX specs.
+
+
+AUTHORITATIVE PRODUCT IDENTITY
+- WeUP Phase 0 is a "map-first nightlife radar system" and a "spatial operating layer over a city." :contentReference[oaicite:2]{index=2}
+- Phase 0 is the event-ingestion and discovery layer: flyer upload, OCR, parsing, geocoding, event creation, map-based discovery, time filtering, calendar view, event detail modal, save/bookmarking, admin review. :contentReference[oaicite:3]{index=3}
+- Phase 0.1 extends WeUP into an identity-driven platform with "Promoter Profiles + Media Feed (Photos + Short Video)." 
+
+
+AUTHORITATIVE UX RULES
+- "The map is the default state" and the main interaction layer. :contentReference[oaicite:5]{index=5}
+- "The entire application must fit within one viewport at all times." :contentReference[oaicite:6]{index=6}
+- "Only one mode may dominate user attention." :contentReference[oaicite:7]{index=7}
+
+
+AUTHORITATIVE PIPELINE
+- "Upload → OCR → Text Extraction → NLP Parsing → Structured Event." :contentReference[oaicite:8]{index=8}
+- Deterministic ingestion pipeline is authoritative. AI may assist, but must not silently replace validation, routing, or publication logic. This follows the technical ingestion and review model. 
+
+
+PHASE 0 NON-GOALS
+- No native ticketing infrastructure
+- No messaging
+- No deep recommendation engine
+- No promoter profiles in Phase 0 proper 
+
+
+PHASE 0.1 NON-GOALS
+- No comments
+- No DMs
+- No algorithmic feed
+- No livestreaming
+- No long-form video hosting
+- No influencer marketplace yet :contentReference[oaicite:11]{index=11}
+
+
+GENERATION RULES
+1. Prefer exact domain names from the glossary.
+2. Do not invent social features outside scope.
+3. Keep event discovery primary and promoter media secondary.
+4. Generate production-ready code, not pseudocode.
+5. Use .NET 8 + Vue 3 + Quasar + PostgreSQL + Redis + object storage + workers.
+6. Keep the system runnable if AI features are disabled.
+
+
+________________
+
+
+3. MASTER REFERENCE GLOSSARY + DEFINITION SPEC
+3.1 Core Product Terms
+WeUP
+Definition: A nightlife discovery system that transforms flyers and related sources into structured, map-discoverable events.
+Interpretation: Not primarily a social app, not primarily ticketing, not primarily messaging. Event discovery is the core job. 
+
+
+Phase 0
+Definition: MVP ingestion + discovery layer.
+Includes: flyer upload, OCR, parsing, geocoding, event records, map discovery, time filtering, calendar mode, event modal, saved events, admin review. 
+
+
+Phase 0.1
+Definition: Identity + media extension layered onto Phase 0.
+Includes: promoter profiles, media assets, feed posts, event-linked promoter media, moderation, verification, monetization hooks. 
+
+
+3.2 UX Terms
+Map Mode
+Definition: Default exploration mode; map is the source of truth for discovery. :contentReference[oaicite:15]{index=15}
+
+
+Calendar Mode
+Definition: Full modal takeover for time-based browsing; grouped by day, masonry/grid, contained scroll. 
+
+
+Event Detail Mode
+Definition: Focused modal chamber for a single event. 
+
+
+Upload Mode
+Definition: Guided flow for flyer intake: upload, OCR, parse, edit, preview, save. 
+
+
+Saved Mode
+Definition: Personal curation surface for bookmarked events. 
+
+
+Profile Mode
+Definition: User identity/preferences surface; later extended into promoter owner management. :contentReference[oaicite:20]{index=20}
+
+
+3.3 Canonical Domain Objects
+FlyerUpload
+Original uploaded flyer artifact and metadata. :contentReference[oaicite:21]{index=21}
+
+
+FlyerIngestionJob
+Processing lifecycle object for upload orchestration, retries, failures, timestamps. :contentReference[oaicite:22]{index=22}
+
+
+OcrExtraction
+Stored OCR output with raw text and confidence. Never overwrite raw OCR. 
+
+
+ParsedEventCandidate
+Structured but pre-publication event candidate used for review and routing. 
+
+
+EventRecord
+Final public event entity for discovery surfaces. :contentReference[oaicite:25]{index=25}
+
+
+SavedEvent
+User-to-event bookmark relationship implied by save/bookmark requirements. 
+
+
+PromoterProfile
+Public promoter identity entity in Phase 0.1. 
+
+
+MediaAsset
+Promoter-owned image or short video. Media asset is not the same thing as a post. 
+
+
+FeedPost
+Structured promoter content container that references one or more media assets. 
+
+
+FeedPostMedia
+Join model binding media to feed posts with SortOrder. :contentReference[oaicite:30]{index=30}
+
+
+3.4 Canonical State Names
+IngestionStatus
+Pending, Uploaded, OcrQueued, OcrComplete, ParseQueued, Parsed, Geocoded, Published, Failed, NeedsReview. :contentReference[oaicite:31]{index=31}
+
+
+CandidateReviewStatus
+Pending, AutoApproved, NeedsHumanReview, Approved, Rejected. :contentReference[oaicite:32]{index=32}
+
+
+EventState
+Draft, Published, Hidden, Archived. :contentReference[oaicite:33]{index=33}
+
+
+VerificationStatus
+Pending, Verified, Rejected. 
+
+
+MediaStatus / VisibilityStatus
+Draft, Published, Flagged, Hidden. 
+
+
+3.5 Red-Line Exclusions
+Do not generate unless explicitly requested:
+- comments
+- DMs
+- likes/reactions
+- algorithmic ranking feed
+- livestreaming
+- long-form video hosting
+- influencer marketplace
+- deep recommendation engine
+- native ticketing in Phase 0/0.1 
+
+
+________________
+
+
+4. EXECUTION ORDER / BUILD GRAPH
+Stage 1 — Foundation
+- solution scaffold
+- domain entities
+- EF Core
+- auth
+- storage
+- queue
+- workers
+- logging
+- health checks
+
+
+Stage 2 — Deterministic ingestion
+- upload intake
+- OCR worker
+- OCR normalization
+- parser
+- geocoder
+- confidence scoring
+- review routing
+- publication
+- deduplication
+
+
+Stage 3 — Read/query surface
+- public event queries
+- map payload
+- calendar grouping
+- event detail
+- saved events
+- admin review read APIs
+
+
+Stage 4 — Frontend realization
+- app shell
+- FSM / modes
+- overlay manager
+- map mode
+- time controls
+- event modal
+- calendar modal
+- upload flow
+- saved mode
+- profile mode
+
+
+Stage 5 — Phase 0.1 promoter/media/feed
+- promoter profile domain
+- media write pipeline
+- feed draft/publish
+- moderation
+- verification
+- public promoter/feed/gallery/event-media surfaces
+
+
+Stage 6 — AI / assistive automation
+- feature flags
+- audit log
+- OCR cleanup assist
+- parse suggestion assist
+- caption/bio/feed assist
+- moderation assist
+- Crawl4AI ingestion candidate flow
+- analytics summaries
+
+
+That sequence follows the technical shape of Phase 0 first and Phase 0.1 second, with AI as optional assistive layering.
+________________
+
+
+5. PACK 1 — BACKEND FOUNDATION
+5.1 Solution Scaffold
+Generate a .NET 8 multi-project solution using this exact structure:
+
+
+src/
+  WeUp.Api/
+  WeUp.Application/
+  WeUp.Domain/
+  WeUp.Infrastructure/
+  WeUp.Contracts/
+  WeUp.Workers.Ocr/
+  WeUp.Workers.Parser/
+  WeUp.Admin.Api/
+tests/
+  WeUp.UnitTests/
+  WeUp.IntegrationTests/
+ops/
+  docker/
+  scripts/
+
+
+Reference:
+Phase 0 TRD recommended project structure and responsibility boundaries. :contentReference[oaicite:38]{index=38}
+
+
+Requirements:
+- clean architecture
+- DI setup
+- EF Core registration
+- PostgreSQL provider
+- Redis registration
+- worker registration
+- auth boundary
+- DTO mapping boundary
+
+
+5.2 Domain Models + Enums
+Generate full domain entities and enums:
+
+
+Entities:
+- FlyerUpload
+- FlyerIngestionJob
+- OcrExtraction
+- ParsedEventCandidate
+- EventRecord
+- SavedEvent
+- PromoterProfile
+- MediaAsset
+- FeedPost
+- FeedPostMedia
+- ModerationLog
+
+
+Enums:
+- IngestionStatus
+- CandidateReviewStatus
+- EventState
+- VerificationStatus
+- MediaStatus
+- PostStatus
+- PostType
+
+
+Reference:
+Phase 0 TRD core domain model and Phase 0.1 TRD data model. 
+
+
+5.3 EF Core + Migrations
+Create DbContext, Fluent API configuration, indexes, and initial migrations.
+
+
+Include Phase 0 tables:
+- FlyerUploads
+- FlyerIngestionJobs
+- OcrExtractions
+- ParsedEventCandidates
+- EventRecords
+- SavedEvents
+- GeocodeCache
+- AdminReviewLogs
+
+
+Include Phase 0.1 tables:
+- PromoterProfiles
+- MediaAssets
+- FeedPosts
+- FeedPostMedia
+- ModerationLogs
+
+
+Reference:
+Phase 0 TRD required tables and indexes; Phase 0.1 PRD/TRD database tables. 
+
+
+5.4 Cross-Cutting Infrastructure
+Implement:
+- JWT auth
+- role-based admin auth
+- Serilog structured logging
+- OpenTelemetry tracing hooks
+- Redis cache service
+- background queue abstraction
+- health checks
+- global error middleware
+- Docker + docker-compose
+- GitHub Actions pipeline
+
+
+Reference:
+Phase 0 TRD architecture and operational guidance; Phase 0.1 TRD stack and observability. 
+
+
+________________
+
+
+6. PACK 2 — INGESTION / OCR / PARSER / GEOCODE / PUBLICATION
+6.1 Upload Intake
+Implement POST /api/events/upload.
+
+
+Rules:
+- authenticated only
+- JPG / JPEG / PNG / WEBP accepted
+- reject empty, oversized, malformed uploads
+- store upload metadata
+- enqueue OCR job
+- return accepted/pending quickly
+
+
+Reference:
+Phase 0 FRD upload requirements and upload metadata persistence. :contentReference[oaicite:42]{index=42}
+
+
+6.2 Ingestion State Machine
+Implement exact IngestionStatus workflow:
+Pending -> Uploaded -> OcrQueued -> OcrComplete -> ParseQueued -> Parsed -> Geocoded -> Published
+and failure branches to Failed / NeedsReview.
+
+
+Invalid transitions must fail loudly.
+
+
+Reference:
+Phase 0 TRD enum and pipeline stages. :contentReference[oaicite:43]{index=43}
+
+
+6.3 OCR Worker
+Implement:
+- IOcrEngine
+- OcrResult
+- Tesseract adapter
+- Azure Vision adapter placeholder
+- OCR worker
+- persistence of raw OCR output
+
+
+Reference:
+Phase 0 FRD OCR outputs and Phase 0 TRD OCR engine abstraction. 
+
+
+6.4 OCR Normalization
+Create deterministic OCR cleanup layer:
+- preserve raw OCR
+- normalize whitespace
+- segment lines
+- remove obvious artifacts
+- prepare normalized text for parser
+- never overwrite source OCR
+
+
+Reference:
+Phase 0 FRD and technical model requiring raw OCR retention and reviewability. 
+
+
+6.5 Deterministic Parser
+Implement parser to extract:
+- title
+- event date
+- start time
+- end time if present
+- venue name
+- raw address
+- optional performers
+
+
+Use regex + heuristics only.
+Do not use LLM in canonical Phase 0 parser.
+
+
+Reference:
+Phase 0 PRD parsing description and FRD parsing requirements. 
+
+
+6.6 Geocoding + Cache
+Implement geocoding with resolution order:
+1. full address
+2. venue + city bias
+3. venue only
+4. unresolved
+
+
+Cache normalized address lookups.
+Do not auto-publish ambiguous location data silently.
+
+
+Reference:
+Phase 0 FRD geocoding requirements. :contentReference[oaicite:47]{index=47}
+
+
+6.7 Confidence Scoring + Routing
+Implement weighted model:
+- OCR 30%
+- title 20%
+- date/time 20%
+- venue 10%
+- geocode 20%
+
+
+Routing:
+>= 0.85 auto publish
+0.60 - 0.84 review
+< 0.60 fail/manual correction
+
+
+Reference:
+Phase 0 TRD confidence-based routing. :contentReference[oaicite:48]{index=48}
+
+
+6.8 Candidate Review + Publication
+Persist ParsedEventCandidate.
+Create admin review queue.
+Allow approve / edit / reject.
+Create EventRecord only when publication minimums are satisfied.
+
+
+Reference:
+Phase 0 FRD admin review and publication requirements. 
+
+
+6.9 Deduplication
+Reduce duplicate event explosion from repeated flyer uploads.
+Use normalized title + date + time + venue + address heuristics.
+Route ambiguous duplicates to review.
+
+
+Reference:
+Phase 0 FRD duplicate edge case and duplicate control intent. 
+
+
+________________
+
+
+7. PACK 3 — QUERY SURFACE / BFF / READ MODELS
+7.1 Public Event Queries
+Implement:
+- GET /api/events
+- GET /api/events/{id}
+- GET /api/events/map
+- GET /api/events/calendar
+
+
+Requirements:
+- published events only
+- map-ready compact DTOs
+- grouped-by-day calendar DTOs
+- event detail DTO for modal
+- query by date/time range
+- optional lat/lng/radius filtering
+
+
+Reference:
+Phase 0 FRD public discovery requirements and TRD query goals. 
+
+
+7.2 Saved Events API
+Implement:
+- POST /api/events/{id}/save
+- DELETE /api/events/{id}/save
+- GET /api/me/saved-events
+
+
+Requirements:
+- authenticated only
+- idempotent save
+- compact saved view DTO
+- exclude unpublished/hidden events
+
+
+Reference:
+Phase 0 PRD save system and FRD save/unsave requirements. 
+
+
+7.3 Admin Review Read Surface
+Implement admin read endpoints for candidates:
+- original flyer image
+- raw OCR text
+- parsed fields
+- confidence scores
+- parse notes
+- edit/publish/reject controls
+
+
+Reference:
+Phase 0 FRD and TRD admin review requirements. 
+
+
+7.4 Query Caching + Performance
+Cache map/list/calendar reads with Redis.
+Invalidate on publish/hide/correction.
+Target:
+- Event query API < 200 ms
+- Map payload query < 300 ms
+
+
+Reference:
+Phase 0 TRD/PRD performance and Redis usage. 
+
+
+________________
+
+
+8. PACK 4 — VUE 3 + QUASAR FRONTEND
+8.1 App Shell + FSM
+Build Vue 3 + Quasar SPA with:
+- AppShell
+- MainLayout
+- mode state machine
+- overlay manager
+- Pinia stores
+
+
+Modes:
+- Map
+- Calendar
+- Event Detail
+- Upload
+- Saved
+- Profile
+
+
+Reference:
+Phase 0 UI/UX Bible mode architecture and single-viewport doctrine. :contentReference[oaicite:55]{index=55}
+
+
+8.2 Map Mode
+Implement Map Mode:
+- full-screen dark map
+- markers
+- clustering
+- pan/zoom
+- marker -> event preview/detail
+- minimal HUD
+- time filtering active
+
+
+Reference:
+Phase 0 PRD map-based discovery and UI/UX Bible map-as-primary-surface. 
+
+
+8.3 Time Controls
+Implement:
+- TimePill
+- TimeTray
+- TimeSlider
+- presets: Now / Tonight / Weekend / custom
+
+
+Rules:
+- time is map filter, not app-global mutable chrome
+- avoid collision with bottom nav
+- only one bottom-zone occupant at a time
+
+
+Reference:
+UI/UX Bible time system and viewport budgeting rules. 
+
+
+8.4 Event Detail + Calendar + Upload + Saved
+Implement:
+- EventDetailModal
+- CalendarMode as true takeover modal
+- Upload flow: Upload -> OCR -> Parse -> Edit -> Preview -> Save
+- SavedMode with unsave/open/route
+- no page-level scrolling
+
+
+Reference:
+Phase 0 PRD, FRD, and UI/UX Bible modal/flow requirements. 
+
+
+________________
+
+
+9. PACK 5 — PROMOTER / MEDIA / FEED DOMAIN
+9.1 Promoter Profile
+Implement:
+- POST /api/promoters
+- PUT /api/promoters/{id}
+- GET /api/promoters/{slug}
+
+
+Rules:
+- one profile per account
+- unique immutable slug
+- manual verification only initially
+
+
+Reference:
+Phase 0.1 PRD promoter profile definition and FRD profile management. 
+
+
+9.2 Media Pipeline
+Implement:
+- POST /api/media/upload
+- DELETE /api/media/{id}
+
+
+Rules:
+- images: JPG, PNG, WEBP
+- videos: MP4, MOV, WEBM
+- max video length 30 sec
+- max media per post 10
+- image optimization
+- thumbnail generation
+- video compression/transcoding path
+- metadata persistence
+
+
+Reference:
+Phase 0.1 PRD/TRD media constraints and processing pipeline. 
+
+
+9.3 Feed Posts
+Implement:
+- POST /api/feed
+- PUT /api/feed/{id}
+- DELETE /api/feed/{id}
+- GET /api/feed/{id}
+
+
+Rules:
+- one post references many media assets
+- ordered media attachments via FeedPostMedia
+- optional LinkedEventId
+- chronological public feed only
+- no algorithmic ranking
+
+
+Reference:
+Phase 0.1 PRD/TRD/FRD feed model. 
+
+
+9.4 Moderation + Verification
+Implement:
+- POST /api/admin/promoters/{id}/verify
+- POST /api/admin/promoters/{id}/suspend
+- POST /api/admin/media/{id}/flag
+
+
+Rules:
+- flagged media not public
+- admin can override visibility
+- moderation logs immutable
+- suspension hides promoter public surfaces safely
+
+
+Reference:
+Phase 0.1 FRD and TRD admin responsibilities. 
+
+
+9.5 Public Promoter Read Surface
+Implement:
+- GET /api/promoters/{slug}/feed
+- GET /api/promoters/{slug}/gallery
+- GET /api/promoters/{slug}/events
+
+
+Public profile includes:
+- header
+- feed
+- events
+- gallery
+
+
+Reference:
+Phase 0.1 FRD public profile experience and PRD public identity page. 
+
+
+________________
+
+
+10. PACK 6 — AI / AUTOGEN / CRAWL4AI / ASSISTIVE AUTOMATION
+10.1 AI Boundaries
+Implement AI as optional assistive services only.
+
+
+Allowed:
+- OCR cleanup suggestions
+- parse ambiguity suggestions
+- venue alias suggestions
+- caption suggestions
+- promoter bio suggestions
+- moderation assist
+- crawl ingestion candidates
+- analytics summaries
+
+
+Forbidden:
+- AI-only auto-publish
+- algorithmic feed ranking
+- replacing deterministic validation
+
+
+Reference:
+Phase 0 deterministic pipeline and Phase 0.1 non-goals. 
+
+
+10.2 Feature Flags + Auditability
+Implement:
+- AI feature flags
+- AI audit log
+- optional no-AI mode
+- every AI output stored separately from canonical records
+- acceptance/rejection tracking
+
+
+Reference:
+This follows the authoritative deterministic ingestion/review model in the Phase 0 TRD/FRD and the optional AI layer in Phase 0.1 TRD. 
+
+
+10.3 Assistive Agents
+Implement optional services:
+- OcrCleanupSuggestionAgent
+- ParseSuggestionAgent
+- VenueAliasSuggestionAgent
+- CaptionSuggestionAgent
+- FeedWritingAssistAgent
+- PromoterBioAssistAgent
+- MediaModerationAssistAgent
+- FeedModerationAssistAgent
+- EventLinkSuggestionAgent
+- Crawl4AiEventSourceAgent
+- AnalyticsSummaryAgent
+
+
+Reference:
+Phase 0.1 TRD optional AI / agent integration and future AI orchestration direction. 
+
+
+________________
+
+
+11. ACCEPTANCE / VALIDATION PROMPTS
+11.1 Phase 0 Acceptance Prompt
+Generate test coverage to prove:
+- authenticated user can upload valid flyer
+- invalid uploads are rejected
+- OCR output is persisted
+- low-confidence candidates route to review
+- valid candidates create published event records
+- published events appear in public queries
+- events display on map
+- time filter updates results
+- calendar view groups events correctly
+- event modal opens from map/calendar
+- save/unsave works
+- admin can review/edit/approve/reject/hide
+
+
+Reference:
+Phase 0 FRD acceptance criteria. :contentReference[oaicite:67]{index=67}
+
+
+11.2 Phase 0.1 Acceptance Prompt
+Generate test coverage to prove:
+- promoter can create profile
+- promoter can upload >=1 video and >=1 photo set
+- upload constraints enforced
+- feed renders correctly
+- media attaches to events
+- public profile resolves via URL/slug
+- admin can moderate content
+- cache invalidation works for promoter reads
+- authorization enforced
+
+
+Reference:
+Phase 0.1 PRD/TRD acceptance criteria and technical acceptance. 
+
+
+________________
+
+
+12. FINAL COPILOT HANDOFF BLOCK
+Use this as the final preface before pasting the pack prompts:
+Generate WeUP in strict execution order.
+
+
+Obey:
+1. Deterministic ingestion first.
+2. Query/read surfaces second.
+3. Frontend realization third.
+4. Promoter/media/feed layer fourth.
+5. AI assistive layer last.
+
+
+Never:
+- invent social features outside scope
+- break single-viewport UX rules
+- replace deterministic validation with AI
+- make promoter feed primary over event discovery
+
+
+Prefer exact canonical names from the glossary.
+Prefer explicit DTOs and mode-specific contracts.
+Keep event discovery primary, promoter media secondary.
+
+
+________________
+
+
+That is the consolidated master bundle.
+The clean next step is to turn this into a copy-paste-ready Part 1 / Part 2 / Part 3 mega-pack, because this full bundle is large enough that pasting it to Copilot in one shot may reduce quality.

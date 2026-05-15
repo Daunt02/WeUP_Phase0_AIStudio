@@ -1,0 +1,635 @@
+﻿WeUP Phase 0.1 — Technical Requirements Document (TRD)
+Feature: Promoter Profiles + Media Feed (Photos + Short Video)
+Stack Alignment: .NET 8 + Vue 3 (Quasar) + gRPC/REST + Cloud Storage + Optional AI Agents
+________________
+
+
+0. Purpose
+This TRD defines the technical architecture, system components, data models, APIs, infrastructure, and execution details required to implement:
+Promoter Profiles + Media Feed System
+This is implementation-ready and aligned to:
+* Microservice-friendly architecture
+
+* Event-driven extensibility
+
+* Future AI orchestration (Autogen / Crawl4AI / vector DB)
+
+________________
+
+
+1. High-Level Architecture
+1.1 System Topology
+[ Vue + Quasar Frontend ]
+            |
+     (REST / gRPC-Web)
+            |
+[ API Gateway / BFF (.NET) ]
+            |
+ ┌───────────────┬────────────────┬────────────────┐
+ |               |                |                |
+[PromoterSvc] [MediaSvc]   [FeedSvc]     [EventSvc]
+     |               |                |
+     └──────┬────────┴────────┬──────┘
+            |
+        [PostgreSQL / SQL Server]
+            |
+        [Redis Cache]
+            |
+        [Object Storage / CDN]
+            |
+        [Optional AI Layer]
+   (Autogen / Crawl4AI / Embeddings)
+________________
+
+
+1.2 Service Responsibilities
+Service
+	Responsibility
+	PromoterService
+	Profile lifecycle
+	MediaService
+	Upload, processing, storage
+	FeedService
+	Posts + feed logic
+	EventService
+	Existing event data
+	AdminService
+	Moderation + verification
+	________________
+
+
+2. Technology Stack
+Backend (.NET)
+   * .NET 8
+
+   * ASP.NET Core Web API
+
+   * gRPC (internal service communication)
+
+   * Entity Framework Core
+
+   * MediatR (optional)
+
+   * FluentValidation
+
+Frontend
+      * Vue 3 + Quasar
+
+      * Pinia (state)
+
+      * Axios / gRPC-web
+
+Storage
+         * Primary DB: PostgreSQL (preferred) or SQL Server
+
+         * Cache: Redis
+
+         * Media:
+
+            * Cloudinary (preferred)
+
+            * or Supabase / S3
+
+Infra
+               * Docker + Docker Compose
+
+               * GitHub Actions (CI/CD)
+
+               * Nginx / YARP (gateway)
+
+Observability
+                  * OpenTelemetry
+
+                  * Serilog
+
+                  * Prometheus + Grafana
+
+________________
+
+
+3. Data Model (EF Core)
+________________
+
+
+3.1 PromoterProfile
+public class PromoterProfile
+{
+    public Guid Id { get; set; }
+    public string DisplayName { get; set; }
+    public string Slug { get; set; }
+    public string Bio { get; set; }
+
+
+    public string ProfileImageUrl { get; set; }
+    public string BannerImageUrl { get; set; }
+
+
+    public string City { get; set; }
+
+
+    public string InstagramUrl { get; set; }
+    public string TikTokUrl { get; set; }
+    public string WebsiteUrl { get; set; }
+
+
+    public VerificationStatus VerificationStatus { get; set; }
+
+
+    public DateTime CreatedAt { get; set; }
+}
+________________
+
+
+3.2 MediaAsset
+public class MediaAsset
+{
+    public Guid Id { get; set; }
+    public Guid PromoterProfileId { get; set; }
+
+
+    public MediaType MediaType { get; set; }
+
+
+    public string Url { get; set; }
+    public string ThumbnailUrl { get; set; }
+
+
+    public string Caption { get; set; }
+
+
+    public int? DurationSeconds { get; set; }
+
+
+    public MediaStatus Status { get; set; }
+
+
+    public DateTime CreatedAt { get; set; }
+}
+________________
+
+
+3.3 FeedPost
+public class FeedPost
+{
+    public Guid Id { get; set; }
+    public Guid PromoterProfileId { get; set; }
+
+
+    public string Title { get; set; }
+    public string Body { get; set; }
+
+
+    public PostType PostType { get; set; }
+
+
+    public Guid? LinkedEventId { get; set; }
+
+
+    public PostStatus Status { get; set; }
+
+
+    public DateTime PublishedAt { get; set; }
+}
+________________
+
+
+3.4 FeedPostMedia (Join Table)
+public class FeedPostMedia
+{
+    public Guid FeedPostId { get; set; }
+    public Guid MediaAssetId { get; set; }
+
+
+    public int SortOrder { get; set; }
+}
+________________
+
+
+4. API Design (REST)
+________________
+
+
+4.1 Promoter API
+POST   /api/promoters
+GET    /api/promoters/{slug}
+PUT    /api/promoters/{id}
+GET    /api/promoters/{id}/feed
+________________
+
+
+4.2 Media API
+POST   /api/media/upload
+POST   /api/media/attach
+DELETE /api/media/{id}
+________________
+
+
+4.3 Feed API
+POST   /api/feed
+PUT    /api/feed/{id}
+DELETE /api/feed/{id}
+GET    /api/feed/{id}
+________________
+
+
+4.4 Admin API
+POST /api/admin/promoters/{id}/verify
+POST /api/admin/media/{id}/flag
+POST /api/admin/promoters/{id}/suspend
+________________
+
+
+5. Media Processing Pipeline
+________________
+
+
+5.1 Upload Flow
+Client → API → MediaService → Storage Provider
+                        ↓
+                Validation Layer
+                        ↓
+                Processing Layer
+                        ↓
+                 Metadata Persist
+________________
+
+
+5.2 Validation Layer
+                     * MIME type check
+
+                     * File size check
+
+                     * Video duration check
+
+                     * Malware scan (optional Phase 1)
+
+________________
+
+
+5.3 Processing Layer
+Images
+                        * Resize (multiple sizes)
+
+                        * WebP conversion
+
+                        * Thumbnail generation
+
+Video
+                           * Transcode to H.264
+
+                           * Generate thumbnail frame
+
+                           * Compress bitrate
+
+________________
+
+
+5.4 Storage Strategy
+Type
+	Strategy
+	Raw upload
+	Temporary bucket
+	Processed media
+	CDN-backed storage
+	Thumbnails
+	separate optimized path
+	________________
+
+
+6. Frontend Architecture
+________________
+
+
+6.1 Component Tree
+PromoterProfilePage
+ ├── ProfileHeader
+ ├── Tabs
+ │    ├── FeedTab
+ │    │     └── FeedCard
+ │    │           ├── MediaCarousel
+ │    │           └── VideoPlayer
+ │    ├── EventsTab
+ │    └── GalleryTab
+________________
+
+
+6.2 Key Components
+                              * MediaUploader.vue
+
+                              * FeedPostEditor.vue
+
+                              * MediaCarousel.vue
+
+                              * VideoPlayer.vue
+
+                              * PromoterProfilePage.vue
+
+________________
+
+
+6.3 State Management (Pinia)
+Stores:
+                                 * promoterStore
+
+                                 * mediaStore
+
+                                 * feedStore
+
+________________
+
+
+7. Caching Strategy
+________________
+
+
+7.1 Redis Usage
+Data
+	Strategy
+	Promoter profile
+	cached by slug
+	Feed posts
+	cached per promoter
+	Media metadata
+	cached
+	________________
+
+
+7.2 Cache Invalidation
+                                    * On post publish → invalidate feed cache
+
+                                    * On profile update → invalidate profile cache
+
+________________
+
+
+8. Security
+________________
+
+
+8.1 Authentication
+                                       * JWT-based
+
+                                       * OAuth optional
+
+________________
+
+
+8.2 Authorization
+                                          * Promoter owns:
+
+                                             * profile
+
+                                             * posts
+
+                                             * media
+
+________________
+
+
+8.3 Upload Security
+                                                * MIME validation
+
+                                                * Reject executable payloads
+
+                                                * Strip metadata (EXIF)
+
+________________
+
+
+9. Performance Targets
+Metric
+	Target
+	Feed load
+	< 2 sec
+	Upload start
+	< 2 sec
+	Media render
+	< 1 sec
+	API response
+	< 200ms
+	________________
+
+
+10. Event-Driven Extensions (Future-Proofing)
+________________
+
+
+10.1 Domain Events
+                                                   * MediaUploadedEvent
+
+                                                   * FeedPostPublishedEvent
+
+                                                   * PromoterVerifiedEvent
+
+________________
+
+
+10.2 Use Cases
+                                                      * AI caption generation
+
+                                                      * Crawl4AI ingestion
+
+                                                      * analytics pipelines
+
+                                                      * notification systems
+
+________________
+
+
+11. AI / Agent Integration (Optional Layer)
+________________
+
+
+11.1 Autogen Agents
+FeedGeneratorAgent
+                                                         * auto-create posts from scraped content
+
+CaptionAgent
+                                                            * generate captions
+
+ModerationAgent
+                                                               * flag unsafe content
+
+________________
+
+
+11.2 Vector Integration (Qdrant)
+                                                                  * embed captions + media metadata
+
+                                                                  * enable:
+
+                                                                     * semantic search
+
+                                                                     * vibe clustering
+
+________________
+
+
+12. DevOps & Deployment
+________________
+
+
+12.1 Docker Compose
+Services:
+                                                                        * api
+
+                                                                        * postgres
+
+                                                                        * redis
+
+                                                                        * storage proxy (optional)
+
+________________
+
+
+12.2 CI/CD
+GitHub Actions:
+                                                                           * build
+
+                                                                           * test
+
+                                                                           * dockerize
+
+                                                                           * deploy
+
+________________
+
+
+12.3 Environments
+                                                                              * local
+
+                                                                              * staging
+
+                                                                              * production
+
+________________
+
+
+13. Observability
+________________
+
+
+13.1 Logging
+                                                                                 * Serilog structured logs
+
+13.2 Metrics
+                                                                                    * upload success rate
+
+                                                                                    * feed load latency
+
+13.3 Tracing
+                                                                                       * OpenTelemetry
+
+________________
+
+
+14. Failure Handling
+________________
+
+
+14.1 Upload Failures
+                                                                                          * retry mechanism
+
+                                                                                          * fallback error state
+
+________________
+
+
+14.2 Media Processing Failures
+                                                                                             * mark asset as failed
+
+                                                                                             * allow reprocessing
+
+________________
+
+
+15. Scalability Considerations
+________________
+
+
+Horizontal Scaling
+                                                                                                * stateless APIs
+
+                                                                                                * CDN offload
+
+                                                                                                * async media processing
+
+________________
+
+
+Bottlenecks
+                                                                                                   * video processing CPU
+
+                                                                                                   * storage bandwidth
+
+________________
+
+
+16. Implementation Order
+________________
+
+
+Phase 1
+                                                                                                      * DB schema
+
+                                                                                                      * basic APIs
+
+Phase 2
+                                                                                                         * media upload pipeline
+
+Phase 3
+                                                                                                            * feed + UI
+
+Phase 4
+                                                                                                               * moderation
+
+Phase 5
+                                                                                                                  * optimization + caching
+
+________________
+
+
+17. Acceptance Criteria (Technical)
+                                                                                                                     * media upload succeeds under constraints
+
+                                                                                                                     * feed returns correct ordering
+
+                                                                                                                     * profile resolves via slug
+
+                                                                                                                     * CDN delivers optimized media
+
+                                                                                                                     * cache invalidation works
+
+                                                                                                                     * authorization enforced
+
+________________
+
+
+Final Technical Position
+This TRD establishes:
+                                                                                                                        * Clean service boundaries
+
+                                                                                                                        * Scalable media pipeline
+
+                                                                                                                        * Extensible event-driven system
+
+                                                                                                                        * AI-ready architecture
+
+This is not just a feature—it is the foundation for WeUP’s promoter economy layer.
+________________
+
+
+Recommended Next Step
+You are now at execution readiness.
+Next logical deliverables:
+                                                                                                                           1. Full .NET solution scaffold (multi-project)
+
+                                                                                                                           2. EF Core migrations
+
+                                                                                                                           3. Cloudinary integration service
+
+                                                                                                                           4. Vue/Quasar component code
+
+                                                                                                                           5. Autogen orchestration layer for content ingestion
+
+If you want, I can generate the entire repo structure and first commit.
