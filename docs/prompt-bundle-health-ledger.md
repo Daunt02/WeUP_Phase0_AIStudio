@@ -1,7 +1,7 @@
 # WeUP Prompt Bundle Health Ledger
 
 Document version: 1.0  
-Last updated: 2026-04-30  
+Last updated: 2026-05-15  
 Purpose: single source of truth for prompt-bundle sequence, current health, next step, and Copilot commit/agent execution discipline.
 
 ---
@@ -81,10 +81,12 @@ Guidance:
 
 ### C. Extended Phase 0.5+ (Pack 9-Pack 13)
 
-Status: NOT STARTED as production conversion program.
+Status: IN PROGRESS (Production Conversion Active)
 
 Evidence:
 
+- ✅ **P57 Complete**: `OrchestrationKernel.cs` implemented with deterministic DAG execution, idempotency checks, and trace emission.
+- [/] **P58 In Progress**: `EfItineraryRepository.cs` and core persistence entities migrated to EF Core/PostgreSQL.
 - `docs/bundle-pack-phase0.5-onwards.md` defines Pack 9 as mandatory bridge from stubs to real infrastructure.
 
 ---
