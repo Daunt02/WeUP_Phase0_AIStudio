@@ -8,7 +8,7 @@ public static class SaveEndpoints
 {
     public static void MapSaveEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/users/me/saves").WithTags("Saves");
+        var group = app.MapGroup("/api/users/me/saves").WithTags("Saves").RequireAuthorization();
 
         // GET /api/users/me/saves
         // Retrieval invariant:

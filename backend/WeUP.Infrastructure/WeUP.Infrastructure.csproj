@@ -24,5 +24,6 @@
     <PackageReference Include="OpenTelemetry.Api" Version="1.*" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.*" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.*" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.*" />
   </ItemGroup>
 </Project>

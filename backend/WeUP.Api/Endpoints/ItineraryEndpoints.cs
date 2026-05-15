@@ -7,7 +7,7 @@ public static class ItineraryEndpoints
 {
     public static IEndpointRouteBuilder MapItineraryEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/users/me").WithTags("Itinerary & Preferences");
+        var group = app.MapGroup("/api/users/me").WithTags("Itinerary & Preferences").RequireAuthorization();
 
         // GET /api/users/me/itinerary
         group.MapGet("/itinerary", async (

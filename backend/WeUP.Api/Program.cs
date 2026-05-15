@@ -39,6 +39,9 @@ using WeUP.Infrastructure.Media;
 using WeUP.Infrastructure.Ocr;
 using WeUP.Infrastructure.Resolution;
 using WeUP.Infrastructure.Seed;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -81,6 +84,25 @@ builder.Services.AddSwaggerGen(c =>
     var runtimeLabel = runtime.UsesDatabase ? "v1 (Postgres runtime)" : "v1 (stub runtime)";
     c.SwaggerDoc("v1", new() { Title = "WeUP API", Version = runtimeLabel });
 });
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(opts =>
+    {
+        var secret = builder.Configuration["WeUP:Auth:JwtSecret"];
+        if (!string.IsNullOrEmpty(secret))
+        {
+            opts.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ClockSkew = TimeSpan.Zero
+            };
+        }
+    });
+
+builder.Services.AddAuthorization();
 
 // CORS — allow the Next.js frontend during local development
 builder.Services.AddCors(opts =>
@@ -250,7 +272,7 @@ builder.Services.AddScoped<ModeratorAuthorizationFilter>();
 
 // Auth services (P16)
 // Phase 0: in-memory token store. Real JWT: add JwtBearer, set WeUp:Auth:JwtSecret in appsettings.
-builder.Services.AddSingleton<ITokenService, BearerTokenService>();
+builder.Services.AddSingleton<ITokenService, JwtTokenService>();
 builder.Services.AddScoped<UserAuthService>();
 
 // User persistence services (P17)
@@ -417,8 +439,8 @@ if (!app.Environment.IsEnvironment("Testing"))
 }
 
 // Auth middleware — Phase 0 uses BearerTokenService; JwtBearer added in P16.5+
-// app.UseAuthentication();
-// app.UseAuthorization();
+app.UseAuthentication();
+app.UseAuthorization();
 
 // ---------------------------------------------------------------------------
 // Endpoints

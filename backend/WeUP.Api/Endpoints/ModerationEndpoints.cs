@@ -17,6 +17,7 @@ public static class ModerationEndpoints
     {
         var group = app.MapGroup("/api/moderation")
             .WithTags("Moderation")
+            .RequireAuthorization()
             .AddEndpointFilter<ModeratorAuthorizationFilter>();
 
         group.MapGet("/queue", async (

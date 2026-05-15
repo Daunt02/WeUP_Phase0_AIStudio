@@ -26,8 +26,8 @@ public sealed class UserAuthService(
             await roleRepository.SetRolesAsync(profile.UserId, [UserRoles.User], ct);
         }
 
-        var token = tokens.IssueToken(profile.UserId);
         var resolvedRoles = await roles.ResolveRolesAsync(profile.UserId, ct);
+        var token = tokens.IssueToken(profile.UserId, profile.Email, resolvedRoles);
         return new AuthResponse(
             profile.UserId,
             token,
@@ -46,8 +46,8 @@ public sealed class UserAuthService(
         var profile = await users.GetByEmailAsync(request.Email, ct);
         if (profile is null) return null;
 
-        var token = tokens.IssueToken(profile.UserId);
         var resolvedRoles = await roles.ResolveRolesAsync(profile.UserId, ct);
+        var token = tokens.IssueToken(profile.UserId, profile.Email, resolvedRoles);
         return new AuthResponse(
             profile.UserId,
             token,

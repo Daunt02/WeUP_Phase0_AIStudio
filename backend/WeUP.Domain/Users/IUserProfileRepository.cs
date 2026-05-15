@@ -37,7 +37,7 @@ public interface IUserRoleRepository
 /// </summary>
 public interface ITokenService
 {
-    string IssueToken(string userId);
+    string IssueToken(string userId, string email, string[] roles);
     string? ValidateToken(string token);
     int ExpiresInSeconds { get; }
 }

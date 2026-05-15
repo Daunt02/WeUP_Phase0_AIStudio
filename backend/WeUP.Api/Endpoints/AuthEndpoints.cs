@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using WeUP.Application.Users;
 using WeUP.Contracts.Auth;
 using WeUP.Domain.Users;
@@ -70,11 +71,6 @@ public static class AuthEndpoints
     /// </summary>
     internal static string? ResolveUserId(HttpContext ctx, ITokenService tokens)
     {
-        var authHeader = ctx.Request.Headers.Authorization.FirstOrDefault();
-        if (authHeader is null || !authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
-            return null;
-
-        var token = authHeader["Bearer ".Length..].Trim();
-        return tokens.ValidateToken(token);
+        return ctx.User.FindFirstValue(ClaimTypes.NameIdentifier);
     }
 }

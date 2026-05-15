@@ -87,6 +87,7 @@ Evidence:
 
 - ✅ **P57 Complete**: `OrchestrationKernel.cs` implemented with deterministic DAG execution, idempotency checks, and trace emission.
 - [/] **P58 In Progress**: `EfItineraryRepository.cs` and core persistence entities migrated to EF Core/PostgreSQL.
+- [/] **P59 In Progress**: `JwtTokenService` implemented; standard Bearer stubs replaced with middleware-based JWT validation.
 - `docs/bundle-pack-phase0.5-onwards.md` defines Pack 9 as mandatory bridge from stubs to real infrastructure.
 
 ---
