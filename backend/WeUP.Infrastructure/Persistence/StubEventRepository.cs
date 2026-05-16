@@ -1,5 +1,6 @@
 using System.Globalization;
 using WeUP.Contracts.Events;
+using WeUP.Contracts.Moderation;
 using WeUP.Domain.Events;
 using WeUP.Domain.Moderation;
 using WeUP.Infrastructure.Seed;

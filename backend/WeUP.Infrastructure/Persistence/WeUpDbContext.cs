@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using WeUP.Infrastructure.Persistence.Configurations;
 using WeUP.Infrastructure.Persistence.Entities;
+using WeUP.Domain.Users;
 
 namespace WeUP.Infrastructure.Persistence;
 
@@ -39,10 +40,22 @@ public sealed class WeUpDbContext(DbContextOptions<WeUpDbContext> options) : DbC
     public DbSet<WeUP.Infrastructure.Resolution.ProvenanceEntity> Provenance => Set<WeUP.Infrastructure.Resolution.ProvenanceEntity>();
     public DbSet<ItineraryEntity> Itineraries => Set<ItineraryEntity>();
     public DbSet<AuditTrailEntity> AuditTrails => Set<AuditTrailEntity>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<RefreshToken>(b =>
+        {
+            b.ToTable("refresh_tokens");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.Token).HasMaxLength(256).IsRequired();
+            b.Property(e => e.UserId).HasMaxLength(128).IsRequired();
+            b.Property(e => e.ReplacedByToken).HasMaxLength(256);
+            b.HasIndex(e => e.Token).IsUnique();
+            b.HasIndex(e => e.UserId);
+        });
 
         modelBuilder.ApplyConfiguration(new EventEntityConfiguration());
         modelBuilder.ApplyConfiguration(new SavedEventEntityConfiguration());

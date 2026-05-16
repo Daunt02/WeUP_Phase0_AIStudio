@@ -40,4 +40,10 @@ public interface ITokenService
     string IssueToken(string userId, string email, string[] roles);
     string? ValidateToken(string token);
     int ExpiresInSeconds { get; }
+
+    // Refresh Token Flow
+    string IssueRefreshToken();
+    Task SaveRefreshTokenAsync(string userId, string token, CancellationToken ct = default);
+    Task<RefreshToken?> GetRefreshTokenAsync(string token, CancellationToken ct = default);
+    Task RevokeRefreshTokenAsync(string token, string? replacedByToken = null, CancellationToken ct = default);
 }

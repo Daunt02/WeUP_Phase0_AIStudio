@@ -82,7 +82,6 @@ public static class MediaEndpoints
         HttpRequest request,
         HttpContext httpContext,
         IMediaIntakeService mediaService,
-        ITokenService tokens,
         CancellationToken ct)
     {
         if (!request.HasFormContentType)
@@ -103,7 +102,7 @@ public static class MediaEndpoints
                 statusCode: StatusCodes.Status400BadRequest);
         }
 
-        var uploaderUserId = AuthEndpoints.ResolveUserId(httpContext, tokens) ?? form["uploaderUserId"].ToString().NullIfEmpty();
+        var uploaderUserId = AuthEndpoints.ResolveUserId(httpContext) ?? form["uploaderUserId"].ToString().NullIfEmpty();
         var ownerTypeRaw = form["ownerType"].ToString().NullIfEmpty() ?? MediaOwnerType.User.ToString();
         if (!Enum.TryParse<MediaOwnerType>(ownerTypeRaw, true, out var ownerType))
         {

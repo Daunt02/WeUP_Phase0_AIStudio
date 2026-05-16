@@ -5,21 +5,17 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using WeUP.Contracts.Moderation;
-using WeUP.Domain.Moderation;
-using WeUP.Infrastructure.Persistence;
-using WeUP.Infrastructure.Persistence.Entities;
-
-namespace WeUP.Application.Moderation;
-using WeUP.Contracts.Moderation;
 using WeUP.Domain.Dedupe;
 using WeUP.Domain.Flyer;
 using WeUP.Domain.Moderation;
+using WeUP.Infrastructure.Persistence;
+using WeUP.Infrastructure.Persistence.Entities;
 using ContractQueueItem = WeUP.Contracts.Moderation.ModerationQueueItem;
 using DomainQueueItem = WeUP.Domain.Moderation.ModerationQueueItem;
 
 namespace WeUP.Application.Moderation;
 
-public enum ModerationStatus
+public enum WorkflowStatus
 {
     Pending,
     InReview,
@@ -28,23 +24,12 @@ public enum ModerationStatus
     NeedsEdit,
 }
 
-public sealed record ModerationStatusTransition(
-    ModerationStatus From,
-    ModerationStatus To,
+public sealed record WorkflowStatusTransition(
+    WorkflowStatus From,
+    WorkflowStatus To,
     string ActorId,
     DateTimeOffset ChangedAtUtc);
 
-public sealed record ModerationQueueItem(
-    string ItemId,
-    string CandidateId,
-    ModerationStatus Status,
-    EventRiskScore RiskScore,
-    double Confidence,
-    int Priority,
-    string? AssignedReviewerId,
-    DateTimeOffset CreatedAtUtc,
-    DateTimeOffset UpdatedAtUtc,
-    IReadOnlyList<ModerationStatusTransition> Transitions);
 
 public interface IModerationQueueService
 {
@@ -53,14 +38,14 @@ public interface IModerationQueueService
     Task<ContractQueueItem?> GetItemAsync(string itemId, CancellationToken ct = default);
     Task<ModerationStatsDto> GetStatsAsync(CancellationToken ct = default);
     Task<IReadOnlyList<ReviewAuditRecord>> GetReviewHistoryAsync(string itemId, int pageSize, string? cursor, CancellationToken ct = default);
-    Task<ModerationQueueItem> EnqueueCandidateAsync(
+    Task<ContractQueueItem> EnqueueCandidateAsync(
         EventCandidateV2 candidate,
         EventRiskScore riskScore,
         DuplicateAssessment duplicateAssessment,
         CancellationToken ct = default);
-    Task<ModerationQueueItem?> FetchNextItemAsync(CancellationToken ct = default);
-    Task<ModerationQueueItem?> AssignReviewerAsync(string itemId, string reviewerId, string actorId, CancellationToken ct = default);
-    Task<ModerationQueueItem?> UpdateStatusAsync(string itemId, ModerationStatus nextStatus, string actorId, string? note = null, CancellationToken ct = default);
+    Task<ContractQueueItem?> FetchNextItemAsync(CancellationToken ct = default);
+    Task<ContractQueueItem?> AssignReviewerAsync(string itemId, string reviewerId, string actorId, CancellationToken ct = default);
+    Task<ContractQueueItem?> UpdateStatusAsync(string itemId, ModerationItemStatus nextStatus, string actorId, string? note = null, CancellationToken ct = default);
 }
 
 public sealed class ModerationQueueService(
@@ -159,7 +144,7 @@ public sealed class ModerationQueueService(
             .ToArray();
     }
 
-    public async Task<ModerationQueueItem> EnqueueCandidateAsync(
+    public async Task<ContractQueueItem> EnqueueCandidateAsync(
         EventCandidateV2 candidate,
         EventRiskScore riskScore,
         DuplicateAssessment duplicateAssessment,
@@ -240,10 +225,10 @@ public sealed class ModerationQueueService(
             ct: ct);
         await _telemetry.RefreshBacklogAsync(ct);
 
-        return ToWorkflowItem(item);
+        return ToQueueItem(item);
     }
 
-    public async Task<ModerationQueueItem?> FetchNextItemAsync(CancellationToken ct = default)
+    public async Task<ContractQueueItem?> FetchNextItemAsync(CancellationToken ct = default)
     {
         var (items, _) = await queue.QueryAsync(new ModerationQueueQuery(PageSize: 500), ct);
 
@@ -257,10 +242,10 @@ public sealed class ModerationQueueService(
             .ThenBy(i => i.CreatedAt)
             .FirstOrDefault();
 
-        return next is null ? null : ToWorkflowItem(next);
+        return next is null ? null : ToQueueItem(next);
     }
 
-    public async Task<ModerationQueueItem?> AssignReviewerAsync(
+    public async Task<ContractQueueItem?> AssignReviewerAsync(
         string itemId,
         string reviewerId,
         string actorId,
@@ -279,7 +264,7 @@ public sealed class ModerationQueueService(
         var previousStatus = item.Status;
         var nextStatus = previousStatus;
 
-        if (current is ModerationStatus.Pending or ModerationStatus.NeedsEdit)
+        if (current is WorkflowStatus.Pending or WorkflowStatus.NeedsEdit)
         {
             nextStatus = ModerationItemStatus.InReview;
             item.Status = nextStatus;
@@ -307,12 +292,12 @@ public sealed class ModerationQueueService(
             ct: ct);
         await _telemetry.RefreshBacklogAsync(ct);
 
-        return ToWorkflowItem(item);
+        return ToQueueItem(item);
     }
 
-    public async Task<ModerationQueueItem?> UpdateStatusAsync(
+    public async Task<ContractQueueItem?> UpdateStatusAsync(
         string itemId,
-        ModerationStatus nextStatus,
+        ModerationItemStatus nextItemStatus,
         string actorId,
         string? note = null,
         CancellationToken ct = default)
@@ -323,24 +308,25 @@ public sealed class ModerationQueueService(
             return null;
         }
 
-        var currentStatus = ResolveWorkflowStatus(item);
-        if (!IsTransitionAllowed(currentStatus, nextStatus))
+        var currentWorkflowStatus = ResolveWorkflowStatus(item);
+        var nextWorkflowStatus = ToWorkflowStatusFromItem(nextItemStatus);
+
+        if (!IsTransitionAllowed(currentWorkflowStatus, nextWorkflowStatus))
         {
             throw new InvalidOperationException(
-                $"Illegal moderation transition from '{currentStatus}' to '{nextStatus}'.");
+                $"Illegal moderation transition from '{currentWorkflowStatus}' to '{nextWorkflowStatus}'.");
         }
 
         // Explicitly prevent shortcut approvals directly from Pending.
-        if (currentStatus == ModerationStatus.Pending && nextStatus == ModerationStatus.Approved)
+        if (currentWorkflowStatus == WorkflowStatus.Pending && nextWorkflowStatus == WorkflowStatus.Approved)
         {
             throw new InvalidOperationException("Queue does not allow auto-approval from Pending.");
         }
 
         var now = DateTimeOffset.UtcNow;
         var previousStatus = item.Status;
-        var nextItemStatus = ToItemStatus(nextStatus);
         var processingStartedAtUtc = ModerationTelemetryDimensions.ResolveProcessingStartedAtUtc(item);
-        var actionName = ToActionName(nextStatus);
+        var actionName = ToActionName(nextWorkflowStatus);
 
         item.Status = nextItemStatus;
         item.AppendHistory(new ReviewHistoryEntry(
@@ -364,7 +350,7 @@ public sealed class ModerationQueueService(
             actionTimestampUtc: now,
             ct: ct);
 
-        if (nextStatus is ModerationStatus.Approved or ModerationStatus.Rejected or ModerationStatus.NeedsEdit)
+        if (nextWorkflowStatus is WorkflowStatus.Approved or WorkflowStatus.Rejected or WorkflowStatus.NeedsEdit)
         {
             _telemetry.TrackProcessingCompletion(
                 item,
@@ -377,8 +363,17 @@ public sealed class ModerationQueueService(
 
         await _telemetry.RefreshBacklogAsync(ct);
 
-        return ToWorkflowItem(item);
+        return ToQueueItem(item);
     }
+
+    private static WorkflowStatus ToWorkflowStatusFromItem(ModerationItemStatus status) => status switch
+    {
+        ModerationItemStatus.Open => WorkflowStatus.Pending,
+        ModerationItemStatus.InReview => WorkflowStatus.InReview,
+        ModerationItemStatus.Resolved => WorkflowStatus.Approved,
+        ModerationItemStatus.Closed => WorkflowStatus.Rejected,
+        _ => WorkflowStatus.Pending
+    };
 
     private static ContractQueueItem ToQueueItem(DomainQueueItem item)
     {
@@ -474,7 +469,7 @@ public sealed class ModerationQueueService(
             $"dedupe-level:{duplicateAssessment.Level}",
         };
 
-        reasons.AddRange(riskScore.ContributingFactors.Select(f => $"risk-factor:{f.Code}"));
+        reasons.AddRange(riskScore.Factors.Select(f => $"risk-factor:{f.Key}"));
         reasons.AddRange(duplicateAssessment.Rationale.Select(r => $"dedupe-rationale:{r}"));
 
         if (candidate.OverallConfidence < 0.55)
@@ -545,106 +540,84 @@ public sealed class ModerationQueueService(
     private static bool IsActionableForWorkflow(DomainQueueItem item)
     {
         var status = ResolveWorkflowStatus(item);
-        return status is ModerationStatus.Pending or ModerationStatus.InReview or ModerationStatus.NeedsEdit;
+        return status is WorkflowStatus.Pending or WorkflowStatus.InReview or WorkflowStatus.NeedsEdit;
     }
 
-    private static ModerationQueueItem ToWorkflowItem(DomainQueueItem item)
+    private static WorkflowStatus ResolveWorkflowStatus(DomainQueueItem item)
     {
-        var riskScore = ParseRiskScore(item);
-        var status = ResolveWorkflowStatus(item);
-        var candidateId = ModerationAuditService.ResolveCandidateId(item);
-
-        var transitions = item.History
-            .OrderBy(h => h.Timestamp)
-            .Select(ToStatusTransition)
-            .ToArray();
-
-        return new ModerationQueueItem(
-            ItemId: item.ItemId,
-            CandidateId: candidateId,
-            Status: status,
-            RiskScore: riskScore,
-            Confidence: item.Confidence.Aggregate,
-            Priority: ComputePriority(item),
-            AssignedReviewerId: item.AssignedReviewerId,
-            CreatedAtUtc: item.CreatedAt,
-            UpdatedAtUtc: item.UpdatedAt,
-            Transitions: transitions);
+        var lastAction = item.History.LastOrDefault()?.Action;
+        return ToWorkflowStatus(item.Status, lastAction, isNext: true);
     }
 
-    private static ModerationStatusTransition ToStatusTransition(ReviewHistoryEntry entry)
+
+    private static WorkflowStatusTransition ToStatusTransition(ReviewHistoryEntry entry)
     {
         var from = ToWorkflowStatus(entry.PreviousStatus, entry.Action, isNext: false);
         var to = ToWorkflowStatus(entry.NextStatus, entry.Action, isNext: true);
 
-        return new ModerationStatusTransition(
+        return new WorkflowStatusTransition(
             From: from,
             To: to,
             ActorId: entry.ActorId,
             ChangedAtUtc: entry.Timestamp);
     }
 
-    private static ModerationStatus ResolveWorkflowStatus(DomainQueueItem item)
-    {
-        var lastAction = item.History.LastOrDefault()?.Action;
-        return ToWorkflowStatus(item.Status, lastAction, isNext: true);
-    }
 
-    private static ModerationStatus ToWorkflowStatus(ModerationItemStatus itemStatus, string? action, bool isNext)
+    private static WorkflowStatus ToWorkflowStatus(ModerationItemStatus itemStatus, string? action, bool isNext)
     {
         if (isNext && string.Equals(action, "request-changes", StringComparison.OrdinalIgnoreCase))
         {
-            return ModerationStatus.NeedsEdit;
+            return WorkflowStatus.NeedsEdit;
         }
 
         if (isNext && string.Equals(action, "reject", StringComparison.OrdinalIgnoreCase))
         {
-            return ModerationStatus.Rejected;
+            return WorkflowStatus.Rejected;
         }
 
         if (isNext && string.Equals(action, "approve", StringComparison.OrdinalIgnoreCase))
         {
-            return ModerationStatus.Approved;
+            return WorkflowStatus.Approved;
         }
 
         return itemStatus switch
         {
-            ModerationItemStatus.Open => ModerationStatus.Pending,
-            ModerationItemStatus.InReview => ModerationStatus.InReview,
-            ModerationItemStatus.Resolved => ModerationStatus.Approved,
-            _ => ModerationStatus.Rejected,
+            ModerationItemStatus.Open => WorkflowStatus.Pending,
+            ModerationItemStatus.InReview => WorkflowStatus.InReview,
+            ModerationItemStatus.Resolved => WorkflowStatus.Approved,
+            _ => WorkflowStatus.Rejected,
         };
     }
 
-    private static bool IsTransitionAllowed(ModerationStatus current, ModerationStatus next) => (current, next) switch
+    private static bool IsTransitionAllowed(WorkflowStatus current, WorkflowStatus next) => (current, next) switch
     {
-        (ModerationStatus.Pending, ModerationStatus.InReview) => true,
-        (ModerationStatus.Pending, ModerationStatus.Rejected) => true,
-        (ModerationStatus.InReview, ModerationStatus.Approved) => true,
-        (ModerationStatus.InReview, ModerationStatus.Rejected) => true,
-        (ModerationStatus.InReview, ModerationStatus.NeedsEdit) => true,
-        (ModerationStatus.NeedsEdit, ModerationStatus.InReview) => true,
-        (ModerationStatus.NeedsEdit, ModerationStatus.Rejected) => true,
+        (WorkflowStatus.Pending, WorkflowStatus.InReview) => true,
+        (WorkflowStatus.Pending, WorkflowStatus.Rejected) => true,
+        (WorkflowStatus.InReview, WorkflowStatus.Approved) => true,
+        (WorkflowStatus.InReview, WorkflowStatus.Rejected) => true,
+        (WorkflowStatus.InReview, WorkflowStatus.NeedsEdit) => true,
+        (WorkflowStatus.NeedsEdit, WorkflowStatus.InReview) => true,
+        (WorkflowStatus.NeedsEdit, WorkflowStatus.Rejected) => true,
         _ => false,
     };
 
-    private static ModerationItemStatus ToItemStatus(ModerationStatus status) => status switch
+    private static ModerationItemStatus ToItemStatus(WorkflowStatus status) => status switch
     {
-        ModerationStatus.Pending => ModerationItemStatus.Open,
-        ModerationStatus.InReview => ModerationItemStatus.InReview,
-        ModerationStatus.NeedsEdit => ModerationItemStatus.InReview,
-        ModerationStatus.Approved => ModerationItemStatus.Resolved,
-        ModerationStatus.Rejected => ModerationItemStatus.Resolved,
+        WorkflowStatus.Pending => ModerationItemStatus.Open,
+        WorkflowStatus.InReview => ModerationItemStatus.InReview,
+        WorkflowStatus.NeedsEdit => ModerationItemStatus.InReview,
+        WorkflowStatus.Approved => ModerationItemStatus.Resolved,
+        WorkflowStatus.Rejected => ModerationItemStatus.Resolved,
         _ => ModerationItemStatus.Open,
     };
 
-    private static string ToActionName(ModerationStatus status) => status switch
+    private static string ToActionName(WorkflowStatus status) => status switch
     {
-        ModerationStatus.InReview => "start-review",
-        ModerationStatus.Approved => "approve",
-        ModerationStatus.Rejected => "reject",
-        ModerationStatus.NeedsEdit => "request-changes",
-        ModerationStatus.Pending => "reopen",
+        WorkflowStatus.InReview => "start-review",
+        WorkflowStatus.Approved => "approve",
+        WorkflowStatus.Rejected => "reject",
+        WorkflowStatus.NeedsEdit => "request-changes",
+        WorkflowStatus.Pending => "reopen",
         _ => "update-status",
     };
 
@@ -669,21 +642,29 @@ public sealed class ModerationQueueService(
         var rawScore = ExtractReviewReasonValue(item.ReviewReasons, RiskScoreMarker);
         var rawLevel = ExtractReviewReasonValue(item.ReviewReasons, RiskLevelMarker);
 
-        if (int.TryParse(rawScore, out var score) && Enum.TryParse<EventRiskLevel>(rawLevel, true, out var level))
+        if (float.TryParse(rawScore, out var score) && Enum.TryParse<EventRiskLevel>(rawLevel, true, out var level))
         {
+            var rawCandidateId = ExtractReviewReasonValue(item.ReviewReasons, CandidateMarker);
+            var candidateGuid = Guid.TryParse(rawCandidateId, out var cg) ? cg : Guid.Empty;
+
             return new EventRiskScore(
-                OverallScore: score,
+                CandidateId: candidateGuid,
                 Level: level,
-                ContributingFactors: [],
+                OverallScore: score,
+                Factors: new Dictionary<string, float>(),
                 Explanation: "Recovered from persisted queue metadata.");
         }
 
         var fallbackLevel = item.Confidence.Aggregate < 0.55 ? EventRiskLevel.High : EventRiskLevel.Low;
-        var fallbackScore = (int)Math.Round((1 - Math.Clamp(item.Confidence.Aggregate, 0, 1)) * 100d);
+        var fallbackScore = (float)(1 - Math.Clamp(item.Confidence.Aggregate, 0, 1));
+        var rawCandidateIdFallback = ExtractReviewReasonValue(item.ReviewReasons, CandidateMarker);
+        var candidateGuidFallback = Guid.TryParse(rawCandidateIdFallback, out var cgf) ? cgf : Guid.Empty;
+
         return new EventRiskScore(
-            OverallScore: fallbackScore,
+            CandidateId: candidateGuidFallback,
             Level: fallbackLevel,
-            ContributingFactors: [],
+            OverallScore: fallbackScore,
+            Factors: new Dictionary<string, float>(),
             Explanation: "Derived from confidence fallback.");
     }
 

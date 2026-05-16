@@ -1,4 +1,5 @@
 using System.Globalization;
+using WeUP.Contracts.Events;
 using WeUP.Contracts.Ingestion;
 
 namespace WeUP.Domain.Dedupe;

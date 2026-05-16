@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using WeUP.Infrastructure.Persistence.Entities;
 
@@ -9,11 +10,14 @@ public sealed class ModerationQueueItemConfiguration : IEntityTypeConfiguration<
     public void Configure(EntityTypeBuilder<ModerationQueueItemEntity> builder)
     {
         builder.ToTable("ModerationQueue");
-        builder.HasKey(e => e.QueueItemId);
+        builder.HasKey(e => e.Id);
         builder.Property(e => e.Status).IsRequired();
-        builder.Property(e => e.CreatedAtUtc).HasDefaultValueSql("NOW()");
+        builder.Property(e => e.CreatedAt).HasDefaultValueSql("NOW()");
 
         // Append‑only semantics – disallow updates via EF by throwing.
-        builder.Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+        foreach (var property in builder.Metadata.GetProperties())
+        {
+            property.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+        }
     }
 }

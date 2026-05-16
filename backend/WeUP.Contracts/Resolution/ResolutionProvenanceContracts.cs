@@ -1,4 +1,25 @@
+using WeUP.Contracts.Events;
+using WeUP.Contracts.Ingestion;
+
 namespace WeUP.Contracts.Resolution;
+
+public sealed record ProvenanceBuildCommand(
+    string ResolutionId,
+    EventAggregateSnapshot CanonicalBeforeMerge,
+    EventAggregateSnapshot CanonicalAfterMerge,
+    IReadOnlyDictionary<string, string?> CanonicalBeforeFields,
+    IReadOnlyDictionary<string, string?> CanonicalAfterFields,
+    NormalizedEventCandidate Candidate,
+    MergePlan Plan,
+    ProvenanceEntry[] ExistingEntries,
+    string[] SourceRequestIds,
+    string[] CandidateIds,
+    string[] EvidenceBundleRefs,
+    string MergeActor,
+    string MergeReason,
+    DateTimeOffset MergedAtUtc,
+    CandidateEvent? OriginalEventCandidate = null,
+    EvidenceRecord? EvidenceBundle = null);
 
 /// <summary>
 /// Immutable field lineage entry for one canonical field mutation.

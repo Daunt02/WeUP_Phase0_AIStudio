@@ -79,6 +79,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.Configure<MediaIntakeOptions>(builder.Configuration.GetSection(MediaIntakeOptions.SectionName));
 builder.Services.Configure<VideoIntakeOptions>(builder.Configuration.GetSection(VideoIntakeOptions.SectionName));
 builder.Services.Configure<ConfidenceOptions>(builder.Configuration.GetSection("WeUP:Ingestion:Confidence"));
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+});
 builder.Services.AddSwaggerGen(c =>
 {
     var runtimeLabel = runtime.UsesDatabase ? "v1 (Postgres runtime)" : "v1 (stub runtime)";
@@ -272,7 +276,14 @@ builder.Services.AddScoped<ModeratorAuthorizationFilter>();
 
 // Auth services (P16)
 // Phase 0: in-memory token store. Real JWT: add JwtBearer, set WeUp:Auth:JwtSecret in appsettings.
-builder.Services.AddSingleton<ITokenService, JwtTokenService>();
+if (runtime.UsesDatabase)
+{
+    builder.Services.AddScoped<ITokenService, JwtTokenService>();
+}
+else
+{
+    builder.Services.AddSingleton<ITokenService, InMemoryTokenService>();
+}
 builder.Services.AddScoped<UserAuthService>();
 
 // User persistence services (P17)

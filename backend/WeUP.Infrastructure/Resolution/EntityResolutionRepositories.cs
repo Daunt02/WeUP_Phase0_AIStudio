@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using WeUP.Contracts.Events;
 using WeUP.Contracts.Ingestion;
+using WeUP.Contracts.Moderation;
 using WeUP.Contracts.Resolution;
 using WeUP.Domain.Dedupe;
 using WeUP.Domain.Events;

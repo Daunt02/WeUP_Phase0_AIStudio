@@ -36,6 +36,8 @@ public sealed record UpdateProfileRequest(
     string? HomeMarket,
     string? OnboardingState);
 
+public sealed record RefreshTokenRequest(string RefreshToken);
+
 // ---------------------------------------------------------------------------
 // Responses
 // ---------------------------------------------------------------------------
@@ -47,7 +49,8 @@ public sealed record AuthResponse(
     string TokenType,
     int ExpiresInSeconds,
     UserProfileDto Profile,
-    string[] Roles);
+    string[] Roles,
+    string? RefreshToken = null);
 
 /// <summary>Full profile shape returned on GET /auth/me.</summary>
 public sealed record UserProfileDto(

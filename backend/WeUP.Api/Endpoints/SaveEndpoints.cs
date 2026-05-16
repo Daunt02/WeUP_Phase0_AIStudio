@@ -16,13 +16,12 @@ public static class SaveEndpoints
         // - Missing/deleted saves remain explicit rows so saved count and panel state do not drift silently.
         group.MapGet("/", async (
             ISaveRepository repo,
-            ITokenService tokens,
             HttpContext ctx,
             int page = 1,
             int pageSize = 50,
             CancellationToken ct = default) =>
         {
-            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            var userId = AuthEndpoints.ResolveUserId(ctx);
             if (userId is null) return Results.Unauthorized();
             var response = await repo.GetSavesAsync(userId, Math.Max(1, page), Math.Clamp(pageSize, 1, 100), ct);
             return Results.Ok(response);
@@ -37,11 +36,10 @@ public static class SaveEndpoints
             SaveStateMigrationRequestDto request,
             ISaveRepository repo,
             IUserPreferencesRepository preferences,
-            ITokenService tokens,
             HttpContext ctx,
             CancellationToken ct) =>
         {
-            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            var userId = AuthEndpoints.ResolveUserId(ctx);
             if (userId is null) return Results.Unauthorized();
 
             var rawLocalIds = request.LocalSavedEventIds ?? [];
@@ -150,11 +148,10 @@ public static class SaveEndpoints
         group.MapGet("/{eventId}/state", async (
             string eventId,
             ISaveRepository repo,
-            ITokenService tokens,
             HttpContext ctx,
             CancellationToken ct) =>
         {
-            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            var userId = AuthEndpoints.ResolveUserId(ctx);
             if (userId is null) return Results.Unauthorized();
 
             var normalizedEventId = eventId.Trim();
@@ -188,11 +185,10 @@ public static class SaveEndpoints
         group.MapPost("/", async (
             SaveEventRequestDto request,
             ISaveRepository repo,
-            ITokenService tokens,
             HttpContext ctx,
             CancellationToken ct) =>
         {
-            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            var userId = AuthEndpoints.ResolveUserId(ctx);
             if (userId is null) return Results.Unauthorized();
 
             var normalizedEventId = request.EventId.Trim();
@@ -222,11 +218,10 @@ public static class SaveEndpoints
         group.MapPost("/unsave", async (
             UnsaveEventRequestDto request,
             ISaveRepository repo,
-            ITokenService tokens,
             HttpContext ctx,
             CancellationToken ct) =>
         {
-            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            var userId = AuthEndpoints.ResolveUserId(ctx);
             if (userId is null) return Results.Unauthorized();
 
             var normalizedEventId = request.EventId.Trim();
@@ -252,11 +247,10 @@ public static class SaveEndpoints
         group.MapPost("/{eventId}", async (
             string eventId,
             ISaveRepository repo,
-            ITokenService tokens,
             HttpContext ctx,
             CancellationToken ct) =>
         {
-            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            var userId = AuthEndpoints.ResolveUserId(ctx);
             if (userId is null) return Results.Unauthorized();
 
             var normalizedEventId = eventId.Trim();
@@ -281,11 +275,10 @@ public static class SaveEndpoints
         group.MapDelete("/{eventId}", async (
             string eventId,
             ISaveRepository repo,
-            ITokenService tokens,
             HttpContext ctx,
             CancellationToken ct) =>
         {
-            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            var userId = AuthEndpoints.ResolveUserId(ctx);
             if (userId is null) return Results.Unauthorized();
 
             var normalizedEventId = eventId.Trim();

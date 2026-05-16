@@ -1,3 +1,4 @@
+using WeUP.Contracts.Events;
 using WeUP.Contracts.Ingestion;
 
 namespace WeUP.Domain.Dedupe;
@@ -276,23 +277,7 @@ public sealed record MergeSafetyVerdict(
 ///         EvidenceRefs: [],
 ///         IsApproved: e.Status == "APPROVED");
 /// </summary>
-public sealed record EventAggregateSnapshot(
-    string CanonicalEventId,
-    string? Title,
-    string? VenueName,
-    string? Address,
-    double Latitude,
-    double Longitude,
-    string? StartUtc,
-    string? EndUtc,
-    string? Timezone,
-    string? Category,
-    double Confidence,
-    string[] SourceRefs,
-    string[] EvidenceRefs,
-    bool IsApproved,
-    string? ExternalSourceId = null,
-    IReadOnlyDictionary<string, string?>? Attributes = null);
+
 
 // ---------------------------------------------------------------------------
 // DuplicateAssessment

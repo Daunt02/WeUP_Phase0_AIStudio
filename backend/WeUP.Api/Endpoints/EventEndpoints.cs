@@ -55,7 +55,6 @@ public static class EventEndpoints
             HttpContext ctx,
             IEventRepository repo,
             ITimeWindowResolver timeWindowResolver,
-            ITokenService tokens,
             ISaveRepository saves,
             string bbox,
             string preset,
@@ -135,7 +134,7 @@ public static class EventEndpoints
                 resolvedWindow.EndUtc,
                 resolvedWindow.Timezone);
 
-            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            var userId = AuthEndpoints.ResolveUserId(ctx);
             if (query.IncludeSavedOnly && string.IsNullOrWhiteSpace(userId))
             {
                 return Results.Ok(BuildV1MapFeedResponse(Array.Empty<EventMapItemDto>()));
@@ -281,12 +280,11 @@ public static class EventEndpoints
             string id,
             HttpContext ctx,
             IEventRepository repo,
-            ITokenService tokens,
             ISaveRepository saves,
             CancellationToken ct) =>
         {
             var response = await repo.GetEventDetailAsync(id, ct);
-            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            var userId = AuthEndpoints.ResolveUserId(ctx);
 
             if (response.Event is not null && !string.IsNullOrWhiteSpace(userId))
             {

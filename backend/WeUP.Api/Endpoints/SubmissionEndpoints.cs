@@ -14,11 +14,11 @@ public static class SubmissionEndpoints
         // POST /api/events/submissions — create draft
         group.MapPost("/", async (
             DraftSubmissionRequest request,
-            IEventSubmissionService svc, ITokenService tokens,
+            IEventSubmissionService svc,
             IOperationalTelemetry telemetry,
             HttpContext ctx, CancellationToken ct) =>
         {
-            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            var userId = AuthEndpoints.ResolveUserId(ctx);
             if (userId is null) return Results.Unauthorized();
 
             var dto = await svc.CreateDraftAsync(userId, request, ct);
@@ -34,11 +34,11 @@ public static class SubmissionEndpoints
 
         // GET /api/events/submissions — list user's own submissions
         group.MapGet("/", async (
-            IEventSubmissionService svc, ITokenService tokens,
+            IEventSubmissionService svc,
             HttpContext ctx, int page = 1, int pageSize = 20,
             CancellationToken ct = default) =>
         {
-            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            var userId = AuthEndpoints.ResolveUserId(ctx);
             if (userId is null) return Results.Unauthorized();
 
             var result = await svc.ListByUserAsync(userId, Math.Max(1, page), Math.Clamp(pageSize, 1, 100), ct);
@@ -50,9 +50,9 @@ public static class SubmissionEndpoints
         // GET /api/events/submissions/{id}
         group.MapGet("/{id}", async (
             string id, IEventSubmissionService svc,
-            ITokenService tokens, HttpContext ctx, CancellationToken ct) =>
+            HttpContext ctx, CancellationToken ct) =>
         {
-            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            var userId = AuthEndpoints.ResolveUserId(ctx);
             if (userId is null) return Results.Unauthorized();
 
             var dto = await svc.GetAsync(id, ct);
@@ -66,10 +66,10 @@ public static class SubmissionEndpoints
         // PATCH /api/events/submissions/{id} — update draft
         group.MapPatch("/{id}", async (
             string id, DraftSubmissionRequest request,
-            IEventSubmissionService svc, ITokenService tokens,
+            IEventSubmissionService svc,
             HttpContext ctx, CancellationToken ct) =>
         {
-            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            var userId = AuthEndpoints.ResolveUserId(ctx);
             if (userId is null) return Results.Unauthorized();
 
             var dto = await svc.UpdateDraftAsync(id, userId, request, ct);
@@ -83,9 +83,9 @@ public static class SubmissionEndpoints
         // POST /api/events/submissions/{id}/submit — submit for review
         group.MapPost("/{id}/submit", async (
             string id, IEventSubmissionService svc,
-            ITokenService tokens, HttpContext ctx, IOperationalTelemetry telemetry, CancellationToken ct) =>
+            HttpContext ctx, IOperationalTelemetry telemetry, CancellationToken ct) =>
         {
-            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            var userId = AuthEndpoints.ResolveUserId(ctx);
             if (userId is null) return Results.Unauthorized();
 
             var result = await svc.SubmitForReviewAsync(id, userId, ct);
@@ -105,10 +105,10 @@ public static class SubmissionEndpoints
         // GET /api/events/submissions/{id}/status
         group.MapGet("/{id}/status", async (
             string id, IEventSubmissionService svc,
-            ITokenService tokens, HttpContext ctx,
+            HttpContext ctx,
             CancellationToken ct) =>
         {
-            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            var userId = AuthEndpoints.ResolveUserId(ctx);
             if (userId is null) return Results.Unauthorized();
 
             var dto = await svc.GetAsync(id, ct);

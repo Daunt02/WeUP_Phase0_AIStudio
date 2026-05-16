@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using WeUP.Contracts.Events;
 using ContractDedupe = WeUP.Contracts.Dedupe;
 using WeUP.Contracts.Ingestion;
 using WeUP.Domain.Dedupe;

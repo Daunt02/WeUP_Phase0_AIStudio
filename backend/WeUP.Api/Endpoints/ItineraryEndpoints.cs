@@ -11,10 +11,10 @@ public static class ItineraryEndpoints
 
         // GET /api/users/me/itinerary
         group.MapGet("/itinerary", async (
-            IItineraryRepository repo, ITokenService tokens,
+            IItineraryRepository repo,
             HttpContext ctx, CancellationToken ct) =>
         {
-            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            var userId = AuthEndpoints.ResolveUserId(ctx);
             if (userId is null) return Results.Unauthorized();
 
             var result = await repo.GetAsync(userId, ct);
@@ -26,10 +26,10 @@ public static class ItineraryEndpoints
         // POST /api/users/me/itinerary
         group.MapPost("/itinerary", async (
             AddToItineraryRequest request,
-            IItineraryRepository repo, ITokenService tokens,
+            IItineraryRepository repo,
             HttpContext ctx, CancellationToken ct) =>
         {
-            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            var userId = AuthEndpoints.ResolveUserId(ctx);
             if (userId is null) return Results.Unauthorized();
 
             var result = await repo.AddAsync(userId, request, ct);
@@ -41,10 +41,10 @@ public static class ItineraryEndpoints
         // PATCH /api/users/me/itinerary/{itemId}
         group.MapPatch("/itinerary/{itemId}", async (
             string itemId, UpdateItineraryItemRequest request,
-            IItineraryRepository repo, ITokenService tokens,
+            IItineraryRepository repo,
             HttpContext ctx, CancellationToken ct) =>
         {
-            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            var userId = AuthEndpoints.ResolveUserId(ctx);
             if (userId is null) return Results.Unauthorized();
 
             var result = await repo.UpdateItemAsync(userId, itemId, request, ct);
@@ -56,10 +56,10 @@ public static class ItineraryEndpoints
         // DELETE /api/users/me/itinerary/{itemId}
         group.MapDelete("/itinerary/{itemId}", async (
             string itemId,
-            IItineraryRepository repo, ITokenService tokens,
+            IItineraryRepository repo,
             HttpContext ctx, CancellationToken ct) =>
         {
-            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            var userId = AuthEndpoints.ResolveUserId(ctx);
             if (userId is null) return Results.Unauthorized();
 
             var result = await repo.RemoveAsync(userId, itemId, ct);
@@ -70,10 +70,10 @@ public static class ItineraryEndpoints
 
         // GET /api/users/me/preferences
         group.MapGet("/preferences", async (
-            IUserPreferencesRepository prefs, ITokenService tokens,
+            IUserPreferencesRepository prefs,
             HttpContext ctx, CancellationToken ct) =>
         {
-            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            var userId = AuthEndpoints.ResolveUserId(ctx);
             if (userId is null) return Results.Unauthorized();
 
             var result = await prefs.GetAsync(userId, ct);
@@ -85,10 +85,10 @@ public static class ItineraryEndpoints
         // PATCH /api/users/me/preferences
         group.MapPatch("/preferences", async (
             UpdatePreferencesRequest request,
-            IUserPreferencesRepository prefs, ITokenService tokens,
+            IUserPreferencesRepository prefs,
             HttpContext ctx, CancellationToken ct) =>
         {
-            var userId = AuthEndpoints.ResolveUserId(ctx, tokens);
+            var userId = AuthEndpoints.ResolveUserId(ctx);
             if (userId is null) return Results.Unauthorized();
 
             var result = await prefs.UpsertAsync(userId, request, ct);

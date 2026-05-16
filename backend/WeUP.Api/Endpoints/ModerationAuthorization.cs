@@ -17,12 +17,11 @@ public readonly record struct ModerationAuthorizationDecision(bool IsAuthenticat
 };
 
 public sealed class RoleBasedModerationAuthorizationService(
-    ITokenService tokens,
     IUserRoleResolver roles) : IModerationAuthorizationService
 {
     public async ValueTask<ModerationAuthorizationDecision> AuthorizeAsync(HttpContext context, CancellationToken ct = default)
     {
-        var userId = AuthEndpoints.ResolveUserId(context, tokens);
+        var userId = AuthEndpoints.ResolveUserId(context);
         if (string.IsNullOrWhiteSpace(userId))
         {
             return ModerationAuthorizationDecision.Anonymous;

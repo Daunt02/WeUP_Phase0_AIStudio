@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using WeUP.Contracts.Dedupe;
+using WeUP.Contracts.Events;
 using WeUP.Contracts.Ingestion;
 using WeUP.Domain.Dedupe;
 using WeUP.Domain.Events;

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using WeUP.Contracts.Resolution;
@@ -16,9 +15,12 @@ public interface IProvenanceService
     /// </summary>
     Task RecordAsync(ProvenanceEntry entry);
 
-    /// <summary>
-    /// Retrieve the complete provenance chain for a given <paramref name="eventId"/>.
-    /// Results are ordered by <c>ChangedAtUtc</c> ascending.
-    /// </summary>
     Task<IReadOnlyList<ProvenanceEntry>> GetLineageAsync(Guid eventId);
+
+    ProvenanceEntry CreateAppendOnlyEntry(ProvenanceBuildCommand command);
+
+    ProvenanceEntry[] Append(ProvenanceEntry[] existingEntries, ProvenanceEntry nextEntry);
+    FieldLineage[] GetFieldLineage(IEnumerable<ProvenanceEntry> entries, string? fieldName = null);
+    MergeHistoryEntry[] GetMergeHistory(IEnumerable<ProvenanceEntry> entries);
+    EventEvolutionHistoryEntry[] GetEvolutionHistory(IEnumerable<ProvenanceEntry> entries, string canonicalEventId);
 }

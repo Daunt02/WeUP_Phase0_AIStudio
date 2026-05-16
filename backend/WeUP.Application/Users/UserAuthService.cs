@@ -28,13 +28,17 @@ public sealed class UserAuthService(
 
         var resolvedRoles = await roles.ResolveRolesAsync(profile.UserId, ct);
         var token = tokens.IssueToken(profile.UserId, profile.Email, resolvedRoles);
+        var refreshToken = tokens.IssueRefreshToken();
+        await tokens.SaveRefreshTokenAsync(profile.UserId, refreshToken, ct);
+
         return new AuthResponse(
             profile.UserId,
             token,
             TokenTypes.Bearer,
             tokens.ExpiresInSeconds,
             profile with { Roles = resolvedRoles },
-            resolvedRoles);
+            resolvedRoles,
+            refreshToken);
     }
 
     /// <summary>
@@ -48,13 +52,46 @@ public sealed class UserAuthService(
 
         var resolvedRoles = await roles.ResolveRolesAsync(profile.UserId, ct);
         var token = tokens.IssueToken(profile.UserId, profile.Email, resolvedRoles);
+        var refreshToken = tokens.IssueRefreshToken();
+        await tokens.SaveRefreshTokenAsync(profile.UserId, refreshToken, ct);
+
         return new AuthResponse(
             profile.UserId,
             token,
             TokenTypes.Bearer,
             tokens.ExpiresInSeconds,
             profile with { Roles = resolvedRoles },
-            resolvedRoles);
+            resolvedRoles,
+            refreshToken);
+    }
+
+    public async Task<AuthResponse?> RefreshAsync(RefreshTokenRequest request, CancellationToken ct = default)
+    {
+        var refreshToken = await tokens.GetRefreshTokenAsync(request.RefreshToken, ct);
+        if (refreshToken == null || !refreshToken.IsActive)
+        {
+            return null;
+        }
+
+        var profile = await users.GetByIdAsync(refreshToken.UserId, ct);
+        if (profile == null) return null;
+
+        var resolvedRoles = await roles.ResolveRolesAsync(profile.UserId, ct);
+        var token = tokens.IssueToken(profile.UserId, profile.Email, resolvedRoles);
+        
+        // Rotate refresh token
+        var newRefreshToken = tokens.IssueRefreshToken();
+        await tokens.RevokeRefreshTokenAsync(request.RefreshToken, newRefreshToken, ct);
+        await tokens.SaveRefreshTokenAsync(profile.UserId, newRefreshToken, ct);
+
+        return new AuthResponse(
+            profile.UserId,
+            token,
+            TokenTypes.Bearer,
+            tokens.ExpiresInSeconds,
+            profile with { Roles = resolvedRoles },
+            resolvedRoles,
+            newRefreshToken);
     }
 
     public async Task<UserProfileDto?> GetProfileAsync(string userId, CancellationToken ct = default)

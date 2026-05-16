@@ -1,5 +1,6 @@
 using System.Linq;
 using WeUP.Contracts.Events;
+using WeUP.Contracts.Moderation;
 using WeUP.Domain.Moderation;
 
 namespace WeUP.Domain.Events;

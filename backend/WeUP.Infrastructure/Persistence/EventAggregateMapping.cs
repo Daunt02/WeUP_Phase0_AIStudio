@@ -1,5 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
+using WeUP.Contracts.Events;
+using WeUP.Contracts.Moderation;
 using WeUP.Domain.Dedupe;
 using WeUP.Domain.Events;
 using WeUP.Domain.Moderation;

@@ -68,7 +68,6 @@ public static class VideoFlyerEndpoints
         HttpRequest request,
         HttpContext httpContext,
         IVideoFlyerUploadService videoService,
-        ITokenService tokens,
         IOptions<VideoIntakeOptions> videoOptions,
         CancellationToken ct)
     {
@@ -102,7 +101,7 @@ public static class VideoFlyerEndpoints
                 statusCode: StatusCodes.Status400BadRequest);
         }
 
-        var uploaderUserId = AuthEndpoints.ResolveUserId(httpContext, tokens)
+        var uploaderUserId = AuthEndpoints.ResolveUserId(httpContext)
             ?? form["uploaderUserId"].ToString().NullIfEmpty();
 
         if (string.IsNullOrWhiteSpace(uploaderUserId))

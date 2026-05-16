@@ -1,6 +1,28 @@
 namespace WeUP.Contracts.Events;
 
 // ---------------------------------------------------------------------------
+// Canonical state snapshots
+// ---------------------------------------------------------------------------
+
+public sealed record EventAggregateSnapshot(
+    string CanonicalEventId,
+    string? Title,
+    string? VenueName,
+    string? Address,
+    double Latitude,
+    double Longitude,
+    string? StartUtc,
+    string? EndUtc,
+    string? Timezone,
+    string? Category,
+    double Confidence,
+    string[] SourceRefs,
+    string[] EvidenceRefs,
+    bool IsApproved,
+    string? ExternalSourceId = null,
+    IReadOnlyDictionary<string, string?>? Attributes = null);
+
+// ---------------------------------------------------------------------------
 // Shared primitive types
 // ---------------------------------------------------------------------------
 

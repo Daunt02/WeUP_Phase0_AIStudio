@@ -28,7 +28,7 @@ public static class TemporalEndpoints
     /// POST /api/temporal/events-at-time
     /// Query events within a temporal preset window.
     /// </summary>
-    private static IResult GetEventsAtTime(TemporalPresetRequest request, CancellationToken ct)
+    private static IResult GetEventsAtTime([Microsoft.AspNetCore.Mvc.FromBody] TemporalPresetRequest request, CancellationToken ct)
     {
         // Validate preset
         if (!Enum.IsDefined(typeof(TemporalPreset), request.Preset))
@@ -74,9 +74,11 @@ public static class TemporalEndpoints
 /// <summary>
 /// Request to query events at a temporal preset.
 /// </summary>
-public record TemporalPresetRequest(
-    TemporalPreset Preset,
-    string? MarketTimezone = null);
+public class TemporalPresetRequest
+{
+    public TemporalPreset Preset { get; set; }
+    public string? MarketTimezone { get; set; }
+}
 
 /// <summary>
 /// Response for temporal query.
