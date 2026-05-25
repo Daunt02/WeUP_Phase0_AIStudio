@@ -1,0 +1,18 @@
+{
+  "id": "example-01",
+  "name": "Simple Summarizer",
+  "description": "Summarize a given text file using Gemma 3 4B.",
+  "prompts": [
+    {
+      "role": "system",
+      "content": "You are a concise summarizer. Summarize the provided content in a few sentences."
+    },
+    {
+      "role": "user",
+      "content": "{{ input_text }}"
+    }
+  ],
+  "environment": {
+    "model": "gemma-3-4b"
+  }
+}

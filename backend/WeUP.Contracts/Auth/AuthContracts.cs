@@ -38,6 +38,8 @@ public sealed record UpdateProfileRequest(
 
 public sealed record RefreshTokenRequest(string RefreshToken);
 
+public sealed record LogoutRequest(string RefreshToken);
+
 // ---------------------------------------------------------------------------
 // Responses
 // ---------------------------------------------------------------------------

@@ -2,32 +2,44 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [ main, master ]
   pull_request:
-    branches: [main]
+    branches: [ main, master ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    services:
+      docker:
+        image: docker:20.10.7-dind
+        privileged: true
+        options: --entrypoint /bin/sh
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Use Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          node-version: 20
-
-      - name: Use .NET 8
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.0.x
-
+          python-version: '3.11'
       - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
-
-      - name: Release gates
-        run: npm run release:check
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run health assessment
+        run: |
+          python -m health_assessment.report_generator
+      - name: Run bundle executor test
+        run: |
+          pytest -q tests/bundle_executor_test.py
+      - name: Run example bundle (CLI)
+        env:
+          GEMMA_MODEL_DIR: ${{ github.workspace }}/models
+        run: |
+          python -m bundle_executor.executor bundles/example_bundle.json
+      - name: Build Docker image
+        run: |
+          docker build -t bundle-executor .
+      - name: Run executor in Docker (CPU fallback)
+        env:
+          GEMMA_MODEL_DIR: ${{ github.workspace }}/models
+        run: |
+          docker run --rm bundle-executor python -m bundle_executor.executor bundles/example_bundle.json

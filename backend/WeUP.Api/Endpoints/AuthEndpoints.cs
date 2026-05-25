@@ -48,6 +48,15 @@ public static class AuthEndpoints
         .WithName("RefreshToken")
         .WithSummary("Refresh an expired access token using a valid refresh token");
 
+        // POST /auth/logout
+        group.MapPost("/logout", async (LogoutRequest request, UserAuthService svc, CancellationToken ct) =>
+        {
+            await svc.LogoutAsync(request.RefreshToken, ct);
+            return Results.Ok();
+        })
+        .WithName("Logout")
+        .WithSummary("Revoke a refresh token");
+
         // GET /auth/me
         group.MapGet("/me", async (HttpContext ctx, UserAuthService svc, CancellationToken ct) =>
         {

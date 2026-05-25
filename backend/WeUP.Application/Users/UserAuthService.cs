@@ -106,6 +106,11 @@ public sealed class UserAuthService(
         return profile with { Roles = resolvedRoles };
     }
 
+    public async Task LogoutAsync(string refreshToken, CancellationToken ct = default)
+    {
+        await tokens.RevokeRefreshTokenAsync(refreshToken, null, ct);
+    }
+
     public async Task<UserProfileDto> UpdateProfileAsync(string userId, UpdateProfileRequest request, CancellationToken ct = default) =>
         (await users.UpdateAsync(userId, request, ct)) with
         {

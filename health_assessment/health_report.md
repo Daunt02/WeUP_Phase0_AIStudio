@@ -1,0 +1,5074 @@
+# Project Health Assessment Report
+
+---
+
+## Documentation Overview
+- **README files**: C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\README.dev.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\autogen-research-agents\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\abab\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\acorn\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\acorn-globals\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\acorn-jsx\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\acorn-walk\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\agent-base\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\ajv\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\ansi-escapes\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\ansi-regex\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\ansi-styles\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\anymatch\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\argparse\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\aria-query\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\arr-union\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\array-buffer-byte-length\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\array-includes\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\array.prototype.findlast\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\array.prototype.findlastindex\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\array.prototype.flat\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\array.prototype.flatmap\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\array.prototype.tosorted\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\arraybuffer.prototype.slice\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\assign-symbols\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\ast-types-flow\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\async-function\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\asynckit\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\autoprefixer\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\available-typed-arrays\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\axe-core\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\axobject-query\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\babel-jest\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\babel-plugin-istanbul\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\babel-plugin-jest-hoist\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\babel-preset-current-node-syntax\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\babel-preset-jest\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\balanced-match\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\baseline-browser-mapping\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\brace-expansion\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\braces\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\browserslist\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\bs-logger\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\bser\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\buffer-from\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\bytewise\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\bytewise-core\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\call-bind\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\call-bind-apply-helpers\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\call-bound\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\callsites\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\camelcase\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\caniuse-lite\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\chalk\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\char-regex\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\cheap-ruler\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\chownr\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\ci-info\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\cjs-module-lexer\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\cliui\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\clsx\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\co\Readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\collect-v8-coverage\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\color-convert\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\color-name\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\combined-stream\Readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\concat-map\README.markdown, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\convert-source-map\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\create-jest\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\cross-env\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\cross-spawn\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\css.escape\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\csscolorparser\README, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\cssom\README.mdown, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\cssstyle\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\csstype\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\damerau-levenshtein\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\data-urls\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\data-view-buffer\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\data-view-byte-length\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\data-view-byte-offset\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\debug\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\decimal.js\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\dedent\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\deep-equal\readme.markdown, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\deep-is\README.markdown, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\deepmerge\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\define-data-property\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\define-properties\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\delayed-stream\Readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\dequal\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\detect-libc\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\detect-newline\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\diff-sequences\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\doctrine\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\dom-accessibility-api\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\domexception\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\dunder-proto\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\earcut\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\electron-to-chromium\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\emittery\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\emoji-regex\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\enhanced-resolve\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\entities\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\error-ex\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\es-abstract\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\es-define-property\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\es-errors\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\es-get-iterator\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\es-iterator-helpers\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\es-object-atoms\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\es-set-tostringtag\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\es-shim-unscopables\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\es-to-primitive\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\escalade\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\escape-string-regexp\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\escodegen\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\eslint\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\eslint-import-resolver-node\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\eslint-import-resolver-typescript\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\eslint-plugin-import\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\eslint-plugin-jsx-a11y\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\eslint-plugin-react\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\eslint-plugin-react-hooks\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\eslint-scope\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\eslint-visitor-keys\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\espree\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\esprima\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\esquery\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\esrecurse\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\estraverse\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\esutils\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\execa\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\exit\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\expect\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\extend-shallow\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\fast-deep-equal\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\fast-glob\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\fast-json-stable-stringify\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\fast-levenshtein\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\fastq\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\fb-watchman\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\file-entry-cache\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\fill-range\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\find-up\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\flat-cache\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\flatted\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\for-each\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\form-data\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\fraction.js\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\framer-motion\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\fs.realpath\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\function-bind\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\function.prototype.name\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\functions-have-names\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\generator-function\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\gensync\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\geojson-vt\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\get-caller-file\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\get-intrinsic\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\get-package-type\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\get-proto\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\get-stream\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\get-symbol-description\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\get-tsconfig\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\gl-matrix\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\glob\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\glob-parent\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\globals\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\globalthis\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\gopd\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\graceful-fs\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\grid-index\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\handlebars\README.markdown, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\has-bigints\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\has-flag\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\has-property-descriptors\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\has-proto\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\has-symbols\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\has-tostringtag\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\hasown\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\hermes-estree\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\hermes-parser\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\html-encoding-sniffer\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\html-escaper\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\http-proxy-agent\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\https-proxy-agent\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\human-signals\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\iconv-lite\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\ignore\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\import-fresh\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\import-local\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\imurmurhash\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\indent-string\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\inflight\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\inherits\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\internal-slot\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-arguments\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-array-buffer\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-arrayish\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-async-function\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-bigint\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-boolean-object\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-bun-module\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-callable\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-core-module\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-data-view\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-date-object\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-extendable\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-extglob\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-finalizationregistry\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-fullwidth-code-point\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-generator-fn\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-generator-function\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-glob\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-map\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-negative-zero\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-number\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-number-object\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-plain-object\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-potential-custom-element-name\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-regex\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-set\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-shared-array-buffer\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-stream\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-string\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-symbol\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-typed-array\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-weakmap\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-weakref\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-weakset\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\isarray\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\isexe\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\isobject\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\istanbul-lib-coverage\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\istanbul-lib-instrument\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\istanbul-lib-report\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\istanbul-lib-source-maps\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\istanbul-reports\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\iterator.prototype\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-changed-files\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-circus\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-cli\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-diff\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-docblock\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-each\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-leak-detector\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-matcher-utils\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-mock\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-pnp-resolver\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-util\Readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-validate\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-worker\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jiti\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\js-tokens\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\js-yaml\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jsdom\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jsesc\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\json-buffer\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\json-parse-even-better-errors\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\json-schema-traverse\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\json-stable-stringify-without-jsonify\readme.markdown, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\json-stringify-pretty-compact\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\json5\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jsx-ast-utils\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\kdbush\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\keyv\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\kleur\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\language-subtag-registry\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\language-tags\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\leven\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\levn\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\lightningcss\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\lightningcss-win32-x64-msvc\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\lines-and-columns\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\locate-path\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\lodash.memoize\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\lodash.merge\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\loose-envify\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\lru-cache\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\lucide-react\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\lz-string\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\magic-string\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\make-dir\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\make-error\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\makeerror\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\mapbox-gl\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\martinez-polygon-clipping\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\math-intrinsics\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\merge-stream\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\merge2\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\micromatch\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\mime-db\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\mime-types\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\mimic-fn\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\min-indent\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\minimatch\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\minimist\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\minipass\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\minizlib\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\motion\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\ms\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\murmurhash-js\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\nanoid\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\napi-postinstall\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\natural-compare\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\neo-async\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\next\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\node-exports-info\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\node-int64\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\node-releases\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\normalize-path\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\npm-run-path\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\nwsapi\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\object-assign\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\object-inspect\readme.markdown, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\object-is\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\object-keys\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\object.assign\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\object.entries\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\object.fromentries\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\object.groupby\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\object.values\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\once\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\onetime\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\optionator\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\own-keys\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\p-limit\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\p-locate\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\p-try\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\parent-module\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\parse-json\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\parse5\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\path-exists\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\path-is-absolute\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\path-key\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\path-parse\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\pbf\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\picocolors\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\picomatch\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\pirates\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\pkg-dir\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\playwright\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\playwright-core\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\possible-typed-array-names\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\postcss\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\postcss-value-parser\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\potpack\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\prelude-ls\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\pretty-format\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\prompts\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\prop-types\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\protocol-buffers-schema\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\psl\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\punycode\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\pure-rand\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\querystringify\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\queue-microtask\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\quickselect\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\react\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\react-dom\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\react-is\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\react-map-gl\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\redent\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\reflect.getprototypeof\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\regexp.prototype.flags\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\require-directory\README.markdown, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\requires-port\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\resolve\readme.markdown, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\resolve-cwd\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\resolve-from\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\resolve-pkg-maps\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\resolve-protobuf-schema\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\resolve.exports\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\reusify\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\robust-predicates\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\run-parallel\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\rw\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\safe-array-concat\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\safe-push-apply\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\safe-regex-test\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\safer-buffer\Readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\saxes\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\scheduler\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\semver\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\set-function-length\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\set-function-name\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\set-proto\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\set-value\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\sharp\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\shebang-command\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\shebang-regex\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\side-channel\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\side-channel-list\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\side-channel-map\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\side-channel-weakmap\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\signal-exit\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\sisteransi\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\slash\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\sort-asc\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\sort-desc\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\sort-object\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\source-map\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\source-map-js\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\source-map-support\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\splaytree\Readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\split-string\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\sprintf-js\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\stable-hash\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\stack-utils\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\stop-iteration-iterator\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\string-length\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\string-width\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\string.prototype.includes\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\string.prototype.matchall\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\string.prototype.repeat\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\string.prototype.trim\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\string.prototype.trimend\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\string.prototype.trimstart\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\strip-ansi\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\strip-bom\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\strip-final-newline\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\strip-indent\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\strip-json-comments\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\styled-jsx\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\supercluster\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\supports-color\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\supports-preserve-symlinks-flag\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\symbol-tree\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\tailwind-merge\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\tailwindcss\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\tapable\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\tar\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\test-exclude\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\tinyglobby\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\tinyqueue\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\tmpl\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\to-regex-range\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\tough-cookie\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\tr46\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\ts-api-utils\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\ts-jest\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\tsconfig-paths\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\tslib\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\tw-animate-css\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\type-check\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\type-detect\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\type-fest\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\typed-array-buffer\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\typed-array-byte-length\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\typed-array-byte-offset\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\typed-array-length\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\typescript\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\typescript-eslint\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\typewise\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\typewise-core\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\uglify-js\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\unbox-primitive\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\undici-types\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\union-value\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\universalify\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\unrs-resolver\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\update-browserslist-db\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\uri-js\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\url-parse\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\use-deep-compare-effect\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\use-supercluster\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\v8-to-istanbul\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\w3c-xmlserializer\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\walker\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\webidl-conversions\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\whatwg-encoding\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\whatwg-mimetype\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\whatwg-url\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\which\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\which-boxed-primitive\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\which-builtin-type\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\which-collection\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\which-typed-array\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\word-wrap\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\wordwrap\README.markdown, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\wrap-ansi\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\wrappy\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\write-file-atomic\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\ws\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\xml-name-validator\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\xmlchars\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\y18n\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\yallist\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\yargs\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\yargs-parser\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\yocto-queue\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\zod\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\zod-validation-error\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\zod-validation-error\README.v3.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\tsconfig-paths\node_modules\json5\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\ts-jest\node_modules\semver\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\ts-jest\node_modules\type-fest\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\tinyglobby\node_modules\fdir\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\tinyglobby\node_modules\picomatch\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\tar\node_modules\yallist\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\string-width\node_modules\emoji-regex\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\stack-utils\node_modules\escape-string-regexp\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\split-string\node_modules\extend-shallow\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\split-string\node_modules\is-extendable\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\sharp\node_modules\semver\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\resolve-cwd\node_modules\resolve-from\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\pretty-format\node_modules\ansi-styles\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\pretty-format\node_modules\react-is\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\pkg-dir\node_modules\find-up\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\pkg-dir\node_modules\locate-path\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\pkg-dir\node_modules\p-limit\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\pkg-dir\node_modules\p-locate\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\next\node_modules\postcss\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\next\dist\compiled\react-is\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\next\dist\compiled\react-refresh\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\next\dist\compiled\regenerator-runtime\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\next\dist\compiled\@babel\runtime\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\make-dir\node_modules\semver\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-worker\node_modules\supports-color\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-validate\node_modules\ansi-styles\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-validate\node_modules\camelcase\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-validate\node_modules\pretty-format\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-validate\node_modules\react-is\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-snapshot\node_modules\ansi-styles\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-snapshot\node_modules\pretty-format\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-snapshot\node_modules\react-is\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-snapshot\node_modules\semver\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-runtime\node_modules\strip-bom\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-message-util\node_modules\ansi-styles\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-message-util\node_modules\pretty-format\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-message-util\node_modules\react-is\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-matcher-utils\node_modules\ansi-styles\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-matcher-utils\node_modules\pretty-format\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-matcher-utils\node_modules\react-is\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-leak-detector\node_modules\ansi-styles\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-leak-detector\node_modules\pretty-format\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-leak-detector\node_modules\react-is\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-each\node_modules\ansi-styles\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-each\node_modules\pretty-format\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-each\node_modules\react-is\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-diff\node_modules\ansi-styles\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-diff\node_modules\pretty-format\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-diff\node_modules\react-is\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-cli\node_modules\ansi-styles\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-cli\node_modules\pretty-format\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-cli\node_modules\react-is\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-circus\node_modules\ansi-styles\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-circus\node_modules\pretty-format\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\jest-circus\node_modules\react-is\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\istanbul-lib-instrument\node_modules\semver\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\is-bun-module\node_modules\semver\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\framer-motion\client\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\framer-motion\dom\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\flatted\golang\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\fast-glob\node_modules\glob-parent\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\eslint-plugin-react\node_modules\resolve\readme.markdown, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\eslint-plugin-import\memo-parser\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\eslint-plugin-import\node_modules\debug\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\eslint-module-utils\node_modules\debug\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\eslint-import-resolver-node\node_modules\debug\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\cssstyle\node_modules\cssom\README.mdown, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\create-jest\node_modules\ansi-styles\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\create-jest\node_modules\pretty-format\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\create-jest\node_modules\react-is\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\babel-plugin-istanbul\node_modules\istanbul-lib-instrument\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\axe-core\locales\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\ajv\lib\dotjs\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@unrs\resolver-binding-win32-x64-msvc\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@typescript-eslint\eslint-plugin\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@typescript-eslint\parser\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@typescript-eslint\project-service\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@typescript-eslint\scope-manager\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@typescript-eslint\tsconfig-utils\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@typescript-eslint\type-utils\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@typescript-eslint\types\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@typescript-eslint\typescript-estree\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@typescript-eslint\utils\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@typescript-eslint\visitor-keys\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@typescript-eslint\visitor-keys\node_modules\eslint-visitor-keys\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@typescript-eslint\typescript-estree\node_modules\balanced-match\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@typescript-eslint\typescript-estree\node_modules\brace-expansion\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@typescript-eslint\typescript-estree\node_modules\minimatch\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@typescript-eslint\typescript-estree\node_modules\semver\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@typescript-eslint\eslint-plugin\node_modules\ignore\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\aria-query\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\babel__core\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\babel__generator\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\babel__template\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\babel__traverse\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\estree\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\geojson\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\geojson-vt\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\graceful-fs\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\istanbul-lib-coverage\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\istanbul-lib-report\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\istanbul-reports\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\jest\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\jsdom\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\json-schema\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\json5\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\mapbox-gl\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\node\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\pbf\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\prop-types\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\react\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\react-dom\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\stack-utils\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\supercluster\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\tough-cookie\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\yargs\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\yargs-parser\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\jest\node_modules\ansi-styles\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\jest\node_modules\pretty-format\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@types\jest\node_modules\react-is\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@tybys\wasm-util\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@tootallnate\once\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@testing-library\dom\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@testing-library\jest-dom\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@testing-library\react\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@testing-library\react\node_modules\@types\react\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@testing-library\react\node_modules\@types\react-dom\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@testing-library\dom\node_modules\aria-query\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@testing-library\dom\node_modules\dom-accessibility-api\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@tailwindcss\node\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@tailwindcss\oxide-win32-x64-msvc\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@tailwindcss\postcss\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@sinonjs\commons\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@sinonjs\fake-timers\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@sinonjs\commons\lib\prototypes\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@sinclair\typebox\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@rtsao\scc\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@playwright\test\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@nodelib\fs.scandir\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@nodelib\fs.stat\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@nodelib\fs.walk\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@next\env\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@next\eslint-plugin-next\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@next\swc-win32-x64-msvc\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@maplibre\maplibre-gl-style-spec\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@maplibre\maplibre-gl-style-spec\src\feature_filter\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@mapbox\jsonlint-lines-primitives\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@mapbox\mapbox-gl-supported\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@mapbox\point-geometry\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@mapbox\tiny-sdf\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@mapbox\unitbezier\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@mapbox\vector-tile\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@jridgewell\gen-mapping\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@jridgewell\remapping\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@jridgewell\resolve-uri\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@jridgewell\sourcemap-codec\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@jridgewell\trace-mapping\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@jest\core\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@jest\expect\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@jest\expect-utils\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@jest\schemas\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@jest\types\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@jest\core\node_modules\ansi-styles\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@jest\core\node_modules\pretty-format\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@jest\core\node_modules\react-is\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@istanbuljs\load-nyc-config\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@istanbuljs\schema\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@istanbuljs\load-nyc-config\node_modules\argparse\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@istanbuljs\load-nyc-config\node_modules\find-up\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@istanbuljs\load-nyc-config\node_modules\js-yaml\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@istanbuljs\load-nyc-config\node_modules\locate-path\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@istanbuljs\load-nyc-config\node_modules\p-limit\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@istanbuljs\load-nyc-config\node_modules\p-locate\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@istanbuljs\load-nyc-config\node_modules\resolve-from\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@isaacs\fs-minipass\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@img\colour\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@img\sharp-win32-x64\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@humanwhocodes\module-importer\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@humanwhocodes\retry\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@humanfs\core\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@humanfs\node\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@eslint-community\eslint-utils\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@eslint-community\regexpp\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@eslint-community\eslint-utils\node_modules\eslint-visitor-keys\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@eslint\config-array\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@eslint\config-helpers\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@eslint\core\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@eslint\eslintrc\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@eslint\js\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@eslint\object-schema\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@eslint\plugin-kit\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@eslint\eslintrc\node_modules\globals\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@emnapi\core\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@emnapi\runtime\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@emnapi\wasi-threads\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@bcoe\v8-coverage\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@bcoe\v8-coverage\dist\lib\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\code-frame\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\compat-data\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\core\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\generator\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\helper-compilation-targets\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\helper-globals\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\helper-module-imports\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\helper-module-transforms\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\helper-plugin-utils\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\helper-string-parser\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\helper-validator-identifier\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\helper-validator-option\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\helpers\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\parser\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\plugin-syntax-async-generators\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\plugin-syntax-bigint\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\plugin-syntax-class-properties\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\plugin-syntax-class-static-block\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\plugin-syntax-import-attributes\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\plugin-syntax-import-meta\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\plugin-syntax-json-strings\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\plugin-syntax-jsx\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\plugin-syntax-logical-assignment-operators\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\plugin-syntax-nullish-coalescing-operator\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\plugin-syntax-numeric-separator\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\plugin-syntax-object-rest-spread\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\plugin-syntax-optional-catch-binding\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\plugin-syntax-optional-chaining\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\plugin-syntax-private-property-in-object\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\plugin-syntax-top-level-await\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\plugin-syntax-typescript\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\runtime\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\template\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\traverse\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@babel\types\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@ampproject\remapping\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@alloc\quick-lru\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\node_modules\@adobe\css-tools\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\src\components\README_TEMPORAL_NAVIGATION.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\abbrev\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\agent-base\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\alien-signals\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\ansi-regex\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\ansi-styles\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\assertion-error\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\balanced-match\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\brace-expansion\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\cac\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\chai\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\cheap-ruler\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\check-error\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\chokidar\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\color-convert\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\color-name\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\colorjs.io\README.json, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\colorjs.io\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\commander\Readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\config-chain\readme.markdown, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\cross-spawn\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\csscolorparser\README, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\cssstyle\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\csstype\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\data-urls\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\debug\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\decimal.js\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\deep-eql\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\detect-libc\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\earcut\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\eastasianwidth\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\editorconfig\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\emoji-regex\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\entities\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\es-module-lexer\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\esbuild\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\estree-walker\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\expect-type\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\foreground-child\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\geojson-vt\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\gl-matrix\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\glob\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\grid-index\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\has-flag\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\he\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\html-encoding-sniffer\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\http-proxy-agent\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\https-proxy-agent\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\iconv-lite\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\immutable\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\ini\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\is-extglob\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\is-fullwidth-code-point\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\is-glob\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\is-potential-custom-element-name\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\isexe\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\jackspeak\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\js-beautify\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\js-cookie\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\jsdom\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\kdbush\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\loupe\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\lru-cache\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\magic-string\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\mapbox-gl\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\martinez-polygon-clipping\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\minimatch\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\minipass\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\ms\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\muggle-string\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\murmurhash-js\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\nanoid\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\node-addon-api\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\nopt\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\nwsapi\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\package-json-from-dist\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\parse5\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\path-browserify\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\path-key\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\path-scurry\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\pathe\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\pathval\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\pbf\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\picocolors\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\picomatch\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\postcss\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\potpack\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\proto-list\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\protocol-buffers-schema\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\punycode\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\quasar\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\quickselect\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\readdirp\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\resolve-protobuf-schema\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\robust-predicates\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\rollup\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\rrweb-cssom\README.mdown, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\rxjs\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\safer-buffer\Readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\sass\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\sass-embedded\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\sass-embedded-win32-x64\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\saxes\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\semver\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\shebang-command\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\shebang-regex\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\siginfo\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\signal-exit\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\source-map-js\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\splaytree\Readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\stackback\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\std-env\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\string-width\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\string-width-cjs\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\strip-ansi\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\strip-ansi-cjs\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\supercluster\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\supports-color\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\symbol-tree\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\sync-child-process\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\sync-message-port\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\tinybench\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\tinyexec\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\tinypool\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\tinyqueue\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\tinyrainbow\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\tinyspy\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\tldts\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\tldts-core\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\tough-cookie\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\tr46\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\tslib\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\typescript\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\varint\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\vite\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\vite-node\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\vitest\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\vscode-uri\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\vue\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\vue-component-type-helpers\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\vue-tsc\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\w3c-xmlserializer\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\webidl-conversions\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\whatwg-encoding\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\whatwg-mimetype\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\whatwg-url\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\which\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\why-is-node-running\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\wrap-ansi\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\wrap-ansi-cjs\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\ws\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\xml-name-validator\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\xmlchars\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\wrap-ansi-cjs\node_modules\ansi-regex\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\wrap-ansi-cjs\node_modules\ansi-styles\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\wrap-ansi-cjs\node_modules\emoji-regex\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\wrap-ansi-cjs\node_modules\string-width\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\wrap-ansi-cjs\node_modules\strip-ansi\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\strip-ansi-cjs\node_modules\ansi-regex\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\string-width-cjs\node_modules\ansi-regex\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\string-width-cjs\node_modules\emoji-regex\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\string-width-cjs\node_modules\strip-ansi\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\parse5\node_modules\entities\readme.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\node-addon-api\tools\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@vue\compiler-core\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@vue\compiler-dom\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@vue\compiler-sfc\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@vue\compiler-ssr\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@vue\compiler-vue2\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@vue\reactivity\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@vue\runtime-core\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@vue\runtime-dom\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@vue\server-renderer\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@vue\shared\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@vue\test-utils\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@volar\source-map\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@vitest\expect\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@vitest\mocker\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@vitest\runner\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@vitest\snapshot\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@vitest\spy\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@vitest\mocker\node_modules\estree-walker\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@vitejs\plugin-vue\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@types\estree\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@types\geojson\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@types\geojson-vt\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@types\pbf\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@types\supercluster\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@rollup\rollup-win32-x64-gnu\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@rollup\rollup-win32-x64-msvc\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@pkgjs\parseargs\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@parcel\watcher\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@parcel\watcher-win32-x64\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@one-ini\wasm\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@mapbox\mapbox-gl-supported\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@mapbox\point-geometry\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@mapbox\tiny-sdf\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@mapbox\unitbezier\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@mapbox\vector-tile\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@jridgewell\sourcemap-codec\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@isaacs\cliui\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@esbuild\win32-x64\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@csstools\color-helpers\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@csstools\css-calc\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@csstools\css-color-parser\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@csstools\css-parser-algorithms\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@csstools\css-tokenizer\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@bufbuild\protobuf\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@babel\helper-string-parser\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@babel\helper-validator-identifier\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@babel\parser\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@babel\types\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\frontend-vue\node_modules\@asamuzakjp\css-color\README.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\backend\WeUP.Infrastructure\Persistence\Migrations\README.md
+- **Documentation files**: C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\analytics.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\backend-architecture.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\BACKEND_MAP_OPTIMIZATION.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\bundle-07-progress.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\bundle-6-identity.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\bundle-pack-flyer-ingestion-intelligence.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\bundle-pack-phase0.5-onwards.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\bundle8-execution-summary.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\bundle8-p22-p25-repair-prompts.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\bundle8-prompts-7-8-guide.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\configuration.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\CONTRACT_VALIDATION.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\entity-resolution.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\event-aggregate-canonical-v1.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\event-dto-mapping-boundary.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\event-representation-boundary.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\event-versioning-update-semantics-v1.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\feature-flags.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\flyer-evidence-model.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\flyer-ingestion-pipeline.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\frontend-api-migration.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\h6-phase0-hardening-report.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\ingestion-architecture.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\ingestion-boundary.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\ingestion-performance-dashboard-v1.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\m1-p04-confidence-scoring-v1.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\m1-p04-quick-reference.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\M5-P25_INTEGRATION_QUICK_START.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\M5-P25_MAP_PERFORMANCE_STRATEGY.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\media-intake.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\merge-lineage-evolution-v1.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\merge-planning-system-v1.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\moderation-queue-review-api.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\observability-guidelines.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\observability.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\p19-completion-summary.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\p21-p25-accelerated-roadmap.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\P21-P25-completion-summary.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\phase0-diagnostic-report.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\phase0-issues-and-mitigations.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\phase0.5-plan.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\prompt-bundle-health-ledger.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\publish-eligibility-gate.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\release-hardening.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\repair-doctrine.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\schema-contract-validation-v1.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\spatial-query-semantics-v1.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\spatial-taxonomy-v1.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\SPATIAL_QUERY_IMPLEMENTATION_SUMMARY.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\temporal-contract-sync-v1.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\time-window-semantics-v1.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\ui-state.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\video-derived-assets.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\video-flyer-intake.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\WEUP_HOUSTON_PHASE0_SPATIAL_MODEL_v1.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\work-remaining.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\repairs\bundle-2-repairs.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\repairs\bundle-3-repairs.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\repairs\bundle-4-repairs.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\repairs\bundle-5-repairs.md, C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio\docs\mnt\WeUP Phase 0 - 030 Prompt Bundle Pack.txt
+
+### Sample Headings from Docs
+- **README.dev.md**
+  - # Development README
+  - # then edit .env.local and replace tokens
+  - # PowerShell
+  - # Or cURL
+- **README.md**
+  - # Run and deploy your AI Studio app
+  - ## Run Locally
+- **README.md**
+  - # Autogen Research Agents
+- **README.md**
+  - # abab [![npm version](https://badge.fury.io/js/abab.svg)](https://www.npmjs.com/package/abab) [![Build Status](https://travis-ci.org/jsdom/abab.svg?branch=master)](https://travis-ci.org/jsdom/abab)
+  - ## API
+  - ### `btoa` (base64 encode)
+  - ### `atob` (base64 decode)
+  - #### Valid characters
+- **README.md**
+  - # Acorn
+  - ## Community
+  - ## Installation
+  - ## Importing acorn
+  - ## Interface
+- **README.md**
+  - # acorn-globals
+  - ## Installation
+  - ## Usage
+  - ## Security contact information
+  - ## License
+- **README.md**
+  - # Acorn-JSX
+  - ## Transpiler
+  - ## Usage
+  - ## License
+- **README.md**
+  - # Acorn AST walker
+  - ## Community
+  - ## Installation
+  - ## Interface
+- **README.md**
+  - ### Turn a function into an [`http.Agent`][http.Agent] instance
+  - #### Some subclasses:
+  - ## Agent(Function callback[, Object options]) → [http.Agent][]
+  - ### callback(http.ClientRequest req, Object options, Function cb) → undefined
+- **README.md**
+  - # Ajv: Another JSON Schema Validator
+  - ## Ajv v7 beta is released
+  - ## Mozilla MOSS grant and OpenJS Foundation
+  - ## Please [sponsor Ajv development](https://github.com/sponsors/epoberezkin)
+  - #### Open Collective sponsors
+- **readme.md**
+  - # ansi-escapes
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### cursorTo(x, y?)
+- **readme.md**
+  - # ansi-regex
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### ansiRegex(options?)
+- **readme.md**
+  - # ansi-styles [![Build Status](https://travis-ci.org/chalk/ansi-styles.svg?branch=master)](https://travis-ci.org/chalk/ansi-styles)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ## Styles
+- **README.md**
+  - #### anymatch(matchers, testString, [returnIndex], [options])
+  - #### anymatch(matchers)
+- **README.md**
+  - #!/usr/bin/env node
+- **README.md**
+  - # ARIA Query
+  - ## Building the `src/etc` files
+  - ## Utilities
+  - ### Interface
+  - ### Roles
+- **README.md**
+  - # arr-union [![NPM version](https://img.shields.io/npm/v/arr-union.svg)](https://www.npmjs.com/package/arr-union) [![Build Status](https://img.shields.io/travis/jonschlinkert/arr-union.svg)](https://travis-ci.org/jonschlinkert/arr-union)
+  - ## Install
+  - ## Benchmarks
+  - #1: five-arrays
+  - #2: ten-arrays
+- **README.md**
+  - # array-buffer-byte-length <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # array-includes <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # array.prototype.findlast <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage/Examples
+  - ## Tests
+- **README.md**
+  - # array.prototype.findlastindex <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage/Examples
+  - ## Tests
+- **README.md**
+  - # array.prototype.flat <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage/Examples
+  - ## Tests
+- **README.md**
+  - # array.prototype.flatmap <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage/Examples
+  - ## Tests
+- **README.md**
+  - # array.prototype.tosorted <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage/Examples
+  - ## Tests
+- **README.md**
+  - # ArrayBuffer.prototype.slice <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Tests
+- **README.md**
+  - # assign-symbols [![NPM version](https://badge.fury.io/js/assign-symbols.svg)](http://badge.fury.io/js/assign-symbols)
+  - ## Install
+  - ## Usage
+  - ## Similar projects
+  - ## Running tests
+- **README.md**
+  - # ast-types-flow
+  - ## Usage
+  - ## How it works
+- **README.md**
+  - # async-function <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage/Examples
+  - ## Tests
+- **README.md**
+  - # asynckit [![NPM Module](https://img.shields.io/npm/v/asynckit.svg?style=flat)](https://www.npmjs.com/package/asynckit)
+  - ## Install
+  - ## Examples
+  - ### Parallel Jobs
+  - #### Input Array
+- **README.md**
+  - # Autoprefixer [![Cult Of Martians][cult-img]][cult]
+  - ## Docs
+- **README.md**
+  - # available-typed-arrays <sup>[![Version Badge][2]][1]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # axe-core
+  - ## The Accessibility Rules
+  - ## Getting started
+  - ## Philosophy
+  - ## About axe - our Manifesto
+- **README.md**
+  - # AXObject Query
+  - ## Utilities
+  - ### AXObjects
+  - #### Interface
+  - ### Concepts in the project
+- **README.md**
+  - # babel-jest
+  - ## Usage
+  - ## Setup
+- **README.md**
+  - # babel-plugin-istanbul
+  - ## Usage
+  - ## Integrations
+  - ### karma
+  - ### mocha on node.js (through nyc)
+- **README.md**
+  - # babel-plugin-jest-hoist
+  - ## Installation
+  - ## Usage
+  - ### Via `babel.config.js` (Recommended)
+  - ### Via CLI
+- **README.md**
+  - # `babel-preset-current-node-syntax`
+  - ## Installation
+  - ## Contributing
+- **README.md**
+  - # babel-preset-jest
+  - ## Install
+  - ## Usage
+  - ### Via `babel.config.js` (Recommended)
+  - ### Via CLI
+- **README.md**
+  - # balanced-match
+  - ## Example
+  - ## API
+  - ### var m = balanced(a, b, str)
+  - ### var r = balanced.range(a, b, str)
+- **README.md**
+  - # [`baseline-browser-mapping`](https://github.com/web-platform-dx/web-features/packages/baseline-browser-mapping)
+  - ## Install for local development
+  - ## Keeping `baseline-browser-mapping` up to date
+  - ## Importing `baseline-browser-mapping`
+  - ## Get Baseline Widely available browser versions or Baseline year browser versions
+- **README.md**
+  - # brace-expansion
+  - ## Example
+  - ## API
+  - ### var expanded = expand(str)
+  - ## Installation
+- **README.md**
+  - # braces [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=W8YFZ425KND68) [![NPM version](https://img.shields.io/npm/v/braces.svg?style=flat)](https://www.npmjs.com/package/braces) [![NPM monthly downloads](https://img.shields.io/npm/dm/braces.svg?style=flat)](https://npmjs.org/package/braces) [![NPM total downloads](https://img.shields.io/npm/dt/braces.svg?style=flat)](https://npmjs.org/package/braces) [![Linux Build Status](https://img.shields.io/travis/micromatch/braces.svg?style=flat&label=Travis)](https://travis-ci.org/micromatch/braces)
+  - ## Install
+  - ## v3.0.0 Released!!
+  - ## Why use braces?
+  - ## Usage
+- **README.md**
+  - # Browserslist
+  - # Browsers that we support
+  - ## Docs
+- **README.md**
+  - # B.S. Logger [![Build Status](https://travis-ci.org/huafu/bs-logger.svg?branch=master)](https://travis-ci.org/huafu/bs-logger) [![Coverage Status](https://img.shields.io/coveralls/huafu/bs-logger/master.svg)](https://coveralls.io/github/huafu/bs-logger?branch=master) [![Beerpay](https://beerpay.io/huafu/bs-logger/badge.svg?style=beer-square)](https://beerpay.io/huafu/bs-logger)  [![Beerpay](https://beerpay.io/huafu/bs-logger/make-wish.svg?style=flat-square)](https://beerpay.io/huafu/bs-logger?focus=wish)
+  - ## TL,DR:
+  - # or
+  - ## Usage
+  - ### Creating a logger
+- **README.md**
+  - # BSER Binary Serialization
+  - ## API
+  - ### bser.loadFromBuffer
+  - ### bser.dumpToBuffer
+  - ### BunserBuf
+- **readme.md**
+  - # Buffer From
+  - ## Installation
+  - ## Usage
+  - ## API
+  - ### bufferFrom(array)
+- **README.md**
+  - ## Order of Supported Structures
+  - ## Unsupported Structures
+  - ## Usage
+  - ## Use Cases
+  - ### Numeric indexing
+- **README.md**
+  - ## Order of Supported Structures
+  - ## Usage
+  - ## Use Cases
+  - ## Issues
+  - ## License
+- **README.md**
+  - # call-bind <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage/Examples
+  - ## Tests
+- **README.md**
+  - # call-bind-apply-helpers <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage/Examples
+  - ## Tests
+- **README.md**
+  - # call-bound <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage/Examples
+  - ## Tests
+- **readme.md**
+  - # callsites [![Build Status](https://travis-ci.org/sindresorhus/callsites.svg?branch=master)](https://travis-ci.org/sindresorhus/callsites)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ## License
+- **readme.md**
+  - # camelcase [![Build Status](https://travis-ci.org/sindresorhus/camelcase.svg?branch=master)](https://travis-ci.org/sindresorhus/camelcase)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### camelCase(input, [options])
+- **README.md**
+  - # caniuse-lite
+  - ## Docs
+- **readme.md**
+  - ## Highlights
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### chalk.`<style>[.<style>...](string, [string...])`
+- **README.md**
+  - # Char Regex [![Travis CI Build Status](https://img.shields.io/travis/com/Richienb/char-regex/master.svg?style=for-the-badge)](https://travis-ci.com/Richienb/char-regex)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### charRegex()
+- **README.md**
+  - # cheap-ruler [![Node](https://github.com/mapbox/cheap-ruler/actions/workflows/node.yml/badge.svg)](https://github.com/mapbox/cheap-ruler/actions/workflows/node.yml) [![](https://img.shields.io/badge/simply-awesome-brightgreen.svg)](https://github.com/mourner/projects)
+  - ## Usage
+  - ### Creating a ruler object
+  - #### new CheapRuler(latitude[, units])
+  - #### CheapRuler.fromTile(y, z[, units])
+- **README.md**
+- **README.md**
+  - # ci-info
+  - ## Installation
+  - ## Usage
+  - ## Supported CI tools
+  - ## API
+- **README.md**
+  - # CJS Module Lexer
+  - ### Project Status
+  - ### Usage
+  - ### Grammar
+  - ### Parsing Examples
+- **README.md**
+  - # cliui
+  - ## Example
+  - ## Deno/ESM Support
+  - ## Layout DSL
+  - ## Methods
+- **readme.md**
+  - # clsx [![CI](https://github.com/lukeed/clsx/workflows/CI/badge.svg)](https://github.com/lukeed/clsx/actions?query=workflow%3ACI) [![codecov](https://badgen.net/codecov/c/github/lukeed/clsx)](https://codecov.io/gh/lukeed/clsx) [![licenses](https://licenses.dev/b/npm/clsx)](https://licenses.dev/npm/clsx)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### clsx(...input)
+- **Readme.md**
+  - # co
+  - ## Co v4
+  - ## Platform Compatibility
+  - ## Installation
+  - ## Associated libraries
+- **README.md**
+  - # collect-v8-coverage
+- **README.md**
+  - # color-convert
+  - # Install
+  - # API
+  - ### Arrays
+  - ## Routing
+- **README.md**
+- **Readme.md**
+  - # combined-stream
+  - ## Installation
+  - ## Usage
+  - ## API
+  - ### CombinedStream.create([options])
+- **README.markdown**
+- **README.md**
+  - # convert-source-map [![Build Status][ci-image]][ci-url]
+  - ## Upgrading
+  - ## API
+  - ### fromObject(obj)
+  - ### fromJSON(json)
+- **README.md**
+  - # create-jest
+  - # Or for Yarn
+  - # Or for pnpm
+- **README.md**
+  - ## The problem
+  - ## This solution
+  - ## Installation
+  - ## Usage
+  - ## `cross-env` vs `cross-env-shell`
+- **README.md**
+  - # cross-spawn
+  - ## Installation
+  - ## Why
+  - ## Usage
+  - ## Caveats
+- **README.md**
+  - # `CSS.escape` polyfill [![Build status](https://travis-ci.org/mathiasbynens/CSS.escape.svg?branch=master)](https://travis-ci.org/mathiasbynens/CSS.escape) [![Code coverage status](http://img.shields.io/coveralls/mathiasbynens/CSS.escape/master.svg)](https://coveralls.io/r/mathiasbynens/CSS.escape)
+  - ## Installation
+  - ## Author
+  - ## License
+- **README**
+- **README.mdown**
+  - # CSSOM
+  - ## [Parser demo](http://nv.github.com/CSSOM/docs/parse.html)
+  - ## Don’t use it if...
+  - ## [Tests](http://nv.github.com/CSSOM/spec/)
+  - ## [Who uses CSSOM.js](https://github.com/NV/CSSOM/wiki/Who-uses-CSSOM.js)
+- **README.md**
+  - # CSSStyleDeclaration
+  - #### Background
+- **README.md**
+  - # CSSType
+  - ## Getting started
+  - ## Table of content
+  - ## Style types
+  - ## At-rule types
+- **README.md**
+  - ## Install
+  - ## Use with ES6 modules
+  - ## Use with TypeScript
+- **README.md**
+  - # Parse `data:` URLs
+  - ## API
+  - ### Decoding the body
+  - ### Advanced functionality: parsing from a URL record
+- **README.md**
+  - # data-view-buffer <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # data-view-byte-length <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # data-view-byte-offset <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # debug
+  - ## Installation
+  - ## Usage
+  - #### Windows command prompt notes
+  - ##### CMD
+- **README.md**
+  - ## Features
+  - ## Load
+  - ## Use
+  - ## Test
+  - ## Minify
+- **README.md**
+  - ## Usage
+  - ## Options
+  - ### `alignValues`
+  - ### `escapeSpecialCharacters`
+  - ### `trimWhitespace`
+- **readme.markdown**
+  - # deep-equal <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - # example
+  - # methods
+  - ## deepEqual(a, b, opts)
+  - # install
+- **README.markdown**
+- **readme.md**
+  - # deepmerge
+  - ## Getting Started
+  - ### Example Usage
+  - ### Installation
+  - ### Include
+- **README.md**
+  - # define-data-property <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Usage
+- **README.md**
+  - # define-properties <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **Readme.md**
+  - # delayed-stream
+  - ## Installation
+  - ## Usage
+  - ## Implementation
+  - ### Event Buffering / Proxying
+- **readme.md**
+  - # dequal [![CI](https://github.com/lukeed/dequal/workflows/CI/badge.svg)](https://github.com/lukeed/dequal/actions)
+  - ## Install
+  - ## Modes
+  - #### `dequal`
+  - #### `dequal/lite`
+- **README.md**
+  - # detect-libc
+  - ## Install
+  - ## API
+  - ### GLIBC
+  - ### MUSL
+- **readme.md**
+  - # detect-newline [![Build Status](https://travis-ci.org/sindresorhus/detect-newline.svg?branch=master)](https://travis-ci.org/sindresorhus/detect-newline)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### detectNewline(string)
+- **README.md**
+  - # diff-sequences
+  - ## Usage
+  - ## Example of longest common subsequence
+  - ## Example of callback functions to count common items
+  - ## Example of callback functions to find common items
+- **README.md**
+  - # Doctrine
+  - ## Installation
+  - ## Usage
+  - ### parse()
+  - ## Team
+- **README.md**
+  - # dom-accessibility-api
+  - ## Supported environments
+  - ## progress
+  - ### browser (Chrome)
+  - ### jsdom
+- **README.md**
+  - # DOMException
+  - ## APIs
+  - ### `domexception` module
+  - ### `domexception/webidl2js-wrapper` module
+- **README.md**
+  - # dunder-proto <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage/Examples
+  - ## Tests
+- **README.md**
+  - ## Earcut
+  - #### The algorithm
+  - #### Why another triangulation library?
+  - #### Usage
+  - #### Install
+- **README.md**
+  - ### Made by [@kilianvalkhof](https://twitter.com/kilianvalkhof)
+  - #### Other projects:
+  - # Electron-to-Chromium [![npm](https://img.shields.io/npm/v/electron-to-chromium.svg)](https://www.npmjs.com/package/electron-to-chromium) [![travis](https://img.shields.io/travis/Kilian/electron-to-chromium/master.svg)](https://travis-ci.org/Kilian/electron-to-chromium) [![npm-downloads](https://img.shields.io/npm/dm/electron-to-chromium.svg)](https://www.npmjs.com/package/electron-to-chromium) [![codecov](https://codecov.io/gh/Kilian/electron-to-chromium/branch/master/graph/badge.svg)](https://codecov.io/gh/Kilian/electron-to-chromium)[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FKilian%2Felectron-to-chromium.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FKilian%2Felectron-to-chromium?ref=badge_shield)
+  - ## Install
+  - ## Usage
+- **readme.md**
+  - # <img src="media/header.png" width="1000">
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### eventName
+- **README.md**
+  - # emoji-regex [![Build status](https://travis-ci.org/mathiasbynens/emoji-regex.svg?branch=main)](https://travis-ci.org/mathiasbynens/emoji-regex)
+  - ## Installation
+  - ## Regular expression flavors
+  - ## For maintainers
+  - ### How to update emoji-regex after new Unicode Standard releases
+- **README.md**
+  - # enhanced-resolve
+  - ## Features
+  - ## Getting Started
+  - ### Install
+  - # npm
+- **readme.md**
+  - # entities [![NPM version](https://img.shields.io/npm/v/entities.svg)](https://npmjs.org/package/entities) [![Downloads](https://img.shields.io/npm/dm/entities.svg)](https://npmjs.org/package/entities) [![Node.js CI](https://github.com/fb55/entities/actions/workflows/nodejs-test.yml/badge.svg)](https://github.com/fb55/entities/actions/workflows/nodejs-test.yml)
+  - ## Features
+  - ## How to…
+  - ### …install `entities`
+  - ### …use `entities`
+- **README.md**
+  - # node-error-ex [![Travis-CI.org Build Status](https://img.shields.io/travis/Qix-/node-error-ex.svg?style=flat-square)](https://travis-ci.org/Qix-/node-error-ex) [![Coveralls.io Coverage Rating](https://img.shields.io/coveralls/Qix-/node-error-ex.svg?style=flat-square)](https://coveralls.io/r/Qix-/node-error-ex)
+  - ## Examples
+  - ## API
+  - #### `errorEx([name], [properties])`
+  - #### `errorEx.line(str)`
+- **README.md**
+  - # es-abstract <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+  - ## Security
+- **README.md**
+  - # es-define-property <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+  - ## Security
+- **README.md**
+  - # es-errors <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+  - ## Security
+- **README.md**
+  - # es-get-iterator <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Targeting browsers with Symbol support
+  - ### With `@rollup/plugin-replace`
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # es-iterator-helpers <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Supported things
+  - ## Environments where this is needed
+  - ## Getting started
+  - ## Usage/Examples
+- **README.md**
+  - # es-object-atoms <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+  - ## Security
+- **README.md**
+  - # es-set-tostringtag <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Options
+  - ### `force`
+  - ### `nonConfigurable`
+- **README.md**
+  - # es-shim-unscopables <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+  - ## Security
+- **README.md**
+  - # es-to-primitive <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **readme.md**
+  - # escalade [![CI](https://github.com/lukeed/escalade/workflows/CI/badge.svg)](https://github.com/lukeed/escalade/actions) [![licenses](https://licenses.dev/b/npm/escalade)](https://licenses.dev/npm/escalade) [![codecov](https://badgen.now.sh/codecov/c/github/lukeed/escalade)](https://codecov.io/gh/lukeed/escalade)
+  - ## Install
+  - ## Modes
+  - #### "async"
+  - #### "sync"
+- **readme.md**
+  - # escape-string-regexp [![Build Status](https://travis-ci.org/sindresorhus/escape-string-regexp.svg?branch=master)](https://travis-ci.org/sindresorhus/escape-string-regexp)
+  - ## Install
+  - ## Usage
+- **README.md**
+  - ## Escodegen
+  - ### Install
+  - ### Usage
+  - ### Building browser bundle / minified browser bundle
+  - ### License
+- **README.md**
+  - # ESLint
+  - ## Table of Contents
+  - ## Installation and Usage
+  - ### pnpm Installation
+  - ## Configuration
+- **README.md**
+  - # eslint-import-resolver-node
+- **README.md**
+  - # eslint-import-resolver-typescript
+  - ## TOC <!-- omit in toc -->
+  - ## Notice
+  - ## Installation
+  - ### `eslint-plugin-import`
+- **README.md**
+  - # eslint-plugin-import
+  - ## Rules
+  - ### Helpful warnings
+  - ### Module systems
+  - ### Static analysis
+- **README.md**
+  - # eslint-plugin-jsx-a11y
+  - #### _Read this in [other languages](https://github.com/ari-os310/eslint-plugin-jsx-a11y/blob/HEAD/translations/Translations.md)._
+  - ## Why?
+  - ## Installation
+  - # npm
+- **README.md**
+  - # `eslint-plugin-react` <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Installation
+  - ## Configuration (legacy: `.eslintrc*`) <a id="configuration"></a>
+  - ### Shareable configs
+  - #### Recommended
+- **README.md**
+  - # `eslint-plugin-react-hooks`
+  - ## Installation
+  - # npm
+  - # yarn
+  - ### Flat Config (eslint.config.js|ts)
+- **README.md**
+  - # ESLint Scope
+  - ## Install
+  - ## 📖 Usage
+  - ## API
+  - ### ScopeManager
+- **README.md**
+  - # eslint-visitor-keys
+  - ## 💿 Installation
+  - ### Requirements
+  - ## 📖 Usage
+  - ### evk.KEYS
+- **README.md**
+  - # Espree
+  - ## Usage
+  - ## API
+  - ### `parse()`
+  - ### `tokenize()`
+- **README.md**
+  - ### Features
+  - ### API
+- **README.md**
+- **README.md**
+  - ### Esrecurse [![Build Status](https://travis-ci.org/estools/esrecurse.svg?branch=master)](https://travis-ci.org/estools/esrecurse)
+  - ### Example Usage
+  - ### License
+- **README.md**
+  - ### Estraverse [![Build Status](https://secure.travis-ci.org/estools/estraverse.svg)](http://travis-ci.org/estools/estraverse)
+  - ### Documentation
+  - ### Example Usage
+  - ### License
+- **README.md**
+  - ### esutils [![Build Status](https://secure.travis-ci.org/estools/esutils.svg)](http://travis-ci.org/estools/esutils)
+  - ### API
+  - ### ast
+  - #### ast.isExpression(node)
+  - #### ast.isStatement(node)
+- **readme.md**
+  - ## Why
+  - ## Install
+  - ## Usage
+  - ### Pipe the child process stdout to the parent
+  - ### Handling Errors
+- **README.md**
+  - # exit [![Build Status](https://secure.travis-ci.org/cowboy/node-exit.png?branch=master)](http://travis-ci.org/cowboy/node-exit)
+  - ## Getting Started
+  - ## Don't believe me? Try it for yourself.
+  - ## Contributing
+  - ## Release History
+- **README.md**
+  - # expect
+- **README.md**
+  - # extend-shallow [![NPM version](https://badge.fury.io/js/extend-shallow.svg)](http://badge.fury.io/js/extend-shallow)  [![Build Status](https://travis-ci.org/jonschlinkert/extend-shallow.svg)](https://travis-ci.org/jonschlinkert/extend-shallow)
+  - ## Install
+  - ## Usage
+  - ## Related
+  - ## Running tests
+- **README.md**
+  - # fast-deep-equal
+  - ## Install
+  - ## Features
+  - ## Usage
+  - ## Performance benchmark
+- **README.md**
+  - # fast-glob
+  - ## Table of Contents
+  - ## Highlights
+  - ## Old and modern mode
+  - ## Pattern syntax
+- **README.md**
+  - # fast-json-stable-stringify
+  - # example
+  - # methods
+  - ## var str = stringify(obj, opts)
+  - ## options
+- **README.md**
+  - # fast-levenshtein - Levenshtein algorithm in Javascript
+  - ## Features
+  - ## Installation
+  - ### node.js
+  - ### Browser
+- **README.md**
+  - # fastq
+  - ## Install
+  - ## Usage (callback API)
+  - ## Usage (promise API)
+  - ### Setting "this"
+- **README.md**
+  - # fb-watchman
+  - ## Install
+  - ## Key Concepts
+  - ## How do I use it?
+- **README.md**
+  - # file-entry-cache
+  - ## install
+  - ## Usage
+  - ## `create(cacheName, [directory, useCheckSum])`
+  - ## `createFromFile(pathToCache, [useCheckSum])`
+- **README.md**
+  - # fill-range [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=W8YFZ425KND68) [![NPM version](https://img.shields.io/npm/v/fill-range.svg?style=flat)](https://www.npmjs.com/package/fill-range) [![NPM monthly downloads](https://img.shields.io/npm/dm/fill-range.svg?style=flat)](https://npmjs.org/package/fill-range) [![NPM total downloads](https://img.shields.io/npm/dt/fill-range.svg?style=flat)](https://npmjs.org/package/fill-range) [![Linux Build Status](https://img.shields.io/travis/jonschlinkert/fill-range.svg?style=flat&label=Travis)](https://travis-ci.org/jonschlinkert/fill-range)
+  - ## Install
+  - ## Usage
+  - ## Examples
+  - ## Options
+- **readme.md**
+  - # find-up [![Build Status](https://travis-ci.com/sindresorhus/find-up.svg?branch=master)](https://travis-ci.com/github/sindresorhus/find-up)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### findUp(name, options?)
+- **README.md**
+  - # flat-cache
+  - ## install
+  - ## Usage
+  - ## Motivation for this module
+  - ## Important notes
+- **README.md**
+  - # flatted
+  - ## ℹ️ JSON only values
+  - ## toJSON and fromJSON
+  - ## Flatted VS JSON
+  - ### New in V1: Exact same JSON API
+- **README.md**
+  - # for-each [![build status][1]][2]
+  - ## Example
+  - ## Installation
+  - ## MIT Licenced
+- **README.md**
+  - # Form-Data [![NPM Module](https://img.shields.io/npm/v/form-data.svg)](https://www.npmjs.com/package/form-data) [![Join the chat at https://gitter.im/form-data/form-data](http://form-data.github.io/images/gitterbadge.svg)](https://gitter.im/form-data/form-data)
+  - ## Install
+  - ## Usage
+  - ### Custom options
+  - ### Alternative submission methods
+- **README.md**
+  - # Fraction.js - ℚ in JavaScript
+  - ## Convert Decimal to Fraction
+  - ## Precision
+  - ## Examples / Motivation
+  - ### Laplace Probability
+- **README.md**
+  - ## Table of Contents
+  - ## Why Motion?
+  - ## 🍦 Platforms
+  - ### React
+  - ### JS
+- **README.md**
+  - # fs.realpath
+  - ## USAGE
+- **README.md**
+  - # function-bind <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Installation
+  - ## Contributors
+  - ## MIT Licenced
+- **README.md**
+  - # function.prototype.name <sup>[![Version Badge][2]][1]</sup>
+  - ## Example
+  - ## Supported engines
+  - ## Tests
+- **README.md**
+  - # functions-have-names <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # generator-function <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage/Examples
+  - ## Tests
+- **README.md**
+  - # gensync
+  - ## Example
+  - ## API
+  - ### gensync(generatorFnOrOptions)
+  - #### Passed a generator
+- **README.md**
+  - ## geojson-vt &mdash; GeoJSON Vector Tiles
+  - ### Demo
+  - ### Usage
+  - ### Options
+  - ### Install
+- **README.md**
+  - # get-caller-file
+  - ## Installation
+  - ## Usage
+  - ## Options:
+- **README.md**
+  - # get-intrinsic <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+  - ## Security
+- **README.md**
+  - # get-package-type [![NPM Version][npm-image]][npm-url]
+  - ## Usage
+- **README.md**
+  - # get-proto <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage/Examples
+  - ## Tests
+- **readme.md**
+  - # get-stream
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### getStream(stream, options?)
+- **README.md**
+  - # get-symbol-description <sup>[![Version Badge][2]][1]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - ### Features
+  - ## Install
+  - ## Why?
+  - ## API
+  - ### getTsconfig(searchPath?, configName?, cache?)
+- **README.md**
+- **README.md**
+  - # Glob
+  - ## Usage
+  - ## Glob Primer
+  - ### Dots
+  - ### Basename Matching
+- **README.md**
+  - # glob-parent
+  - ## Usage
+  - ## API
+  - ### `globParent(maybeGlobString, [options])`
+  - #### options
+- **readme.md**
+  - # globals
+  - ## Install
+  - ## Usage
+- **README.md**
+  - # globalThis <sup>[![Version Badge][npm-version-svg]][npm-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # gopd <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Usage
+- **README.md**
+  - # graceful-fs
+  - ## Improvements over [fs module](https://nodejs.org/api/fs.html)
+  - ## USAGE
+  - ## Sync methods
+  - ## Global Patching
+- **README.md**
+  - # grid-index
+  - ## Example
+  - ## API
+  - ### `GridIndex(extent, n, padding)`
+  - ### `GridIndex(arrayBuffer)`
+- **README.markdown**
+  - ### Compatibility
+- **README.md**
+  - # has-bigints <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **readme.md**
+  - # has-flag [![Build Status](https://travis-ci.org/sindresorhus/has-flag.svg?branch=master)](https://travis-ci.org/sindresorhus/has-flag)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### hasFlag(flag, [argv])
+- **README.md**
+  - # has-property-descriptors <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # has-proto <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # has-symbols <sup>[![Version Badge][2]][1]</sup>
+  - ## Example
+  - ## Supported Symbol shams
+  - ## Tests
+- **README.md**
+  - # has-tostringtag <sup>[![Version Badge][2]][1]</sup>
+  - ## Example
+  - ## Supported Symbol shams
+  - ## Tests
+- **README.md**
+  - # hasown <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # hermes-estree
+- **README.md**
+  - # hermes-parser
+  - ## API
+- **README.md**
+  - # Determine the Encoding of a HTML Byte Stream
+  - ## Options
+  - ## Credits
+- **README.md**
+  - # html-escaper [![Build Status](https://travis-ci.org/WebReflection/html-escaper.svg?branch=master)](https://travis-ci.org/WebReflection/html-escaper) [![Coverage Status](https://coveralls.io/repos/github/WebReflection/html-escaper/badge.svg?branch=master)](https://coveralls.io/github/WebReflection/html-escaper?branch=master)
+  - ### How
+  - ### Why
+  - ### Backtick
+- **README.md**
+  - ### An HTTP(s) proxy `http.Agent` implementation for HTTP
+- **README.md**
+  - ### An HTTP(s) proxy `http.Agent` implementation for HTTPS
+  - #### `https` module example
+  - #### `ws` WebSocket connection example
+  - ### new HttpsProxyAgent(Object options)
+- **README.md**
+  - # Example
+  - # Install
+  - # Usage
+  - ## signalsByName
+  - ## signalsByNumber
+- **README.md**
+  - ## iconv-lite: Pure JS character encoding conversion
+  - ## Usage
+  - ### Basic API
+  - ### Streaming API
+  - ## Supported encodings
+- **README.md**
+  - # ignore
+  - ### Tested on
+  - ## Table Of Main Contents
+  - ## Install
+  - ## Usage
+- **readme.md**
+  - # import-fresh
+  - ## ESM
+  - ## Install
+  - ## Usage
+  - ## Related
+- **readme.md**
+  - # import-local
+  - ## Install
+  - ## Usage
+- **README.md**
+  - ### MurmurHash3 ([string], [seed])
+  - ### MurmurHash3.prototype.hash (string)
+  - ### MurmurHash3.prototype.result ()
+  - ### MurmurHash3.prototype.reset ([seed])
+- **readme.md**
+  - # indent-string [![Build Status](https://travis-ci.org/sindresorhus/indent-string.svg?branch=master)](https://travis-ci.org/sindresorhus/indent-string)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### indentString(string, [count], [options])
+- **README.md**
+  - # inflight
+  - ## USAGE
+- **README.md**
+  - ## usage
+  - ## note on version ~1.0
+- **README.md**
+  - # internal-slot <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+  - ## Security
+- **README.md**
+  - # is-arguments <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Caveats
+  - ## Tests
+- **README.md**
+  - # is-array-buffer <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # node-is-arrayish [![Travis-CI.org Build Status](https://img.shields.io/travis/Qix-/node-is-arrayish.svg?style=flat-square)](https://travis-ci.org/Qix-/node-is-arrayish) [![Coveralls.io Coverage Rating](https://img.shields.io/coveralls/Qix-/node-is-arrayish.svg?style=flat-square)](https://coveralls.io/r/Qix-/node-is-arrayish)
+  - ## Example
+  - ## License
+- **README.md**
+  - # is-async-function <sup>[![Version Badge][2]][1]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # is-bigint <sup>[![Version Badge][2]][1]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # is-boolean-object <sup>[![Version Badge][2]][1]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # is-bun-module
+  - ## API
+  - ### Module Checking Functions
+  - #### `isBunModule(moduleName, bunVersion?)`
+  - #### `isBunImplementedNodeModule(moduleName, bunVersion?)`
+- **README.md**
+  - # is-callable <sup>[![Version Badge][2]][1]</sup>
+  - ## Supported engines
+  - ## Example
+  - ## Install
+  - ## Tests
+- **README.md**
+  - # is-core-module <sup>[![Version Badge][2]][1]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # is-data-view <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # is-date-object <sup>[![Version Badge][2]][1]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # is-extendable [![NPM version](https://badge.fury.io/js/is-extendable.svg)](http://badge.fury.io/js/is-extendable)
+  - ## Install
+  - ## Usage
+  - ## Notes
+  - ## Related projects
+- **README.md**
+  - # is-extglob [![NPM version](https://img.shields.io/npm/v/is-extglob.svg?style=flat)](https://www.npmjs.com/package/is-extglob) [![NPM downloads](https://img.shields.io/npm/dm/is-extglob.svg?style=flat)](https://npmjs.org/package/is-extglob) [![Build Status](https://img.shields.io/travis/jonschlinkert/is-extglob.svg?style=flat)](https://travis-ci.org/jonschlinkert/is-extglob)
+  - ## Install
+  - ## Usage
+  - ## History
+  - ## About
+- **README.md**
+  - # is-finalizationregistry <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **readme.md**
+  - # is-fullwidth-code-point [![Build Status](https://travis-ci.org/sindresorhus/is-fullwidth-code-point.svg?branch=master)](https://travis-ci.org/sindresorhus/is-fullwidth-code-point)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### isFullwidthCodePoint(codePoint)
+- **readme.md**
+  - # is-generator-fn [![Build Status](https://travis-ci.org/sindresorhus/is-generator-fn.svg?branch=master)](https://travis-ci.org/sindresorhus/is-generator-fn)
+  - ## Install
+  - ## Usage
+  - ## Related
+  - ## License
+- **README.md**
+  - # is-generator-function <sup>[![Version Badge][2]][1]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # is-glob [![NPM version](https://img.shields.io/npm/v/is-glob.svg?style=flat)](https://www.npmjs.com/package/is-glob) [![NPM monthly downloads](https://img.shields.io/npm/dm/is-glob.svg?style=flat)](https://npmjs.org/package/is-glob) [![NPM total downloads](https://img.shields.io/npm/dt/is-glob.svg?style=flat)](https://npmjs.org/package/is-glob) [![Build Status](https://img.shields.io/github/workflow/status/micromatch/is-glob/dev)](https://github.com/micromatch/is-glob/actions)
+  - ## Install
+  - ## Usage
+  - ### Default behavior
+  - ### Option strict
+- **README.md**
+  - # is-map <sup>[![Version Badge][2]][1]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # is-negative-zero <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # is-number [![NPM version](https://img.shields.io/npm/v/is-number.svg?style=flat)](https://www.npmjs.com/package/is-number) [![NPM monthly downloads](https://img.shields.io/npm/dm/is-number.svg?style=flat)](https://npmjs.org/package/is-number) [![NPM total downloads](https://img.shields.io/npm/dt/is-number.svg?style=flat)](https://npmjs.org/package/is-number) [![Linux Build Status](https://img.shields.io/travis/jonschlinkert/is-number.svg?style=flat&label=Travis)](https://travis-ci.org/jonschlinkert/is-number)
+  - ## Install
+  - ## Why is this needed?
+  - ## Usage
+  - ### true
+- **README.md**
+  - # is-number-object <sup>[![Version Badge][2]][1]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # is-plain-object [![NPM version](https://img.shields.io/npm/v/is-plain-object.svg?style=flat)](https://www.npmjs.com/package/is-plain-object) [![NPM monthly downloads](https://img.shields.io/npm/dm/is-plain-object.svg?style=flat)](https://npmjs.org/package/is-plain-object) [![NPM total downloads](https://img.shields.io/npm/dt/is-plain-object.svg?style=flat)](https://npmjs.org/package/is-plain-object) [![Linux Build Status](https://img.shields.io/travis/jonschlinkert/is-plain-object.svg?style=flat&label=Travis)](https://travis-ci.org/jonschlinkert/is-plain-object)
+  - ## Install
+  - ## Usage
+  - ## About
+  - ### Related projects
+- **README.md**
+  - # is-potential-custom-element-name [![Build status](https://travis-ci.org/mathiasbynens/is-potential-custom-element-name.svg?branch=master)](https://travis-ci.org/mathiasbynens/is-potential-custom-element-name)
+  - ## Installation
+  - ## Usage
+  - ## Author
+  - ## License
+- **README.md**
+  - # is-regex <sup>[![Version Badge][2]][1]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # is-set <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # is-shared-array-buffer <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **readme.md**
+  - # is-stream
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### isStream(stream)
+- **README.md**
+  - # is-string <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # is-symbol <sup>[![Version Badge][2]][1]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # is-typed-array <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # is-weakmap <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # is-weakref <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # is-weakset <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # isarray
+  - ## Usage
+  - ## Installation
+  - ## Sponsors
+- **README.md**
+  - # isexe
+  - ## USAGE
+  - ## API
+  - ### `isexe(path, [options], [callback])`
+  - ### `isexe.sync(path, [options])`
+- **README.md**
+  - # isobject [![NPM version](https://img.shields.io/npm/v/isobject.svg?style=flat)](https://www.npmjs.com/package/isobject) [![NPM monthly downloads](https://img.shields.io/npm/dm/isobject.svg?style=flat)](https://npmjs.org/package/isobject)  [![NPM total downloads](https://img.shields.io/npm/dt/isobject.svg?style=flat)](https://npmjs.org/package/isobject) [![Linux Build Status](https://img.shields.io/travis/jonschlinkert/isobject.svg?style=flat&label=Travis)](https://travis-ci.org/jonschlinkert/isobject)
+  - ## Install
+  - ## Install
+  - ## Usage
+  - ## About
+- **README.md**
+  - ## istanbul-lib-coverage
+- **README.md**
+  - ## istanbul-lib-instrument
+- **README.md**
+  - # istanbul-lib-report
+  - ## Example usage
+- **README.md**
+  - # istanbul-lib-source-maps
+  - ## Debugging
+- **README.md**
+  - # istanbul-reports
+- **README.md**
+  - # iterator.prototype <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Usage
+- **README.md**
+  - # Jest
+- **README.md**
+  - # jest-changed-files
+  - ## Install
+  - ## API
+  - ### `getChangedFilesForRoots(roots: Array<string>, options: Options): Promise<ChangedFiles>`
+  - #### Parameters
+- **README.md**
+  - ## Overview
+  - ## Installation
+  - ## Configure
+- **README.md**
+  - # Jest
+- **README.md**
+  - # jest-diff
+  - ## Installation
+  - ## Usage of `diff()`
+  - ### Example of `diff()`
+  - ### Edge cases of `diff()`
+- **README.md**
+  - # jest-docblock
+  - ## Installation
+  - # with yarn
+  - # with npm
+  - ## Usage
+- **README.md**
+  - ## Features
+  - ## Demo
+  - #### Tests without jest-each
+  - #### Tests can be re-written with jest-each to:
+  - ## Installation
+- **README.md**
+  - # jest-leak-detector
+  - ## Example
+- **README.md**
+  - # jest-matcher-utils
+  - ## Installation
+  - ## Exports ([src/index.ts](https://github.com/jestjs/jest/blob/HEAD/packages/jest-matcher-utils/src/index.ts))
+  - ### Functions
+  - ### Types
+- **README.md**
+  - # jest-mock
+  - ## API
+  - ### `constructor(global)`
+  - ### `generateFromMetadata(metadata)`
+  - ### `getMetadata(component)`
+- **README.md**
+  - # <img src="https://github.com/facebook/jest/blob/master/website/static/img/jest.png" height="40" align="right" /> [Plug'n'Play](https://github.com/yarnpkg/rfcs/pull/101) resolver for Jest
+  - ## Installation
+  - ## Usage
+  - ## License (MIT)
+- **Readme.md**
+  - # `@jest/utils`
+  - ## `ErrorWithStack`
+  - ## `clearLine`
+  - ## `convertDescriptorToString`
+  - ## `createDirectory`
+- **README.md**
+  - # jest-validate
+  - ## Usage
+  - ## API
+  - ### Options
+  - ## exampleConfig syntax
+- **README.md**
+  - # jest-worker
+  - ## Install
+  - ## Example
+  - ### File `parent.js`
+  - ### File `worker.js`
+- **README.md**
+  - # jiti
+  - ## 🌟 Used in
+  - ## ✅ Features
+  - ## 💡 Usage
+  - ### CLI
+- **README.md**
+  - ### `jsTokens` ###
+  - ### `var token = matchToToken(match)` ###
+  - ### Template string interpolation ###
+  - ### Division and regex literals collision ###
+  - ### ES2018 ###
+- **README.md**
+  - ### YAML module for node.js
+  - ### CLI executable
+  - #### Usage
+  - ### load (string [ , options ])
+  - ### loadAll (string [, iterator] [, options ])
+- **README.md**
+  - ## Basic usage
+  - ## Customizing jsdom
+  - ### Simple options
+  - ### Executing scripts
+  - ### Pretending to be a visual browser
+- **README.md**
+  - # jsesc
+  - ## Installation
+  - ## API
+  - ### `jsesc(value, options)`
+  - #### `quotes`
+- **README.md**
+  - # json-buffer
+  - ## License
+- **README.md**
+  - # json-parse-even-better-errors
+  - ## Install
+  - ## Table of Contents
+  - ### Example
+  - ### Features
+- **README.md**
+  - # json-schema-traverse
+  - ## Install
+  - ## Usage
+  - ## Traverse objects in all unknown keywords
+  - ## License
+- **readme.markdown**
+  - # json-stable-stringify
+  - # example
+  - # methods
+  - ## var str = stringify(obj, opts)
+  - ## options
+- **README.md**
+  - # json-stringify-pretty-compact
+  - ## Installation
+  - ## `stringify(obj, options = {})`
+  - ## License
+- **README.md**
+  - # JSON5 – JSON for Humans
+  - ## Summary of Features
+  - ### Objects
+  - ### Arrays
+  - ### Strings
+- **README.md**
+  - # jsx-ast-utils <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Installation
+  - ## Usage
+  - ### ESLint example
+  - ## API
+- **README.md**
+  - ## KDBush
+  - ## Usage
+  - ## Install
+  - ## API
+  - #### new KDBush(numItems[, nodeSize, ArrayType])
+- **README.md**
+  - ## Features
+  - ## Usage
+  - ### Namespaces
+  - ### Custom Serializers
+  - ## Official Storage Adapters
+- **readme.md**
+  - ## Features
+  - ## Install
+  - ## Usage
+  - ### Chained Methods
+  - ### Nested Methods
+- **README.md**
+  - # IANA Language Tags #
+  - ## Updates ##
+  - ## Usage ##
+  - ## Credits and collaboration ##
+- **README.md**
+  - # IANA Language Tags for JavaScript #
+  - ## JSON data ##
+  - ## API ##
+  - ### tags(tag) ###
+  - ### tags.check(tag) ###
+- **readme.md**
+  - # leven [![Build Status](https://travis-ci.org/sindresorhus/leven.svg?branch=master)](https://travis-ci.org/sindresorhus/leven)
+  - ## Install
+  - ## Usage
+  - ## Benchmark
+  - ## Related
+- **README.md**
+  - # levn [![Build Status](https://travis-ci.org/gkz/levn.png)](https://travis-ci.org/gkz/levn) <a name="levn" />
+  - ## Quick Examples
+  - ## Usage
+  - ### parse(type, input, options)
+  - ##### arguments
+- **README.md**
+  - # ⚡️ Lightning CSS
+  - ## Features
+  - ## Documentation
+  - ## Benchmarks
+- **README.md**
+- **README.md**
+  - # lines-and-columns
+  - ## Install
+  - ## Usage
+  - ## License
+- **readme.md**
+  - # locate-path [![Build Status](https://travis-ci.com/sindresorhus/locate-path.svg?branch=master)](https://travis-ci.com/github/sindresorhus/locate-path)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### locatePath(paths, options?)
+- **README.md**
+  - # lodash.memoize v4.1.2
+  - ## Installation
+- **README.md**
+  - # lodash.merge v4.6.2
+  - ## Installation
+- **README.md**
+  - # loose-envify
+  - ## Gotchas
+  - ## Usage/Options
+  - ## Benchmark
+- **README.md**
+  - # lru cache
+  - ## Installation:
+  - ## Usage:
+  - ## Options
+  - ## API
+- **README.md**
+  - # Lucide React
+  - ## Installation
+  - ## Documentation
+  - ## Community
+  - ## License
+- **README.md**
+  - ## Warning (migrating from version 1.3.4 - nov 2014)
+  - ## Note on server side
+  - ## Install via [npm](https://npmjs.org/)
+  - ## Home page
+  - ## Other languages
+- **README.md**
+  - # magic-string
+  - ## Installation
+  - ## Usage
+  - ## Properties
+  - ### s.offset
+- **readme.md**
+  - # make-dir [![codecov](https://codecov.io/gh/sindresorhus/make-dir/branch/main/graph/badge.svg)](https://codecov.io/gh/sindresorhus/make-dir)
+  - ## Advantages over [`mkdirp`](https://github.com/substack/node-mkdirp)
+  - ## Install
+  - ## Usage
+  - ## API
+- **README.md**
+  - # make-error
+  - ## Features
+  - ## Installation
+  - ### Node & [Browserify](http://browserify.org/)/[Webpack](https://webpack.js.org/)
+  - ### Browser
+- **readme.md**
+- **README.md**
+  - ## License
+- **README.md**
+  - # Martinez-Rueda polygon clipping algorithm [![npm version](https://badge.fury.io/js/martinez-polygon-clipping.svg)](https://badge.fury.io/js/martinez-polygon-clipping)
+  - ## Details
+  - ### Example
+  - ### API
+  - ### Benchmarks
+- **README.md**
+  - # math-intrinsics <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Tests
+  - ## Security
+- **README.md**
+  - # merge-stream
+  - ## Synopsis
+  - ## Description
+  - ## API
+  - ### `mergeStream`
+- **README.md**
+  - # merge2
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### merge2()
+- **README.md**
+  - # micromatch [![NPM version](https://img.shields.io/npm/v/micromatch.svg?style=flat)](https://www.npmjs.com/package/micromatch) [![NPM monthly downloads](https://img.shields.io/npm/dm/micromatch.svg?style=flat)](https://npmjs.org/package/micromatch) [![NPM total downloads](https://img.shields.io/npm/dt/micromatch.svg?style=flat)](https://npmjs.org/package/micromatch)  [![Tests](https://github.com/micromatch/micromatch/actions/workflows/test.yml/badge.svg)](https://github.com/micromatch/micromatch/actions/workflows/test.yml)
+  - ## Table of Contents
+  - ## Install
+  - # Sponsors
+  - ## Quickstart
+- **README.md**
+  - # mime-db
+  - ## Installation
+  - ### Database Download
+  - ## Usage
+  - ## Data Structure
+- **README.md**
+  - # mime-types
+  - ## Install
+  - ## Adding Types
+  - ## API
+  - ### mime.lookup(path)
+- **readme.md**
+  - # mimic-fn [![Build Status](https://travis-ci.org/sindresorhus/mimic-fn.svg?branch=master)](https://travis-ci.org/sindresorhus/mimic-fn)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### mimicFn(to, from)
+- **readme.md**
+  - # min-indent [![Build Status](https://travis-ci.org/thejameskyle/min-indent.svg?branch=master)](https://travis-ci.org/thejameskyle/min-indent)
+  - ## Install
+  - ## Usage
+  - ## Related
+  - ## License
+- **README.md**
+  - # minimatch
+  - ## Important Security Consideration!
+  - ## Usage
+  - ## Features
+  - ## Minimatch Class
+- **README.md**
+  - # minimist <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - # example
+  - # security
+  - # methods
+  - ## var argv = parseArgs(args, opts={})
+- **README.md**
+  - # minipass
+  - ## Usage in TypeScript
+  - ## Differences from Node.js Streams
+  - ### Timing
+  - ### Exception: Async Opt-In
+- **README.md**
+  - # minizlib
+  - ## How does this differ from the streams in `'node:zlib'`?
+  - ## Classes
+  - ## USAGE
+  - ## REPRODUCIBLE BUILDS
+- **README.md**
+  - # React / JavaScript
+  - # Vue
+  - ## Table of Contents
+  - ## Why Motion?
+  - ## 🍦 Platforms
+- **readme.md**
+  - # ms
+  - ## Examples
+  - ### Convert from Milliseconds
+  - ### Time Format Written-Out
+  - ## Features
+- **README.md**
+  - # MurmurHash.js
+  - ## Install
+  - ## API
+  - ### Methods
+  - #### `murmur.murmur2(key, seed)`
+- **README.md**
+  - # Nano ID
+  - ## Docs
+- **README.md**
+  - # napi-postinstall
+  - ## TOC <!-- omit in toc -->
+  - ## Usage
+  - ### Install
+  - # pnpm
+- **README.md**
+  - ### Installation
+  - ### Usage
+  - ### Custom alphabet
+- **README.md**
+  - ## Code Coverage
+  - ## Installation
+  - ### In a browser
+  - ### In an AMD loader
+  - ### Promise and async/await
+- **README.md**
+  - ## Getting Started
+  - ## Documentation
+  - ## Community
+  - ## Contributing
+  - ### Good First Issues:
+- **README.md**
+  - # node-exports-info <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Categories
+  - ## Entry points
+  - ## Related packages
+  - ## Tests
+- **README.md**
+- **README.md**
+  - # Node.js releases data
+  - ## Installation
+- **README.md**
+  - # normalize-path [![NPM version](https://img.shields.io/npm/v/normalize-path.svg?style=flat)](https://www.npmjs.com/package/normalize-path) [![NPM monthly downloads](https://img.shields.io/npm/dm/normalize-path.svg?style=flat)](https://npmjs.org/package/normalize-path) [![NPM total downloads](https://img.shields.io/npm/dt/normalize-path.svg?style=flat)](https://npmjs.org/package/normalize-path) [![Linux Build Status](https://img.shields.io/travis/jonschlinkert/normalize-path.svg?style=flat&label=Travis)](https://travis-ci.org/jonschlinkert/normalize-path)
+  - ## Install
+  - ## Usage
+  - ### Trailing slashes
+  - ## Release history
+- **readme.md**
+  - # npm-run-path [![Build Status](https://travis-ci.org/sindresorhus/npm-run-path.svg?branch=master)](https://travis-ci.org/sindresorhus/npm-run-path)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### npmRunPath(options?)
+- **README.md**
+  - # [NWSAPI](http://dperini.github.io/nwsapi/)
+  - ## Installation
+  - ## Supported Selectors
+  - ## Features and Compliance
+  - ## API
+- **readme.md**
+  - # object-assign [![Build Status](https://travis-ci.org/sindresorhus/object-assign.svg?branch=master)](https://travis-ci.org/sindresorhus/object-assign)
+  - ## Use the built-in
+  - ## Install
+  - ## Usage
+  - ## API
+- **readme.markdown**
+  - # object-inspect <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - # example
+  - ## circular
+  - ## dom element
+  - # methods
+- **README.md**
+  - # object-is <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - #object-keys <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Source
+  - ## Tests
+- **README.md**
+  - # object.assign <sup>[![Version Badge][npm-version-svg]][npm-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # object.entries <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Tests
+- **README.md**
+  - # object.fromentries <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Tests
+- **README.md**
+  - # object.groupby <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage/Examples
+  - ## Tests
+- **README.md**
+  - # object.values <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Tests
+- **README.md**
+  - # once
+  - ## usage
+  - ## `once.strict(func)`
+- **readme.md**
+  - # onetime [![Build Status](https://travis-ci.com/sindresorhus/onetime.svg?branch=master)](https://travis-ci.com/github/sindresorhus/onetime)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### onetime(fn, options?)
+- **README.md**
+  - # Optionator
+  - ## Why?
+  - ## About
+  - ## Usage
+  - ### parse(input, parseOptions)
+- **README.md**
+  - # own-keys <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage/Examples
+  - ## Tests
+- **readme.md**
+  - # p-limit
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### pLimit(concurrency)
+- **readme.md**
+  - # p-locate [![Build Status](https://travis-ci.com/sindresorhus/p-locate.svg?branch=master)](https://travis-ci.com/github/sindresorhus/p-locate)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### pLocate(input, tester, options?)
+- **readme.md**
+  - # p-try [![Build Status](https://travis-ci.org/sindresorhus/p-try.svg?branch=master)](https://travis-ci.org/sindresorhus/p-try)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### pTry(fn, ...arguments)
+- **readme.md**
+  - # parent-module [![Build Status](https://travis-ci.org/sindresorhus/parent-module.svg?branch=master)](https://travis-ci.org/sindresorhus/parent-module)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### parentModule([filepath])
+- **readme.md**
+  - # parse-json
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### parseJson(string, reviver?, filename?)
+- **README.md**
+- **readme.md**
+  - # path-exists [![Build Status](https://travis-ci.org/sindresorhus/path-exists.svg?branch=master)](https://travis-ci.org/sindresorhus/path-exists)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### pathExists(path)
+- **readme.md**
+  - # path-is-absolute [![Build Status](https://travis-ci.org/sindresorhus/path-is-absolute.svg?branch=master)](https://travis-ci.org/sindresorhus/path-is-absolute)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### pathIsAbsolute(path)
+- **readme.md**
+  - # path-key [![Build Status](https://travis-ci.org/sindresorhus/path-key.svg?branch=master)](https://travis-ci.org/sindresorhus/path-key)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### pathKey(options?)
+- **README.md**
+  - # path-parse [![Build Status](https://travis-ci.org/jbgutierrez/path-parse.svg?branch=master)](https://travis-ci.org/jbgutierrez/path-parse)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### pathParse(path)
+- **README.md**
+  - # pbf
+  - ## Performance
+  - ## Examples
+  - #### Using Compiled Code
+  - #### Custom Reading
+- **README.md**
+  - # picocolors
+  - ## Docs
+- **README.md**
+  - ## Why picomatch?
+  - ## Table of Contents
+  - ## Install
+  - ## Usage
+  - ## API
+- **README.md**
+  - # Pirates [![Coverage][codecov-badge]][codecov-link]
+  - ### Properly hijack require
+  - ## Why?
+  - ## Installation
+  - ## Usage
+- **readme.md**
+  - # pkg-dir [![Build Status](https://travis-ci.org/sindresorhus/pkg-dir.svg?branch=master)](https://travis-ci.org/sindresorhus/pkg-dir)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### pkgDir([cwd])
+- **README.md**
+  - # 🎭 Playwright
+  - ## [Documentation](https://playwright.dev) | [API reference](https://playwright.dev/docs/api/class-playwright)
+  - ## Installation
+  - ### Using init command
+  - # Run from your project's root directory
+- **README.md**
+  - # playwright-core
+- **README.md**
+  - # possible-typed-array-names <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+  - ## Security
+- **README.md**
+  - # PostCSS
+  - ## Docs
+- **README.md**
+  - # postcss-value-parser
+  - ## Usage
+  - ## Nodes
+  - ### word
+  - ### string
+- **README.md**
+  - # potpack
+  - ## [Demo](https://mapbox.github.io/potpack/)
+  - ## Example usage
+  - ## Install
+- **README.md**
+  - # prelude.ls [![Build Status](https://travis-ci.org/gkz/prelude-ls.png?branch=master)](https://travis-ci.org/gkz/prelude-ls)
+  - ### Development
+- **README.md**
+  - # pretty-format
+  - ## Installation
+  - ## Usage
+  - ## Usage with options
+  - ## Usage with plugins
+- **readme.md**
+  - ## ❯ Install
+  - ## ❯ Usage
+  - ## ❯ Examples
+  - ### Single Prompt
+  - ### Prompt Chain
+- **README.md**
+  - # prop-types [![Build Status](https://travis-ci.com/facebook/prop-types.svg?branch=main)](https://travis-ci.org/facebook/prop-types)
+  - ## Installation
+  - ## Importing
+  - ### CDN
+  - ## Usage
+- **README.md**
+  - # protocol-buffers-schema
+  - ## Usage
+  - ## API
+  - #### `schema.parse(protobufSchemaBufferOrString)`
+  - #### `schema.stringify(schema)`
+- **README.md**
+  - # psl (Public Suffix List)
+  - ## What is the Public Suffix List?
+  - ## Installation
+  - ### Node.js
+  - #### ESM
+- **README.md**
+  - # Punycode.js [![punycode on npm](https://img.shields.io/npm/v/punycode)](https://www.npmjs.com/package/punycode) [![](https://data.jsdelivr.com/v1/package/npm/punycode/badge)](https://www.jsdelivr.com/package/npm/punycode)
+  - ## Installation
+  - ## API
+  - ### `punycode.decode(string)`
+  - ### `punycode.encode(string)`
+- **README.md**
+  - ## Getting started
+  - ## Usage
+  - ## Documentation
+  - ### Pseudorandom number generators
+  - ### Distributions
+- **README.md**
+  - # querystringify
+  - ## Installation
+  - ## Usage
+  - ### qs.parse()
+  - ### qs.stringify()
+- **README.md**
+  - # queue-microtask [![ci][ci-image]][ci-url] [![npm][npm-image]][npm-url] [![downloads][downloads-image]][downloads-url] [![javascript style guide][standard-image]][standard-url]
+  - ### fast, tiny [`queueMicrotask`](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/queueMicrotask) shim for modern engines
+  - ## install
+  - ## usage
+  - ## What is `queueMicrotask` and why would one use it?
+- **README.md**
+  - ## quickselect
+- **README.md**
+  - # `react`
+  - ## Usage
+  - ## Documentation
+  - ## API
+- **README.md**
+  - # `react-dom`
+  - ## Installation
+  - ## Usage
+  - ### In the browser
+  - ### On the server
+- **README.md**
+  - # `react-is`
+  - ## Installation
+  - # Yarn
+  - # NPM
+  - ## Usage
+- **README.md**
+  - ### Installation
+  - # Using Maplibre
+  - # Using Mapbox
+  - ### Example
+  - ### Using Mapbox Tokens
+- **readme.md**
+  - # redent [![Build Status](https://travis-ci.org/sindresorhus/redent.svg?branch=master)](https://travis-ci.org/sindresorhus/redent)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### redent(string, [count], [options])
+- **README.md**
+  - # reflect.getprototypeof <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - ## Tests
+- **README.markdown**
+  - # require-directory
+  - ## How To Use
+  - ### Installation (via [npm](https://npmjs.org/package/require-directory))
+  - ### Usage
+  - ### Specifying Another Directory
+- **README.md**
+  - # requires-port
+  - ## Installation
+  - ## Usage
+  - # License
+- **readme.markdown**
+  - # resolve <sup>[![Version Badge][2]][1]</sup>
+  - # example
+  - # methods
+  - ## resolve(id, opts={}, cb)
+  - ## resolve.sync(id, opts)
+- **readme.md**
+  - # resolve-cwd [![Build Status](https://travis-ci.org/sindresorhus/resolve-cwd.svg?branch=master)](https://travis-ci.org/sindresorhus/resolve-cwd)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### resolveCwd(moduleId)
+- **readme.md**
+  - # resolve-from [![Build Status](https://travis-ci.org/sindresorhus/resolve-from.svg?branch=master)](https://travis-ci.org/sindresorhus/resolve-from)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### resolveFrom(fromDir, moduleId)
+- **README.md**
+  - # resolve-pkg-maps
+  - ## Usage
+  - ### Resolving `exports`
+  - ### Resolving `imports`
+  - ## API
+- **README.md**
+  - # resolve-protobuf-schema
+  - ## Usage
+  - ## API
+  - ## License
+- **readme.md**
+  - # resolve.exports [![CI](https://github.com/lukeed/resolve.exports/workflows/CI/badge.svg)](https://github.com/lukeed/resolve.exports/actions) [![licenses](https://licenses.dev/b/npm/resolve.exports)](https://licenses.dev/npm/resolve.exports) [![codecov](https://codecov.io/gh/lukeed/resolve.exports/branch/master/graph/badge.svg?token=4P7d4Omw2h)](https://codecov.io/gh/lukeed/resolve.exports)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### resolve(pkg, entry?, options?)
+- **README.md**
+  - # reusify
+  - ## Example
+  - ## Why
+  - ## Other examples
+  - ## Acknowledgements
+- **README.md**
+  - # robust-predicates
+  - ## [Demo](https://observablehq.com/@mourner/non-robust-arithmetic-as-art)
+  - ## API
+  - ### `orient2d(ax,ay, bx,by, cx,cy)`
+  - ### `incircle(ax,ay, bx,by, cx,cy, dx,dy)`
+- **README.md**
+  - # run-parallel [![travis][travis-image]][travis-url] [![npm][npm-image]][npm-url] [![downloads][downloads-image]][downloads-url] [![javascript style guide][standard-image]][standard-url]
+  - ### Run an array of functions in parallel
+  - ### install
+  - ### usage
+  - #### parallel(tasks, [callback])
+- **README.md**
+  - # rw - Now stdin and stdout are files.
+  - ### Note
+  - ## API Reference
+- **README.md**
+  - # safe-array-concat <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage/Examples
+  - ## Tests
+- **README.md**
+  - # safe-push-apply <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage/Examples
+  - ## Tests
+- **README.md**
+  - # safe-regex-test <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage/Examples
+  - ## Tests
+- **Readme.md**
+  - # safer-buffer [![travis][travis-image]][travis-url] [![npm][npm-image]][npm-url] [![javascript style guide][standard-image]][standard-url] [![Security Responsible Disclosure][secuirty-image]][secuirty-url]
+  - ## How to use?
+  - ## Do I need it?
+  - ## Why not [safe-buffer](https://npmjs.com/safe-buffer)?
+  - ## But isn't throwing bad?
+- **README.md**
+  - # saxes
+  - ## Notable Differences from Sax.
+  - ## Conformance
+  - ## Limitations
+  - ## Regarding `<!DOCTYPE` and `<!ENTITY`
+- **README.md**
+  - # `scheduler`
+  - ### Thanks
+- **README.md**
+  - ## Install
+  - ## Usage
+  - ## Versions
+  - ## Ranges
+  - ### Prerelease Tags
+- **README.md**
+  - # set-function-length <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Usage
+- **README.md**
+  - # set-function-name <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Usage
+- **README.md**
+  - # set-proto <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage/Examples
+  - ## Tests
+- **README.md**
+  - # set-value [![NPM version](https://img.shields.io/npm/v/set-value.svg?style=flat)](https://www.npmjs.com/package/set-value) [![NPM monthly downloads](https://img.shields.io/npm/dm/set-value.svg?style=flat)](https://npmjs.org/package/set-value) [![NPM total downloads](https://img.shields.io/npm/dt/set-value.svg?style=flat)](https://npmjs.org/package/set-value) [![Linux Build Status](https://img.shields.io/travis/jonschlinkert/set-value.svg?style=flat&label=Travis)](https://travis-ci.org/jonschlinkert/set-value)
+  - ## Install
+  - ## Usage
+  - ### Params
+  - ## Examples
+- **README.md**
+  - # sharp
+  - ## Documentation
+  - ## Examples
+  - ### Callback
+  - ### Promise
+- **readme.md**
+  - # shebang-command [![Build Status](https://travis-ci.org/kevva/shebang-command.svg?branch=master)](https://travis-ci.org/kevva/shebang-command)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### shebangCommand(string)
+- **readme.md**
+  - # shebang-regex [![Build Status](https://travis-ci.org/sindresorhus/shebang-regex.svg?branch=master)](https://travis-ci.org/sindresorhus/shebang-regex)
+  - ## Install
+  - ## Usage
+  - ## License
+- **README.md**
+  - # side-channel <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage/Examples
+  - ## Tests
+- **README.md**
+  - # side-channel-list <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage/Examples
+  - ## Tests
+- **README.md**
+  - # side-channel-map <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage/Examples
+  - ## Tests
+- **README.md**
+  - # side-channel-weakmap <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Getting started
+  - ## Usage/Examples
+  - ## Tests
+- **README.md**
+  - # signal-exit
+  - ## API
+  - ## Options
+- **readme.md**
+  - # sister ANSI [![Version](https://img.shields.io/npm/v/sisteransi.svg)](https://www.npmjs.com/package/sisteransi) [![Build Status](https://travis-ci.org/terkelg/sisteransi.svg?branch=master)](https://travis-ci.org/terkelg/sisteransi) [![Downloads](https://img.shields.io/npm/dm/sisteransi.svg)](https://www.npmjs.com/package/sisteransi)
+  - ## Installation
+  - ## Usage
+  - ## API
+  - ### cursor
+- **readme.md**
+  - # slash [![Build Status](https://travis-ci.org/sindresorhus/slash.svg?branch=master)](https://travis-ci.org/sindresorhus/slash)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### slash(path)
+- **README.md**
+  - # sort-asc [![NPM version](https://badge.fury.io/js/sort-asc.svg)](http://badge.fury.io/js/sort-asc)  [![Build Status](https://travis-ci.org/jonschlinkert/sort-asc.svg)](https://travis-ci.org/jonschlinkert/sort-asc)
+  - ## Install
+  - ## Usage
+  - ## Related projects
+  - ## Running tests
+- **README.md**
+  - # sort-desc [![NPM version](https://badge.fury.io/js/sort-desc.svg)](http://badge.fury.io/js/sort-desc)  [![Build Status](https://travis-ci.org/jonschlinkert/sort-desc.svg)](https://travis-ci.org/jonschlinkert/sort-desc)
+  - ## Install
+  - ## Usage
+  - ## Related projects
+  - ## Running tests
+- **README.md**
+  - # sort-object [![NPM version](https://img.shields.io/npm/v/sort-object.svg)](https://www.npmjs.com/package/sort-object) [![Build Status](https://img.shields.io/travis/doowb/sort-object.svg)](https://travis-ci.org/doowb/sort-object)
+  - ## Install
+  - ## Usage
+  - ## Options
+  - ### options.keys
+- **README.md**
+  - # Source Map
+  - ## Use with Node
+  - ## Use on the Web
+  - ## Table of Contents
+  - ## Examples
+- **README.md**
+  - # Source Map JS
+  - ## Use with Node
+  - ## Table of Contents
+  - ## Examples
+  - ### Consuming a source map
+- **README.md**
+  - # Source Map Support
+  - ## Installation and Usage
+  - #### Node support
+  - ##### CLI Usage
+  - ##### Programmatic Usage
+- **Readme.md**
+  - # Splay tree [![npm version](https://badge.fury.io/js/splaytree.svg)](https://badge.fury.io/js/splaytree) [![CircleCI](https://circleci.com/gh/w8r/splay-tree.svg?style=svg)](https://circleci.com/gh/w8r/splay-tree)
+  - ## Install
+  - ## API
+  - ## Example
+  - ## Benchmarks
+- **README.md**
+  - # split-string [![NPM version](https://img.shields.io/npm/v/split-string.svg?style=flat)](https://www.npmjs.com/package/split-string) [![NPM monthly downloads](https://img.shields.io/npm/dm/split-string.svg?style=flat)](https://npmjs.org/package/split-string) [![NPM total downloads](https://img.shields.io/npm/dt/split-string.svg?style=flat)](https://npmjs.org/package/split-string) [![Linux Build Status](https://img.shields.io/travis/jonschlinkert/split-string.svg?style=flat&label=Travis)](https://travis-ci.org/jonschlinkert/split-string)
+  - ## Install
+  - ## Usage
+  - ## Options
+  - ### options.brackets
+- **README.md**
+  - # sprintf.js
+  - ## JavaScript `vsprintf`
+  - ## Argument swapping
+  - ## Named arguments
+  - ## Computed values
+- **README.md**
+  - # stable-hash
+  - ## Use
+  - ## Examples
+  - ### Primitive Value
+  - ### Regex
+- **readme.md**
+  - # stack-utils
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### new StackUtils([options])
+- **README.md**
+  - # stop-iteration-iterator <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - # Usage
+  - ## Tests
+- **readme.md**
+  - # string-length
+  - ## Install
+  - ## Usage
+  - ## Related
+- **readme.md**
+  - # string-width
+  - ## Install
+  - ## Usage
+  - ## Related
+- **README.md**
+  - # ES6 `String.prototype.includes` polyfill [![Build status](https://travis-ci.org/mathiasbynens/String.prototype.includes.svg?branch=master)](https://travis-ci.org/mathiasbynens/String.prototype.includes)
+  - ## Installation
+  - ## Notes
+  - ## Author
+  - ## License
+- **README.md**
+  - # string.prototype.matchall <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Tests
+- **README.md**
+  - # ES6 `String.prototype.repeat` polyfill [![Build status](https://travis-ci.org/mathiasbynens/String.prototype.repeat.svg?branch=master)](https://travis-ci.org/mathiasbynens/String.prototype.repeat)
+  - ## Installation
+  - ## Author
+  - ## License
+- **README.md**
+  - # String.prototype.trim <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Engine Bugs
+  - ## Tests
+- **README.md**
+  - # String.prototype.trimEnd <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Tests
+- **README.md**
+  - # String.prototype.trimStart <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Tests
+- **readme.md**
+  - # strip-ansi [![Build Status](https://travis-ci.org/chalk/strip-ansi.svg?branch=master)](https://travis-ci.org/chalk/strip-ansi)
+  - ## Install
+  - ## Usage
+  - ## strip-ansi for enterprise
+  - ## Related
+- **readme.md**
+  - # strip-bom [![Build Status](https://travis-ci.org/sindresorhus/strip-bom.svg?branch=master)](https://travis-ci.org/sindresorhus/strip-bom)
+  - ## Install
+  - ## Usage
+  - ## Related
+  - ## License
+- **readme.md**
+  - # strip-final-newline [![Build Status](https://travis-ci.com/sindresorhus/strip-final-newline.svg?branch=master)](https://travis-ci.com/sindresorhus/strip-final-newline)
+  - ## Install
+  - ## Usage
+  - ## License
+- **readme.md**
+  - # strip-indent [![Build Status](https://travis-ci.org/sindresorhus/strip-indent.svg?branch=master)](https://travis-ci.org/sindresorhus/strip-indent)
+  - ## Install
+  - ## Usage
+  - ## Related
+  - ## License
+- **readme.md**
+  - # strip-json-comments [![Build Status](https://travis-ci.com/sindresorhus/strip-json-comments.svg?branch=master)](https://travis-ci.com/github/sindresorhus/strip-json-comments)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### stripJsonComments(jsonString, options?)
+- **readme.md**
+  - # styled-jsx
+  - ## Getting started
+  - ## Configuration options
+  - #### `optimizeForSpeed`
+  - #### `sourceMaps`
+- **README.md**
+  - # supercluster [![Simply Awesome](https://img.shields.io/badge/simply-awesome-brightgreen.svg)](https://github.com/mourner/projects) [![Build Status](https://travis-ci.com/mapbox/supercluster.svg?branch=main)](https://travis-ci.com/mapbox/supercluster)
+  - ## Install
+  - ## Methods
+  - #### `load(points)`
+  - #### `getClusters(bbox, zoom)`
+- **readme.md**
+  - # supports-color [![Build Status](https://travis-ci.org/chalk/supports-color.svg?branch=master)](https://travis-ci.org/chalk/supports-color)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ## Info
+- **README.md**
+  - # node-supports-preserve-symlinks-flag <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - ## symbol-tree
+  - ### SymbolTree ⏏
+  - #### new SymbolTree([description])
+  - #### symbolTree.initialize(object) ⇒ <code>Object</code>
+  - #### symbolTree.hasChildren(object) ⇒ <code>Boolean</code>
+- **README.md**
+  - # tailwind-merge
+  - ## Get started
+- **README.md**
+  - ## Documentation
+  - ## Community
+  - ## Contributing
+- **README.md**
+  - # Tapable
+  - ## Installation
+  - ## Usage
+  - ## Hook types
+  - ## Interception
+- **README.md**
+  - # node-tar
+  - ## Security Information
+  - ## Background
+  - ## High-Level API
+  - ### Warnings and Errors
+- **README.md**
+  - # test-exclude
+  - ## Usage
+  - ### TestExclude(options)
+  - #### options.cwd
+  - #### options.exclude
+- **README.md**
+  - # tinyglobby
+  - ## Usage
+  - ## Documentation
+- **README.md**
+  - ## tinyqueue
+  - ### Install
+  - ### Thanks
+- **readme.md**
+- **README.md**
+  - # to-regex-range [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=W8YFZ425KND68) [![NPM version](https://img.shields.io/npm/v/to-regex-range.svg?style=flat)](https://www.npmjs.com/package/to-regex-range) [![NPM monthly downloads](https://img.shields.io/npm/dm/to-regex-range.svg?style=flat)](https://npmjs.org/package/to-regex-range) [![NPM total downloads](https://img.shields.io/npm/dt/to-regex-range.svg?style=flat)](https://npmjs.org/package/to-regex-range) [![Linux Build Status](https://img.shields.io/travis/micromatch/to-regex-range.svg?style=flat&label=Travis)](https://travis-ci.org/micromatch/to-regex-range)
+  - ## Install
+  - ### Convenience
+  - ### Heavily tested
+  - ### Optimized
+- **README.md**
+  - # tough-cookie
+  - ## Synopsis
+  - ## Installation
+  - ## Node.js Version Support
+  - ## API
+- **README.md**
+  - # tr46
+  - ## Installation
+  - # or
+  - ## API
+  - ### `toASCII(domainName[, options])`
+- **README.md**
+  - ## Usage
+  - ### API
+  - ## Development
+- **README.md**
+  - ## Getting Started
+  - ## Built With
+  - ## Contributing
+  - ## Versioning
+  - ## Authors/maintainers
+- **README.md**
+  - # tsconfig-paths
+  - ## How to install
+  - ## How to use
+  - ### With node
+  - ### With ts-node
+- **README.md**
+  - # tslib
+  - # Installing
+  - ## npm
+  - # TypeScript 3.9.2 or later
+  - # TypeScript 3.8.4 or earlier
+- **README.md**
+  - # tw-animate-css
+  - ## Table of Contents
+  - ## Getting Started
+  - ### NPM
+  - ### Manual Download
+- **README.md**
+  - # type-check [![Build Status](https://travis-ci.org/gkz/type-check.png?branch=master)](https://travis-ci.org/gkz/type-check)
+  - ## Quick Examples
+  - ## Usage
+  - ### typeCheck(type, input, options)
+  - ##### arguments
+- **README.md**
+  - ## What is Type-Detect?
+  - ## Why?
+  - ## Installation
+  - ### Node.js
+  - ### Browsers
+- **readme.md**
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### Basic
+  - ### Utilities
+- **README.md**
+  - # typed-array-buffer <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # typed-array-byte-offset <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # typed-array-byte-offset <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # typed-array-length <sup>[![Version Badge][2]][1]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # TypeScript
+  - ## Installing
+  - ## Contribute
+  - ## Documentation
+  - ## Roadmap
+- **README.md**
+  - # `typescript-eslint`
+- **README.md**
+  - # typewise
+  - ## Type system
+  - ## Issues
+  - ## License
+- **README.md**
+  - ## License
+- **README.md**
+  - #### Note:
+  - # Command line usage
+  - ### Command line options
+  - ## CLI source map options
+  - ### Composed source map
+- **README.md**
+  - # unbox-primitive <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # undici-types
+- **README.md**
+  - # union-value [![NPM version](https://img.shields.io/npm/v/union-value.svg?style=flat)](https://www.npmjs.com/package/union-value) [![NPM monthly downloads](https://img.shields.io/npm/dm/union-value.svg?style=flat)](https://npmjs.org/package/union-value)  [![NPM total downloads](https://img.shields.io/npm/dt/union-value.svg?style=flat)](https://npmjs.org/package/union-value) [![Linux Build Status](https://img.shields.io/travis/jonschlinkert/union-value.svg?style=flat&label=Travis)](https://travis-ci.org/jonschlinkert/union-value)
+  - ## Install
+  - ## Usage
+  - ## About
+  - ### Related projects
+- **README.md**
+  - # universalify
+  - ## Installation
+  - ## API
+  - ### `universalify.fromCallback(fn)`
+  - ### `universalify.fromPromise(fn)`
+- **README.md**
+  - # UnRS Resolver
+  - ## Usage
+  - ### npm package
+  - ### Supports WASM
+  - ### Rust
+- **README.md**
+  - # Update Browserslist DB
+  - ## Docs
+- **README.md**
+  - # URI.js
+  - ## API
+  - ### Parsing
+  - ### Serializing
+  - ### Resolving
+- **README.md**
+  - # url-parse
+  - ## Installation
+  - ## Usage
+  - ### Url.set(key, value)
+  - ### Url.toString()
+- **README.md**
+  - ## The Problem
+  - ## Table of Contents
+  - ## Installation
+  - ## Usage
+  - ## Other Solutions
+- **README.md**
+  - # useSupercluster
+  - ## Installation
+  - ## Examples
+  - ### Mapbox
+  - ### Google Maps
+- **README.md**
+  - # v8-to-istanbul
+  - ## Usage
+  - ## Ignoring Uncovered Lines
+  - ### ignoring the next line
+  - ### ignoring the next N lines
+- **README.md**
+  - # w3c-xmlserializer
+  - ## Basic usage
+  - ## `requireWellFormed` option
+- **readme.md**
+- **README.md**
+  - # Web IDL Type Conversions on JavaScript Values
+  - ## API
+  - ## Conversions implemented
+  - ### A note on the `long long` types
+  - ### A note on `BufferSource` types
+- **README.md**
+  - # Decode According to the WHATWG Encoding Standard
+  - ## API
+  - ## Unsupported encodings
+  - ## Credits
+  - ## Alternatives
+- **README.md**
+  - # Parse, serialize, and manipulate MIME types
+  - ## `MIMEType` API
+  - ### The `parse()` static factory method
+  - ### Properties
+  - ### Methods
+- **README.md**
+  - ## Specification conformance
+  - ## API
+  - ### The `URL` and `URLSearchParams` classes
+  - ### Low-level URL Standard API
+  - ### `whatwg-url/webidl2js-wrapper` module
+- **README.md**
+  - # which
+  - ## USAGE
+  - ## CLI USAGE
+  - ## OPTIONS
+- **README.md**
+  - # which-boxed-primitive <sup>[![Version Badge][2]][1]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # which-builtin-type <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # which-collection <sup>[![Version Badge][2]][1]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # which-typed-array <sup>[![Version Badge][npm-version-svg]][package-url]</sup>
+  - ## Example
+  - ## Tests
+- **README.md**
+  - # word-wrap [![NPM version](https://img.shields.io/npm/v/word-wrap.svg?style=flat)](https://www.npmjs.com/package/word-wrap) [![NPM monthly downloads](https://img.shields.io/npm/dm/word-wrap.svg?style=flat)](https://npmjs.org/package/word-wrap) [![NPM total downloads](https://img.shields.io/npm/dt/word-wrap.svg?style=flat)](https://npmjs.org/package/word-wrap) [![Linux Build Status](https://img.shields.io/travis/jonschlinkert/word-wrap.svg?style=flat&label=Travis)](https://travis-ci.org/jonschlinkert/word-wrap)
+  - ## Install
+  - ## Usage
+  - ## Options
+  - ### options.width
+- **README.markdown**
+- **readme.md**
+  - # wrap-ansi [![Build Status](https://travis-ci.com/chalk/wrap-ansi.svg?branch=master)](https://travis-ci.com/chalk/wrap-ansi) [![Coverage Status](https://coveralls.io/repos/github/chalk/wrap-ansi/badge.svg?branch=master)](https://coveralls.io/github/chalk/wrap-ansi?branch=master)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### wrapAnsi(string, columns, options?)
+- **README.md**
+  - # wrappy
+  - ## USAGE
+- **README.md**
+  - ### `writeFileAtomic(filename, data, [options], [callback])`
+  - #### Description:
+  - #### Options:
+  - #### Usage:
+  - ### `writeFileAtomicSync(filename, data, [options])`
+- **README.md**
+  - # ws: a Node.js WebSocket library
+  - ## Table of Contents
+  - ## Protocol support
+  - ## Installing
+  - ### Opt-in for performance
+- **README.md**
+  - # Validate XML Names and Qualified Names
+  - ## Usage
+- **README.md**
+  - ## Organization
+  - ## Features
+- **README.md**
+  - # y18n
+  - ## Examples
+  - ## Deno Example
+  - ## JSON Language Files
+  - ## Methods
+- **README.md**
+  - # yallist
+  - ## basic usage
+  - ## api
+  - ### Yallist
+  - ### Yallist.create(..)
+- **README.md**
+  - ## Description
+  - ## Installation
+  - ## Usage
+  - ### Simple Example
+  - #!/usr/bin/env node
+- **README.md**
+  - # yargs-parser
+  - ## Example
+  - ## Deno Example
+  - ## ESM Example
+  - ## API
+- **readme.md**
+  - # yocto-queue [![](https://badgen.net/bundlephobia/minzip/yocto-queue)](https://bundlephobia.com/result?p=yocto-queue)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### `queue = new Queue()`
+- **README.md**
+  - ### [Read the docs →](https://zod.dev/api)
+  - ## What is Zod?
+  - ## Features
+  - ## Installation
+  - ## Basic usage
+- **README.md**
+  - # zod-validation-error
+  - #### Features
+  - ## Installation
+  - #### Requirements
+  - ## Quick start
+- **README.v3.md**
+  - # zod-validation-error
+  - #### Features
+  - ## Installation
+  - #### Requirements
+  - ## Quick start
+- **README.md**
+  - # JSON5 – JSON for Humans
+  - ## Summary of Features
+  - ### Objects
+  - ### Arrays
+  - ### Strings
+- **README.md**
+  - ## Install
+  - ## Usage
+  - ## Versions
+  - ## Ranges
+  - ### Prerelease Tags
+- **readme.md**
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### Basic
+  - ### Utilities
+- **README.md**
+  - ## 🚄 Quickstart
+  - ### Installation
+  - ### Usage
+  - ## Documentation:
+  - ## 📊 Benchmarks:
+- **README.md**
+  - ## Why picomatch?
+  - ## Table of Contents
+  - ## Install
+  - ## Usage
+  - ## API
+- **README.md**
+  - # yallist
+  - ## basic usage
+  - ## api
+  - ### Yallist
+  - ### Yallist.create(..)
+- **README.md**
+  - # emoji-regex [![Build status](https://travis-ci.org/mathiasbynens/emoji-regex.svg?branch=master)](https://travis-ci.org/mathiasbynens/emoji-regex)
+  - ## Installation
+  - ## Author
+  - ## License
+- **readme.md**
+  - # escape-string-regexp [![Build Status](https://travis-ci.org/sindresorhus/escape-string-regexp.svg?branch=master)](https://travis-ci.org/sindresorhus/escape-string-regexp)
+  - ## Install
+  - ## Usage
+  - ## License
+- **README.md**
+  - # extend-shallow [![NPM version](https://img.shields.io/npm/v/extend-shallow.svg?style=flat)](https://www.npmjs.com/package/extend-shallow) [![NPM monthly downloads](https://img.shields.io/npm/dm/extend-shallow.svg?style=flat)](https://npmjs.org/package/extend-shallow) [![NPM total downloads](https://img.shields.io/npm/dt/extend-shallow.svg?style=flat)](https://npmjs.org/package/extend-shallow) [![Linux Build Status](https://img.shields.io/travis/jonschlinkert/extend-shallow.svg?style=flat&label=Travis)](https://travis-ci.org/jonschlinkert/extend-shallow)
+  - ## Install
+  - ## Usage
+  - ## About
+  - ### Related projects
+- **README.md**
+  - # is-extendable [![NPM version](https://img.shields.io/npm/v/is-extendable.svg?style=flat)](https://www.npmjs.com/package/is-extendable) [![NPM monthly downloads](https://img.shields.io/npm/dm/is-extendable.svg?style=flat)](https://npmjs.org/package/is-extendable) [![NPM total downloads](https://img.shields.io/npm/dt/is-extendable.svg?style=flat)](https://npmjs.org/package/is-extendable) [![Linux Build Status](https://img.shields.io/travis/jonschlinkert/is-extendable.svg?style=flat&label=Travis)](https://travis-ci.org/jonschlinkert/is-extendable)
+  - ## Install
+  - ## Usage
+  - ## Notes
+  - ## Release history
+- **README.md**
+  - ## Install
+  - ## Usage
+  - ## Versions
+  - ## Ranges
+  - ### Prerelease Tags
+- **readme.md**
+  - # resolve-from [![Build Status](https://travis-ci.org/sindresorhus/resolve-from.svg?branch=master)](https://travis-ci.org/sindresorhus/resolve-from)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### resolveFrom(fromDirectory, moduleId)
+- **readme.md**
+  - # ansi-styles
+  - ## Install
+  - ## Usage
+  - ## API
+  - ## Styles
+- **README.md**
+  - # `react-is`
+  - ## Installation
+  - # Yarn
+  - # NPM
+  - ## Usage
+- **readme.md**
+  - # find-up [![Build Status](https://travis-ci.org/sindresorhus/find-up.svg?branch=master)](https://travis-ci.org/sindresorhus/find-up)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### findUp(name, options?)
+- **readme.md**
+  - # locate-path [![Build Status](https://travis-ci.org/sindresorhus/locate-path.svg?branch=master)](https://travis-ci.org/sindresorhus/locate-path)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### locatePath(paths, [options])
+- **readme.md**
+  - # p-limit [![Build Status](https://travis-ci.org/sindresorhus/p-limit.svg?branch=master)](https://travis-ci.org/sindresorhus/p-limit)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### pLimit(concurrency)
+- **readme.md**
+  - # p-locate [![Build Status](https://travis-ci.org/sindresorhus/p-locate.svg?branch=master)](https://travis-ci.org/sindresorhus/p-locate)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### pLocate(input, tester, [options])
+- **README.md**
+  - # PostCSS
+  - ## Docs
+- **README.md**
+  - # `react-is`
+  - ## Installation
+  - # Yarn
+  - # NPM
+  - ## Usage
+- **README.md**
+  - # react-refresh
+- **README.md**
+  - # regenerator-runtime
+- **README.md**
+  - # @babel/runtime
+  - ## Install
+- **README.md**
+  - ## Install
+  - ## Usage
+  - ## Versions
+  - ## Ranges
+  - ### Prerelease Tags
+- **readme.md**
+  - # supports-color
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### `require('supports-color').supportsColor(stream, options?)`
+- **readme.md**
+  - # ansi-styles
+  - ## Install
+  - ## Usage
+  - ## API
+  - ## Styles
+- **readme.md**
+  - # camelcase
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### camelCase(input, options?)
+- **README.md**
+  - # pretty-format
+  - ## Installation
+  - ## Usage
+  - ## Usage with options
+  - ## Usage with plugins
+- **README.md**
+  - # `react-is`
+  - ## Installation
+  - # Yarn
+  - # NPM
+  - ## Usage
+- **readme.md**
+  - # ansi-styles
+  - ## Install
+  - ## Usage
+  - ## API
+  - ## Styles
+- **README.md**
+  - # pretty-format
+  - ## Installation
+  - ## Usage
+  - ## Usage with options
+  - ## Usage with plugins
+- **README.md**
+  - # `react-is`
+  - ## Installation
+  - # Yarn
+  - # NPM
+  - ## Usage
+- **README.md**
+  - ## Install
+  - ## Usage
+  - ## Versions
+  - ## Ranges
+  - ### Prerelease Tags
+- **readme.md**
+  - # strip-bom [![Build Status](https://travis-ci.org/sindresorhus/strip-bom.svg?branch=master)](https://travis-ci.org/sindresorhus/strip-bom)
+  - ## Install
+  - ## Usage
+  - ## Security
+  - ## Related
+- **readme.md**
+  - # ansi-styles
+  - ## Install
+  - ## Usage
+  - ## API
+  - ## Styles
+- **README.md**
+  - # pretty-format
+  - ## Installation
+  - ## Usage
+  - ## Usage with options
+  - ## Usage with plugins
+- **README.md**
+  - # `react-is`
+  - ## Installation
+  - # Yarn
+  - # NPM
+  - ## Usage
+- **readme.md**
+  - # ansi-styles
+  - ## Install
+  - ## Usage
+  - ## API
+  - ## Styles
+- **README.md**
+  - # pretty-format
+  - ## Installation
+  - ## Usage
+  - ## Usage with options
+  - ## Usage with plugins
+- **README.md**
+  - # `react-is`
+  - ## Installation
+  - # Yarn
+  - # NPM
+  - ## Usage
+- **readme.md**
+  - # ansi-styles
+  - ## Install
+  - ## Usage
+  - ## API
+  - ## Styles
+- **README.md**
+  - # pretty-format
+  - ## Installation
+  - ## Usage
+  - ## Usage with options
+  - ## Usage with plugins
+- **README.md**
+  - # `react-is`
+  - ## Installation
+  - # Yarn
+  - # NPM
+  - ## Usage
+- **readme.md**
+  - # ansi-styles
+  - ## Install
+  - ## Usage
+  - ## API
+  - ## Styles
+- **README.md**
+  - # pretty-format
+  - ## Installation
+  - ## Usage
+  - ## Usage with options
+  - ## Usage with plugins
+- **README.md**
+  - # `react-is`
+  - ## Installation
+  - # Yarn
+  - # NPM
+  - ## Usage
+- **readme.md**
+  - # ansi-styles
+  - ## Install
+  - ## Usage
+  - ## API
+  - ## Styles
+- **README.md**
+  - # pretty-format
+  - ## Installation
+  - ## Usage
+  - ## Usage with options
+  - ## Usage with plugins
+- **README.md**
+  - # `react-is`
+  - ## Installation
+  - # Yarn
+  - # NPM
+  - ## Usage
+- **readme.md**
+  - # ansi-styles
+  - ## Install
+  - ## Usage
+  - ## API
+  - ## Styles
+- **README.md**
+  - # pretty-format
+  - ## Installation
+  - ## Usage
+  - ## Usage with options
+  - ## Usage with plugins
+- **README.md**
+  - # `react-is`
+  - ## Installation
+  - # Yarn
+  - # NPM
+  - ## Usage
+- **readme.md**
+  - # ansi-styles
+  - ## Install
+  - ## Usage
+  - ## API
+  - ## Styles
+- **README.md**
+  - # pretty-format
+  - ## Installation
+  - ## Usage
+  - ## Usage with options
+  - ## Usage with plugins
+- **README.md**
+  - # `react-is`
+  - ## Installation
+  - # Yarn
+  - # NPM
+  - ## Usage
+- **README.md**
+  - ## Install
+  - ## Usage
+  - ## Versions
+  - ## Ranges
+  - ### Prerelease Tags
+- **README.md**
+  - ## Install
+  - ## Usage
+  - ## Versions
+  - ## Ranges
+  - ### Prerelease Tags
+- **README.md**
+- **README.md**
+- **README.md**
+  - # flatted (Go)
+  - ## Usage
+  - ## CLI
+- **README.md**
+  - # glob-parent
+  - ## Usage
+  - ## API
+  - ### `globParent(maybeGlobString, [options])`
+  - #### options
+- **readme.markdown**
+  - # resolve <sup>[![Version Badge][2]][1]</sup>
+  - # example
+  - # methods
+  - ## resolve(id, opts={}, cb)
+  - ## resolve.sync(id, opts)
+- **README.md**
+  - # eslint-plugin-import/memo-parser
+  - ## NOTE
+  - # parser: babel-eslint
+- **README.md**
+  - # debug
+  - ## Installation
+  - ## Usage
+  - #### Windows command prompt notes
+  - ##### CMD
+- **README.md**
+  - # debug
+  - ## Installation
+  - ## Usage
+  - #### Windows command prompt notes
+  - ##### CMD
+- **README.md**
+  - # debug
+  - ## Installation
+  - ## Usage
+  - #### Windows command prompt notes
+  - ##### CMD
+- **README.mdown**
+  - # CSSOM
+  - ## [Parser demo](http://nv.github.com/CSSOM/docs/parse.html)
+  - ## Don’t use it if...
+  - ## [Tests](http://nv.github.com/CSSOM/spec/)
+  - ## [Who uses CSSOM.js](https://github.com/NV/CSSOM/wiki/Who-uses-CSSOM.js)
+- **readme.md**
+  - # ansi-styles
+  - ## Install
+  - ## Usage
+  - ## API
+  - ## Styles
+- **README.md**
+  - # pretty-format
+  - ## Installation
+  - ## Usage
+  - ## Usage with options
+  - ## Usage with plugins
+- **README.md**
+  - # `react-is`
+  - ## Installation
+  - # Yarn
+  - # NPM
+  - ## Usage
+- **README.md**
+  - ## istanbul-lib-instrument
+- **README.md**
+  - # Localizations
+- **README.md**
+- **README.md**
+  - # `@unrs/resolver-binding-win32-x64-msvc`
+- **README.md**
+  - # `@typescript-eslint/eslint-plugin`
+- **README.md**
+  - # `@typescript-eslint/parser`
+- **README.md**
+  - # `@typescript-eslint/project-service`
+- **README.md**
+  - # `@typescript-eslint/scope-manager`
+- **README.md**
+  - # `@typescript-eslint/tsconfig-utils`
+- **README.md**
+  - # `@typescript-eslint/type-utils`
+- **README.md**
+  - # `@typescript-eslint/types`
+  - ## ✋ Internal Package
+- **README.md**
+  - # `@typescript-eslint/typescript-estree`
+  - ## Contributing
+- **README.md**
+  - # `@typescript-eslint/utils`
+- **README.md**
+  - # `@typescript-eslint/visitor-keys`
+  - ## ✋ Internal Package
+- **README.md**
+  - # eslint-visitor-keys
+  - ## 💿 Installation
+  - ### Requirements
+  - ## 📖 Usage
+  - ### evk.KEYS
+- **README.md**
+  - # balanced-match
+  - ## Example
+  - ## API
+  - ### const m = balanced(a, b, str)
+  - ### const r = balanced.range(a, b, str)
+- **README.md**
+  - # brace-expansion
+  - ## Example
+  - ## API
+  - ### const expanded = expand(str, [options])
+- **README.md**
+  - # minimatch
+  - ## Important Security Consideration!
+  - ## Usage
+  - ## Features
+  - ## Windows
+- **README.md**
+  - ## Install
+  - ## Usage
+  - ## Versions
+  - ## Ranges
+  - ### Prerelease Tags
+- **README.md**
+  - # ignore
+  - ### Tested on
+  - ## Table Of Main Contents
+  - ## Install
+  - ## Usage
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ## [index.d.ts](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/graceful-fs/index.d.ts)
+  - ### Additional Details
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ## [index.d.ts](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/istanbul-reports/index.d.ts)
+  - ### Additional Details
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ## [index.d.ts](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/stack-utils/index.d.ts)
+  - ### Additional Details
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **readme.md**
+  - # ansi-styles
+  - ## Install
+  - ## Usage
+  - ## API
+  - ## Styles
+- **README.md**
+  - # pretty-format
+  - ## Installation
+  - ## Usage
+  - ## Usage with options
+  - ## Usage with plugins
+- **README.md**
+  - # `react-is`
+  - ## Installation
+  - # Yarn
+  - # NPM
+  - ## Usage
+- **README.md**
+  - # @tybys/wasm-util
+  - ## Features
+  - ### WASI polyfill for browser
+  - ### `load` / `loadSync`
+  - ### Extend Memory instance
+- **README.md**
+  - # @tootallnate/once
+  - ### Creates a Promise that waits for a single event
+  - ## Installation
+  - ## API
+  - ### once(emitter: EventEmitter, name: string, opts?: OnceOptions): Promise&lt;[...Args]&gt;
+- **README.md**
+  - ## Table of Contents
+  - ## The Problem
+  - ## This Solution
+  - ## Installation
+  - ## Documentation
+- **README.md**
+  - ## The problem
+  - ## This solution
+  - ## Table of Contents
+  - ## Installation
+  - ## Usage
+- **README.md**
+  - ## Table of Contents
+  - ## The problem
+  - ## The solution
+  - ## Installation
+  - ### Suppressing unnecessary warnings on React DOM 16.8
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # ARIA Query
+  - ## Building the `src/etc` files
+  - ## Utilities
+  - ### Interface
+  - ### Roles
+- **README.md**
+  - # dom-accessibility-api
+  - ## Supported environments
+  - ## progress
+  - ### browser (Chrome)
+  - ### jsdom
+- **README.md**
+  - ## Documentation
+  - ## Community
+  - ## Contributing
+- **README.md**
+  - # `@tailwindcss/oxide-win32-x64-msvc`
+- **README.md**
+  - ## Documentation
+  - ## Community
+  - ## Contributing
+- **README.md**
+  - # commons
+  - ## Rules
+- **README.md**
+  - # `@sinonjs/fake-timers`
+  - ## Autocomplete, IntelliSense and TypeScript definitions
+  - ## Installation
+  - ## Usage
+  - ### Faking the native timers
+- **README.md**
+  - # Prototypes
+  - ## Without cached references
+  - ## With cached references
+- **readme.md**
+  - ## Install
+  - #### Npm
+  - #### Deno
+  - #### Esm
+  - ## Example
+- **README.md**
+  - # `@rtsao/scc`
+  - ## Installation
+  - ## Usage
+  - #### Illustration of example input digraph
+- **README.md**
+  - # 🎭 Playwright
+  - ## [Documentation](https://playwright.dev) | [API reference](https://playwright.dev/docs/api/class-playwright)
+  - ## Installation
+  - ### Using init command
+  - # Run from your project's root directory
+- **README.md**
+  - # @nodelib/fs.scandir
+  - ## :bulb: Highlights
+  - ## Install
+  - ## Usage
+  - ## API
+- **README.md**
+  - # @nodelib/fs.stat
+  - ## :bulb: Highlights
+  - ## Install
+  - ## Usage
+  - ## API
+- **README.md**
+  - # @nodelib/fs.walk
+  - ## :bulb: Highlights
+  - ## Install
+  - ## Usage
+  - ## API
+- **README.md**
+  - # `@next/env`
+- **README.md**
+  - # `@next/eslint-plugin-next`
+- **README.md**
+  - # `@next/swc-win32-x64-msvc`
+- **README.md**
+  - # MapLibre Style Specification & Utilities
+  - ## Contributing
+  - ## NPM Package
+  - ## CLI Tools
+  - ### `gl-style-migrate`
+- **README.md**
+  - ## Filter
+  - ### API
+  - #### Parameters
+  - ### Usage
+- **README.md**
+- **README.md**
+  - # Mapbox GL JS Supported
+  - ## Testing Your Browser
+  - ## Using Mapbox GL JS Supported with a `<script>` tag
+  - ## Using Mapbox GL JS Supported with [Browserify](http://browserify.org/)
+- **README.md**
+  - # @mapbox/point-geometry
+  - ## Installation
+  - ## API
+  - ### Point
+  - #### Parameters
+- **README.md**
+  - # TinySDF [![Volodymyr Agafonkin's projects](https://img.shields.io/badge/simply-awesome-brightgreen.svg)](https://github.com/mourner/projects) [![Node](https://github.com/mapbox/tiny-sdf/actions/workflows/node.yml/badge.svg)](https://github.com/mapbox/tiny-sdf/actions/workflows/node.yml)
+  - ## [Demo](http://mapbox.github.io/tiny-sdf)
+  - ## Usage
+  - ## Development
+  - ## License
+- **README.md**
+  - # unitbezier
+  - ## api
+  - ### new UnitBezier(p1x, p1y, p2x, p2y)
+  - ### bezier.solve(x, epsilon)
+- **README.md**
+  - # vector-tile
+  - ## Example
+  - ## Install
+  - ## API Reference
+  - ### VectorTile
+- **README.md**
+  - # @jridgewell/gen-mapping
+  - ## Installation
+  - ## Usage
+  - ### Smaller Sourcemaps
+  - ## Benchmarks
+- **README.md**
+  - # @jridgewell/remapping
+  - ## Installation
+  - ## Usage
+  - ### Multiple transformations of a file
+  - ### Advanced control of the loading graph
+- **README.md**
+  - # @jridgewell/resolve-uri
+  - ## Installation
+  - ## Usage
+- **README.md**
+  - # @jridgewell/sourcemap-codec
+  - ## Why?
+  - ## Installation
+  - ## Usage
+  - ## Benchmarks
+- **README.md**
+  - # @jridgewell/trace-mapping
+  - ## Installation
+  - ## Usage
+  - ### SectionedSourceMaps
+  - ## Benchmarks
+- **README.md**
+  - # @jest/core
+- **README.md**
+  - # @jest/expect
+- **README.md**
+  - # `@jest/expect-utils`
+- **README.md**
+  - # `@jest/schemas`
+- **README.md**
+  - # @jest/types
+- **readme.md**
+  - # ansi-styles
+  - ## Install
+  - ## Usage
+  - ## API
+  - ## Styles
+- **README.md**
+  - # pretty-format
+  - ## Installation
+  - ## Usage
+  - ## Usage with options
+  - ## Usage with plugins
+- **README.md**
+  - # `react-is`
+  - ## Installation
+  - # Yarn
+  - # NPM
+  - ## Usage
+- **README.md**
+  - # @istanbuljs/load-nyc-config
+  - ## loadNycConfig([options])
+  - ### options.cwd
+  - ### options.nycrcPath
+  - ## Configuration merging
+- **README.md**
+  - # @istanbuljs/schema
+  - ## Usage
+  - ## `@istanbuljs/schema` for enterprise
+- **README.md**
+  - #!/usr/bin/env node
+  - #!/usr/bin/env node
+- **readme.md**
+  - # find-up [![Build Status](https://travis-ci.org/sindresorhus/find-up.svg?branch=master)](https://travis-ci.org/sindresorhus/find-up)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### findUp(name, options?)
+- **README.md**
+  - ### YAML module for node.js
+  - ### CLI executable
+  - #### Usage
+  - ### Bundled YAML library for browsers
+  - ### safeLoad (string [ , options ])
+- **readme.md**
+  - # locate-path [![Build Status](https://travis-ci.org/sindresorhus/locate-path.svg?branch=master)](https://travis-ci.org/sindresorhus/locate-path)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### locatePath(paths, [options])
+- **readme.md**
+  - # p-limit [![Build Status](https://travis-ci.org/sindresorhus/p-limit.svg?branch=master)](https://travis-ci.org/sindresorhus/p-limit)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### pLimit(concurrency)
+- **readme.md**
+  - # p-locate [![Build Status](https://travis-ci.org/sindresorhus/p-locate.svg?branch=master)](https://travis-ci.org/sindresorhus/p-locate)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### pLocate(input, tester, [options])
+- **readme.md**
+  - # resolve-from [![Build Status](https://travis-ci.org/sindresorhus/resolve-from.svg?branch=master)](https://travis-ci.org/sindresorhus/resolve-from)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### resolveFrom(fromDirectory, moduleId)
+- **README.md**
+  - # fs-minipass
+  - ## USAGE
+  - ## ReadStream(path, options)
+  - ## WriteStream(path, options)
+- **README.md**
+  - # `@img/colour`
+- **README.md**
+  - # `@img/sharp-win32-x64`
+  - ## Licensing
+- **README.md**
+  - # ModuleImporter
+  - ## Description
+  - ## Usage
+  - ### Node.js
+  - # or
+- **README.md**
+  - # Retry utility
+  - ## Description
+  - ## Usage
+  - ### Node.js
+  - # or
+- **README.md**
+  - # `@humanfs/core`
+  - ## Description
+  - ## Installation
+  - ### Node.js
+  - # or
+- **README.md**
+  - # `@humanfs/node`
+  - ## Description
+  - ## Installation
+  - # or
+  - # or
+- **README.md**
+  - # @eslint-community/eslint-utils
+  - ## 🏁 Goal
+  - ## 📖 Usage
+  - ## 📰 Changelog
+  - ## ❤️ Contributing
+- **README.md**
+  - # @eslint-community/regexpp
+  - ## 💿 Installation
+  - ## 📖 Usage
+  - ### parseRegExpLiteral(source, options?)
+  - ### validateRegExpLiteral(source, options?)
+- **README.md**
+  - # eslint-visitor-keys
+  - ## 💿 Installation
+  - ### Requirements
+  - ## 📖 Usage
+  - ### evk.KEYS
+- **README.md**
+  - # Config Array
+  - ## Description
+  - ## Installation
+  - # or
+  - # or
+- **README.md**
+  - # @eslint/config-helpers
+  - ## Description
+  - ## Installation
+  - # or
+  - # or
+- **README.md**
+  - # ESLint Core
+  - ## Overview
+  - ## License
+  - ## Sponsors
+- **README.md**
+  - # ESLintRC Library
+  - ## Installation
+  - # or
+  - # or
+  - # or
+- **README.md**
+  - # ESLint JavaScript Plugin
+  - ## Installation
+  - # or
+  - # or
+  - # or
+- **README.md**
+  - # ObjectSchema Package
+  - ## Overview
+  - ## Installation
+  - # or
+  - # or
+- **README.md**
+  - # ESLint Plugin Kit
+  - ## Description
+  - ## Installation
+  - # or
+  - # or
+- **readme.md**
+  - # globals
+  - ## Install
+  - ## Usage
+- **README.md**
+- **README.md**
+- **README.md**
+  - # @emnapi/wasi-threads
+  - ## Quick Start
+- **README.md**
+  - # V8 Coverage
+  - ## License
+- **README.md**
+  - # V8 Coverage
+  - ## License
+- **README.md**
+  - # @babel/code-frame
+  - ## Install
+- **README.md**
+  - # @babel/compat-data
+  - ## Install
+- **README.md**
+  - # @babel/core
+  - ## Install
+- **README.md**
+  - # @babel/generator
+  - ## Install
+- **README.md**
+  - # @babel/helper-compilation-targets
+  - ## Install
+- **README.md**
+  - # @babel/helper-globals
+  - ## Install
+- **README.md**
+  - # @babel/helper-module-imports
+  - ## Install
+- **README.md**
+  - # @babel/helper-module-transforms
+  - ## Install
+- **README.md**
+  - # @babel/helper-plugin-utils
+  - ## Install
+- **README.md**
+  - # @babel/helper-string-parser
+  - ## Install
+- **README.md**
+  - # @babel/helper-validator-identifier
+  - ## Install
+- **README.md**
+  - # @babel/helper-validator-option
+  - ## Install
+- **README.md**
+  - # @babel/helpers
+  - ## Install
+- **README.md**
+  - # @babel/parser
+  - ## Install
+- **README.md**
+  - # @babel/plugin-syntax-async-generators
+  - ## Install
+- **README.md**
+  - # @babel/plugin-syntax-bigint
+  - ## Install
+- **README.md**
+  - # @babel/plugin-syntax-class-properties
+  - ## Install
+- **README.md**
+  - # @babel/plugin-syntax-class-static-block
+  - ## Install
+- **README.md**
+  - # @babel/plugin-syntax-import-attributes
+  - ## Install
+- **README.md**
+  - # @babel/plugin-syntax-import-meta
+  - ## Install
+- **README.md**
+  - # @babel/plugin-syntax-json-strings
+  - ## Install
+- **README.md**
+  - # @babel/plugin-syntax-jsx
+  - ## Install
+- **README.md**
+  - # @babel/plugin-syntax-logical-assignment-operators
+  - ## Install
+- **README.md**
+  - # @babel/plugin-syntax-nullish-coalescing-operator
+  - ## Install
+- **README.md**
+  - # @babel/plugin-syntax-numeric-separator
+  - ## Install
+- **README.md**
+  - # @babel/plugin-syntax-object-rest-spread
+  - ## Install
+- **README.md**
+  - # @babel/plugin-syntax-optional-catch-binding
+  - ## Install
+- **README.md**
+  - # @babel/plugin-syntax-optional-chaining
+  - ## Install
+- **README.md**
+  - # @babel/plugin-syntax-private-property-in-object
+  - ## Install
+- **README.md**
+  - # @babel/plugin-syntax-top-level-await
+  - ## Install
+- **README.md**
+  - # @babel/plugin-syntax-typescript
+  - ## Install
+- **README.md**
+  - # @babel/runtime
+  - ## Install
+- **README.md**
+  - # @babel/template
+  - ## Install
+- **README.md**
+  - # @babel/traverse
+  - ## Install
+- **README.md**
+  - # @babel/types
+  - ## Install
+- **README.md**
+  - # @ampproject/remapping
+  - ## Installation
+  - ## Usage
+  - ### Multiple transformations of a file
+  - ### Advanced control of the loading graph
+- **readme.md**
+  - # quick-lru [![Build Status](https://travis-ci.org/sindresorhus/quick-lru.svg?branch=master)](https://travis-ci.org/sindresorhus/quick-lru) [![Coverage Status](https://coveralls.io/repos/github/sindresorhus/quick-lru/badge.svg?branch=master)](https://coveralls.io/github/sindresorhus/quick-lru?branch=master)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### new QuickLRU(options?)
+- **README.md**
+  - # @adobe/css-tools
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### `parse(code, options?)`
+- **README_TEMPORAL_NAVIGATION.md**
+  - # Temporal Navigation & Scrubbing Controls v1.0
+  - ## Overview
+  - ### Key Capabilities
+  - ## Architecture
+  - ## Files & Responsibilities
+- **README.md**
+  - # abbrev-js
+- **README.md**
+  - ### Turn a function into an [`http.Agent`][http.Agent] instance
+  - #### Some subclasses:
+- **README.md**
+  - # alien-signals
+  - ## Background
+  - ## Derived Projects
+  - ## Adoption
+  - ## Usage
+- **readme.md**
+  - # ansi-regex
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### ansiRegex(options?)
+- **readme.md**
+  - # ansi-styles
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### `open` and `close`
+- **README.md**
+  - ## What is AssertionError?
+  - ## Installation
+  - ### Node.js
+  - ### Deno
+- **README.md**
+  - # balanced-match
+  - ## Example
+  - ## API
+  - ### var m = balanced(a, b, str)
+  - ### var r = balanced.range(a, b, str)
+- **README.md**
+  - # brace-expansion
+  - ## Example
+  - ## API
+  - ### var expanded = expand(str)
+  - ## Installation
+- **README.md**
+  - ## Introduction
+  - ## Features
+  - ## Table of Contents
+  - ## Install
+  - ## Usage
+- **README.md**
+  - ## What is Chai?
+  - ## Installation
+  - ### Node.js
+  - ### Browsers
+  - ## Usage
+- **README.md**
+  - # cheap-ruler [![Node](https://github.com/mapbox/cheap-ruler/actions/workflows/node.yml/badge.svg)](https://github.com/mapbox/cheap-ruler/actions/workflows/node.yml) [![](https://img.shields.io/badge/simply-awesome-brightgreen.svg)](https://github.com/mourner/projects)
+  - ## Usage
+  - ### Creating a ruler object
+  - #### new CheapRuler(latitude[, units])
+  - #### CheapRuler.fromTile(y, z[, units])
+- **README.md**
+  - ## What is Check-Error?
+  - ## Installation
+  - ### Node.js
+  - ### Browsers
+  - ## Usage
+- **README.md**
+  - # Chokidar [![Weekly downloads](https://img.shields.io/npm/dw/chokidar.svg)](https://github.com/paulmillr/chokidar)
+  - ## Why?
+  - ## Getting started
+  - #### Persistence
+  - #### Path filtering
+- **README.md**
+  - # color-convert
+  - # Install
+  - # API
+  - ### Arrays
+  - ## Routing
+- **README.md**
+- **README.json**
+- **README.md**
+  - # Color.js: Let’s get serious about color
+  - ## Features
+  - ## Impact
+  - ## Installation
+  - ## Reading colors
+- **Readme.md**
+  - # Commander.js
+  - ## Installation
+  - ## Quick Start
+  - ## Declaring _program_ variable
+  - ## Options
+- **readme.markdown**
+  - # config-chain
+  - ## NOTE: Feature Freeze
+  - ## Install
+  - # npm users
+  - ## Usage
+- **README.md**
+  - # cross-spawn
+  - ## Installation
+  - ## Why
+  - ## Usage
+  - ## Caveats
+- **README**
+- **README.md**
+  - # CSSStyleDeclaration
+  - ## Background
+- **README.md**
+  - # CSSType
+  - ## Getting started
+  - ## Table of content
+  - ## Style types
+  - ## At-rule types
+- **README.md**
+  - # Parse `data:` URLs
+  - ## API
+  - ### Decoding the body
+  - ### Advanced functionality: parsing from a URL record
+- **README.md**
+  - # debug
+  - ## Installation
+  - ## Usage
+  - #### Windows command prompt notes
+  - ##### CMD
+- **README.md**
+  - ## Features
+  - ## Load
+  - ## Use
+  - ## Test
+  - ## Minify
+- **README.md**
+  - ## What is Deep-Eql?
+  - ## Installation
+  - ### Node.js
+  - ## Usage
+  - ### Rules
+- **README.md**
+  - # detect-libc
+  - ## Install
+  - ## API
+  - ### GLIBC
+  - ### MUSL
+- **README.md**
+  - ## Earcut
+  - #### The algorithm
+  - #### Why another triangulation library?
+  - #### Usage
+  - #### Install
+- **README.md**
+  - # East Asian Width
+  - ## Install
+  - ## Usage
+- **README.md**
+  - # EditorConfig JavaScript Core
+  - ## Installation
+  - ## Usage
+  - ### Options
+  - ### in Node.js:
+- **README.md**
+  - # emoji-regex [![Build status](https://travis-ci.org/mathiasbynens/emoji-regex.svg?branch=main)](https://travis-ci.org/mathiasbynens/emoji-regex)
+  - ## Installation
+  - ## Regular expression flavors
+  - ## For maintainers
+  - ### How to update emoji-regex after new Unicode Standard releases
+- **readme.md**
+  - # entities [![NPM version](https://img.shields.io/npm/v/entities.svg)](https://npmjs.org/package/entities) [![Downloads](https://img.shields.io/npm/dm/entities.svg)](https://npmjs.org/package/entities) [![Node.js CI](https://github.com/fb55/entities/actions/workflows/nodejs-test.yml/badge.svg)](https://github.com/fb55/entities/actions/workflows/nodejs-test.yml)
+  - ## Features
+  - ## How to…
+  - ### …install `entities`
+  - ### …use `entities`
+- **README.md**
+  - # ES Module Lexer
+  - ### Usage
+  - ### CSP asm.js Build
+  - ### Escape Sequences
+  - ### Facade Detection
+- **README.md**
+  - # esbuild
+- **README.md**
+  - # estree-walker
+  - ## Installation
+  - ## Usage
+  - ## Why not use estraverse?
+  - ## License
+- **README.md**
+  - # expect-type
+  - ## Contents
+  - ## Installation and usage
+  - ## Documentation
+  - ### Features
+- **README.md**
+  - # foreground-child
+  - ## USAGE
+  - ## Caveats
+  - ## util: `foreground-child/proxy-signals`
+  - ## util: `foreground-child/watchdog`
+- **README.md**
+  - ## geojson-vt &mdash; GeoJSON Vector Tiles
+  - ### Demo
+  - ### Usage
+  - ### Options
+  - ### Install
+- **README.md**
+- **README.md**
+  - # Glob
+  - ## Usage
+  - ## Command Line Interface
+  - ## `glob(pattern: string | string[], options?: GlobOptions) => Promise<string[] | Path[]>`
+  - ## `globSync(pattern: string | string[], options?: GlobOptions) => string[] | Path[]`
+- **README.md**
+  - # grid-index
+  - ## Example
+  - ## API
+  - ### `GridIndex(extent, n, padding)`
+  - ### `GridIndex(arrayBuffer)`
+- **readme.md**
+  - # has-flag [![Build Status](https://travis-ci.org/sindresorhus/has-flag.svg?branch=master)](https://travis-ci.org/sindresorhus/has-flag)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### hasFlag(flag, [argv])
+- **README.md**
+  - # he [![Build status](https://travis-ci.org/mathiasbynens/he.svg?branch=master)](https://travis-ci.org/mathiasbynens/he) [![Code coverage status](https://codecov.io/github/mathiasbynens/he/coverage.svg?branch=master)](https://codecov.io/github/mathiasbynens/he?branch=master) [![Dependency status](https://gemnasium.com/mathiasbynens/he.svg)](https://gemnasium.com/mathiasbynens/he)
+  - ## Installation
+  - ## API
+  - ### `he.version`
+  - ### `he.encode(text, options)`
+- **README.md**
+  - # Determine the Encoding of a HTML Byte Stream
+  - ## Options
+  - ## Credits
+- **README.md**
+  - ### An HTTP(s) proxy `http.Agent` implementation for HTTP
+  - ### new HttpProxyAgent(proxy: string | URL, options?: HttpProxyAgentOptions)
+- **README.md**
+  - ### An HTTP(s) proxy `http.Agent` implementation for HTTPS
+  - #### `https` module example
+  - #### `ws` WebSocket connection example
+  - ### new HttpsProxyAgent(proxy: string | URL, options?: HttpsProxyAgentOptions)
+- **README.md**
+  - ## iconv-lite: Pure JS character encoding conversion
+  - ## Usage
+  - ### Basic API
+  - ### Streaming API
+  - ## Supported encodings
+- **README.md**
+  - # Immutable collections for JavaScript
+  - ## Introduction
+  - ## Getting started
+  - # using npm
+  - # using Yarn
+- **README.md**
+  - ## Usage
+  - ## API
+  - ### decode(inistring)
+  - ### parse(inistring)
+  - ### encode(object, [options])
+- **README.md**
+  - # is-extglob [![NPM version](https://img.shields.io/npm/v/is-extglob.svg?style=flat)](https://www.npmjs.com/package/is-extglob) [![NPM downloads](https://img.shields.io/npm/dm/is-extglob.svg?style=flat)](https://npmjs.org/package/is-extglob) [![Build Status](https://img.shields.io/travis/jonschlinkert/is-extglob.svg?style=flat)](https://travis-ci.org/jonschlinkert/is-extglob)
+  - ## Install
+  - ## Usage
+  - ## History
+  - ## About
+- **readme.md**
+  - # is-fullwidth-code-point [![Build Status](https://travis-ci.org/sindresorhus/is-fullwidth-code-point.svg?branch=master)](https://travis-ci.org/sindresorhus/is-fullwidth-code-point)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### isFullwidthCodePoint(codePoint)
+- **README.md**
+  - # is-glob [![NPM version](https://img.shields.io/npm/v/is-glob.svg?style=flat)](https://www.npmjs.com/package/is-glob) [![NPM monthly downloads](https://img.shields.io/npm/dm/is-glob.svg?style=flat)](https://npmjs.org/package/is-glob) [![NPM total downloads](https://img.shields.io/npm/dt/is-glob.svg?style=flat)](https://npmjs.org/package/is-glob) [![Build Status](https://img.shields.io/github/workflow/status/micromatch/is-glob/dev)](https://github.com/micromatch/is-glob/actions)
+  - ## Install
+  - ## Usage
+  - ### Default behavior
+  - ### Option strict
+- **README.md**
+  - # is-potential-custom-element-name [![Build status](https://travis-ci.org/mathiasbynens/is-potential-custom-element-name.svg?branch=master)](https://travis-ci.org/mathiasbynens/is-potential-custom-element-name)
+  - ## Installation
+  - ## Usage
+  - ## Author
+  - ## License
+- **README.md**
+  - # isexe
+  - ## USAGE
+  - ## API
+  - ### `isexe(path, [options], [callback])`
+  - ### `isexe.sync(path, [options])`
+- **README.md**
+  - # jackspeak
+  - ## USAGE
+  - ## `jack(options: JackOptions = {}) => Jack`
+  - ### `Jack.heading(text: string, level?: 1 | 2 | 3 | 4 | 5 | 6)`
+  - ### `Jack.description(text: string, { pre?: boolean } = {})`
+- **README.md**
+  - # Contributors Needed
+  - # Installation
+  - ## Node.js JavaScript
+  - ## Node.js JavaScript (vNext)
+  - ## Web Library
+- **README.md**
+  - # JavaScript Cookie [![CI](https://github.com/js-cookie/js-cookie/actions/workflows/ci.yml/badge.svg)](https://github.com/js-cookie/js-cookie/actions/workflows/ci.yml) [![BrowserStack](https://github.com/js-cookie/js-cookie/actions/workflows/browserstack.yml/badge.svg)](https://github.com/js-cookie/js-cookie/actions/workflows/browserstack.yml) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com) [![Code Climate](https://codeclimate.com/github/js-cookie/js-cookie.svg)](https://codeclimate.com/github/js-cookie/js-cookie) [![npm](https://img.shields.io/github/package-json/v/js-cookie/js-cookie)](https://www.npmjs.com/package/js-cookie) [![size](https://img.shields.io/bundlephobia/minzip/js-cookie/3)](https://www.npmjs.com/package/js-cookie) [![jsDelivr Hits](https://data.jsdelivr.com/v1/package/npm/js-cookie/badge?style=rounded)](https://www.jsdelivr.com/package/npm/js-cookie)
+  - ## Installation
+  - ### NPM
+  - ### CDN
+  - ## Basic Usage
+- **README.md**
+  - ## Basic usage
+  - ## Customizing jsdom
+  - ### Simple options
+  - ### Executing scripts
+  - ### Pretending to be a visual browser
+- **README.md**
+  - ## KDBush
+  - ## Usage
+  - ## Install
+  - ## API
+  - #### new KDBush(numItems[, nodeSize, ArrayType])
+- **README.md**
+  - # What is loupe?
+  - ## Installation
+  - ### Node.js
+  - ### Browsers
+  - ## Usage
+- **README.md**
+  - # lru-cache
+  - ## Installation
+  - ## Usage
+  - ## Storage Bounds Safety
+  - ## Storing Undefined Values
+- **README.md**
+  - # magic-string
+  - ## Installation
+  - ## Usage
+  - ## Properties
+  - ### s.offset
+- **README.md**
+  - ## License
+- **README.md**
+  - # Martinez-Rueda polygon clipping algorithm [![npm version](https://badge.fury.io/js/martinez-polygon-clipping.svg)](https://badge.fury.io/js/martinez-polygon-clipping)
+  - ## Details
+  - ### Example
+  - ### API
+  - ### Benchmarks
+- **README.md**
+  - # minimatch
+  - ## Important Security Consideration!
+  - ## Usage
+  - ## Features
+  - ## Windows
+- **README.md**
+  - # minipass
+  - ## Usage in TypeScript
+  - ## Differences from Node.js Streams
+  - ### Timing
+  - ### Exception: Async Opt-In
+- **readme.md**
+  - # ms
+  - ## Examples
+  - ### Convert from Milliseconds
+  - ### Time Format Written-Out
+  - ## Features
+- **README.md**
+  - ## Why "Muggle"?
+  - ## Usage
+- **README.md**
+  - # MurmurHash.js
+  - ## Install
+  - ## API
+  - ### Methods
+  - #### `murmur.murmur2(key, seed)`
+- **README.md**
+  - # Nano ID
+  - ## Docs
+- **README.md**
+  - # **node-addon-api module**
+  - ## **Current version: 7.1.1**
+  - ## Setup
+  - ### **API Documentation**
+  - ### **Examples**
+- **README.md**
+  - ## USAGE
+  - # if Array is one of the types, then it can take many
+  - # values, and will always be an array.  The other types provided
+  - # specify what types are allowed in the list.
+  - ## Types
+- **README.md**
+  - # [NWSAPI](http://dperini.github.io/nwsapi/)
+  - ## Installation
+  - ## Supported Selectors
+  - ## Features and Compliance
+  - ## API
+- **README.md**
+  - # package-json-from-dist
+  - ## Caveats
+  - ## USAGE
+- **README.md**
+- **README.md**
+  - # path-browserify [![Build Status](https://travis-ci.org/browserify/path-browserify.png?branch=master)](https://travis-ci.org/browserify/path-browserify)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ## Contributing
+- **readme.md**
+  - # path-key [![Build Status](https://travis-ci.org/sindresorhus/path-key.svg?branch=master)](https://travis-ci.org/sindresorhus/path-key)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### pathKey(options?)
+- **README.md**
+  - # path-scurry
+  - ## Ugh, yet another file traversal thing on npm?
+  - ## Well what is it you wanted?
+  - ## PERFORMANCE
+  - # walk 100,000 fs entries, 10/1 file/dir ratio
+- **README.md**
+  - # 🛣️ pathe
+  - ## 💿 Usage
+  - # npm
+  - # yarn
+  - # pnpm
+- **README.md**
+  - ## What is pathval?
+  - ## Installation
+  - ### Node.js
+  - ### Browsers
+  - ## Usage
+- **README.md**
+  - # pbf
+  - ## Performance
+  - ## Examples
+  - #### Using Compiled Code
+  - #### Custom Reading
+- **README.md**
+  - # picocolors
+  - ## Docs
+- **README.md**
+  - ## Why picomatch?
+  - ## Table of Contents
+  - ## Install
+  - ## Usage
+  - ## API
+- **README.md**
+  - # PostCSS
+  - ## Docs
+- **README.md**
+  - # potpack
+  - ## [Demo](https://mapbox.github.io/potpack/)
+  - ## Example usage
+  - ## Install
+- **README.md**
+- **README.md**
+  - # protocol-buffers-schema
+  - ## Usage
+  - ## API
+  - #### `schema.parse(protobufSchemaBufferOrString)`
+  - #### `schema.stringify(schema)`
+- **README.md**
+  - # Punycode.js [![punycode on npm](https://img.shields.io/npm/v/punycode)](https://www.npmjs.com/package/punycode) [![](https://data.jsdelivr.com/v1/package/npm/punycode/badge)](https://www.jsdelivr.com/package/npm/punycode)
+  - ## Installation
+  - ## API
+  - ### `punycode.decode(string)`
+  - ### `punycode.encode(string)`
+- **README.md**
+  - # Quasar Framework UI Package
+  - ## Supporting Quasar
+  - ## Documentation
+  - ## Stay in Touch
+  - ## Chat Support
+- **README.md**
+  - ## quickselect
+- **README.md**
+  - # readdirp [![Weekly downloads](https://img.shields.io/npm/dw/readdirp.svg)](https://github.com/paulmillr/readdirp)
+  - ## API
+  - ### options
+  - ### `EntryInfo`
+  - ## Changelog
+- **README.md**
+  - # resolve-protobuf-schema
+  - ## Usage
+  - ## API
+  - ## License
+- **README.md**
+  - # robust-predicates
+  - ## [Demo](https://observablehq.com/@mourner/non-robust-arithmetic-as-art)
+  - ## API
+  - ### `orient2d(ax,ay, bx,by, cx,cy)`
+  - ### `incircle(ax,ay, bx,by, cx,cy, dx,dy)`
+- **README.md**
+  - ## Overview
+  - ## Quick Start Guide
+  - ### Commands
+  - # compile to a <script> containing a self-executing function
+  - # compile to a CommonJS module
+- **README.mdown**
+  - # CSSOM
+  - ## [Parser demo](http://nv.github.io/CSSOM/docs/parse.html)
+  - ## Why is this not maintained?
+  - ## Don’t use it if...
+  - ## [Tests](http://nv.github.com/CSSOM/spec/)
+- **README.md**
+  - # <img src="docs_app/src/assets/images/logos/Rx_Logo_S.png" alt="RxJS Logo" width="86" height="86"> RxJS: Reactive Extensions For JavaScript
+  - # The Roadmap from RxJS 7 to 8
+  - # RxJS 7
+  - ### FOR 6.X PLEASE GO TO [THE 6.x BRANCH](https://github.com/ReactiveX/rxjs/tree/6.x)
+  - ## Versions In This Repository
+- **Readme.md**
+  - # safer-buffer [![travis][travis-image]][travis-url] [![npm][npm-image]][npm-url] [![javascript style guide][standard-image]][standard-url] [![Security Responsible Disclosure][secuirty-image]][secuirty-url]
+  - ## How to use?
+  - ## Do I need it?
+  - ## Why not [safe-buffer](https://npmjs.com/safe-buffer)?
+  - ## But isn't throwing bad?
+- **README.md**
+  - ## Usage
+  - ### Legacy API
+  - ## See Also
+  - ## Behavioral Differences from Ruby Sass
+- **README.md**
+  - ## Embedded Sass Host
+  - ## Usage
+  - ### Legacy API
+  - ## How Does It Work?
+- **README.md**
+  - # `sass-embedded-win32-x64`
+- **README.md**
+  - # saxes
+  - ## Notable Differences from Sax.
+  - ## Conformance
+  - ## Limitations
+  - ## Regarding `<!DOCTYPE` and `<!ENTITY`
+- **README.md**
+  - ## Install
+  - ## Usage
+  - ## Versions
+  - ## Ranges
+  - ### Prerelease Tags
+- **readme.md**
+  - # shebang-command [![Build Status](https://travis-ci.org/kevva/shebang-command.svg?branch=master)](https://travis-ci.org/kevva/shebang-command)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### shebangCommand(string)
+- **readme.md**
+  - # shebang-regex [![Build Status](https://travis-ci.org/sindresorhus/shebang-regex.svg?branch=master)](https://travis-ci.org/sindresorhus/shebang-regex)
+  - ## Install
+  - ## Usage
+  - ## License
+- **README.md**
+  - # `siginfo`
+  - ## Usage
+  - ## API
+  - ### `var removeListener = siginfo(queryFn, [force])`
+  - ## Install
+- **README.md**
+  - # signal-exit
+  - ## API
+  - ### Options
+  - ### Capturing Signal Exits
+  - ### Browser Fallback
+- **README.md**
+  - # Source Map JS
+  - ## Use with Node
+  - ## Table of Contents
+  - ## Examples
+  - ### Consuming a source map
+- **Readme.md**
+  - # Splay tree [![npm version](https://badge.fury.io/js/splaytree.svg)](https://badge.fury.io/js/splaytree) [![CircleCI](https://circleci.com/gh/w8r/splay-tree.svg?style=svg)](https://circleci.com/gh/w8r/splay-tree)
+  - ## Install
+  - ## API
+  - ## Example
+  - ## Benchmarks
+- **README.md**
+  - # stackback
+  - ## use
+  - ## CallSite object
+  - ## install
+- **README.md**
+  - # std-env
+  - ## Installation
+  - # Using npm
+  - # Using pnpm
+  - # Using yarn
+- **readme.md**
+  - # string-width
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### stringWidth(string, options?)
+- **readme.md**
+  - # string-width
+  - ## Install
+  - ## Usage
+  - ## Related
+- **readme.md**
+  - # strip-ansi
+  - ## Install
+  - ## Usage
+  - ## Related
+  - ## Maintainers
+- **readme.md**
+  - # strip-ansi [![Build Status](https://travis-ci.org/chalk/strip-ansi.svg?branch=master)](https://travis-ci.org/chalk/strip-ansi)
+  - ## Install
+  - ## Usage
+  - ## strip-ansi for enterprise
+  - ## Related
+- **README.md**
+  - # supercluster [![Simply Awesome](https://img.shields.io/badge/simply-awesome-brightgreen.svg)](https://github.com/mourner/projects) [![Build Status](https://travis-ci.com/mapbox/supercluster.svg?branch=main)](https://travis-ci.com/mapbox/supercluster)
+  - ## Install
+  - ## Methods
+  - #### `load(points)`
+  - #### `getClusters(bbox, zoom)`
+- **readme.md**
+  - # supports-color
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### `require('supports-color').supportsColor(stream, options?)`
+- **README.md**
+  - ## symbol-tree
+  - ### SymbolTree ⏏
+  - #### new SymbolTree([description])
+  - #### symbolTree.initialize(object) ⇒ <code>Object</code>
+  - #### symbolTree.hasChildren(object) ⇒ <code>Boolean</code>
+- **README.md**
+  - # `sync-child-process`
+  - ## Usage
+  - ## Why synchrony?
+  - ### Why not `child_process.spawnSync()`?
+- **README.md**
+  - # `sync-message-port`
+  - ## Usage
+  - ## Why synchrony?
+  - ### No a/synchronous polymorphism
+  - ### Performance considerations
+- **README.md**
+  - # Tinybench 🔎
+  - ## Installing
+  - ## Usage
+  - ## Docs
+  - ### `Bench`
+- **README.md**
+  - # tinyexec 📟
+  - ## Installing
+  - ## Usage
+  - ### Options
+  - ### Piping to another process
+- **README.md**
+  - # Tinypool - the node.js worker pool 🧵
+  - ## Docs
+- **README.md**
+  - ## tinyqueue
+  - ### Install
+  - ### Thanks
+- **README.md**
+  - # tinyrainbow
+  - ## Installing
+  - # with npm
+  - # with pnpm
+  - # with yarn
+- **README.md**
+  - # tinyspy
+  - ## Docs
+- **README.md**
+  - # tldts - Blazing Fast URL Parsing
+  - # Install
+  - # Usage
+  - # API
+  - ## Single purpose methods
+- **README.md**
+  - # `tldts-core`
+- **README.md**
+  - # Tough Cookie &middot; [![RFC6265][rfc6265-badge]][rfc6265-tracker] [![RFC6265bis][rfc6265bis-badge]][rfc6265bis-tracker] [![npm version][npm-badge]][npm-repo] [![CI on Github Actions: salesforce/tough-cookie][ci-badge]][ci-url] ![PRs Welcome][prs-welcome-badge]
+  - ## Getting Started
+  - ## Usage
+  - ## RFC6265bis
+  - ### SameSite Cookies
+- **README.md**
+  - # tr46
+  - ## API
+  - ### `toASCII(domainName[, options])`
+  - ### `toUnicode(domainName[, options])`
+  - ## Options
+- **README.md**
+  - # tslib
+  - # Installing
+  - ## npm
+  - # TypeScript 3.9.2 or later
+  - # TypeScript 3.8.4 or earlier
+- **README.md**
+  - # TypeScript
+  - ## Installing
+  - ## Contribute
+  - ## Documentation
+  - ## Roadmap
+- **README.md**
+  - # varint
+  - ## api
+  - ### varint = require('varint')
+  - ### varint.encode(num[, buffer=[], offset=0]) -> buffer
+  - ### varint.decode(data[, offset=0]) -> number
+- **README.md**
+  - # vite ⚡
+- **README.md**
+  - ## Features
+  - ## CLI Usage
+  - ### Options via CLI
+  - ### Hashbang
+  - #!/usr/bin/env vite-node --script
+- **README.md**
+  - # vitest
+- **README.md**
+  - ## vscode-uri
+  - ## Usage
+  - ## Usage: Util
+  - ## Contributing
+  - ## Code of Conduct
+- **README.md**
+  - # vue
+  - ## Which dist file to use?
+  - ### From CDN or without a Bundler
+  - ### With a Bundler
+  - #### Bundler Build Feature Flags
+- **README.md**
+  - # vue-component-type-helpers
+  - ## Usage
+- **README.md**
+  - # vue-tsc
+  - ## Usage
+  - ## Sponsors
+- **README.md**
+  - # w3c-xmlserializer
+  - ## Basic usage
+  - ## `requireWellFormed` option
+- **README.md**
+  - # Web IDL Type Conversions on JavaScript Values
+  - ## API
+  - ## Conversions implemented
+  - ### A note on the `long long` types
+  - ### A note on `BufferSource` types
+- **README.md**
+  - # Decode According to the WHATWG Encoding Standard
+  - ## API
+  - ## Unsupported encodings
+  - ## Credits
+  - ## Alternatives
+- **README.md**
+  - # Parse, serialize, and manipulate MIME types
+  - ## `MIMEType` API
+  - ### The `parse()` static factory method
+  - ### Properties
+  - ### Methods
+- **README.md**
+  - ## Specification conformance
+  - ## API
+  - ### The `URL` and `URLSearchParams` classes
+  - ### Low-level URL Standard API
+  - ### `whatwg-url/webidl2js-wrapper` module
+- **README.md**
+  - # which
+  - ## USAGE
+  - ## CLI USAGE
+  - ## OPTIONS
+- **README.md**
+  - # why-is-node-running
+  - ## Installation
+  - ## Usage
+  - # Timeout
+  - # TCPSERVERWRAP
+- **readme.md**
+  - # wrap-ansi
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### wrapAnsi(string, columns, options?)
+- **readme.md**
+  - # wrap-ansi [![Build Status](https://travis-ci.com/chalk/wrap-ansi.svg?branch=master)](https://travis-ci.com/chalk/wrap-ansi) [![Coverage Status](https://coveralls.io/repos/github/chalk/wrap-ansi/badge.svg?branch=master)](https://coveralls.io/github/chalk/wrap-ansi?branch=master)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### wrapAnsi(string, columns, options?)
+- **README.md**
+  - # ws: a Node.js WebSocket library
+  - ## Table of Contents
+  - ## Protocol support
+  - ## Installing
+  - ### Opt-in for performance
+- **README.md**
+  - # Validate XML Names and Qualified Names
+  - ## Usage
+- **README.md**
+  - ## Organization
+  - ## Features
+- **readme.md**
+  - # ansi-regex
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### ansiRegex(options?)
+- **readme.md**
+  - # ansi-styles [![Build Status](https://travis-ci.org/chalk/ansi-styles.svg?branch=master)](https://travis-ci.org/chalk/ansi-styles)
+  - ## Install
+  - ## Usage
+  - ## API
+  - ## Styles
+- **README.md**
+  - # emoji-regex [![Build status](https://travis-ci.org/mathiasbynens/emoji-regex.svg?branch=master)](https://travis-ci.org/mathiasbynens/emoji-regex)
+  - ## Installation
+  - ## Author
+  - ## License
+- **readme.md**
+  - # string-width
+  - ## Install
+  - ## Usage
+  - ## Related
+- **readme.md**
+  - # strip-ansi [![Build Status](https://travis-ci.org/chalk/strip-ansi.svg?branch=master)](https://travis-ci.org/chalk/strip-ansi)
+  - ## Install
+  - ## Usage
+  - ## strip-ansi for enterprise
+  - ## Related
+- **readme.md**
+  - # ansi-regex
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### ansiRegex(options?)
+- **readme.md**
+  - # ansi-regex
+  - ## Install
+  - ## Usage
+  - ## API
+  - ### ansiRegex(options?)
+- **README.md**
+  - # emoji-regex [![Build status](https://travis-ci.org/mathiasbynens/emoji-regex.svg?branch=master)](https://travis-ci.org/mathiasbynens/emoji-regex)
+  - ## Installation
+  - ## Author
+  - ## License
+- **readme.md**
+  - # strip-ansi [![Build Status](https://travis-ci.org/chalk/strip-ansi.svg?branch=master)](https://travis-ci.org/chalk/strip-ansi)
+  - ## Install
+  - ## Usage
+  - ## strip-ansi for enterprise
+  - ## Related
+- **readme.md**
+  - # entities [![NPM version](https://img.shields.io/npm/v/entities.svg)](https://npmjs.org/package/entities) [![Downloads](https://img.shields.io/npm/dm/entities.svg)](https://npmjs.org/package/entities) [![Node.js CI](https://github.com/fb55/entities/actions/workflows/nodejs-test.yml/badge.svg)](https://github.com/fb55/entities/actions/workflows/nodejs-test.yml)
+  - ## Features
+  - ## How to…
+  - ### …install `entities`
+  - ### …use `entities`
+- **README.md**
+  - # Tools
+  - ## clang-format
+  - ## Migration Script
+  - ### How To Use
+  - ### Quick Fixes
+- **README.md**
+  - # @vue/compiler-core
+- **README.md**
+  - # @vue/compiler-dom
+- **README.md**
+  - # @vue/compiler-sfc
+  - ## API
+  - ### High Level Workflow
+- **README.md**
+  - # @vue/compiler-ssr
+- **README.md**
+  - # vue-template-compiler
+  - ## Installation
+  - ## API
+  - ### compiler.compile(template, [options])
+  - #### Options
+- **README.md**
+  - # @vue/reactivity
+  - ## Usage Note
+  - ## Credits
+  - ## Caveats
+- **README.md**
+  - # @vue/runtime-core
+  - ## Building a Custom Renderer
+- **README.md**
+  - # @vue/runtime-dom
+- **README.md**
+  - # @vue/server-renderer
+  - ## Basic API
+  - ### `renderToString`
+  - ### Handling Teleports
+  - ## Streaming API
+- **README.md**
+  - # @vue/shared
+- **README.md**
+  - # Vue Test Utils
+  - ## Languages
+  - ## Installation and Usage
+  - ## Coming from Vue 2 + Test Utils v1?
+  - ## Documentation
+- **README.md**
+  - # @volar/source-map
+  - ## API
+  - ### This package exports a `SourceMap` class with the following methods:
+  - ## Data Structures
+  - ### `Mapping`
+- **README.md**
+  - # @vitest/expect
+  - ## Usage
+- **README.md**
+  - # @vitest/mocker
+- **README.md**
+  - # @vitest/runner
+- **README.md**
+  - # @vitest/snapshot
+  - ## Usage
+- **README.md**
+  - # @vitest/spy
+- **README.md**
+  - # estree-walker
+  - ## Installation
+  - ## Usage
+  - ## Why not use estraverse?
+  - ## License
+- **README.md**
+  - # @vitejs/plugin-vue [![npm](https://img.shields.io/npm/v/@vitejs/plugin-vue.svg)](https://npmjs.com/package/@vitejs/plugin-vue)
+  - ## Options
+  - ## Asset URL handling
+  - ## Example for passing options to `vue/compiler-sfc`:
+  - ## Example for transforming custom blocks
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # Installation
+  - # Summary
+  - # Details
+  - ### Additional Details
+  - # Credits
+- **README.md**
+  - # `@rollup/rollup-win32-x64-gnu`
+- **README.md**
+  - # `@rollup/rollup-win32-x64-msvc`
+- **README.md**
+  - # parseArgs
+  - ## `util.parseArgs([config])`
+  - ### `parseArgs` `tokens`
+  - ## Table of Contents
+  - ## Scope
+- **README.md**
+  - # @parcel/watcher
+  - ## Features
+  - ## Example
+  - ## Watching
+  - ## Querying
+- **README.md**
+- **README.md**
+  - # One INI
+  - ## WASM
+  - # always use unix line endings
+  - # always use unix line endings
+- **README.md**
+  - # Mapbox GL JS Supported
+  - ## Testing Your Browser
+  - ## Using Mapbox GL JS Supported with a `<script>` tag
+  - ## Using Mapbox GL JS Supported with [Browserify](http://browserify.org/)
+- **README.md**
+  - # @mapbox/point-geometry
+  - ## Installation
+  - ## API
+  - ### Point
+  - #### Parameters
+- **README.md**
+  - # TinySDF [![Volodymyr Agafonkin's projects](https://img.shields.io/badge/simply-awesome-brightgreen.svg)](https://github.com/mourner/projects) [![Node](https://github.com/mapbox/tiny-sdf/actions/workflows/node.yml/badge.svg)](https://github.com/mapbox/tiny-sdf/actions/workflows/node.yml)
+  - ## [Demo](http://mapbox.github.io/tiny-sdf)
+  - ## Usage
+  - ## Development
+  - ## License
+- **README.md**
+  - # unitbezier
+  - ## api
+  - ### new UnitBezier(p1x, p1y, p2x, p2y)
+  - ### bezier.solve(x, epsilon)
+- **README.md**
+  - # vector-tile
+  - ## Example
+  - ## Install
+  - ## API Reference
+  - ### VectorTile
+- **README.md**
+  - # @jridgewell/sourcemap-codec
+  - ## Why?
+  - ## Installation
+  - ## Usage
+  - ## Benchmarks
+- **README.md**
+  - # @isaacs/cliui
+  - ## Example
+  - ## Deno/ESM Support
+  - ## Layout DSL
+  - ## Methods
+- **README.md**
+  - # esbuild
+- **README.md**
+  - # Color Helpers <img src="https://cssdb.org/images/css.svg" alt="for CSS" width="90" height="90" align="right">
+  - ## Usage
+  - ## Copyright
+- **README.md**
+  - # CSS Calc <img src="https://cssdb.org/images/css.svg" alt="for CSS" width="90" height="90" align="right">
+  - ## Usage
+  - ### With string values :
+  - ### With component values :
+  - ### Options
+- **README.md**
+  - # CSS Color Parser <img src="https://cssdb.org/images/css.svg" alt="for CSS" width="90" height="90" align="right">
+  - ## Usage
+- **README.md**
+  - # CSS Parser Algorithms <img src="https://cssdb.org/images/css.svg" alt="for CSS" width="90" height="90" align="right">
+  - ## API
+  - ## Usage
+  - ### Available functions
+  - ### Utilities
+- **README.md**
+  - # CSS Tokenizer <img src="https://cssdb.org/images/css.svg" alt="for CSS" width="90" height="90" align="right">
+  - ## API
+  - ## Usage
+  - ### Options
+  - #### `onParseError`
+- **README.md**
+  - # @bufbuild/protobuf
+  - ## Protocol Buffers for ECMAScript
+  - ## Installation
+  - ## Documentation
+  - ## Examples
+- **README.md**
+  - # @babel/helper-string-parser
+  - ## Install
+- **README.md**
+  - # @babel/helper-validator-identifier
+  - ## Install
+- **README.md**
+  - # @babel/parser
+  - ## Install
+- **README.md**
+  - # @babel/types
+  - ## Install
+- **README.md**
+  - # CSS color
+  - ## Install
+  - ## Usage
+  - ### resolve(color, opt)
+  - #### Parameters
+- **README.md**
+  - # EF Core Migrations
+  - ## Required packages (add to WeUP.Infrastructure.csproj before running)
+  - ## Required package in WeUP.Api.csproj (for EF design-time discovery)
+  - ## Connection string
+- **analytics.md**
+  - # Analytics & Telemetry — Phase 0
+- **backend-architecture.md**
+  - # WeUP Phase 0 — Backend Architecture
+  - ## Stack
+  - ## Solution structure
+  - ## Dependency flow
+  - ## Endpoint surface (Phase 0)
+- **BACKEND_MAP_OPTIMIZATION.md**
+- **bundle-07-progress.md**
+  - # Bundle 7 — Spatial and Temporal Semantics
+  - ## Implementation Progress Log
+  - ## Overview
+  - ### Scope
+  - ### Success Criteria
+- **bundle-6-identity.md**
+  - # Bundle 6 — Identity and User Persistence
+  - ## P16 — Auth, Sessions, and Basic Profile Backbone
+  - ### What was built
+  - ### Auth flow (Phase 0)
+  - ### Upgrade path
+- **bundle-pack-flyer-ingestion-intelligence.md**
+  - # WeUP Flyer Ingestion Intelligence Bundle Pack
+  - ## 1. Bundle Pack Title
+  - ## 2. Problem Statement
+  - ## 3. Product Goals
+  - ## 4. Non-Goals
+- **bundle-pack-phase0.5-onwards.md**
+  - # WeUP Extended Prompt Bundle Pack — Phase 0.5 Onwards
+  - ## Hard Premise
+  - ## Bundle Pack Program (Extended)
+  - # Pack 9 — Phase 0.5 Production Readiness Pack
+  - ## Bundle Titles
+- **bundle8-execution-summary.md**
+  - # Bundle 8 Execution Summary
+  - ## Overview
+  - ## Prompts Completed
+  - ### ✅ Prompt 1: Complete P22 Observability Integration
+  - ### ✅ Prompt 2: Create Frontend Service Stubs for P21-P25
+- **bundle8-p22-p25-repair-prompts.md**
+  - # Bundle 8 — P22-P25 Repair & Integration Prompts
+  - ## Overview
+  - ## Prompt 1: Complete P22 Observability Integration
+  - ### Task
+  - ## Prompt 2: Create Frontend Service Stubs for P21-P25
+- **bundle8-prompts-7-8-guide.md**
+  - # Bundle 8 — Prompts 7 & 8 Implementation Guide
+  - ## Prompt 7: Implement Seed Data Generator
+  - ### Task Overview
+  - ### Frontend Seed Script (`scripts/seed-data.ts`)
+  - ### Backend Integration
+- **configuration.md**
+- **CONTRACT_VALIDATION.md**
+  - # Contract Validation Report — Phase 0
+  - ## Summary
+  - ## P19: Spatial Queries
+  - ## P20: Market Policy
+  - ## P21: Temporal Queries
+- **entity-resolution.md**
+  - # P12 Entity Resolution and Merge Rules
+  - ## Purpose
+  - ## Scoring Model
+  - ## Thresholds
+  - ## Manual-Review Blockers
+- **event-aggregate-canonical-v1.md**
+  - # EventAggregate Canonical Contract v1.0
+  - ## Purpose
+  - ## Scope
+  - ## Authoritative Fields
+  - ## Lifecycle Semantics
+- **event-dto-mapping-boundary.md**
+  - # Event DTO Mapping Boundary — M4-P17
+  - ## Overview
+  - ## Field Visibility Tiers
+  - ### INTERNAL-ONLY fields (must never appear in any DTO)
+  - ## Serialisation Rules
+- **event-representation-boundary.md**
+  - # Event Representation Boundary (H1-P01)
+  - ## Purpose
+  - ## Canonical Roles
+  - ## Approved Transformations
+  - ## Prohibited Direct Usage
+- **event-versioning-update-semantics-v1.md**
+  - # M4-P18 Event Versioning and Update Semantics v1.0
+  - ## Goal
+  - ## Canonical Version Model
+  - ## Version Increment Rules
+  - ## Update Semantics
+- **feature-flags.md**
+  - # Feature Flags & Operational Kill Switches — Phase 0
+- **flyer-evidence-model.md**
+  - # Flyer Evidence Model (P27)
+  - ## Purpose
+  - ## Durable Records
+  - ### 1. Asset metadata record
+  - ### 2. Provenance record
+- **flyer-ingestion-pipeline.md**
+  - # Flyer OCR + Normalization Pipeline (P11)
+  - ## Purpose
+  - ## API Surface
+  - ## Pipeline Stages
+  - ## Evidence Chain
+- **frontend-api-migration.md**
+  - # Frontend → Real API Migration Guide
+  - ## Current state
+  - ## Migration steps
+  - ### 1. Map feed
+  - ### 2. Calendar feed
+- **h6-phase0-hardening-report.md**
+  - # WeUP Phase 0 Hardening Report (H6-P30)
+  - ## Summary
+  - ## What Was Hardened
+  - ### H6-P26: Real OpenTelemetry, Correlation IDs, Structured Logging
+  - ### H6-P27: Product Analytics and Error Telemetry Boundaries
+- **ingestion-architecture.md**
+  - ## Overview
+  - ## Contact
+- **ingestion-boundary.md**
+  - # Ingestion Boundary
+  - ## Purpose
+  - ## Boundary shape
+  - ## Adapter model
+  - ## Source kinds
+- **ingestion-performance-dashboard-v1.md**
+  - # Ingestion Performance Dashboard v1.0 (M10-P50)
+  - ## Purpose
+  - ## Metric Contract Used
+  - ### M10-P46 ingestion pipeline
+  - ### M10-P47 OCR and normalization quality
+- **m1-p04-confidence-scoring-v1.md**
+  - # Confidence Scoring and Evidence Model v1.0
+  - ## Overview
+  - ## Core Principles
+  - ## Architecture
+  - ### Records and Types
+- **m1-p04-quick-reference.md**
+  - # Confidence Scoring - Quick Reference Guide
+  - ## 5-Minute Integration
+  - ### 1. Add Service Registration
+  - ### 2. Inject into Pipeline
+  - ### 3. Score Candidates
+- **M5-P25_INTEGRATION_QUICK_START.md**
+  - # M5-P25 Integration Quick Start
+  - ## Files Created / Modified
+  - ## Quick Start: 3 Steps
+  - ### Step 1: Replace useEventFeed with useMapFeedOptimized
+  - ### Step 2: Update State Handling
+- **M5-P25_MAP_PERFORMANCE_STRATEGY.md**
+  - # M5-P25 Map Performance Optimization Strategy
+  - ## Overview
+  - ## Architecture Overview
+  - ## Performance Targets
+  - ## Key Components
+- **media-intake.md**
+  - # Media Intake (P25)
+  - ## Overview
+  - ## Why multipart upload in Phase 0.15
+  - ## Domain Model
+  - ### MediaAsset
+- **merge-lineage-evolution-v1.md**
+  - # M4-P20: Merge Lineage and Event Evolution v1.0
+  - ## Goal
+  - ## Lineage Model
+  - ### Canonical Identity Continuity
+  - ### Structured Merge Lineage
+- **merge-planning-system-v1.md**
+  - # M2-P09: Merge Planning and Conflict Resolution System v1.0
+  - ## Overview
+  - ## Architecture
+  - ### Components
+  - #### 1. **MergeFieldAction Enum**
+- **moderation-queue-review-api.md**
+  - # Moderation Queue and Review Dashboard API (P13)
+  - ## Purpose
+  - ## Queue Lifecycle
+  - ## Filters
+  - ## Evidence Inspection Model
+- **observability-guidelines.md**
+  - # WeUP Observability Guidelines
+  - ## Overview
+  - ## Correlation IDs
+  - ### How It Works
+  - ### Example Request/Response
+- **observability.md**
+  - # Observability for WeUP (P22)
+  - ## Architecture
+  - ## Key components
+  - ## Correlation strategy
+  - ## Structured log schema
+- **p19-completion-summary.md**
+  - # P19 Completion Summary
+  - ## Bounding Box, Cluster, and District Query Semantics
+  - ## What Was Built
+  - ### Backend (C# / .NET)
+  - ### Frontend (TypeScript / React)
+- **p21-p25-accelerated-roadmap.md**
+  - # P21-P25 Accelerated Implementation Roadmap
+  - ## P21: Temporal Query Logic (Current)
+  - ## P22: Observability / OpenTelemetry (Lightweight)
+  - ## P23: Product Analytics (Minimal)
+  - ## P25: Flyer Media Intake (Minimum Viable)
+- **P21-P25-completion-summary.md**
+  - # P21-P25 Completion Summary
+  - ## Executive Summary
+  - ## What Was Built
+  - ### P21: Temporal Query Logic ✅
+  - ### P22: Observability & Structured Logging ✅
+- **phase0-diagnostic-report.md**
+  - # Phase 0 Comprehensive Diagnostic Report
+  - ## Executive Summary
+  - ## Prompt Coverage
+  - ### Bundle 1–3: Foundation (P01–P09)
+  - ### Bundle 4–5: Auth + Users (P16–P18)
+- **phase0-issues-and-mitigations.md**
+  - # WeUP Phase 0 — Issues & Mitigation Prompts
+  - ## Overview
+  - ## 🔴 Critical Issues
+  - ### Issue #C1: TypeScript Compilation Error in Provenance
+  - ### Issue #C2: No Test Infrastructure Exists
+- **phase0.5-plan.md**
+  - # WeUP Phase 0.5 — Production Readiness Plan
+  - ## What Phase 0.5 Is
+  - ## Current State After Phase 0
+  - ## Pre-Deployment Checklist
+  - ### Business & Product
+- **prompt-bundle-health-ledger.md**
+  - # WeUP Prompt Bundle Health Ledger
+  - ## Scope and Source Inputs
+  - ## Canonical Sequence (Execution Order)
+  - ## Current Health Snapshot
+  - ### A. Phase 0 (P01-P25)
+- **publish-eligibility-gate.md**
+  - # Publish Eligibility Gate (P14)
+  - ## Purpose
+  - ## Contracts
+  - ## Centralized Thresholds
+  - ## Blocker Taxonomy
+- **release-hardening.md**
+  - # WeUP Phase 0 Release Hardening
+  - ## Strategy
+  - ## Seed Architecture
+  - ## Test Architecture
+  - ### Backend tests
+- **repair-doctrine.md**
+  - # WeUP Repair Doctrine
+  - ## Incident 001 — Backend 500 on Every Request (Duplicate Endpoint Name)
+  - ### Symptom
+  - ### Root Cause
+  - ### Fix
+- **schema-contract-validation-v1.md**
+  - # Schema Contract Validation v1.0
+  - ## 1. Purpose
+  - ## 2. Drift Issues Fixed in This Bundle
+  - ## 3. Schema Rules by Surface
+  - ### 3.1 EventAggregate (domain record)
+- **spatial-query-semantics-v1.md**
+  - # Spatial Query Semantics v1.0 — Production-Grade Documentation
+  - ## Table of Contents
+  - ## Architecture Overview
+  - ### Components
+  - ## Core Concepts
+- **spatial-taxonomy-v1.md**
+  - # Spatial Taxonomy v1.0 (Market, District, Neighborhood)
+  - ## Canonical Hierarchy
+  - ## Identity and Label Rules
+  - ## Parent-Child Invariants
+  - ## Event Linkage Semantics
+- **SPATIAL_QUERY_IMPLEMENTATION_SUMMARY.md**
+  - # Spatial Query Semantics Implementation — Summary
+  - ## Deliverables Completed
+  - ### 1. ✅ C# Backend Contracts & Validation
+  - ### 2. ✅ Backend Validation Service
+  - ### 3. ✅ Enhanced Query DTO
+- **temporal-contract-sync-v1.md**
+  - # M8-P39 Temporal Contract Synchronization v1.0
+  - ## Canonical Contract
+  - ## Ownership Boundaries
+  - ## Anti-Drift Rules
+  - ## Selection Reset Behavior
+- **time-window-semantics-v1.md**
+  - # Canonical Time Window Semantics v1.0
+  - ## Overview
+  - ## Preset Definitions
+  - ## Semantic Rules
+  - ### `Now`
+- **ui-state.md**
+  - # UI State Topology — World Surface (P03)
+  - ## Save Authority Model (H1-P02)
+- **video-derived-assets.md**
+  - # Video Derived Assets (Phase 0.15)
+  - ## Frame Extraction Architecture
+  - ### Strategy decision
+  - ## Stages and Models
+  - ### Processing stages
+- **video-flyer-intake.md**
+  - # Video Flyer Intake — P28
+  - ## Overview
+  - ## Architecture
+  - ### Two-phase upload lifecycle
+  - ### Upload strategy justification
+- **WEUP_HOUSTON_PHASE0_SPATIAL_MODEL_v1.md**
+  - # WEUP Houston Phase 0 Spatial Model v1.0
+  - ## Purpose
+  - ## Scope
+  - ## Normative Alignment
+  - ## Canonical Entities
+- **work-remaining.md**
+  - # WeUP Phase 0 — Complete Work Remaining
+  - ## Executive Summary
+  - ### Packs Completed
+  - ### Current Backlog (P19-P48)
+  - ## Bundle 7 — Spatial and Temporal Semantics (P19-P21)
+- **bundle-2-repairs.md**
+  - # Bundle 2 — End-of-Bundle Repair Prompts
+  - ## Issues found after review of P04–P06
+  - ### R2-01: Duplicate SourceKind export
+  - ### R2-02: ReviewMetadata / ReviewMetadataFull inconsistency
+  - ### R2-03: Unsafe SourceKind cast in eventService.ts adapter
+- **bundle-3-repairs.md**
+  - # Bundle 3 — End-of-Bundle Repair Prompts
+  - ## Issues found after review of P07–P09
+  - ### R3-01: EventEntity missing Tags support
+  - ### R3-02: EfSaveRepository.GetSavesAsync uses LINQ Join with Include — not supported
+  - ### R3-03: MapFeedRequest uses POST but returns read-only data
+- **bundle-4-repairs.md**
+  - # Bundle 4 — End-of-Bundle Repair Prompts
+  - ## Issues found after review of P10–P12
+  - ### R4-01: IngestionDispatcher depends on concrete adapter types instead of IIngestionAdapter
+  - ### R4-02: IExtractionNormalizer interface defined but never implemented
+  - ### R4-03: DeduplicationService uses EntityFrameworkQueryableExtensions without a using statement
+- **bundle-5-repairs.md**
+  - # Bundle 5 Repairs
+  - ## R5-01 — Create WeUP.Application Project
+  - ## R5-02 — Add Missing NuGet Packages to WeUP.Infrastructure
+  - ## R5-03 — IngestionDispatcher Cleanup
+- **WeUP Phase 0 - 030 Prompt Bundle Pack.txt**
+
+---
+
+## Code Structure Summary
+**Files per language:**
+- Python: 22
+- Csharp: 406
+- Javascript: 26102
+- Total test files detected: 728
+
+### Dependency Graph (excerpt)
+- executor.py → pathlib, jinja2, typing, os, json, llama_cpp, autogen, argparse,
+- doc_audit.py → os, pathlib, json,, re
+- report_generator.py → , pathlib, os, json, sys
+- structure_report.py → os, pathlib, json,, collections
+- flatted.py → json
+- agent_runner.py → pkgutil, typing, argparse, os, importlib
+- copilot_agent.py → re, typing, argparse, os, json
+- crawl4ai_agent.py → bs4, time, typing, argparse, requests, os, json, urllib
+- qa_repair_agent.py → typing, time, requests, subprocess, os
+- __init__.py → 
+
+---
+
+*Report generated on C:\Users\yumja\WeUP_Phase0_AIStudio\WeUP_Phase0_AIStudio*
