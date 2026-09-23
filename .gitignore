@@ -9,3 +9,6 @@ coverage/
 # .NET build output
 backend/**/obj/
 backend/**/bin/
+
+# Tracked Vue build output is generated; stop tracking it (see M6)
+frontend-vue/dist/

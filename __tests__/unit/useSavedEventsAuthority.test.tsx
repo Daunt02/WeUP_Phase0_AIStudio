@@ -3,7 +3,7 @@ import { useSavedEventsAuthority } from "@/hooks/useSavedEventsAuthority";
 
 jest.mock("@/lib/env/public", () => ({
   publicEnv: {
-    NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN: "pk.test",
+    NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "",
     NEXT_PUBLIC_API_BASE_URL: "",
   },
 }));
