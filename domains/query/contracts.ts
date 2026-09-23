@@ -508,11 +508,17 @@ function getZonedDateParts(
     return Number.parseInt(value, 10);
   };
 
+  // ICU hour-cycle quirk: with hour12:false some ICU versions (e.g. ICU 76 in
+  // Node 20) render the 00:00-00:59 hour as "24" (h24 cycle) instead of "00".
+  // Normalize so the iterative UTC convergence in zonedLocalTimeToUtcIso sees
+  // midnight as hour 0 on the same calendar day.
+  const hour = pick("hour") === 24 ? 0 : pick("hour");
+
   return {
     year: pick("year"),
     month: pick("month"),
     day: pick("day"),
-    hour: pick("hour"),
+    hour,
     minute: pick("minute"),
     second: pick("second"),
   };
