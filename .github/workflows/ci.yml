@@ -12,8 +12,7 @@ jobs:
     services:
       docker:
         image: docker:20.10.7-dind
-        privileged: true
-        options: --entrypoint /bin/sh
+        options: --privileged --entrypoint /bin/sh
     steps:
       - uses: actions/checkout@v5
       - name: Set up Python
