@@ -64,3 +64,4 @@ public sealed class RiskScoringServiceTests
         Assert.Contains("Keyword:free", result.Factors.Keys);
         Assert.True(result.OverallScore > 0f);
     }
+}
