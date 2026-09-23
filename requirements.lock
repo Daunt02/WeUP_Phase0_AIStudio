@@ -1,0 +1,11 @@
+# requirements.lock — generated 2026-09-23 by miniMuse WEUP-EXECUTION-001 (WEUP-A3).
+# Direct pins resolved from the PyPI index (pip-compile unavailable: no disk headroom
+# for torch metadata resolution in this environment). Semantics match pip-compile:
+# latest version satisfying each specifier in requirements.txt as of generation date.
+# Transitive dependencies are NOT pinned here; they resolve at install time.
+# Regenerate with `pip-compile requirements.txt -o requirements.lock` where disk allows.
+autogen==0.14.1
+jinja2==3.1.6
+pytest==9.1.1
+torch==2.14.0
+transformers==5.17.0
