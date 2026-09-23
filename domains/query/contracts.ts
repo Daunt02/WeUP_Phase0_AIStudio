@@ -133,7 +133,7 @@ export function validateGeoPoint(
     );
   }
 
-  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90) {
+  if (!Number.isFinite(latitude!) || latitude! < -90 || latitude! > 90) {
     issues.push({
       code: "INVALID_LATITUDE",
       message: `Latitude must be in [-90, 90], got ${latitude}.`,
@@ -141,7 +141,7 @@ export function validateGeoPoint(
     });
   }
 
-  if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+  if (!Number.isFinite(longitude!) || longitude! < -180 || longitude! > 180) {
     issues.push({
       code: "INVALID_LONGITUDE",
       message: `Longitude must be in [-180, 180], got ${longitude}.`,
@@ -149,7 +149,9 @@ export function validateGeoPoint(
     });
   }
 
-  if (Math.abs(latitude) < 0.0000001 && Math.abs(longitude) < 0.0000001) {
+  // Invariant: reaching here means issues is empty, so latitude/longitude are non-null
+  // (null values push MISSING_* issues above and return early).
+  if (Math.abs(latitude!) < 0.0000001 && Math.abs(longitude!) < 0.0000001) {
     issues.push({
       code: "NULL_ISLAND_COORDINATES",
       message:
@@ -197,7 +199,7 @@ export function validateGeoPoint(
     );
   }
 
-  const normalizedPoint: GeoPoint = { latitude, longitude };
+  const normalizedPoint: GeoPoint = { latitude: latitude!, longitude: longitude! };
   if (confidence != null && confidence < PUBLIC_MAP_CONFIDENCE_THRESHOLD) {
     issues.push({
       code: "LOW_LOCATION_CONFIDENCE",

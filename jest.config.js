@@ -16,7 +16,13 @@ const customJestConfig = {
     "**/__tests__/**/*.test.(ts|tsx|js)",
     "**/?(*.)+(spec|test).(ts|tsx|js)",
   ],
-  testPathIgnorePatterns: ["<rootDir>/e2e/", "<rootDir>/playwright.config.ts"],
+  // frontend-vue is a separate Vue 3 + vitest project; its suites cannot run
+  // under the root jest runner (no vue/vitest modules at root).
+  testPathIgnorePatterns: [
+    "<rootDir>/e2e/",
+    "<rootDir>/playwright.config.ts",
+    "<rootDir>/frontend-vue/",
+  ],
   collectCoverageFrom: [
     "components/**/*.{js,jsx,ts,tsx}",
     "services/**/*.{js,jsx,ts,tsx}",

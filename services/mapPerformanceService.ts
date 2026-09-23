@@ -15,7 +15,7 @@
  * Metrics are sent to analytics service (e.g., Application Insights, Segment, etc.)
  */
 
-import { analyticsService } from "@/services/analyticsService";
+import { recordEventWithProperties } from "@/services/analyticsService";
 
 export interface MapPerformanceEvent {
   timestamp: number;
@@ -182,7 +182,7 @@ class MapPerformanceService {
 
     // Send batch to analytics (in production, this would go to Application Insights, Segment, etc.)
     batch.forEach((event) => {
-      analyticsService.trackEvent(event.eventType, event.properties);
+      recordEventWithProperties(event.eventType, event.properties);
     });
   }
 

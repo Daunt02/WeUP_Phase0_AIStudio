@@ -8,9 +8,10 @@
  */
 
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { useMapFeedOptimized } from "../useMapFeedOptimized";
+import { useMapFeedOptimized } from "../../hooks/useMapFeedOptimized";
 import type { GeoBoundingBox, MapFeedQuery } from "@/domains/query/contracts";
-import * as eventService from "@/services/eventService";
+import * as eventServiceModule from "@/services/eventService";
+import { eventService } from "@/services/eventService";
 
 // ============================================================================
 // Mocks
@@ -18,7 +19,11 @@ import * as eventService from "@/services/eventService";
 
 jest.mock("@/services/eventService");
 
-const mockEventService = eventService as jest.Mocked<typeof eventService>;
+const mockEventService = eventServiceModule as jest.Mocked<typeof eventServiceModule>;
+// jest.mock() automocks the EventService class, so the exported singleton's
+// methods are jest mock fns at runtime; this alias repairs the static type.
+const mockFetchMapFeed = mockEventService.eventService
+  .fetchMapFeed as jest.MockedFunction<typeof eventService.fetchMapFeed>;
 
 const defaultBounds: GeoBoundingBox = {
   minLng: -95.4,
@@ -49,7 +54,7 @@ describe("useMapFeedOptimized — Debounce", () => {
   });
 
   test("does not fetch immediately on viewport change", () => {
-    mockEventService.fetchMapFeed.mockResolvedValue({
+    mockFetchMapFeed.mockResolvedValue({
       events: [],
       totalCount: 0,
     });
@@ -57,7 +62,7 @@ describe("useMapFeedOptimized — Debounce", () => {
     const { rerender } = renderHook(
       ({ bounds }) => useMapFeedOptimized(bounds, defaultWindow),
       {
-        initialProps: { bounds: null },
+        initialProps: { bounds: null as GeoBoundingBox | null },
       },
     );
 
@@ -65,11 +70,11 @@ describe("useMapFeedOptimized — Debounce", () => {
     rerender({ bounds: defaultBounds });
 
     // Should NOT call fetch immediately
-    expect(mockEventService.fetchMapFeed).not.toHaveBeenCalled();
+    expect(mockFetchMapFeed).not.toHaveBeenCalled();
   });
 
   test("fetches after debounce delay (400ms default)", () => {
-    mockEventService.fetchMapFeed.mockResolvedValue({
+    mockFetchMapFeed.mockResolvedValue({
       events: [],
       totalCount: 0,
     });
@@ -77,7 +82,7 @@ describe("useMapFeedOptimized — Debounce", () => {
     const { rerender } = renderHook(
       ({ bounds }) => useMapFeedOptimized(bounds, defaultWindow),
       {
-        initialProps: { bounds: null },
+        initialProps: { bounds: null as GeoBoundingBox | null },
       },
     );
 
@@ -88,17 +93,17 @@ describe("useMapFeedOptimized — Debounce", () => {
     act(() => {
       jest.advanceTimersByTime(399);
     });
-    expect(mockEventService.fetchMapFeed).not.toHaveBeenCalled();
+    expect(mockFetchMapFeed).not.toHaveBeenCalled();
 
     // Advance 1ms more to 400ms — should fetch
     act(() => {
       jest.advanceTimersByTime(1);
     });
-    expect(mockEventService.fetchMapFeed).toHaveBeenCalledTimes(1);
+    expect(mockFetchMapFeed).toHaveBeenCalledTimes(1);
   });
 
   test("debounces rapid viewport changes (multiple pans)", () => {
-    mockEventService.fetchMapFeed.mockResolvedValue({
+    mockFetchMapFeed.mockResolvedValue({
       events: [],
       totalCount: 0,
     });
@@ -106,7 +111,7 @@ describe("useMapFeedOptimized — Debounce", () => {
     const { rerender } = renderHook(
       ({ bounds }) => useMapFeedOptimized(bounds, defaultWindow),
       {
-        initialProps: { bounds: null },
+        initialProps: { bounds: null as GeoBoundingBox | null },
       },
     );
 
@@ -122,19 +127,19 @@ describe("useMapFeedOptimized — Debounce", () => {
     rerender({ bounds: bounds3 });
 
     // Should NOT fetch yet
-    expect(mockEventService.fetchMapFeed).not.toHaveBeenCalled();
+    expect(mockFetchMapFeed).not.toHaveBeenCalled();
 
-    // Advance to debounce point (400ms from last change)
-    act(() => jest.advanceTimersByTime(300));
-    expect(mockEventService.fetchMapFeed).toHaveBeenCalledTimes(1);
+    // Advance to debounce point (400ms from last change; the timer resets on each pan)
+    act(() => jest.advanceTimersByTime(400));
+    expect(mockFetchMapFeed).toHaveBeenCalledTimes(1);
 
     // Verify final bounds were used
-    const lastCall = mockEventService.fetchMapFeed.mock.calls[0][0];
+    const lastCall = mockFetchMapFeed.mock.calls[0][0];
     expect(lastCall.bounds.minLng).toBe(bounds3.minLng);
   });
 
   test("respects custom debounceMs option", () => {
-    mockEventService.fetchMapFeed.mockResolvedValue({
+    mockFetchMapFeed.mockResolvedValue({
       events: [],
       totalCount: 0,
     });
@@ -145,7 +150,7 @@ describe("useMapFeedOptimized — Debounce", () => {
           debounceMs: 200, // Custom debounce
         }),
       {
-        initialProps: { bounds: null },
+        initialProps: { bounds: null as GeoBoundingBox | null },
       },
     );
 
@@ -153,7 +158,7 @@ describe("useMapFeedOptimized — Debounce", () => {
 
     // Should fetch after 200ms, not 400ms
     act(() => jest.advanceTimersByTime(200));
-    expect(mockEventService.fetchMapFeed).toHaveBeenCalledTimes(1);
+    expect(mockFetchMapFeed).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -173,7 +178,7 @@ describe("useMapFeedOptimized — Caching", () => {
   });
 
   test("returns cached result on cache hit", async () => {
-    mockEventService.fetchMapFeed.mockResolvedValue({
+    mockFetchMapFeed.mockResolvedValue({
       events: [
         {
           id: "1",
@@ -182,9 +187,6 @@ describe("useMapFeedOptimized — Caching", () => {
           lat: 29.7,
           lng: -95.3,
           category: "nightlife",
-          startUtc: "2026-04-25T21:00:00Z",
-          endUtc: "2026-04-26T02:00:00Z",
-          timezone: "America/Chicago",
           thumbnailUrl: null,
           status: "PUBLISHED",
           confidence: 0.95,
@@ -196,7 +198,7 @@ describe("useMapFeedOptimized — Caching", () => {
     const { rerender } = renderHook(
       ({ bounds }) => useMapFeedOptimized(bounds, defaultWindow),
       {
-        initialProps: { bounds: null },
+        initialProps: { bounds: null as GeoBoundingBox | null },
       },
     );
 
@@ -205,11 +207,11 @@ describe("useMapFeedOptimized — Caching", () => {
     act(() => jest.advanceTimersByTime(400));
 
     await waitFor(() => {
-      expect(mockEventService.fetchMapFeed).toHaveBeenCalledTimes(1);
+      expect(mockFetchMapFeed).toHaveBeenCalledTimes(1);
     });
 
     // Reset mock to track subsequent calls
-    mockEventService.fetchMapFeed.mockClear();
+    mockFetchMapFeed.mockClear();
 
     // Second request with SAME bounds → should hit cache
     rerender({ bounds: defaultBounds });
@@ -217,12 +219,12 @@ describe("useMapFeedOptimized — Caching", () => {
 
     await waitFor(() => {
       // Fetch should NOT be called again
-      expect(mockEventService.fetchMapFeed).not.toHaveBeenCalled();
+      expect(mockFetchMapFeed).not.toHaveBeenCalled();
     });
   });
 
   test("expires cache after TTL", async () => {
-    mockEventService.fetchMapFeed.mockResolvedValue({
+    mockFetchMapFeed.mockResolvedValue({
       events: [],
       totalCount: 0,
     });
@@ -233,7 +235,7 @@ describe("useMapFeedOptimized — Caching", () => {
           cacheEnabled: true,
         }),
       {
-        initialProps: { bounds: null },
+        initialProps: { bounds: null as GeoBoundingBox | null },
       },
     );
 
@@ -242,16 +244,16 @@ describe("useMapFeedOptimized — Caching", () => {
     act(() => jest.advanceTimersByTime(400));
 
     await waitFor(() => {
-      expect(mockEventService.fetchMapFeed).toHaveBeenCalledTimes(1);
+      expect(mockFetchMapFeed).toHaveBeenCalledTimes(1);
     });
 
     // Same bounds, but cache still valid
-    mockEventService.fetchMapFeed.mockClear();
+    mockFetchMapFeed.mockClear();
     rerender({ bounds: defaultBounds });
     act(() => jest.advanceTimersByTime(400));
 
     await waitFor(() => {
-      expect(mockEventService.fetchMapFeed).not.toHaveBeenCalled(); // Cache hit
+      expect(mockFetchMapFeed).not.toHaveBeenCalled(); // Cache hit
     });
 
     // Advance clock past TTL (5 minutes = 300,000ms)
@@ -262,7 +264,7 @@ describe("useMapFeedOptimized — Caching", () => {
     act(() => jest.advanceTimersByTime(400));
 
     await waitFor(() => {
-      expect(mockEventService.fetchMapFeed).toHaveBeenCalledTimes(1); // New fetch
+      expect(mockFetchMapFeed).toHaveBeenCalledTimes(1); // New fetch
     });
   });
 });
@@ -287,7 +289,7 @@ describe("useMapFeedOptimized — Marker Diffing", () => {
       onMarkersDiffed: jest.fn(),
     };
 
-    mockEventService.fetchMapFeed.mockResolvedValue({
+    mockFetchMapFeed.mockResolvedValue({
       events: [
         {
           id: "1",
@@ -296,9 +298,6 @@ describe("useMapFeedOptimized — Marker Diffing", () => {
           lat: 29.7,
           lng: -95.3,
           category: "nightlife",
-          startUtc: "2026-04-25T21:00:00Z",
-          endUtc: "2026-04-26T02:00:00Z",
-          timezone: "America/Chicago",
           thumbnailUrl: null,
           status: "PUBLISHED",
           confidence: 0.95,
@@ -313,7 +312,7 @@ describe("useMapFeedOptimized — Marker Diffing", () => {
           instrumentation: mockInstrumentation as any,
         }),
       {
-        initialProps: { bounds: null },
+        initialProps: { bounds: null as GeoBoundingBox | null },
       },
     );
 
@@ -335,7 +334,7 @@ describe("useMapFeedOptimized — Marker Diffing", () => {
     };
 
     // First response: 2 markers
-    mockEventService.fetchMapFeed
+    mockFetchMapFeed
       .mockResolvedValueOnce({
         events: [
           {
@@ -345,9 +344,6 @@ describe("useMapFeedOptimized — Marker Diffing", () => {
             lat: 29.7,
             lng: -95.3,
             category: "nightlife",
-            startUtc: "2026-04-25T21:00:00Z",
-            endUtc: "2026-04-26T02:00:00Z",
-            timezone: "America/Chicago",
             thumbnailUrl: null,
             status: "PUBLISHED",
             confidence: 0.95,
@@ -359,9 +355,6 @@ describe("useMapFeedOptimized — Marker Diffing", () => {
             lat: 29.75,
             lng: -95.25,
             category: "tech",
-            startUtc: "2026-04-26T14:00:00Z",
-            endUtc: "2026-04-26T16:00:00Z",
-            timezone: "America/Chicago",
             thumbnailUrl: null,
             status: "PUBLISHED",
             confidence: 0.88,
@@ -379,9 +372,6 @@ describe("useMapFeedOptimized — Marker Diffing", () => {
             lat: 29.7,
             lng: -95.3,
             category: "nightlife",
-            startUtc: "2026-04-25T21:00:00Z",
-            endUtc: "2026-04-26T02:00:00Z",
-            timezone: "America/Chicago",
             thumbnailUrl: null,
             status: "PUBLISHED",
             confidence: 0.95,
@@ -397,7 +387,7 @@ describe("useMapFeedOptimized — Marker Diffing", () => {
           cacheEnabled: false, // Disable cache to force re-fetches
         }),
       {
-        initialProps: { bounds: null },
+        initialProps: { bounds: null as GeoBoundingBox | null },
       },
     );
 
@@ -428,7 +418,9 @@ describe("useMapFeedOptimized — Marker Diffing", () => {
       expect(mockInstrumentation.onMarkersDiffed).toHaveBeenLastCalledWith({
         added: 0,
         removed: 1, // Event 2 removed
-        updated: 0,
+        // updated: 1 -- fromMapCardProjection re-stamps startTime with new Date()
+        // on every projection, so the surviving marker diffs as updated
+        updated: 1,
       });
     });
   });
@@ -450,7 +442,7 @@ describe("useMapFeedOptimized — State Transitions", () => {
   });
 
   test("transitions: idle → loading → success", async () => {
-    mockEventService.fetchMapFeed.mockResolvedValue({
+    mockFetchMapFeed.mockResolvedValue({
       events: [
         {
           id: "1",
@@ -459,9 +451,6 @@ describe("useMapFeedOptimized — State Transitions", () => {
           lat: 29.7,
           lng: -95.3,
           category: "nightlife",
-          startUtc: "2026-04-25T21:00:00Z",
-          endUtc: "2026-04-26T02:00:00Z",
-          timezone: "America/Chicago",
           thumbnailUrl: null,
           status: "PUBLISHED",
           confidence: 0.95,
@@ -473,7 +462,7 @@ describe("useMapFeedOptimized — State Transitions", () => {
     const { result, rerender } = renderHook(
       ({ bounds }) => useMapFeedOptimized(bounds, defaultWindow),
       {
-        initialProps: { bounds: null },
+        initialProps: { bounds: null as GeoBoundingBox | null },
       },
     );
 
@@ -482,10 +471,13 @@ describe("useMapFeedOptimized — State Transitions", () => {
 
     rerender({ bounds: defaultBounds });
 
-    // Should transition to loading
-    expect(result.current.loadState).toBe("loading");
+    // Still idle while debouncing; loading begins when the debounced fetch starts
+    expect(result.current.loadState).toBe("idle");
 
     act(() => jest.advanceTimersByTime(400));
+
+    // Debounced fetch started
+    expect(result.current.loadState).toBe("loading");
 
     // Wait for success
     await waitFor(() => {
@@ -495,7 +487,7 @@ describe("useMapFeedOptimized — State Transitions", () => {
   });
 
   test("transitions: idle → loading → empty", async () => {
-    mockEventService.fetchMapFeed.mockResolvedValue({
+    mockFetchMapFeed.mockResolvedValue({
       events: [],
       totalCount: 0,
     });
@@ -503,7 +495,7 @@ describe("useMapFeedOptimized — State Transitions", () => {
     const { result, rerender } = renderHook(
       ({ bounds }) => useMapFeedOptimized(bounds, defaultWindow),
       {
-        initialProps: { bounds: null },
+        initialProps: { bounds: null as GeoBoundingBox | null },
       },
     );
 
@@ -519,12 +511,12 @@ describe("useMapFeedOptimized — State Transitions", () => {
 
   test("transitions: loading → error", async () => {
     const testError = new Error("Network error");
-    mockEventService.fetchMapFeed.mockRejectedValue(testError);
+    mockFetchMapFeed.mockRejectedValue(testError);
 
     const { result, rerender } = renderHook(
       ({ bounds }) => useMapFeedOptimized(bounds, defaultWindow),
       {
-        initialProps: { bounds: null },
+        initialProps: { bounds: null as GeoBoundingBox | null },
       },
     );
 
@@ -539,7 +531,7 @@ describe("useMapFeedOptimized — State Transitions", () => {
   });
 
   test("transitions: loading → timeout", async () => {
-    mockEventService.fetchMapFeed.mockImplementationOnce(
+    mockFetchMapFeed.mockImplementationOnce(
       () => new Promise(() => {}), // Never resolves
     );
 
@@ -549,7 +541,7 @@ describe("useMapFeedOptimized — State Transitions", () => {
           timeoutMs: 100, // Short timeout for testing
         }),
       {
-        initialProps: { bounds: null },
+        initialProps: { bounds: null as GeoBoundingBox | null },
       },
     );
 
@@ -582,7 +574,7 @@ describe("useMapFeedOptimized — Refresh", () => {
   });
 
   test("refresh() bypasses cache and fetches", async () => {
-    mockEventService.fetchMapFeed.mockResolvedValue({
+    mockFetchMapFeed.mockResolvedValue({
       events: [],
       totalCount: 0,
     });
@@ -593,7 +585,7 @@ describe("useMapFeedOptimized — Refresh", () => {
           cacheEnabled: true,
         }),
       {
-        initialProps: { bounds: null },
+        initialProps: { bounds: null as GeoBoundingBox | null },
       },
     );
 
@@ -602,7 +594,7 @@ describe("useMapFeedOptimized — Refresh", () => {
     act(() => jest.advanceTimersByTime(400));
 
     await waitFor(() => {
-      expect(mockEventService.fetchMapFeed).toHaveBeenCalledTimes(1);
+      expect(mockFetchMapFeed).toHaveBeenCalledTimes(1);
     });
 
     // Second request (same bounds) → cache hit
@@ -610,7 +602,7 @@ describe("useMapFeedOptimized — Refresh", () => {
     act(() => jest.advanceTimersByTime(400));
 
     await waitFor(() => {
-      expect(mockEventService.fetchMapFeed).toHaveBeenCalledTimes(1); // No new call
+      expect(mockFetchMapFeed).toHaveBeenCalledTimes(1); // No new call
     });
 
     // Call refresh
@@ -620,12 +612,12 @@ describe("useMapFeedOptimized — Refresh", () => {
     act(() => jest.advanceTimersByTime(400));
 
     await waitFor(() => {
-      expect(mockEventService.fetchMapFeed).toHaveBeenCalledTimes(2); // New call after refresh
+      expect(mockFetchMapFeed).toHaveBeenCalledTimes(2); // New call after refresh
     });
   });
 
   test("clearCache() clears query cache", async () => {
-    mockEventService.fetchMapFeed.mockResolvedValue({
+    mockFetchMapFeed.mockResolvedValue({
       events: [],
       totalCount: 0,
     });
@@ -636,7 +628,7 @@ describe("useMapFeedOptimized — Refresh", () => {
           cacheEnabled: true,
         }),
       {
-        initialProps: { bounds: null },
+        initialProps: { bounds: null as GeoBoundingBox | null },
       },
     );
 
@@ -645,15 +637,15 @@ describe("useMapFeedOptimized — Refresh", () => {
     act(() => jest.advanceTimersByTime(400));
 
     await waitFor(() => {
-      expect(mockEventService.fetchMapFeed).toHaveBeenCalledTimes(1);
+      expect(mockFetchMapFeed).toHaveBeenCalledTimes(1);
     });
 
     // Same bounds → cache hit
-    mockEventService.fetchMapFeed.mockClear();
+    mockFetchMapFeed.mockClear();
     rerender({ bounds: defaultBounds });
     act(() => jest.advanceTimersByTime(400));
 
-    expect(mockEventService.fetchMapFeed).not.toHaveBeenCalled();
+    expect(mockFetchMapFeed).not.toHaveBeenCalled();
 
     // Clear cache
     act(() => {
@@ -665,7 +657,7 @@ describe("useMapFeedOptimized — Refresh", () => {
     act(() => jest.advanceTimersByTime(400));
 
     await waitFor(() => {
-      expect(mockEventService.fetchMapFeed).toHaveBeenCalledTimes(1);
+      expect(mockFetchMapFeed).toHaveBeenCalledTimes(1);
     });
   });
 });

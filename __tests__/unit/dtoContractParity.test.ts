@@ -208,7 +208,7 @@ describe("DTO Contract Parity — manifest key alignment", () => {
     assertKeysMatchManifest(
       manifest,
       "EventMapCardDto",
-      sampleMapCard as Record<string, unknown>,
+      sampleMapCard as unknown as Record<string, unknown>,
     );
   });
 
@@ -216,7 +216,7 @@ describe("DTO Contract Parity — manifest key alignment", () => {
     assertKeysMatchManifest(
       manifest,
       "EventCalendarCardDto",
-      sampleCalendarCard as Record<string, unknown>,
+      sampleCalendarCard as unknown as Record<string, unknown>,
     );
   });
 
@@ -224,7 +224,7 @@ describe("DTO Contract Parity — manifest key alignment", () => {
     assertKeysMatchManifest(
       manifest,
       "MediaRefDto",
-      sampleMedia as Record<string, unknown>,
+      sampleMedia as unknown as Record<string, unknown>,
     );
   });
 
@@ -232,7 +232,7 @@ describe("DTO Contract Parity — manifest key alignment", () => {
     assertKeysMatchManifest(
       manifest,
       "EventDetailDto",
-      sampleDetail as Record<string, unknown>,
+      sampleDetail as unknown as Record<string, unknown>,
     );
   });
 
@@ -240,7 +240,7 @@ describe("DTO Contract Parity — manifest key alignment", () => {
     assertKeysMatchManifest(
       manifest,
       "EventMergeLineageSummaryDto",
-      sampleMergeLineage as Record<string, unknown>,
+      sampleMergeLineage as unknown as Record<string, unknown>,
     );
   });
 
@@ -248,7 +248,7 @@ describe("DTO Contract Parity — manifest key alignment", () => {
     assertKeysMatchManifest(
       manifest,
       "EventModerationDto",
-      sampleModeration as Record<string, unknown>,
+      sampleModeration as unknown as Record<string, unknown>,
     );
   });
 
@@ -256,7 +256,7 @@ describe("DTO Contract Parity — manifest key alignment", () => {
     assertKeysMatchManifest(
       manifest,
       "PublishBlockerSummaryDto",
-      sampleBlocker as Record<string, unknown>,
+      sampleBlocker as unknown as Record<string, unknown>,
     );
   });
 
@@ -264,7 +264,7 @@ describe("DTO Contract Parity — manifest key alignment", () => {
     assertKeysMatchManifest(
       manifest,
       "EligibilityConfidenceSummaryDto",
-      sampleConfidenceSummary as Record<string, unknown>,
+      sampleConfidenceSummary as unknown as Record<string, unknown>,
     );
   });
 
@@ -272,7 +272,7 @@ describe("DTO Contract Parity — manifest key alignment", () => {
     assertKeysMatchManifest(
       manifest,
       "EligibilityFieldCompletenessSummaryDto",
-      sampleFieldCompleteness as Record<string, unknown>,
+      sampleFieldCompleteness as unknown as Record<string, unknown>,
     );
   });
 
@@ -280,7 +280,7 @@ describe("DTO Contract Parity — manifest key alignment", () => {
     assertKeysMatchManifest(
       manifest,
       "EventPublishEligibilityDto",
-      sampleEligibility as Record<string, unknown>,
+      sampleEligibility as unknown as Record<string, unknown>,
     );
   });
 });
@@ -349,7 +349,7 @@ describe("Projection adapters — fromDto shape", () => {
   });
 
   it("fromDetailDto does not expose internal fields", () => {
-    const projection = fromDetailDto(sampleDetail) as Record<string, unknown>;
+    const projection = fromDetailDto(sampleDetail) as unknown as Record<string, unknown>;
     expect(Object.keys(projection)).not.toContain("provenance");
     expect(Object.keys(projection)).not.toContain("sourceEventIds");
     expect(Object.keys(projection)).not.toContain("mergeLineage");

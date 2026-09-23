@@ -315,7 +315,7 @@ export function useMapFeedOptimized(
   // Refs for debounce + abort + instrumentation
   // -----------------------------------------------------------------------
 
-  const debounceTimerRef = useRef<NodeJS.Timeout>();
+  const debounceTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const abortControllerRef = useRef<AbortController | null>(null);
   const lastRequestKeyRef = useRef<string>("");
   const detailOpenTimeRef = useRef<number | null>(null);
