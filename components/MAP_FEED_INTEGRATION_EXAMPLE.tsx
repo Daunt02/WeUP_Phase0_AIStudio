@@ -58,8 +58,10 @@ export function MapIntegrationExample({
   // -----------------------------------------------------------------------
 
   const mapWindow: MapFeedQuery["window"] = {
+    /* eslint-disable react-hooks/purity -- example intentionally samples the current time on each render */
     startUtc: new Date().toISOString(), // TODO: Use preset resolution
     endUtc: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // Next 7 days
+    /* eslint-enable react-hooks/purity */
     timezone,
   };
 

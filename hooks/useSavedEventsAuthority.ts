@@ -210,7 +210,7 @@ export function useSavedEventsAuthority() {
         }));
       }
     },
-    [state.savedEventIds],
+    [state.savedEventIds, state.syncing],
   );
 
   const isSaved = useCallback(

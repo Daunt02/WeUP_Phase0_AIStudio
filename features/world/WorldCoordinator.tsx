@@ -90,7 +90,9 @@ export default function WorldCoordinator() {
     return () => {
       canceled = true;
     };
-  }, []);
+    // restorePersistedState is referentially stable (useCallback [] in useWorldSurfaceState),
+    // so listing it preserves the intended mount-only semantics.
+  }, [restorePersistedState]);
 
   // Hydrate persisted UI slice for anonymous sessions only.
   useEffect(() => {

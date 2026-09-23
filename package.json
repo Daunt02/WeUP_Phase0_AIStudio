@@ -14,7 +14,7 @@
     "dev:backend:test": "cross-env ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=http://127.0.0.1:5074 SeedData__EnableOnStartup=true SeedData__EnableResetEndpoint=true dotnet run --project backend/WeUP.Api/WeUP.Api.csproj",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --ext .js,.ts,.tsx --max-warnings=0",
+    "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test": "jest --runInBand",
     "test:frontend": "jest --runInBand",

@@ -2,6 +2,7 @@ export type PublicEnv = {
   NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN: string;
   NEXT_PUBLIC_API_BASE_URL: string;
   NEXT_PUBLIC_ANALYTICS_ENABLED: boolean;
+  NEXT_PUBLIC_BACKEND_ANALYTICS_ENDPOINT?: string;
   NEXT_PUBLIC_FEATURE_FLAGS?: Record<string, boolean>;
 };
 

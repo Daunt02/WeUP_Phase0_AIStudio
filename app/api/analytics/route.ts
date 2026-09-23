@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { publicEnv } from "@/lib/env/public";
 
 export async function POST(req: NextRequest) {
   try {
@@ -7,7 +8,7 @@ export async function POST(req: NextRequest) {
       req.headers.get("x-correlation-id") ?? crypto.randomUUID();
 
     // Phase 0: forward to backend if configured, otherwise log to console
-    const endpoint = process.env.NEXT_PUBLIC_BACKEND_ANALYTICS_ENDPOINT;
+    const endpoint = publicEnv.NEXT_PUBLIC_BACKEND_ANALYTICS_ENDPOINT;
     if (endpoint) {
       await fetch(endpoint, {
         method: "POST",
