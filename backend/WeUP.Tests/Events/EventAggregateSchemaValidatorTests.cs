@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using WeUP.Application.Events;
 using WeUP.Contracts.Events;
+using WeUP.Contracts.Moderation;
 using WeUP.Domain.Events;
 using WeUP.Domain.Moderation;
 using Xunit;

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using WeUP.Application.Dedupe;
 using WeUP.Contracts.Dedupe;
 using WeUP.Contracts.Ingestion;
+using WeUP.Contracts.Moderation;
 using WeUP.Domain.Events;
 using WeUP.Domain.Moderation;
 using Xunit;

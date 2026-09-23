@@ -1,3 +1,4 @@
+using WeUP.Contracts.Moderation;
 using WeUP.Domain.Events;
 using WeUP.Domain.Moderation;
 using Xunit;
