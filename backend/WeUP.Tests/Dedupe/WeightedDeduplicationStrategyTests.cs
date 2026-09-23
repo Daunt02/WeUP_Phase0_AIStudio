@@ -1,3 +1,4 @@
+using WeUP.Contracts.Events;
 using WeUP.Contracts.Ingestion;
 using WeUP.Domain.Dedupe;
 using Xunit;

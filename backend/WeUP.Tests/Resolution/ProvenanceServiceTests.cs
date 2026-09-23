@@ -1,4 +1,5 @@
 using WeUP.Application.Resolution;
+using WeUP.Contracts.Events;
 using WeUP.Contracts.Ingestion;
 using WeUP.Contracts.Resolution;
 using WeUP.Domain.Dedupe;

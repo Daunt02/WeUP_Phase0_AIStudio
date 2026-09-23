@@ -1,4 +1,5 @@
 using WeUP.Application.Moderation;
+using WeUP.Contracts.Moderation;
 using WeUP.Domain.Dedupe;
 using WeUP.Domain.Flyer;
 using WeUP.Domain.Moderation;

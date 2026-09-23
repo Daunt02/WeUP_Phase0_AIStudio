@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Text.Json;
 using WeUP.Application.Events;
 using WeUP.Contracts.Events;
+using WeUP.Contracts.Moderation;
 using WeUP.Domain.Events;
 using WeUP.Domain.Moderation;
 using Xunit;
