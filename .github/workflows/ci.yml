@@ -42,3 +42,28 @@ jobs:
           GEMMA_MODEL_DIR: ${{ github.workspace }}/models
         run: |
           docker run --rm bundle-executor python -m bundle_executor.executor bundles/example_bundle.json
+
+  release-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+
+      - name: Use .NET 8
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Release gates
+        run: npm run release:check
