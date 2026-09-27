@@ -11,6 +11,10 @@
  * 5. Accessibility and mobile UX considerations
  */
 
+// Garden Vue audit: these example consts are compiled; keep their imports real.
+import type { EventMapFeedQueryDto } from "../contracts/map-feed.contracts";
+import { TimeWindowPreset } from "../contracts/time-window.contracts";
+
 // ============================================================================
 // PART 1: COMPONENT INTEGRATION
 // ============================================================================
@@ -154,7 +158,7 @@ watch(
  */
 
 const example1PresetNow: EventMapFeedQueryDto = {
-  preset: "now",
+  preset: TimeWindowPreset.Now,
   timezone: "America/Chicago", // Client detects via Intl.DateTimeFormat
   bbox: "[-96.5,29.5,-95.0,30.0]",
   // Backend expands "now" to [current_time - 1hr, current_time + 3hr]
@@ -169,7 +173,7 @@ const example1PresetNow: EventMapFeedQueryDto = {
  */
 
 const example2PresetTonight: EventMapFeedQueryDto = {
-  preset: "tonight",
+  preset: TimeWindowPreset.Tonight,
   timezone: "America/Chicago",
   bbox: "[-96.5,29.5,-95.0,30.0]",
   // Backend expands "tonight" to [today 6pm, today 11:59pm] in America/Chicago TZ
@@ -184,7 +188,7 @@ const example2PresetTonight: EventMapFeedQueryDto = {
  */
 
 const example3DateStepForward: EventMapFeedQueryDto = {
-  preset: "custom",
+  preset: TimeWindowPreset.Custom,
   timezone: "America/Chicago",
   customStartUtc: "2026-04-21T00:00:00Z", // Tomorrow 00:00 UTC
   customEndUtc: "2026-04-21T23:59:59Z", // Tomorrow 23:59 UTC
@@ -201,7 +205,7 @@ const example3DateStepForward: EventMapFeedQueryDto = {
  */
 
 const example4DateStepBackward: EventMapFeedQueryDto = {
-  preset: "custom",
+  preset: TimeWindowPreset.Custom,
   timezone: "America/Chicago",
   customStartUtc: "2026-04-19T00:00:00Z", // Yesterday 00:00 UTC
   customEndUtc: "2026-04-19T23:59:59Z", // Yesterday 23:59 UTC
@@ -219,7 +223,7 @@ const example4DateStepBackward: EventMapFeedQueryDto = {
  */
 
 const example5CustomRange: EventMapFeedQueryDto = {
-  preset: "custom",
+  preset: TimeWindowPreset.Custom,
   timezone: "America/Chicago",
   customStartUtc: "2026-04-20T15:00:00Z", // 10:00 CDT = 15:00 UTC (CDT = UTC-5)
   customEndUtc: "2026-04-22T23:00:00Z", // 18:00 CDT = 23:00 UTC
@@ -237,7 +241,7 @@ const example5CustomRange: EventMapFeedQueryDto = {
  */
 
 const example6ScrubbingWithinPreset: EventMapFeedQueryDto = {
-  preset: "thisWeekend",
+  preset: TimeWindowPreset.ThisWeekend,
   timezone: "America/Chicago",
   bbox: "[-96.5,29.5,-95.0,30.0]",
   // Scrubbing does NOT modify the backend window.
