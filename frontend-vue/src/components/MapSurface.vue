@@ -785,7 +785,9 @@ onMounted(async () => {
   const currentMap = new mapboxgl.Map({
     container: mapContainer.value,
     style: "mapbox://styles/mapbox/light-v11",
-    center: [-95.3698, 29.7604],
+    // Garden Vue audit: default viewport must match the shipped seed dataset's
+    // market (San Francisco). Houston was showing an empty market on first paint.
+    center: [-122.4194, 37.7749],
     zoom: 11,
   });
 
