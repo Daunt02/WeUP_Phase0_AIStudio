@@ -21,6 +21,9 @@ public sealed class StubEventRepository : IEventRepository, IEventSubmissionRepo
     private readonly Dictionary<string, string> _submissionStatuses = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> _eventStatuses = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, (string MarketCode, string DistrictCode, string NeighborhoodCode)> _eventLocalities = new(StringComparer.OrdinalIgnoreCase);
+    // Garden G-07: map cards carry no timestamp, so keep the seed start time per
+    // event to apply the requested time window in the stub map feed.
+    private readonly Dictionary<string, DateTimeOffset> _mapCardStartUtc = new(StringComparer.OrdinalIgnoreCase);
     private int _submissionSequence;
 
     public void Reset(Phase0SeedDataset dataset)
@@ -95,9 +98,11 @@ public sealed class StubEventRepository : IEventRepository, IEventSubmissionRepo
 
             _eventStatuses.Clear();
             _eventLocalities.Clear();
+            _mapCardStartUtc.Clear();
             foreach (var evt in dataset.Events)
             {
                 _eventStatuses[evt.EventId] = evt.Status;
+                _mapCardStartUtc[evt.EventId] = ParseDate(evt.StartsAtUtc);
 
                 var venue = venueById[evt.VenueId];
                 _eventLocalities[evt.EventId] = (
@@ -114,14 +119,19 @@ public sealed class StubEventRepository : IEventRepository, IEventSubmissionRepo
     public Task<MapFeedResponse> GetMapFeedAsync(MapFeedRequest request, CancellationToken ct = default)
     {
         var bb = request.Bounds;
+        var w = request.Window;
         var events = _mapCards
             .Where(e => e.Lat >= bb.MinLat && e.Lat <= bb.MaxLat &&
                         e.Lng >= bb.MinLng && e.Lng <= bb.MaxLng)
+            // Garden G-07: apply the requested window ([start, end), matching the
+            // real repository). Clusters are intentionally empty in the stub.
+            .Where(e => _mapCardStartUtc.TryGetValue(e.Id, out var startUtc) &&
+                        startUtc >= w.StartUtc && startUtc < w.EndUtc)
             .Where(e => request.Categories is null || request.Categories.Length == 0 || request.Categories.Contains(e.Category, StringComparer.OrdinalIgnoreCase))
             .Where(e => MatchesLocality(e.Id, request.Locality, request.DistrictCode))
             .Where(e => e.Confidence >= request.MinConfidence)
             .ToArray();
-        return Task.FromResult(new MapFeedResponse(events, events.Length, null, "bounding_box"));
+        return Task.FromResult(new MapFeedResponse(events, events.Length, [], "bounding_box"));
     }
 
     public Task<CalendarFeedResponse> GetCalendarFeedAsync(CalendarFeedRequest request, CancellationToken ct = default)

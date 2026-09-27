@@ -44,6 +44,22 @@ public sealed class Phase0ReleaseApiTests : IClassFixture<Phase0ReleaseApiTests.
     }
 
     [Fact]
+    public async Task MapFeed_AppliesRequestedWindow_AndReturnsEmptyClusters()
+    {
+        var response = await _client.PostAsJsonAsync("/api/events/map", new MapFeedRequest(
+            new GeoBoundingBox(37.70, 37.85, -122.52, -122.37),
+            new TimeWindowRequest(DateTimeOffset.Parse("2026-04-13T00:00:00Z"), DateTimeOffset.Parse("2026-04-14T00:00:00Z"), "America/Los_Angeles")));
+
+        response.EnsureSuccessStatusCode();
+        var payload = await response.Content.ReadFromJsonAsync<MapFeedResponse>();
+
+        Assert.NotNull(payload);
+        Assert.Empty(payload!.Events);
+        Assert.NotNull(payload.Clusters);
+        Assert.Empty(payload.Clusters);
+    }
+
+    [Fact]
     public async Task MapFeed_Returns422_WhenWindowStartIsNotBeforeEnd()
     {
         var response = await _client.PostAsJsonAsync("/api/events/map", new MapFeedRequest(
