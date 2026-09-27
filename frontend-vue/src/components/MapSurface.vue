@@ -885,11 +885,21 @@ watch(
   { deep: true },
 );
 
-watch(requestSignature, async () => {
-  // Filter changes always produce one canonical request payload. Reload from the
-  // current viewport only after that payload is valid.
-  await refreshFromCurrentViewport();
-});
+watch(
+  [
+    requestSignature,
+    () => resolvedActiveFilters.value.district,
+    () => resolvedActiveFilters.value.categories,
+  ],
+  async () => {
+    // Filter changes always produce one canonical request payload. Reload from the
+    // current viewport only after that payload is valid. District/category are
+    // watched here (not in requestSignature) because they arrive via the
+    // discovery filter state, not the temporal filter panel.
+    await refreshFromCurrentViewport();
+  },
+  { deep: true },
+);
 
 onBeforeUnmount(() => {
   const currentMap = map.value;
