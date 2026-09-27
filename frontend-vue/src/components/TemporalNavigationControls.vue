@@ -156,7 +156,6 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import type { TimeWindowPreset } from "../contracts/time-window.contracts";
 import { TimeWindowPreset } from "../contracts/time-window.contracts";
 import type { UseTemporalNavigation } from "../composables/useTemporalNavigation";
 
