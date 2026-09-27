@@ -44,6 +44,36 @@ public sealed class Phase0ReleaseApiTests : IClassFixture<Phase0ReleaseApiTests.
     }
 
     [Fact]
+    public async Task MapFeed_Returns422_WhenWindowStartIsNotBeforeEnd()
+    {
+        var response = await _client.PostAsJsonAsync("/api/events/map", new MapFeedRequest(
+            new GeoBoundingBox(37.70, 37.85, -122.52, -122.37),
+            new TimeWindowRequest(DateTimeOffset.Parse("2026-04-13T00:00:00Z"), DateTimeOffset.Parse("2026-04-11T00:00:00Z"), "America/Los_Angeles")));
+
+        Assert.Equal((HttpStatusCode)422, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task MapFeed_Returns422_WhenWindowStartEqualsEnd()
+    {
+        var response = await _client.PostAsJsonAsync("/api/events/map", new MapFeedRequest(
+            new GeoBoundingBox(37.70, 37.85, -122.52, -122.37),
+            new TimeWindowRequest(DateTimeOffset.Parse("2026-04-12T00:00:00Z"), DateTimeOffset.Parse("2026-04-12T00:00:00Z"), "America/Los_Angeles")));
+
+        Assert.Equal((HttpStatusCode)422, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task MapFeed_Returns422_WhenWindowIsMissing()
+    {
+        var response = await _client.PostAsJsonAsync("/api/events/map", new MapFeedRequest(
+            new GeoBoundingBox(37.70, 37.85, -122.52, -122.37),
+            null!));
+
+        Assert.Equal((HttpStatusCode)422, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Auth_Save_And_Me_Flow_WorkAgainstSeededUser()
     {
         var login = await _client.PostAsJsonAsync("/auth/login", new LoginRequest("camille+phase0@weup.test"));

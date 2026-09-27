@@ -35,6 +35,11 @@ public static class EventEndpoints
             var validation = ValidateBoundingBox(request.Bounds);
             if (validation is not null) return validation;
 
+            // Garden G-06: reject inverted/empty time windows with 422,
+            // matching the endpoint's bounding-box validation contract.
+            var windowValidation = ValidateTimeWindow(request.Window);
+            if (windowValidation is not null) return windowValidation;
+
             var response = await repo.GetMapFeedAsync(request, ct);
             var visibleEvents = response.Events
                 .Where(card => GeoValidationRules.ValidatePoint(card.Lat, card.Lng, card.Confidence).IsRenderableOnMap)
@@ -357,6 +362,31 @@ public static class EventEndpoints
                     group => group.Key,
                     group => group.Select(issue => issue.Message).Distinct(StringComparer.Ordinal).ToArray(),
                     StringComparer.OrdinalIgnoreCase),
+            statusCode: 422);
+    }
+
+    private static IResult? ValidateTimeWindow(TimeWindowRequest? window)
+    {
+        if (window is null)
+        {
+            return Results.ValidationProblem(
+                new Dictionary<string, string[]>
+                {
+                    ["window"] = ["Window is required."],
+                },
+                statusCode: 422);
+        }
+
+        if (window.StartUtc < window.EndUtc)
+        {
+            return null;
+        }
+
+        return Results.ValidationProblem(
+            new Dictionary<string, string[]>
+            {
+                ["window"] = ["Window start must be earlier than window end."],
+            },
             statusCode: 422);
     }
 
