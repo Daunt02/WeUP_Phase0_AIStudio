@@ -107,6 +107,7 @@
           :is-loading="isLoading"
           :is-save-pending="isSavePending"
           :error="error"
+          :session-kind="selectedEventSessionKind"
           @update:model-value="onModalVisibilityChange"
           @toggle-save="toggleSavedState"
           @share="showSharePlaceholder"
@@ -145,6 +146,7 @@ import type {
   EventMapItemDto,
 } from "./contracts/map-feed.contracts";
 import { shareEventDetail } from "./services/eventDetailService";
+import type { SaveSessionKind } from "./contracts/event-detail.contracts";
 
 const $q = useQuasar();
 
@@ -292,6 +294,18 @@ const {
 
 const selectedEventSavedState = computed(() => {
   return eventDetail.value?.savedByCurrentUser ?? null;
+});
+
+// Save-session kind for the event surface: read from the canonical
+// saved-state cache (the same authority useEventDetailModal uses). Null when
+// the state has not been resolved yet — the modal omits the chip then.
+const selectedEventSessionKind = computed<SaveSessionKind | null>(() => {
+  const eventId = eventDetail.value?.id;
+  if (!eventId) {
+    return null;
+  }
+
+  return savedEventState.getCachedSavedState(eventId)?.sessionKind ?? null;
 });
 
 const mapItemsState = ref<EventMapItemDto[]>([]);
