@@ -1,14 +1,32 @@
+<!--
+  WEUP-SYNTH (G6 — Navigation):
+  sources=[components/TopBar.tsx, components/BottomNav.tsx, components/InteractionLayer.tsx]
+  destination=frontend-vue/src/App.vue
+  mission=WEUP-PHASE0-VUE-FINAL-SYNTHESIS-001
+  notes=App.vue is now the coherent application shell (mission §2): WORLD
+    (MapSurface) / CALENDAR (CalendarOverlayShell) / EVENT (EventDetailModal)
+    surfaces composed with the canonical WeupTopBar + WeupBottomNav chrome and
+    the SAVED overlay sheet. All pre-existing behavior and contracts are
+    preserved (discovery handlers, calendar sync, modal, share, persistence);
+    G6 only extends. Mode dispatch follows navigation/weupNavModes.ts; the
+    authoritative UI state remains useDiscoveryState + the existing composables.
+-->
 <template>
-  <q-layout view="hHh lpR fFf" class="app-layout">
-    <q-header bordered class="header">
-      <q-toolbar>
-        <q-toolbar-title>WeUP Discovery Map</q-toolbar-title>
-      </q-toolbar>
+  <q-layout view="hHh lpR fFf" class="weup-shell">
+    <q-header class="weup-header">
+      <WeupTopBar
+        :feed-status="feedStatus"
+        :district="discovery.activeFilters.value.district"
+        :known-districts="knownDistricts"
+        @mode-change="handleNavModeChange"
+        @apply-district-filter="onTopBarDistrictFilter"
+        @clear-district-filter="onTopBarDistrictClear"
+      />
     </q-header>
 
     <q-page-container>
-      <q-page class="map-page">
-        <div class="map-stack">
+      <q-page class="weup-page">
+        <div class="surface-stack">
           <MapSurface
             :selected-event-id="discovery.selectedEventId.value"
             :selected-event-saved-state="selectedEventSavedState"
@@ -17,6 +35,7 @@
             @filters-updated="onMapFiltersUpdated"
             @map-feed-query-updated="onMapFeedQueryUpdated"
             @map-items-updated="onMapItemsUpdated"
+            @feed-status-changed="onFeedStatusChanged"
           />
 
           <CalendarOverlayShell
@@ -28,6 +47,52 @@
             :degraded-reason="calendarDegradedReason"
             @set-layer="discovery.setOverlayMode"
             @select-event="discovery.selectEvent"
+          />
+
+          <!-- SAVED mode surface: existing SavedEventsPanel mounted as a shell
+               overlay sheet, wired to useSavedEventsCollection. -->
+          <Transition name="saved-sheet">
+            <div
+              v-if="isSavedSheetOpen"
+              class="saved-sheet-wrap"
+              role="dialog"
+              aria-label="Saved events"
+            >
+              <button
+                type="button"
+                class="saved-sheet-close"
+                aria-label="Close saved events"
+                @click="onSavedSheetClose"
+              >
+                <q-icon name="close" />
+              </button>
+              <SavedEventsPanel
+                :items="savedCollection.items.value"
+                :saved-count-badge-value="
+                  savedCollection.surfaceSnapshot.value.savedCountBadgeValue
+                "
+                :resolved-count="savedCollection.resolvedCount.value"
+                :missing-or-deleted-count="
+                  savedCollection.missingOrDeletedCount.value
+                "
+                :session-kind="savedCollection.sessionKind.value"
+                :is-loading="savedCollection.isLoading.value"
+                :is-refreshing="savedCollection.isRefreshing.value"
+                :degraded-reason="savedCollection.degradedReason.value"
+                :error="savedCollection.error.value"
+                :selected-event-id="discovery.selectedEventId.value"
+                @refresh="onSavedPanelRefresh"
+                @select-event="onSavedPanelSelectEvent"
+              />
+            </div>
+          </Transition>
+
+          <WeupBottomNav
+            :active-mode="navMode.activeMode.value"
+            :saved-count="
+              savedCollection.surfaceSnapshot.value.savedCountBadgeValue
+            "
+            @mode-change="handleNavModeChange"
           />
         </div>
 
@@ -52,6 +117,11 @@ import { useQuasar } from "quasar";
 import CalendarOverlayShell from "./components/CalendarOverlayShell.vue";
 import EventDetailModal from "./components/EventDetailModal.vue";
 import MapSurface from "./components/MapSurface.vue";
+import SavedEventsPanel from "./components/SavedEventsPanel.vue";
+import WeupBottomNav from "./components/WeupBottomNav.vue";
+import WeupTopBar, {
+  type TopBarFeedStatus,
+} from "./components/WeupTopBar.vue";
 import {
   useDiscoveryState,
   type DiscoveryFilterState,
@@ -59,7 +129,10 @@ import {
 import { useAnonymousLocalPersistence } from "./composables/useAnonymousLocalPersistence";
 import { useEventDetailModal } from "./composables/useEventDetailModal";
 import { useSavedEventState } from "./composables/useSavedEventState";
+import { useSavedEventsCollection } from "./composables/useSavedEventsCollection";
 import { useUserContextPreferences } from "./composables/useUserContextPreferences";
+import { useWeupNavMode } from "./composables/useWeupNavMode";
+import type { WeupNavMode } from "./navigation/weupNavModes";
 import type {
   EventMapFeedQueryDto,
   EventMapItemDto,
@@ -71,6 +144,110 @@ const $q = useQuasar();
 const discovery = useDiscoveryState();
 const anonymousLocalPersistence = useAnonymousLocalPersistence();
 const userContextPreferences = useUserContextPreferences();
+
+// ─── G6 navigation shell state ──────────────────────────────────────────────
+// The nav mode is shell chrome state only: every mode request dispatches into
+// the canonical composables below. The authoritative UI state remains
+// useDiscoveryState (+ useSavedEventsCollection / the saved-sheet mount flag).
+const navMode = useWeupNavMode();
+const savedCollection = useSavedEventsCollection();
+const isSavedSheetOpen = ref(false);
+const feedStatus = ref<TopBarFeedStatus>({
+  isLoading: true,
+  error: null,
+  offline: false,
+});
+
+/**
+ * Canonical district taxonomy derived from the visible feed. The TopBar
+ * search resolves queries against this list only (no live search backend).
+ */
+const knownDistricts = computed<readonly string[]>(() => {
+  const districts = new Set<string>();
+  for (const item of mapItemsState.value) {
+    if (item.district && item.district.trim().length > 0) {
+      districts.add(item.district);
+    }
+  }
+  return [...districts].sort((a, b) => a.localeCompare(b));
+});
+
+function openSavedSheet(): void {
+  isSavedSheetOpen.value = true;
+  void savedCollection.loadSavedEvents();
+}
+
+function closeSavedSheet(): void {
+  isSavedSheetOpen.value = false;
+}
+
+/**
+ * Mode -> surface dispatch, per navigation/weupNavModes.ts NAV_SURFACE_MAP.
+ * Every mode transition first clears selection (source handleModeChange
+ * semantics: selectedItemId is reset on any mode change).
+ */
+function handleNavModeChange(mode: WeupNavMode): void {
+  if (!navMode.requestMode(mode)) {
+    return;
+  }
+
+  discovery.clearSelection();
+
+  switch (mode) {
+    case "DISCOVER":
+      closeSavedSheet();
+      discovery.setOverlayMode("partial");
+      break;
+    case "ACTIVITY":
+      // Source: ACTIVITY opens the CulturalCalendar temporal overlay.
+      // Vue counterpart: the calendar overlay shell at expanded layer.
+      closeSavedSheet();
+      discovery.setOverlayMode("expanded");
+      break;
+    case "SAVED":
+      openSavedSheet();
+      break;
+    case "PROFILE":
+      // PROJECTION_DEFINED (owner G9): no Vue profile surface exists yet.
+      // World surface retained; no fabricated surface is shown.
+      closeSavedSheet();
+      break;
+    case "CREATE":
+      // PROJECTION_DEFINED (owner G11): no Vue create wizard exists yet.
+      // World surface retained; no fabricated create flow is shown.
+      closeSavedSheet();
+      break;
+  }
+}
+
+function onSavedSheetClose(): void {
+  closeSavedSheet();
+  navMode.resetMode();
+}
+
+function onSavedPanelRefresh(): void {
+  void savedCollection.loadSavedEvents();
+}
+
+function onSavedPanelSelectEvent(eventId: string): void {
+  // Hand off to the EVENT surface: selection drives the shared detail modal
+  // via the existing useEventDetailModal wiring.
+  closeSavedSheet();
+  navMode.resetMode();
+  discovery.selectEvent(eventId);
+}
+
+function onFeedStatusChanged(status: TopBarFeedStatus): void {
+  feedStatus.value = status;
+}
+
+function onTopBarDistrictFilter(district: string): void {
+  onMapFiltersUpdated({ district });
+}
+
+function onTopBarDistrictClear(): void {
+  onMapFiltersUpdated({ district: undefined });
+}
 
 const selectedEventIdModel = computed<string | null>({
   get() {
@@ -306,30 +483,112 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.app-layout {
+/* G4 tokens: canonical dark application shell. One responsive composition
+   (mission §20) — mobile prioritizes MAP → DISCOVERY → EVENT → CREATE →
+   SAVED → PROFILE → ASSISTANT; desktop may expose simultaneous surfaces.
+   No duplicated business logic, no separate mobile/desktop implementations. */
+.weup-shell {
   min-height: 100vh;
-  background: linear-gradient(180deg, #f7fbff 0%, #eef5ff 100%);
+  background: #050505;
+  color: #fff;
 }
 
-.header {
-  background: #ffffff;
-  color: #1f2937;
+.weup-header {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #fff;
 }
 
-.map-page {
-  height: calc(100vh - 50px);
-  padding: 12px;
+.weup-page {
+  height: calc(100vh - 57px);
+  padding: 0;
 }
 
-.map-stack {
+.surface-stack {
   position: relative;
   height: 100%;
+  overflow: hidden;
 }
 
-@media (max-width: 768px) {
-  .map-page {
-    padding: 8px;
-    height: calc(100vh - 50px);
+/* SAVED overlay sheet: G4 drawer grammar — bottom sheet, rounded-t-[18px],
+   slide-up 400ms, overlay elevation. z-index 150: above map/calendar (0-60),
+   below the bottom nav (200) so navigation stays reachable. */
+.saved-sheet-wrap {
+  position: absolute;
+  inset-inline: 12px;
+  bottom: calc(104px + env(safe-area-inset-bottom));
+  z-index: 150;
+  max-width: 480px;
+  margin-inline: auto;
+  max-height: calc(100% - 200px);
+  overflow-y: auto;
+  background: rgba(10, 10, 10, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 18px 18px 18px 18px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+}
+
+.saved-sheet-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 18px;
+  cursor: pointer;
+  transition:
+    color 0.3s ease,
+    background-color 0.3s ease;
+}
+
+.saved-sheet-close:hover {
+  color: #00ff9c;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.saved-sheet-enter-active,
+.saved-sheet-leave-active {
+  transition:
+    transform 0.4s ease,
+    opacity 0.4s ease;
+}
+
+.saved-sheet-enter-from,
+.saved-sheet-leave-to {
+  transform: translateY(48px);
+  opacity: 0;
+}
+
+@media (max-width: 560px) {
+  .saved-sheet-wrap {
+    inset-inline: 8px;
+    bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .saved-sheet-enter-active,
+  .saved-sheet-leave-active {
+    transition: none;
+  }
+
+  .saved-sheet-enter-from,
+  .saved-sheet-leave-to {
+    transform: none;
+    opacity: 1;
   }
 }
 </style>
