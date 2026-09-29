@@ -95,11 +95,11 @@ export const NAV_SURFACE_MAP: Readonly<Record<WeupNavMode, NavSurfaceMapping>> =
       sourceBehavior:
         "OverlayLayer: activeMode === 'PROFILE' opens ProfilePanel (wallet/tier/reputation surface).",
       vueSurface:
-        "ProfilePanel — no Vue counterpart exists yet. Surface owned by G9.",
-      disposition: "PROJECTION_DEFINED",
+        "ProfilePanel mounted as a shell overlay sheet (z-150), wired to the canonical saved-state authority: saved count from useSavedEventsCollection.surfaceSnapshot, city/context from anonymous discovery context + user-context preferences, prototype-local folders, prototype-labeled social tiers. Fabrication path (profileService/Gemini) excluded; server profile explicitly unavailable (BLOCKED_WITH_REASON: no profile API observed).",
+      disposition: "ADAPTED",
       owner: "G9",
       notes:
-        "Interim G6 behavior: the mode transition is real state (active highlight renders, dispatch recorded); the world surface is retained and no fabricated profile surface is shown. G9 resolves the surface.",
+        "Implemented in G9 (WEUP-PHASE0-VUE-FINAL-SYNTHESIS-001): App.vue profile overlay sheet opens on PROFILE mode; fabrication paths excluded per G2 arbitration; folders prototype-local per G3 chain.",
     },
     CREATE: {
       mode: "CREATE",

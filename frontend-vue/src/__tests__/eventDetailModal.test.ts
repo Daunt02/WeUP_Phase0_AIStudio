@@ -261,4 +261,59 @@ describe("EventDetailModal (G8 event surface)", () => {
     const failed = mountModal({ error: "Detail request failed" });
     expect(failed.text()).toContain("Detail request failed");
   });
+
+  it("G9: exposes the prototype social layer only for saved events", async () => {
+    // Stub the prototype panel so this test stays at the affordance level;
+    // the panel's own isolation contract is covered in g9SavedProfilePanels.
+    const SocialStub = defineComponent({
+      name: "SocialSignalPanelStub",
+      props: { isOpen: { type: Boolean, default: false } },
+      template: `<div class="social-signal-panel-stub" :data-open="isOpen"></div>`,
+    });
+
+    const mountWithSocialStub = (props: Record<string, unknown>) =>
+      mount(EventDetailModal, {
+        props: {
+          modelValue: true,
+          event: null,
+          isLoading: false,
+          isSavePending: false,
+          error: null,
+          ...props,
+        },
+        global: {
+          stubs: {
+            "q-dialog": GenericStub("q-dialog"),
+            "q-card": GenericStub("q-card"),
+            "q-card-section": GenericStub("q-card-section"),
+            "q-separator": GenericStub("q-separator"),
+            "q-card-actions": GenericStub("q-card-actions"),
+            "q-skeleton": GenericStub("q-skeleton"),
+            "q-banner": GenericStub("q-banner"),
+            "q-img": QImgStub,
+            "q-badge": QBadgeStub,
+            "q-icon": QIconStub,
+            "q-chip": QChipStub,
+            "q-btn": QBtnStub,
+            SocialSignalPanel: SocialStub,
+          },
+        },
+      });
+
+    const saved = mountWithSocialStub({
+      event: buildEvent({ savedByCurrentUser: true }),
+    });
+    await findButton(saved, "Social").trigger("click");
+    expect(
+      saved
+        .findComponent({ name: "SocialSignalPanelStub" })
+        .attributes("data-open"),
+    ).toBe("true");
+
+    // Unsaved events have no "Interest Saved" entry affordance.
+    const unsaved = mountWithSocialStub({
+      event: buildEvent({ savedByCurrentUser: false }),
+    });
+    expect(() => findButton(unsaved, "Social")).toThrow(/not found/);
+  });
 });

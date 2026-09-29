@@ -86,8 +86,52 @@
                 :degraded-reason="savedCollection.degradedReason.value"
                 :error="savedCollection.error.value"
                 :selected-event-id="discovery.selectedEventId.value"
+                :folder-names="profileFolders.folderNames.value"
+                :folder-name-by-event-id="folderNameByEventId"
                 @refresh="onSavedPanelRefresh"
                 @select-event="onSavedPanelSelectEvent"
+                @unsave-event="onSavedPanelUnsave"
+                @assign-folder="onSavedPanelAssignFolder"
+              />
+            </div>
+          </Transition>
+
+          <!-- PROFILE mode surface (G9): ProfilePanel mounted as a shell
+               overlay sheet, wired to the canonical saved-state authority.
+               Fabrication path excluded: every field cites its real source. -->
+          <Transition name="saved-sheet">
+            <div
+              v-if="isProfileSheetOpen"
+              class="saved-sheet-wrap profile-sheet-wrap"
+              role="dialog"
+              aria-label="Profile"
+            >
+              <button
+                type="button"
+                class="saved-sheet-close"
+                aria-label="Close profile"
+                @click="onProfileSheetClose"
+              >
+                <q-icon name="close" />
+              </button>
+              <ProfilePanel
+                :session-kind="savedCollection.sessionKind.value"
+                :saved-count="
+                  savedCollection.surfaceSnapshot.value.savedCountBadgeValue
+                "
+                :resolved-count="savedCollection.resolvedCount.value"
+                :saved-in-current-view="profileSavedInCurrentView"
+                :city-label="profileCityLabel"
+                :district-label="profileDistrictLabel"
+                :preferred-district-labels="profilePreferredDistrictLabels"
+                :folders="profileFoldersView"
+                :prototype-folders-label="profileFolders.prototypeLabel"
+                :social-unlocked-count="
+                  socialPrototype.unlockedTierLevels.length
+                "
+                @create-folder="onProfileCreateFolder"
+                @delete-folder="onProfileDeleteFolder"
+                @apply-district="onProfileApplyDistrict"
               />
             </div>
           </Transition>
@@ -123,6 +167,7 @@ import { useQuasar } from "quasar";
 import CalendarOverlayShell from "./components/CalendarOverlayShell.vue";
 import EventDetailModal from "./components/EventDetailModal.vue";
 import MapSurface from "./components/MapSurface.vue";
+import ProfilePanel from "./components/ProfilePanel.vue";
 import SavedEventsPanel from "./components/SavedEventsPanel.vue";
 import WeupBottomNav from "./components/WeupBottomNav.vue";
 import WeupTopBar, {
@@ -136,8 +181,10 @@ import { useTemporalNavigation } from "./composables/useTemporalNavigation";
 import type { CalendarLayoutMode } from "./components/CalendarOverlayShell.vue";
 import { useAnonymousLocalPersistence } from "./composables/useAnonymousLocalPersistence";
 import { useEventDetailModal } from "./composables/useEventDetailModal";
+import { useProfileFolders } from "./composables/useProfileFolders";
 import { useSavedEventState } from "./composables/useSavedEventState";
 import { useSavedEventsCollection } from "./composables/useSavedEventsCollection";
+import { useSocialPrototype } from "./composables/useSocialPrototype";
 import { useUserContextPreferences } from "./composables/useUserContextPreferences";
 import { useWeupNavMode } from "./composables/useWeupNavMode";
 import type { WeupNavMode } from "./navigation/weupNavModes";
@@ -164,8 +211,16 @@ const userContextPreferences = useUserContextPreferences();
 // the canonical composables below. The authoritative UI state remains
 // useDiscoveryState (+ useSavedEventsCollection / the saved-sheet mount flag).
 const navMode = useWeupNavMode();
-const savedCollection = useSavedEventsCollection();
+// WEUP-SYNTH (G9 — Saved/Profile): the canonical saved-state authority is
+// instantiated BEFORE the collection so save/unsave mutations round-trip
+// into the saved panel, badge, profile counts, and (via the collection's
+// snapshot) the map/calendar projections — one source, all surfaces.
+const savedEventState = useSavedEventState();
+const savedCollection = useSavedEventsCollection(savedEventState);
+const profileFolders = useProfileFolders();
+const socialPrototype = useSocialPrototype();
 const isSavedSheetOpen = ref(false);
+const isProfileSheetOpen = ref(false);
 const feedStatus = ref<TopBarFeedStatus>({
   isLoading: true,
   error: null,
@@ -195,6 +250,17 @@ function closeSavedSheet(): void {
   isSavedSheetOpen.value = false;
 }
 
+function openProfileSheet(): void {
+  isProfileSheetOpen.value = true;
+  // Profile counts are canonical: refresh the saved collection so the
+  // panel renders current saved state.
+  void savedCollection.loadSavedEvents();
+}
+
+function closeProfileSheet(): void {
+  isProfileSheetOpen.value = false;
+}
+
 /**
  * Mode -> surface dispatch, per navigation/weupNavModes.ts NAV_SURFACE_MAP.
  * Every mode transition first clears selection (source handleModeChange
@@ -210,32 +276,42 @@ function handleNavModeChange(mode: WeupNavMode): void {
   switch (mode) {
     case "DISCOVER":
       closeSavedSheet();
+      closeProfileSheet();
       discovery.setOverlayMode("partial");
       break;
     case "ACTIVITY":
       // Source: ACTIVITY opens the CulturalCalendar temporal overlay.
       // Vue counterpart: the calendar overlay shell at expanded layer.
       closeSavedSheet();
+      closeProfileSheet();
       discovery.setOverlayMode("expanded");
       break;
     case "SAVED":
+      closeProfileSheet();
       openSavedSheet();
       break;
     case "PROFILE":
-      // PROJECTION_DEFINED (owner G9): no Vue profile surface exists yet.
-      // World surface retained; no fabricated surface is shown.
+      // G9 (ProfilePanel): the profile surface now exists as a shell overlay
+      // sheet wired to the canonical saved-state authority.
       closeSavedSheet();
+      openProfileSheet();
       break;
     case "CREATE":
       // PROJECTION_DEFINED (owner G11): no Vue create wizard exists yet.
       // World surface retained; no fabricated create flow is shown.
       closeSavedSheet();
+      closeProfileSheet();
       break;
   }
 }
 
 function onSavedSheetClose(): void {
   closeSavedSheet();
+  navMode.resetMode();
+}
+
+function onProfileSheetClose(): void {
+  closeProfileSheet();
   navMode.resetMode();
 }
 
@@ -250,6 +326,111 @@ function onSavedPanelSelectEvent(eventId: string): void {
   navMode.resetMode();
   discovery.selectEvent(eventId);
 }
+
+/**
+ * G9: canonical unsave from the saved panel. The mutation goes through the
+ * sole saved-state authority; the collection's mutationRevision watcher
+ * reloads the list so panel, badge, and profile counts converge.
+ */
+async function onSavedPanelUnsave(eventId: string): Promise<void> {
+  try {
+    await savedEventState.mutateSavedState(eventId, false, () => {
+      // UI projection refreshes via the collection watcher; no direct
+      // DOM/list mutation here.
+    });
+  } catch (cause) {
+    $q.notify({
+      type: "negative",
+      message:
+        cause instanceof Error
+          ? cause.message
+          : "Failed to remove the saved event.",
+    });
+  }
+}
+
+/**
+ * G9: prototype-local folder assignment from the saved panel. This is a
+ * view-model mapping only — it never mutates the canonical saved state.
+ */
+function onSavedPanelAssignFolder(payload: {
+  eventId: string;
+  folderName: string | null;
+}): void {
+  try {
+    profileFolders.assignEventToFolder(payload.eventId, payload.folderName);
+  } catch (cause) {
+    $q.notify({
+      type: "negative",
+      message:
+        cause instanceof Error ? cause.message : "Failed to assign folder.",
+    });
+  }
+}
+
+function onProfileCreateFolder(name: string): void {
+  try {
+    profileFolders.createFolder(name);
+  } catch (cause) {
+    $q.notify({
+      type: "negative",
+      message:
+        cause instanceof Error ? cause.message : "Failed to create folder.",
+    });
+  }
+}
+
+function onProfileDeleteFolder(name: string): void {
+  profileFolders.deleteFolder(name);
+}
+
+function onProfileApplyDistrict(label: string): void {
+  onMapFiltersUpdated({ district: label });
+}
+
+// ─── G9 profile derivations ────────────────────────────────────────────────
+// Every profile field cites its real source. The operator city is the domain
+// city (Houston); district context comes from the anonymous discovery context
+// and user-context preferences (display only, non-authoritative).
+const profileCityLabel = "Houston, TX";
+
+const profileDistrictLabel = computed<string | null>(() => {
+  return (
+    discovery.activeFilters.value.district ??
+    anonymousLocalPersistence.getDiscoveryContext().lastViewedDistrict ??
+    null
+  );
+});
+
+const profilePreferredDistrictLabels = computed<readonly string[]>(() => {
+  return userContextPreferences.preferredDistrictCodes.value.map((code) =>
+    code.replace(/-/g, " "),
+  );
+});
+
+const profileFoldersView = computed(() =>
+  profileFolders.foldersWithSavedCounts(
+    savedCollection.surfaceSnapshot.value.savedEventIds,
+  ),
+);
+
+const folderNameByEventId = computed<Record<string, string>>(() => {
+  const map: Record<string, string> = {};
+  for (const eventId of savedCollection.savedEventIds.value) {
+    const folderName = profileFolders.folderNameFor(eventId);
+    if (folderName) {
+      map[eventId] = folderName;
+    }
+  }
+  return map;
+});
+
+const profileSavedInCurrentView = computed<number>(() => {
+  return (
+    userContextPreferences.savedCountSummary.value
+      ?.savedEventsInCurrentMapWindow ?? 0
+  );
+});
 
 function onFeedStatusChanged(status: TopBarFeedStatus): void {
   feedStatus.value = status;
@@ -276,8 +457,6 @@ const selectedEventIdModel = computed<string | null>({
     discovery.clearSelection();
   },
 });
-
-const savedEventState = useSavedEventState();
 
 const {
   eventDetail,

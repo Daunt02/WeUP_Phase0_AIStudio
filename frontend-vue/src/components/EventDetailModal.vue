@@ -244,6 +244,17 @@ ProvenanceDrawer (mission section 22 chain; stubbed stages PENDING).
             :label="event?.savedByCurrentUser ? 'Saved' : 'Save'"
             @click="$emit('toggle-save')"
           />
+          <!-- G9 (SocialSignalPanel): prototype social layer, bound to the
+               selected event's canonical summary. Visible only once saved,
+               mirroring the source's "Interest Saved" entry affordance. -->
+          <q-btn
+            v-if="event?.savedByCurrentUser"
+            outline
+            color="accent"
+            icon="groups"
+            label="Social"
+            @click="socialPanelOpen = true"
+          />
         </div>
       </q-card-actions>
     </q-card>
@@ -257,10 +268,16 @@ ProvenanceDrawer (mission section 22 chain; stubbed stages PENDING).
     :job-error="provenanceDrawer.jobError.value"
     @update:is-open="onProvenanceDrawerModelValue"
   />
+
+  <SocialSignalPanel
+    :is-open="socialPanelOpen"
+    :event-summary="socialPanelSummary"
+    @close="socialPanelOpen = false"
+  />
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useQuasar } from "quasar";
 import type {
   EventDetailDto,
@@ -278,6 +295,9 @@ import EventSignalChips, {
   type TemporalSignalContext,
 } from "./EventSignalChips.vue";
 import ProvenanceDrawer from "./ProvenanceDrawer.vue";
+import SocialSignalPanel, {
+  type SocialPanelEventSummary,
+} from "./SocialSignalPanel.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -304,6 +324,31 @@ const $q = useQuasar();
 const temporal = useTemporalNavigation();
 const discovery = useDiscoveryState();
 const provenanceDrawer = useProvenanceDrawer();
+
+// G9 (SocialSignalPanel): prototype social layer bound to the canonical
+// selected event. The panel reads its own session-only store; it never
+// touches the canonical saved state or the network.
+const socialPanelOpen = ref(false);
+
+const socialPanelSummary = computed<SocialPanelEventSummary | null>(() => {
+  const detail = props.event;
+  if (!detail) {
+    return null;
+  }
+
+  return {
+    id: detail.id,
+    title: detail.title,
+    venueName: detail.venueName,
+    district: null,
+    startUtc: detail.startUtc,
+    flyerUrl:
+      detail.flyerImageUrl ??
+      detail.mediaRefs.find((media) => media.kind === "poster")?.url ??
+      detail.mediaRefs.find((media) => media.kind === "image")?.url ??
+      null,
+  };
+});
 
 const isCompact = computed(() => $q.screen.lt.md);
 
@@ -447,12 +492,17 @@ const directionsUrl = computed(() => {
 function onDialogModelValue(value: boolean): void {
   if (!value) {
     provenanceDrawer.closeDrawer();
+    // G9: dismiss the prototype social panel with the modal (see closeModal).
+    socialPanelOpen.value = false;
   }
   emit("update:modelValue", value);
 }
 
 function closeModal(): void {
   provenanceDrawer.closeDrawer();
+  // G9: the prototype social panel is bound to this event; closing the modal
+  // dismisses it too (projection-only overlay, no state side effects).
+  socialPanelOpen.value = false;
   emit("update:modelValue", false);
 }
 

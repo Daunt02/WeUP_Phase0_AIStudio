@@ -48,7 +48,9 @@ describe("weupNavModes contract", () => {
   });
 
   it("declares PROFILE/CREATE projections with downstream owners (no invented surfaces)", () => {
-    expect(NAV_SURFACE_MAP.PROFILE.disposition).toBe("PROJECTION_DEFINED");
+    // G9 resolved the PROFILE surface: ADAPTED with the ProfilePanel overlay
+    // sheet. CREATE remains a declared projection owned by G11.
+    expect(NAV_SURFACE_MAP.PROFILE.disposition).toBe("ADAPTED");
     expect(NAV_SURFACE_MAP.PROFILE.owner).toBe("G9");
     expect(NAV_SURFACE_MAP.CREATE.disposition).toBe("PROJECTION_DEFINED");
     expect(NAV_SURFACE_MAP.CREATE.owner).toBe("G11");
