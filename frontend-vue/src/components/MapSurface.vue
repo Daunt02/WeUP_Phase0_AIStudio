@@ -178,7 +178,26 @@ const emits = defineEmits<{
   (event: "map-feed-query-updated", query: EventMapFeedQueryDto): void;
   (event: "map-items-updated", items: EventMapItemDto[]): void;
   (event: "filters-updated", filters: Partial<DiscoveryFilterState>): void;
+  (
+    event: "feed-status-changed",
+    status: { isLoading: boolean; error: string | null; offline: boolean },
+  ): void;
 }>();
+
+// WEUP-SYNTH (G6 — Navigation): project the real feed state upward so the
+// canonical TopBar LIVE pill derives from useMapEvents instead of a hardcoded
+// value. Additive emit only; no existing contract is altered.
+watch(
+  [isLoading, error, tokenMissing],
+  ([nextIsLoading, nextError, nextOffline]) => {
+    emits("feed-status-changed", {
+      isLoading: nextIsLoading,
+      error: nextError,
+      offline: nextOffline,
+    });
+  },
+  { immediate: true },
+);
 
 type MarkerFeatureProperties = {
   eventId: string;
