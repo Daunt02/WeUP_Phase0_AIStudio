@@ -45,8 +45,13 @@
             :items="calendarItems"
             :is-filter-refresh-pending="isCalendarFilterRefreshPending"
             :degraded-reason="calendarDegradedReason"
+            :layout-mode="calendarLayoutMode"
+            :active-day-key="temporal.activeDayKey.value"
+            :scrub-cursor-utc="temporal.scrubCursorUtc.value"
             @set-layer="discovery.setOverlayMode"
             @select-event="discovery.selectEvent"
+            @date-select="onCalendarDateSelect"
+            @layout-mode-change="calendarLayoutMode = $event"
           />
 
           <!-- SAVED mode surface: existing SavedEventsPanel mounted as a shell
@@ -126,6 +131,8 @@ import {
   useDiscoveryState,
   type DiscoveryFilterState,
 } from "./composables/useDiscoveryState";
+import { useTemporalNavigation } from "./composables/useTemporalNavigation";
+import type { CalendarLayoutMode } from "./components/CalendarOverlayShell.vue";
 import { useAnonymousLocalPersistence } from "./composables/useAnonymousLocalPersistence";
 import { useEventDetailModal } from "./composables/useEventDetailModal";
 import { useSavedEventState } from "./composables/useSavedEventState";
@@ -142,6 +149,11 @@ import { shareEventDetail } from "./services/eventDetailService";
 const $q = useQuasar();
 
 const discovery = useDiscoveryState();
+// WEUP-SYNTH (G7 — Temporal): the single authoritative temporal state,
+// shared with MapSurface (same singleton instance). Calendar date selection
+// and layout mode route through it; no second temporal store exists.
+const temporal = useTemporalNavigation();
+const calendarLayoutMode = ref<CalendarLayoutMode>("masonry");
 const anonymousLocalPersistence = useAnonymousLocalPersistence();
 const userContextPreferences = useUserContextPreferences();
 
@@ -380,6 +392,16 @@ function onMapSelectedEventChanged(eventId: string | null): void {
   }
 
   discovery.clearSelection();
+}
+
+/**
+ * WEUP-SYNTH (G7 — CulturalCalendar): calendar date selection is a temporal
+ * transition through the single authority. The mode/preset change flows into
+ * MapSurface's requestSignature watcher -> feed refetch -> map projection,
+ * calendar projection, selection, filters, and visible set all update.
+ */
+function onCalendarDateSelect(dayKey: string): void {
+  temporal.selectHoustonDay(dayKey);
 }
 
 function onMapFiltersUpdated(partial: Partial<DiscoveryFilterState>): void {

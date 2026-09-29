@@ -16,6 +16,25 @@
     </div>
 
     <div class="actions">
+      <!-- WEUP-SYNTH (G7 — CulturalCalendar): projection toggle -->
+      <q-btn
+        flat
+        dense
+        :color="layoutMode === 'masonry' ? 'primary' : 'grey-8'"
+        icon="view_module"
+        label="Grid"
+        :aria-pressed="layoutMode === 'masonry'"
+        @click="$emit('layout-mode-change', 'masonry')"
+      />
+      <q-btn
+        flat
+        dense
+        :color="layoutMode === 'day-column' ? 'primary' : 'grey-8'"
+        icon="view_column"
+        label="Days"
+        :aria-pressed="layoutMode === 'day-column'"
+        @click="$emit('layout-mode-change', 'day-column')"
+      />
       <q-btn
         flat
         dense
@@ -48,16 +67,26 @@
 import { computed } from "vue";
 import type { CalendarOverlayLayerState } from "../contracts/calendar-overlay.contracts";
 import type { CalendarTransitionPhase } from "../composables/useCalendarTransitionState";
+import type { CalendarLayoutMode } from "./CalendarOverlayShell.vue";
 
-const props = defineProps<{
-  layer: CalendarOverlayLayerState;
-  totalCount: number;
-  isFilterRefreshPending?: boolean;
-  transitionPhase?: CalendarTransitionPhase;
-}>();
+const props = withDefaults(
+  defineProps<{
+    layer: CalendarOverlayLayerState;
+    totalCount: number;
+    isFilterRefreshPending?: boolean;
+    transitionPhase?: CalendarTransitionPhase;
+    /** WEUP-SYNTH (G7): calendar projection mode. */
+    layoutMode?: CalendarLayoutMode;
+  }>(),
+  {
+    layoutMode: "masonry",
+  },
+);
 
 defineEmits<{
   (event: "set-layer", layer: CalendarOverlayLayerState): void;
+  /** WEUP-SYNTH (G7): calendar projection mode toggle. */
+  (event: "layout-mode-change", mode: CalendarLayoutMode): void;
 }>();
 
 const stateLabel = computed(() => {

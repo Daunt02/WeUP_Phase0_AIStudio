@@ -34,6 +34,11 @@
         @update:include-saved-only="includeSavedOnly = $event"
         @refresh="refreshFromCurrentViewport"
       />
+
+      <!-- WEUP-SYNTH (G7 — TimelineControl): temporal scrub pill + six-mode
+           row. Shares the single temporal authority below; the filter panel
+           above is untouched. -->
+      <TemporalNavigationControls :temporal="temporal" />
     </q-card-section>
 
     <q-separator />
@@ -79,6 +84,7 @@ import type { FeatureCollection, Point } from "geojson";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 import MapTimeFilterPanel from "./MapTimeFilterPanel.vue";
+import TemporalNavigationControls from "./TemporalNavigationControls.vue";
 import VenuePulseLayer from "./VenuePulseLayer.vue";
 import ZoneDrawer from "./ZoneDrawer.vue";
 import {
@@ -93,7 +99,7 @@ import type {
   EventMapMarkerViewModel,
 } from "../contracts/map-feed.contracts";
 import type { DiscoveryFilterState } from "../composables/useDiscoveryState";
-import { useMapFeedFilters } from "../composables/useMapFeedFilters";
+import { useTemporalNavigation } from "../composables/useTemporalNavigation";
 import { useMapEvents } from "../composables/useMapEvents";
 
 const props = withDefaults(
@@ -137,6 +143,19 @@ const clusterSourceConfigKey = ref<string | null>(null);
 const hoveredEventId = ref<string | null>(null);
 const zonesVisible = ref(true);
 
+// WEUP-SYNTH (G7 — Temporal): the single authoritative temporal state.
+// useTemporalNavigation is a superset of useMapFeedFilters (same refs +
+// temporal actions); the filter panel bindings below are unchanged. When a
+// temporal transition makes the selection stale, the authority notifies and
+// MapSurface clears selection through its canonical emit path.
+const temporal = useTemporalNavigation({
+  onSelectedEventChange: (eventId) => {
+    if (eventId === null) {
+      emits("update:selectedEventId", null);
+    }
+  },
+});
+
 const {
   preset,
   timezone,
@@ -146,7 +165,7 @@ const {
   validationError,
   requestSignature,
   buildMapFeedQuery,
-} = useMapFeedFilters();
+} = temporal;
 
 const {
   events,
