@@ -1,214 +1,158 @@
-/**
- * WeUP Phase 0 — Event Service (frontend API adapter)
- *
- * Thin adapter between UI contracts and backend event endpoints.
- * Production behavior is API-backed with no local mock fallback.
- */
+import { NightlifeItem } from '@/types';
+import { MOCK_EVENTS } from '@/constants/mockData';
+import { ingestionService } from './ingestionService';
 
-import {
-  MapFeedQuery,
-  CalendarFeedQuery,
-  EventDetailQuery,
-  EventFilters,
-  MapFeedResponse,
-  CalendarFeedResponse,
-  EventDetailResponse,
-} from "@/domains/query/contracts";
-import { EventCalendarProjection, EventDetailProjection, EventMapCardProjection } from "@/domains/event/projections";
-import { toApiUrl } from "@/services/apiBase";
-
-// ---------------------------------------------------------------------------
-// EventService
-// ---------------------------------------------------------------------------
-
-interface MapFeedApiRequest {
-  bounds: MapFeedQuery["bounds"];
-  window: MapFeedQuery["window"];
-  categories?: EventFilters["categories"];
-  districtCode?: string;
-  minConfidence: number;
-  sort: string;
-}
-
-interface CalendarFeedApiRequest {
-  window: CalendarFeedQuery["window"];
-  categories?: EventFilters["categories"];
-  districtCode?: string;
-  minConfidence: number;
-  sort: string;
-  page: number;
-  pageSize: number;
-}
-
-interface EventDetailApiResponse {
-  event?: EventDetailProjection | null;
-  Event?: EventDetailProjection | null;
-}
-
-function normalizeMapCard(item: Partial<EventMapCardProjection>): EventMapCardProjection {
-  return {
-    id: item.id ?? "",
-    title: item.title ?? "",
-    venueName: item.venueName ?? "",
-    category: (item.category ?? "other") as EventMapCardProjection["category"],
-    lat: item.lat ?? 0,
-    lng: item.lng ?? 0,
-    thumbnailUrl: item.thumbnailUrl ?? null,
-    status: (item.status ?? "PUBLISHED") as EventMapCardProjection["status"],
-    confidence: item.confidence ?? 0,
-  };
-}
-
-function normalizeCalendarItem(
-  item: Partial<EventCalendarProjection>,
-): EventCalendarProjection {
-  return {
-    id: item.id ?? "",
-    title: item.title ?? "",
-    venueName: item.venueName ?? "",
-    category: (item.category ?? "other") as EventCalendarProjection["category"],
-    startUtc: item.startUtc ?? new Date(0).toISOString(),
-    endUtc: item.endUtc ?? null,
-    timezone: item.timezone ?? "UTC",
-    thumbnailUrl: item.thumbnailUrl ?? null,
-    status: (item.status ?? "PUBLISHED") as EventCalendarProjection["status"],
-  };
-}
-
-async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(toApiUrl(path), {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers ?? {}),
-    },
-  });
-
-  if (!response.ok) {
-    let detail = "";
-    try {
-      detail = await response.text();
-    } catch {
-      detail = "";
-    }
-
-    throw new Error(
-      `[eventService] ${response.status} ${response.statusText}${detail ? ` - ${detail}` : ""}`,
-    );
-  }
-
-  return (await response.json()) as T;
-}
-
-function toMapFeedApiRequest(query: MapFeedQuery): MapFeedApiRequest {
-  return {
-    bounds: query.bounds,
-    window: query.window,
-    categories: query.filters?.categories,
-    districtCode: query.filters?.districtCode,
-    minConfidence: query.filters?.minConfidence ?? 0,
-    sort: query.sort ?? "start_time_asc",
-  };
-}
-
-function toCalendarFeedApiRequest(query: CalendarFeedQuery): CalendarFeedApiRequest {
-  return {
-    window: query.window,
-    categories: query.filters?.categories,
-    districtCode: query.filters?.districtCode,
-    minConfidence: query.filters?.minConfidence ?? 0,
-    sort: query.sort ?? "start_time_asc",
-    page: query.pagination?.page ?? 1,
-    pageSize: query.pagination?.pageSize ?? 50,
-  };
+export interface BoundingBox {
+  minLat: number;
+  maxLat: number;
+  minLng: number;
+  maxLng: number;
 }
 
 class EventService {
+  private cache: Map<string, NightlifeItem[]> = new Map();
+  private allEvents: NightlifeItem[] = [...MOCK_EVENTS];
 
-  // ------------------------------------------------------------------
-  // Map feed — uses MapFeedQuery contract
-  // ------------------------------------------------------------------
+  /**
+   * Simulates fetching events from multiple sources (Eventbrite, Instagram, Venue Calendars)
+   * and normalizes them into the NightlifeItem schema.
+   */
+  async fetchEventsInBounds(bounds: BoundingBox): Promise<NightlifeItem[]> {
+    // Simulate multi-source ingestion pull
+    if (Math.random() > 0.8) {
+      await ingestionService.pullHoustonData();
+    }
 
-  async fetchMapFeed(query: MapFeedQuery): Promise<MapFeedResponse> {
-    const payload = await fetchJson<{
-      events?: EventMapCardProjection[];
-      Events?: EventMapCardProjection[];
-      totalCount?: number;
-      TotalCount?: number;
-    }>("/api/events/map", {
-      method: "POST",
-      body: JSON.stringify(toMapFeedApiRequest(query)),
+    // Simulate network latency
+    await new Promise(resolve => setTimeout(resolve, 150));
+
+    const cacheKey = `${bounds.minLat.toFixed(3)},${bounds.maxLat.toFixed(3)},${bounds.minLng.toFixed(3)},${bounds.maxLng.toFixed(3)}`;
+    
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey)!;
+    }
+
+    // Filter events within the bounding box
+    const filtered = this.allEvents.filter(event => {
+      const lat = event.latitude;
+      const lng = event.longitude;
+      return (
+        lat >= bounds.minLat &&
+        lat <= bounds.maxLat &&
+        lng >= bounds.minLng &&
+        lng <= bounds.maxLng
+      );
     });
 
-    const items = payload.events ?? payload.Events ?? [];
-    return {
-      events: items.map((item) => normalizeMapCard(item)),
-      totalCount: payload.totalCount ?? payload.TotalCount ?? items.length,
-    };
+    // Simulate "dynamic" ingestion by adding a few random events if the area is sparse
+    // This mimics "scraping" new data on the fly
+    const dynamicEvents = this.generateDynamicEvents(bounds, filtered.length);
+    
+    // Deduplication logic: Ensure we don't add events with the same title at the same venue
+    const combined = this.deduplicate([...filtered, ...dynamicEvents]);
+
+    // Cache the result
+    this.cache.set(cacheKey, combined);
+
+    return combined;
   }
 
-  // ------------------------------------------------------------------
-  // Calendar feed — uses CalendarFeedQuery contract
-  // ------------------------------------------------------------------
+  private generateDynamicEvents(bounds: BoundingBox, existingCount: number): NightlifeItem[] {
+    // Only generate if we have few events in this view to simulate discovery
+    if (existingCount > 10) return [];
 
-  async fetchCalendarFeed(
-    query: CalendarFeedQuery,
-  ): Promise<CalendarFeedResponse> {
-    const payload = await fetchJson<{
-      items?: EventCalendarProjection[];
-      Items?: EventCalendarProjection[];
-      totalCount?: number;
-      TotalCount?: number;
-      page?: number;
-      Page?: number;
-      pageSize?: number;
-      PageSize?: number;
-      hasNextPage?: boolean;
-      HasNextPage?: boolean;
-    }>("/api/events/calendar", {
-      method: "POST",
-      body: JSON.stringify(toCalendarFeedApiRequest(query)),
+    const count = Math.floor(Math.random() * 3) + 1;
+    const dynamic: NightlifeItem[] = [];
+
+    const categories = ['tech', 'startup', 'creator', 'career'];
+    const venues = ['THE_SIGNAL', 'KINETIC_LOUNGE', 'ECHO_CHAMBER', 'NEON_GARDEN', 'VELOCITY_BAR'];
+    const neighborhoods = ['DOWNTOWN', 'NORTH_AUSTIN', 'UT_AREA', 'SOUTH_CONGRESS', 'EAST_AUSTIN'];
+
+    for (let i = 0; i < count; i++) {
+      const lat = bounds.minLat + Math.random() * (bounds.maxLat - bounds.minLat);
+      const lng = bounds.minLng + Math.random() * (bounds.maxLng - bounds.minLng);
+      const id = `dynamic-${Math.random().toString(36).substr(2, 9)}`;
+      
+      dynamic.push({
+        id,
+        title: `SIGNAL_DETECTED_${Math.floor(Math.random() * 1000)}`,
+        description: 'Automatically ingested event from local venue signal.',
+        venue_name: venues[Math.floor(Math.random() * venues.length)],
+        address: 'HOUSTON_DYNAMIC_LOC',
+        latitude: lat,
+        longitude: lng,
+        start_time: new Date().toISOString(),
+        end_time: new Date(Date.now() + 4 * 3600000).toISOString(),
+        category: categories[Math.floor(Math.random() * categories.length)] as any,
+        price_tier: '$$',
+        source: 'scraped',
+        image_url: `https://picsum.photos/seed/${id}/800/1200`,
+        neighborhood: neighborhoods[Math.floor(Math.random() * neighborhoods.length)],
+        energyLevel: Math.floor(Math.random() * 10),
+        tags: ['Dynamic', 'Live'],
+        coordinates: { lat, lng }
+      });
+    }
+
+    return dynamic;
+  }
+
+  private deduplicate(events: NightlifeItem[]): NightlifeItem[] {
+    const seen = new Set<string>();
+    return events.filter(event => {
+      const key = `${event.title}-${event.venue_name}`.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
     });
-
-    const items = payload.items ?? payload.Items ?? [];
-    const page = payload.page ?? payload.Page ?? query.pagination?.page ?? 1;
-    const pageSize =
-      payload.pageSize ?? payload.PageSize ?? query.pagination?.pageSize ?? 50;
-    const totalCount = payload.totalCount ?? payload.TotalCount ?? items.length;
-
-    return {
-      items: items.map((item) => normalizeCalendarItem(item)),
-      totalCount,
-      page,
-      pageSize,
-      hasNextPage: payload.hasNextPage ?? payload.HasNextPage ?? page * pageSize < totalCount,
-    };
   }
 
-  // ------------------------------------------------------------------
-  // Event detail
-  // ------------------------------------------------------------------
+  async geocodeAddress(address: string): Promise<{ latitude: number, longitude: number, full_address: string, confidence: number } | null> {
+    const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+    if (!address) return null;
+    
+    try {
+      if (token && token.trim() !== '' && token !== 'undefined') {
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${token}&limit=1&proximity=-95.3698,29.7604`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          if (data.features && data.features.length > 0) {
+            const feature = data.features[0];
+            const [lng, lat] = feature.center;
+            return { 
+              latitude: lat, 
+              longitude: lng,
+              full_address: feature.place_name,
+              confidence: feature.relevance || 0.8
+            };
+          }
+        }
+      }
 
-  async fetchEventDetail(
-    query: EventDetailQuery,
-  ): Promise<EventDetailResponse> {
-    const payload = await fetchJson<EventDetailApiResponse>(
-      `/api/events/${encodeURIComponent(query.eventId)}`,
-      { method: "GET" },
-    );
-
-    return {
-      event: payload.event ?? payload.Event ?? null,
-    };
+      // OpenStreetMap Nominatim fallback
+      const query = address.toLowerCase().includes('houston') ? address : `${address}, Houston, TX`;
+      const osmResp = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`
+      );
+      if (osmResp.ok) {
+        const osmData = await osmResp.json();
+        if (osmData && osmData.length > 0) {
+          return {
+            latitude: parseFloat(osmData[0].lat),
+            longitude: parseFloat(osmData[0].lon),
+            full_address: osmData[0].display_name,
+            confidence: 0.85
+          };
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error("Geocoding failed:", error);
+      return null;
+    }
   }
 }
 
 export const eventService = new EventService();
-
-// Re-export contract types for convenience
-export type {
-  GeoBoundingBox,
-  MapFeedQuery,
-  CalendarFeedQuery,
-  EventDetailQuery,
-} from "@/domains/query/contracts";

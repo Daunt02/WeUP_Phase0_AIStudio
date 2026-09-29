@@ -1,5 +1,6 @@
 {
-  "name": "Mapbox Explorer",
-  "description": "An interactive Mapbox map application.",
-  "requestFramePermissions": ["geolocation"]
+  "name": "MapRadar SPA",
+  "description": "Zero-scroll map-first SPA for event discovery and scheduling.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -20,7 +20,7 @@ export default function GeoControls({ isVisible, onClose }: GeoControlsProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-[250] bg-black/40 backdrop-blur-sm pointer-events-auto"
+            className="fixed inset-0 z-[250] bg-black/40 backdrop-blur-sm pointer-events-none"
           />
           
           <div className="fixed inset-x-0 bottom-36 z-[300] pointer-events-none flex flex-col items-center">

@@ -1,6 +1,4 @@
-// ViewMode is owned by types/ui.ts (world-surface coordinator) — re-exported here
-// for backward-compatible component imports.
-export type { ViewMode } from '@/types/ui';
+export type ViewMode = 'DISCOVER' | 'ACTIVITY' | 'SAVED' | 'PROFILE' | 'CREATE';
 
 export interface NightlifeItem {
   id: string;
@@ -21,6 +19,14 @@ export interface NightlifeItem {
   
   // Compatibility fields for existing UI
   neighborhood?: string;
+  spatial_label?: string;
+  corridor?: string;
+  density_score?: number;
+  influence_radius?: number;
+  temporal_weight?: number;
+  phase?: 'upcoming' | 'active' | 'ending' | 'ended';
+  cell_id?: string;
+  cell_type?: 'cluster' | 'edge' | 'isolated';
   energyLevel?: number;
   tags?: string[];
   
@@ -54,12 +60,83 @@ export interface SocialInviteTier {
   invite_type: string;
 }
 
-/**
- * EventSignalState — display state prop for EventSignalModal.
- * This is a presentational signal, NOT the coordinator's modal stack.
- * The coordinator's ModalState lives in types/ui.ts.
- */
-export type EventSignalState = 'FULL' | 'ADD_EVENT' | null;
+export type ModalState = 'FULL' | 'ADD_EVENT' | 'ONBOARDING' | null;
 
-/** @deprecated Use EventSignalState. */
-export type ModalState = EventSignalState;
+export interface OnboardingStep {
+  id: number;
+  title: string;
+  content: string;
+}
+
+export interface UIState {
+  activeMode: ViewMode;
+  selectedItemId: string | null;
+  modalState: ModalState;
+  onboardingStep: number;
+  interestedEventId: string | null;
+  socialPanelOpen: boolean;
+  unlockedTiers: number[];
+  ghostEvent: Partial<NightlifeItem> | null;
+  filters: {
+    categories: string[];
+    timeframe: 'now' | 'tonight' | 'tomorrow' | 'weekend';
+    radius: number;
+  };
+}
+
+export interface WLLSConfig {
+  color: string;
+  motion: string;
+  intensity: string;
+  rhythm: string;
+}
+
+export interface MapMarkerPayload {
+  label: string;
+  district: string;
+  state: 'upcoming' | 'live' | 'ended';
+  confidence: number;
+  wlls: WLLSConfig;
+}
+
+export interface EventCardUI {
+  title: string;
+  time: string;
+  location: string;
+  badges: string[];
+}
+
+export interface ProfileState {
+  city: string;
+  saved_count: number;
+  folders: Array<{ name: string; count: number }>;
+}
+
+export interface SaveActionResponse {
+  event_id: string;
+  folder: string;
+  state: 'saved' | 'unsaved';
+  timestamp: string;
+}
+
+export interface AggregatedEventPayload {
+  event: {
+    id: string;
+    title: string;
+    district: string;
+    time: string;
+    density: number;
+    temporal: number;
+    confidence: number;
+    wlls: WLLSConfig;
+    saved: boolean;
+  };
+}
+
+export interface BoundingBox {
+  minLat: number;
+  maxLat: number;
+  minLng: number;
+  maxLng: number;
+}
+

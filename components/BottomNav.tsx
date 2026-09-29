@@ -1,123 +1,63 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import React from 'react';
+import { motion } from 'motion/react';
 import { ViewMode } from '@/types';
-import { Radar, Clock, Plus, Bookmark, User } from 'lucide-react';
+import { Compass, Activity, Plus, Bookmark, Key } from 'lucide-react';
 
 interface BottomNavProps {
   activeMode: ViewMode;
   onModeChange: (mode: ViewMode) => void;
-  onAction: (action: 'WORLD_LONG' | 'TIME_TAP' | 'TIME_HOLD_START' | 'TIME_HOLD_END' | 'ADD' | 'ADD_LONG' | 'SAVED' | 'PROFILE') => void;
+  onAction: (action: any) => void;
 }
 
-export default function BottomNav({ activeMode, onModeChange, onAction }: BottomNavProps) {
-  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
-  const [isHoldingTime, setIsHoldingTime] = useState(false);
-
-  const handleWorldStart = () => {
-    longPressTimer.current = setTimeout(() => {
-      onAction('WORLD_LONG');
-    }, 600);
-  };
-
-  const handleWorldEnd = () => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      onModeChange('RADAR');
-    }
-  };
-
-  const handleTimeStart = () => {
-    longPressTimer.current = setTimeout(() => {
-      setIsHoldingTime(true);
-      onAction('TIME_HOLD_START');
-    }, 400);
-  };
-
-  const handleTimeEnd = () => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      if (isHoldingTime) {
-        setIsHoldingTime(false);
-        onAction('TIME_HOLD_END');
-      } else {
-        onAction('TIME_TAP');
-      }
-    }
-  };
-
-  const handleAddStart = () => {
-    longPressTimer.current = setTimeout(() => {
-      onAction('ADD_LONG');
-      longPressTimer.current = null;
-    }, 600);
-  };
-
-  const handleAddEnd = () => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      onAction('ADD');
-    }
-  };
-
+export default function BottomNav({ activeMode, onModeChange }: BottomNavProps) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[200] flex justify-center items-end pb-8 sm:pb-12 pointer-events-none">
-      <div className="flex items-center gap-2 bg-black/40 backdrop-blur-3xl rounded-full p-2 border border-white/10 shadow-2xl pointer-events-auto">
+    <div className="fixed bottom-0 left-0 right-0 z-[200] flex justify-center items-end pb-6 sm:pb-10 pointer-events-none">
+      <div className="flex items-center gap-1 bg-black/80 backdrop-blur-3xl rounded-3xl p-1.5 border border-white/10 shadow-2xl pointer-events-auto">
         
-        {/* WORLD */}
         <NavItem 
-          icon={Radar} 
-          label="WORLD" 
-          isActive={activeMode === 'RADAR'} 
-          onPointerDown={handleWorldStart}
-          onPointerUp={handleWorldEnd}
-          onPointerLeave={() => longPressTimer.current && clearTimeout(longPressTimer.current)}
+          icon={Compass} 
+          label="EXPLORE" 
+          isActive={activeMode === 'DISCOVER'} 
+          onClick={() => onModeChange('DISCOVER')}
         />
 
-        {/* TIME */}
         <NavItem 
-          icon={Clock} 
-          label="TIME" 
-          isActive={activeMode === 'CALENDAR'} 
-          onPointerDown={handleTimeStart}
-          onPointerUp={handleTimeEnd}
-          onPointerLeave={() => {
-            if (longPressTimer.current) clearTimeout(longPressTimer.current);
-            if (isHoldingTime) {
-              setIsHoldingTime(false);
-              onAction('TIME_HOLD_END');
-            }
-          }}
+          icon={Activity} 
+          label="ACTIVITY" 
+          isActive={activeMode === 'ACTIVITY'} 
+          onClick={() => onModeChange('ACTIVITY')}
         />
 
-        {/* ADD (+) */}
+        {/* PRIMARY ACTION (CREATE) */}
         <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onPointerDown={handleAddStart}
-          onPointerUp={handleAddEnd}
-          onPointerLeave={() => longPressTimer.current && clearTimeout(longPressTimer.current)}
-          className="relative w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,0.3)] border-4 border-black/10 transition-all group pointer-events-auto"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => onModeChange('CREATE')}
+          className={`
+            relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center transition-all duration-300 mx-2
+            ${activeMode === 'CREATE' ? 'bg-[#00FF9C] text-black shadow-[0_0_30px_rgba(0,255,156,0.5)]' : 'bg-white text-black shadow-xl'}
+          `}
         >
-          <div className="absolute inset-0 rounded-full bg-white animate-pulse opacity-20 blur-xl group-hover:opacity-40 transition-opacity" />
-          <Plus className="w-8 h-8 sm:w-10 sm:h-10 text-black group-hover:rotate-90 transition-transform duration-500 relative z-10" />
+          <Plus className={`w-7 h-7 sm:w-8 sm:h-8 transition-transform duration-500 ${activeMode === 'CREATE' ? 'rotate-45' : ''}`} />
+          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 bg-black px-1.5 py-0.5 rounded text-[6px] font-black tracking-widest text-white border border-white/10">
+            CREATE
+          </div>
         </motion.button>
 
-        {/* SAVED */}
         <NavItem 
           icon={Bookmark} 
           label="SAVED" 
           isActive={activeMode === 'SAVED'} 
-          onClick={() => onAction('SAVED')}
+          onClick={() => onModeChange('SAVED')}
         />
 
-        {/* PROFILE */}
         <NavItem 
-          icon={User} 
-          label="PROFILE" 
+          icon={Key} 
+          label="KEYS" 
           isActive={activeMode === 'PROFILE'} 
-          onClick={() => onAction('PROFILE')}
+          onClick={() => onModeChange('PROFILE')}
         />
 
       </div>
@@ -129,41 +69,32 @@ function NavItem({
   icon: Icon, 
   label, 
   isActive, 
-  onClick, 
-  onPointerDown, 
-  onPointerUp,
-  onPointerLeave
+  onClick
 }: { 
   icon: any, 
   label: string, 
   isActive: boolean, 
-  onClick?: () => void,
-  onPointerDown?: () => void,
-  onPointerUp?: () => void,
-  onPointerLeave?: () => void
+  onClick: () => void 
 }) {
   return (
     <button
       onClick={onClick}
-      onPointerDown={onPointerDown}
-      onPointerUp={onPointerUp}
-      onPointerLeave={onPointerLeave}
       className={`
-        relative px-4 sm:px-6 py-3 rounded-full flex flex-col items-center gap-1 transition-all duration-500 group select-none touch-none
-        ${isActive ? 'text-white' : 'text-white/30 hover:text-white/60'}
+        relative px-3 sm:px-5 py-3 rounded-2xl flex flex-col items-center gap-1.5 transition-all duration-500 group select-none
+        ${isActive ? 'text-[#00FF9C]' : 'text-white/40 hover:text-white/70'}
       `}
     >
       {isActive && (
         <motion.div
-          layoutId="nav-active-bg"
-          className="absolute inset-0 bg-white/[0.08] rounded-full"
+          layoutId="nav-active-glow"
+          className="absolute inset-0 bg-[#00FF9C]/5 rounded-2xl"
           transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
         />
       )}
       
-      <Icon className={`w-5 h-5 transition-all duration-500 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+      <Icon className={`w-5 h-5 sm:w-6 sm:h-6 transition-all duration-500 ${isActive ? 'scale-110 text-[#00FF9C]' : 'group-hover:scale-110 opacity-40'}`} />
 
-      <span className={`text-[7px] font-mono font-black tracking-[0.2em] leading-none transition-all duration-500 ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'}`}>
+      <span className={`text-[9px] font-black tracking-[0.15em] leading-none transition-all duration-500 ${isActive ? 'opacity-100 text-[#00FF9C]' : 'opacity-30 group-hover:opacity-100'}`}>
         {label}
       </span>
     </button>

@@ -1,7 +1,10 @@
-"use client";
+import DynamicHome from '@/components/DynamicHome';
 
-import WorldCoordinator from '@/features/world/WorldCoordinator';
+export const dynamic = 'force-dynamic';
 
-export default function Page() {
-  return <WorldCoordinator />;
+export default function Home() {
+  return <DynamicHome />;
 }
+
+
+

@@ -1,24 +1,19 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import TelemetryBootstrap from "@/components/TelemetryBootstrap";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
-
 export const metadata: Metadata = {
-  title: "Mapbox Explorer",
-  description: "Interactive Mapbox integration",
+  title: "MapRadar",
+  description: "Zero-scroll map experience",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="font-sans antialiased">
-        <TelemetryBootstrap />
+    <html lang="en" suppressHydrationWarning>
+      <body className="font-sans antialiased bg-[#050505]">
         {children}
       </body>
     </html>
