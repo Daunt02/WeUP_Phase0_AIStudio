@@ -1,0 +1,116 @@
+/* ==========================================================================
+ * WEUP 2.5D — Motion Primitives (D05)
+ * mission=WEUP-PHASE0-2.5D-FULL-EXPRESSION-001
+ *
+ * Deterministic motion grammar (04-design-tokens.md):
+ *   enter   160ms — opacity 0→1, translateZ(-20px)→0, scale .96→1
+ *   focus   140ms — translateZ 0→20px, scale 1→1.02, intensity up
+ *   expand  220ms — elevation → reposition → expansion → inspector (staged)
+ *   collapse / exit — exact inverse of expand / enter
+ *
+ * Motion is short, purposeful, interruptible, state-driven. The single
+ * @media (prefers-reduced-motion: reduce) block at the bottom forces the
+ * discrete (instant / opacity-only) path for ALL of them.
+ * ========================================================================== */
+
+/* ---- ENTER: mount transition for 2.5D surfaces ---- */
+@keyframes weup-motion-enter {
+  from {
+    opacity: 0;
+    transform: translateZ(-20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateZ(0) scale(1);
+  }
+}
+.weup-motion-enter {
+  animation: weup-motion-enter var(--weup-motion-enter-duration)
+    var(--weup-motion-easing) both;
+}
+
+/* ---- EXIT: exact inverse of enter ---- */
+.weup-motion-exit {
+  animation: weup-motion-enter var(--weup-motion-enter-duration)
+    var(--weup-motion-easing) reverse both;
+}
+
+/* ---- FOCUS: Z2-internal elevation (no plane jump) ---- */
+@keyframes weup-motion-focus {
+  from {
+    transform: translateZ(0) scale(1);
+  }
+  to {
+    transform: var(--weup-elevation-3-lift) scale(1.02);
+  }
+}
+.weup-motion-focus {
+  animation: weup-motion-focus var(--weup-motion-focus-duration)
+    var(--weup-motion-easing) both;
+}
+
+/* ---- EXPAND: elevation → reposition → expansion → inspector (staged) ---- */
+@keyframes weup-motion-expand {
+  0% {
+    opacity: 0.6;
+    transform: translateZ(0) scale(0.98);
+  }
+  40% {
+    opacity: 0.9;
+    transform: var(--weup-elevation-3-lift) scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: var(--weup-elevation-3-lift) scale(1);
+  }
+}
+.weup-motion-expand {
+  animation: weup-motion-expand var(--weup-motion-expand-duration)
+    var(--weup-motion-easing) both;
+}
+
+/* ---- COLLAPSE: exact inverse of expand ---- */
+.weup-motion-collapse {
+  animation: weup-motion-expand var(--weup-motion-expand-duration)
+    var(--weup-motion-easing) reverse both;
+}
+
+/* ---- Corridor flow: active-corridor dash drift (D08). Terminating-safe:
+   constant slow drift only while the corridor is active; never a loop of
+   decorative motion on idle corridors. ---- */
+@keyframes weup-corridor-flow {
+  from {
+    stroke-dashoffset: 24;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.weup-corridor.is-active .weup-corridor-path {
+  stroke-dasharray: 6 6;
+  animation: weup-corridor-flow 1.6s linear infinite;
+}
+
+/* ==========================================================================
+ * Reduced motion: the single global kill-switch. ALL 2.5D motion collapses
+ * to the discrete path (instant state change, opacity-only where a fade
+ * carries meaning). State changes remain fully functional.
+ * ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .weup-motion-enter,
+  .weup-motion-exit,
+  .weup-motion-focus,
+  .weup-motion-expand,
+  .weup-motion-collapse {
+    animation: none !important;
+  }
+  .weup-corridor.is-active .weup-corridor-path {
+    animation: none !important;
+    stroke-dasharray: none;
+  }
+  .weup-animatable,
+  [data-state] {
+    transition:
+      opacity var(--weup-motion-enter-duration) var(--weup-motion-easing) !important;
+  }
+}

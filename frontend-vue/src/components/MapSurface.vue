@@ -43,8 +43,15 @@
 
     <q-separator />
 
-    <q-card-section class="map-body">
+    <q-card-section class="map-body weup-plane-z0" data-plane="z0">
       <div ref="mapContainer" class="map-canvas" />
+
+      <!-- WEUP-2.5D (D06): atmospheric depth layers. Non-interactive Z0 cues
+           only — pointer-events:none, never above signal objects. The
+           perspective context below lets overlays separate in Z without
+           touching mapbox's own rendering or the token-less fallback. -->
+      <div class="weup-atmosphere weup-atmosphere-top" aria-hidden="true" />
+      <div class="weup-atmosphere weup-atmosphere-bottom" aria-hidden="true" />
 
       <!-- WEUP-SYNTH world layers: pulses + district zones, both driven by
            canonical markers and the shared discovery filters. -->
@@ -1296,12 +1303,22 @@ onBeforeUnmount(() => {
   flex: 1;
   min-height: 420px;
   padding: 0;
+  /* WEUP-2.5D (D06): controlled perspective on the Z0 container. Mapbox's own
+     rendering is untouched; only token-driven overlays separate in Z. */
+  perspective: var(--weup-perspective-scene);
 }
 
 .map-canvas {
   width: 100%;
   height: 100%;
   min-height: 420px;
+  transform: translateZ(0);
+}
+
+/* WEUP-2.5D (D06): atmosphere sits behind the interactive canvas in Z,
+   giving the substrate parallax depth without intercepting input. */
+.map-body .weup-atmosphere {
+  transform: translateZ(-40px) scale(1.04);
 }
 
 .banner {
@@ -1309,7 +1326,7 @@ onBeforeUnmount(() => {
   left: 16px;
   right: 16px;
   bottom: 16px;
-  z-index: 10;
+  z-index: var(--weup-z-1);
 }
 
 /*
@@ -1318,11 +1335,11 @@ onBeforeUnmount(() => {
  */
 .map-body :deep(.mapboxgl-ctrl-top-right .mapboxgl-ctrl-group) {
   background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(var(--weup-blur-background));
+  -webkit-backdrop-filter: blur(var(--weup-blur-background));
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  border-radius: var(--weup-radius-surface);
+  box-shadow: var(--weup-elevation-3);
   overflow: hidden;
 }
 
@@ -1344,10 +1361,10 @@ onBeforeUnmount(() => {
 .map-body .weup-ghost-marker {
   width: 40px;
   height: 40px;
-  border-radius: 9999px;
+  border-radius: var(--weup-radius-pill);
   background: rgba(255, 255, 255, 0.08);
   border: 2px dashed rgba(255, 255, 255, 0.85);
-  box-shadow: 0 0 16px rgba(0, 255, 156, 0.35);
+  box-shadow: var(--weup-glow-signal);
   pointer-events: none;
 }
 

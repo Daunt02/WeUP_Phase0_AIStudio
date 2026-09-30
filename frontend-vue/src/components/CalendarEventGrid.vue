@@ -11,7 +11,7 @@
   through useTemporalNavigation.selectHoustonDay.
 -->
 <template>
-  <div class="calendar-grid-wrap">
+  <div class="calendar-grid-wrap" :class="{ 'weup-has-selection': !!selectedEventId }">
     <q-banner v-if="error" rounded class="error-banner">
       {{ error }}
     </q-banner>
@@ -53,8 +53,10 @@
       <section
         v-for="day in columnDays"
         :key="day.key"
-        class="day-column"
+        class="day-column weup-cluster weup-animatable"
         :class="{ 'is-active-day': day.key === activeDayKey }"
+        data-plane="z2"
+        :data-state="dayColumnState(day.key)"
       >
         <button
           type="button"
@@ -63,7 +65,7 @@
           :aria-label="`Select ${day.label}`"
           @click="$emit('date-select', day.key)"
         >
-          <span class="day-column-name">{{ day.dayName }}</span>
+          <span class="day-column-name weup-cluster-label">{{ day.dayName }}</span>
           <span class="day-column-number">{{ day.dayNumber }}</span>
           <span
             v-if="dayEventCounts[day.key] > 0"
@@ -120,7 +122,9 @@
       <section
         v-for="day in layout.dayBuckets"
         :key="day.dayKey"
-        class="day-group"
+        class="day-group weup-cluster weup-animatable"
+        data-plane="z2"
+        :data-state="dayGroupState(day)"
       >
         <div class="day-header">
           <span>{{ day.displayLabel }}</span>
@@ -349,6 +353,69 @@ const dayHourGroups = computed<Record<string, DayHourGroup[]>>(() => {
   }
   return result;
 });
+
+/* ── WEUP-2.5D (D07): cluster physicalization states ───────────────────────
+   DISCOVERED → VISIBLE → FOCUSED → SELECTED, deterministic: at most one
+   FOCUSED (the activeDayKey column) and at most one SELECTED (the column /
+   group containing selectedEventId) at a time. Derived from canonical
+   props/composables only — no new state store, no invented data. */
+
+const dayColumnSelectedKeys = computed<ReadonlySet<string>>(() => {
+  const selected = new Set<string>();
+  if (!props.selectedEventId) {
+    return selected;
+  }
+  for (const [key, groups] of Object.entries(dayHourGroups.value)) {
+    if (
+      groups.some((group) =>
+        group.events.some((event) => event.eventId === props.selectedEventId),
+      )
+    ) {
+      selected.add(key);
+    }
+  }
+  return selected;
+});
+
+const masonrySelectedKeys = computed<ReadonlySet<string>>(() => {
+  const selected = new Set<string>();
+  if (!props.selectedEventId) {
+    return selected;
+  }
+  for (const day of layout.value.dayBuckets) {
+    const hit = day.buckets.some(
+      (bucket) =>
+        bucket.visibleEvents.some(
+          (event) => event.eventId === props.selectedEventId,
+        ) ||
+        bucket.overflowEvents.some(
+          (event) => event.eventId === props.selectedEventId,
+        ),
+    );
+    if (hit) {
+      selected.add(day.dayKey);
+    }
+  }
+  return selected;
+});
+
+/** FOCUSED = elevation.3 + footprint intensity + label prominence (Z2-internal, no plane jump). */
+function dayColumnState(key: string): string {
+  if (props.selectedEventId && dayColumnSelectedKeys.value.has(key)) {
+    return "selected";
+  }
+  if (props.activeDayKey && key === props.activeDayKey) {
+    return "focused";
+  }
+  return (dayEventCounts.value[key] ?? 0) > 0 ? "visible" : "discovered";
+}
+
+function dayGroupState(day: { dayKey: string }): string {
+  if (props.selectedEventId && masonrySelectedKeys.value.has(day.dayKey)) {
+    return "selected";
+  }
+  return "visible";
+}
 
 /** Scrub-cursor hour per day column (Tonight mode only). */
 const cursorHourByDay = computed<Record<string, number>>(() => {

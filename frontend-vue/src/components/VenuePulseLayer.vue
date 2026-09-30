@@ -69,7 +69,11 @@ function clearPulses(): void {
 
 function buildPulseElement(venue: PulseVenue): HTMLElement {
   const host = document.createElement("div");
-  host.className = "weup-pulse";
+  /* WEUP-2.5D (D07): cluster state hooks. Deterministic: anySelected is the
+     single canonical selection signal, so at most one pulse is "selected". */
+  host.className = "weup-pulse weup-animatable";
+  host.setAttribute("data-plane", "z2");
+  host.setAttribute("data-state", venue.anySelected ? "selected" : "visible");
   host.style.setProperty("--weup-pulse-peak", venue.intensity.toFixed(2));
   host.style.width = `${RING_SIZE_PX}px`;
   host.style.height = `${RING_SIZE_PX}px`;
@@ -158,18 +162,23 @@ onBeforeUnmount(() => {
 .weup-pulse-halo {
   position: absolute;
   inset: 6px;
-  border-radius: 9999px;
-  border: 1.5px solid rgba(0, 255, 156, 0.35);
-  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.2);
+  border-radius: var(--weup-radius-pill);
+  border: 1.5px solid var(--weup-glow-signal-soft);
+  /* WEUP-2.5D (D06): signal illumination intensity is state-bearing —
+     driven by --weup-pulse-peak (canonical marker data), glow recipe from
+     the token substrate. */
+  box-shadow:
+    inset 0 0 10px var(--weup-glow-signal-soft),
+    var(--weup-glow-signal);
   opacity: calc(0.35 + 0.65 * var(--weup-pulse-peak, 0.35));
 }
 
 .weup-pulse-wave {
   position: absolute;
   inset: 6px;
-  border-radius: 9999px;
-  border: 2px solid #00ff9c;
-  box-shadow: 0 0 12px rgba(0, 255, 156, 0.55);
+  border-radius: var(--weup-radius-pill);
+  border: 2px solid var(--weup-glow-signal-color);
+  box-shadow: var(--weup-glow-signal);
   opacity: 0;
   animation: weup-pulse-expand 2.4s ease-out 1 forwards;
 }

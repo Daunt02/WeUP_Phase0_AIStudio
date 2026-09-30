@@ -1,0 +1,213 @@
+@import "./weup-2.5d-motion.css";
+
+/* ==========================================================================
+ * WEUP 2.5D — Canonical Design-Token Substrate (D04)
+ * mission=WEUP-PHASE0-2.5D-FULL-EXPRESSION-001
+ *
+ * Authority: receipts/WEUP-PHASE0-2.5D-FULL-EXPRESSION-001/04-design-tokens.md
+ * Every depth / shadow / z-index / blur value in the 2.5D implementation MUST
+ * reference a custom property below. No inline visual constants.
+ * Quasar brand colors (#2563EB / #0B6E4F / #C44536) are referenced, never
+ * redefined. The signal accent #00FF9C is the canonical WEUP_ACCENT from
+ * mapWorld.ts (single source of truth for the hue; glow recipes live here).
+ * ========================================================================== */
+
+:root {
+  /* ---- depth.surface: surface roles (Z-plane semantics) ---- */
+  --weup-depth-surface-base: #060a10; /* Z0 substrate: map, atmosphere, grid */
+  --weup-depth-surface-raised: rgba(13, 19, 28, 0.94); /* Z1 structure */
+  --weup-depth-surface-floating: rgba(17, 25, 36, 0.96); /* Z2 signal objects */
+  --weup-depth-surface-active: rgba(22, 32, 46, 0.98); /* Z3 interaction */
+  --weup-depth-surface-command: rgba(10, 16, 30, 0.98); /* Z4 command */
+
+  /* ---- elevation: the ONLY z-axis scale (shadow recipes) ---- */
+  --weup-elevation-0: none; /* Z0: flat substrate */
+  --weup-elevation-1: 0 1px 2px rgb(0 0 0 / 0.18); /* Z1 */
+  --weup-elevation-2: 0 4px 12px rgb(0 0 0 / 0.22); /* Z2 idle */
+  --weup-elevation-3: 0 8px 24px rgb(0 0 0 / 0.28); /* Z2 focused / Z3 */
+  --weup-elevation-4: 0 12px 32px rgb(0 0 0 / 0.34); /* Z4 */
+  --weup-elevation-3-lift: translateZ(20px);
+  --weup-elevation-4-lift: translateZ(30px);
+
+  /* ---- z-index scale: plane order is the ONLY stacking authority ---- */
+  --weup-z-0: 1;
+  --weup-z-1: 10;
+  --weup-z-2: 20;
+  --weup-z-3: 30;
+  --weup-z-4: 40;
+
+  /* ---- glow: signal intensity (semantic, never decorative) ---- */
+  --weup-glow-signal-color: #00ff9c;
+  --weup-glow-signal-soft: rgba(0, 255, 156, 0.35);
+  --weup-glow-signal: 0 0 12px rgba(0, 255, 156, 0.55); /* live signal presence */
+  --weup-glow-active: 0 0 16px rgba(37, 99, 235, 0.65); /* selected / focused */
+  --weup-glow-warning: 0 0 16px rgba(196, 69, 54, 0.65); /* degraded / error */
+  --weup-glow-command: 0 0 22px rgba(37, 99, 235, 0.8); /* Z4 authority boundary */
+
+  /* ---- motion: deterministic grammar (durations; keyframes in motion file) ---- */
+  --weup-motion-enter-duration: 160ms;
+  --weup-motion-focus-duration: 140ms;
+  --weup-motion-expand-duration: 220ms;
+  --weup-motion-easing: cubic-bezier(0.2, 0, 0.2, 1);
+
+  /* ---- perspective / blur / opacity ---- */
+  --weup-perspective-scene: 1200px; /* Z0 container only; never on text panels */
+  --weup-blur-background: 8px; /* Z3 inspector backdrop; never unbounded */
+  --weup-opacity-dimmed: 0.45; /* non-selected Z2 while Z3 is open */
+  --weup-opacity-ambient-min: 0.08; /* Z0 atmospheric layers */
+  --weup-opacity-ambient-max: 0.16;
+
+  /* ---- spacing: 4pt scale ---- */
+  --weup-spacing-1: 4px;
+  --weup-spacing-2: 8px;
+  --weup-spacing-3: 12px;
+  --weup-spacing-4: 16px;
+  --weup-spacing-5: 20px;
+  --weup-spacing-6: 24px;
+  --weup-spacing-7: 28px;
+  --weup-spacing-8: 32px;
+
+  /* ---- radius ---- */
+  --weup-radius-surface: 12px;
+  --weup-radius-card: 10px;
+  --weup-radius-pill: 999px;
+
+  /* ---- typography additions (only two; rest inherits Quasar) ---- */
+  --weup-type-label-micro-size: 10px;
+  --weup-type-label-micro-spacing: 0.1em;
+  --weup-type-telemetry-size: 11px;
+
+  /* ---- canonical breakpoints (reference only: CSS vars cannot drive
+     @media; compositional breakpoints use these literal values) ---- */
+  --weup-breakpoint-mobile-max: 767px;
+  --weup-breakpoint-tablet-min: 768px;
+  --weup-breakpoint-tablet-max: 1023px;
+  --weup-breakpoint-desktop-min: 1024px;
+  --weup-breakpoint-desktop-max: 1439px;
+  --weup-breakpoint-wide-min: 1440px;
+}
+
+/* ==========================================================================
+ * Plane utility classes — static plane membership (03-depth-system.md).
+ * Components may use the class OR the [data-plane] attribute; both resolve
+ * to the same tokens.
+ * ========================================================================== */
+.weup-plane-z0,
+[data-plane="z0"] {
+  z-index: var(--weup-z-0);
+  box-shadow: var(--weup-elevation-0);
+}
+.weup-plane-z1,
+[data-plane="z1"] {
+  z-index: var(--weup-z-1);
+  box-shadow: var(--weup-elevation-1);
+}
+.weup-plane-z2,
+[data-plane="z2"] {
+  z-index: var(--weup-z-2);
+  box-shadow: var(--weup-elevation-2);
+}
+.weup-plane-z3,
+[data-plane="z3"] {
+  z-index: var(--weup-z-3);
+  box-shadow: var(--weup-elevation-3);
+}
+.weup-plane-z4,
+[data-plane="z4"] {
+  z-index: var(--weup-z-4);
+  box-shadow: var(--weup-elevation-4), var(--weup-glow-command);
+}
+
+/* ==========================================================================
+ * State hooks — visual state driven by [data-state].
+ * D17 owns state transitions; these rules only render them.
+ * Depth is visual enhancement: DOM order and ARIA semantics stay logical.
+ * ========================================================================== */
+.weup-animatable,
+[data-state] {
+  transition:
+    transform var(--weup-motion-focus-duration) var(--weup-motion-easing),
+    box-shadow var(--weup-motion-focus-duration) var(--weup-motion-easing),
+    opacity var(--weup-motion-enter-duration) var(--weup-motion-easing),
+    border-color var(--weup-motion-focus-duration) var(--weup-motion-easing);
+}
+
+[data-state="discovered"] {
+  opacity: 0.55;
+}
+
+[data-state="visible"] {
+  opacity: 1;
+}
+
+/* FOCUSED (03-depth-system.md §VII): elevation increase + footprint
+   intensification + label prominence. Corridor reveal is D08's job. */
+[data-state="focused"] {
+  box-shadow: var(--weup-elevation-3), var(--weup-glow-active);
+}
+
+/* SELECTED: object enters Z3; related topology emphasized (D08/D12). */
+[data-state="selected"] {
+  box-shadow: var(--weup-elevation-3), var(--weup-glow-active);
+}
+
+/* EXPANDED / ACTIONABLE: Z3 refinements. */
+[data-state="expanded"] {
+  box-shadow: var(--weup-elevation-4);
+}
+[data-state="actionable"] {
+  box-shadow: var(--weup-glow-command);
+}
+
+[data-state="archived"] {
+  opacity: var(--weup-opacity-dimmed);
+  filter: saturate(0.4);
+}
+
+/* Label prominence for focused / selected clusters (mission §VII). */
+.weup-cluster-label {
+  font-size: var(--weup-type-label-micro-size);
+  letter-spacing: var(--weup-type-label-micro-spacing);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+[data-state="focused"] .weup-cluster-label,
+[data-state="selected"] .weup-cluster-label {
+  letter-spacing: calc(var(--weup-type-label-micro-spacing) * 1.5);
+}
+
+/* Telemetry micro-type for signal readouts. */
+.weup-telemetry {
+  font-size: var(--weup-type-telemetry-size);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Entering Z3 dims non-selected Z2 objects (opacity step, never removal).
+   A parent sets .weup-has-selection when a Z3 inspector is open. */
+.weup-has-selection [data-plane="z2"]:not([data-state="selected"]):not(
+    [data-state="focused"]
+  ) {
+  opacity: var(--weup-opacity-dimmed);
+}
+
+/* Z0 atmosphere: non-interactive depth cue, always behind signal objects. */
+.weup-atmosphere {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--weup-z-0);
+}
+.weup-atmosphere-top {
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, var(--weup-opacity-ambient-max)),
+    transparent 30%
+  );
+}
+.weup-atmosphere-bottom {
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, var(--weup-opacity-ambient-max)),
+    transparent 30%
+  );
+}

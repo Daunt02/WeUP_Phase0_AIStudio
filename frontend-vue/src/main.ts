@@ -1,6 +1,8 @@
 import { createApp } from "vue";
 import { Quasar } from "quasar";
 import "quasar/src/css/index.sass";
+/* WEUP 2.5D (D04): canonical depth/elevation/motion tokens. Quasar brand below untouched. */
+import "./styles/weup-2.5d-tokens.css";
 
 import App from "./App.vue";
 
