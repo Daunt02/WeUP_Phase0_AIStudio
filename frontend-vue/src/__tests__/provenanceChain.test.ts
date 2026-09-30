@@ -65,40 +65,42 @@ function buildEvent(overrides: Partial<EventDetailDto> = {}): EventDetailDto {
 
 function buildJob(overrides: Partial<IngestionJobRecord> = {}): IngestionJobRecord {
   return {
-    jobId: "job-123",
-    request: {
-      requestId: "req-1",
-      sourceKind: "FlyerUpload",
-      submitterId: "anon",
-      submittedAtUtc: "2026-09-29T10:00:00Z",
-      sourceLabel: null,
-    },
-    status: "Completed",
-    candidate: null,
-    evidence: [
-      {
-        evidenceId: "ev-1",
-        evidenceKind: "ocr-text",
-        reference: "flyer.png",
-        mimeType: "image/png",
-        payloadSnippet: null,
-        observedAtUtc: "2026-09-29T10:01:00Z",
-        confidence: 0.9,
-        metadata: {},
+    id: "job-123",
+    sourceKind: "FLYER_OCR",
+    status: "REQUIRES_REVIEW",
+    requestPayload: { assetId: "flyer.png" },
+    result: {
+      jobId: "job-123",
+      status: "REQUIRES_REVIEW",
+      candidate: {
+        title: "Houston Nights",
+        venueName: "The Warehouse",
       },
-    ],
-    issues: [],
-    adapter: null,
-    createdAtUtc: "2026-09-29T10:00:00Z",
-    updatedAtUtc: "2026-09-29T10:05:00Z",
-    confidenceVector: {
-      extraction: 0.9,
-      normalization: 0.8,
-      temporal: null,
-      venueMatch: 0.7,
-      geocode: 0.95,
-      overall: 0.85,
+      evidence: {
+        assetId: "flyer.png",
+        capturedAt: "2026-09-29T10:01:00Z",
+        extractedBy: "flyer-ingestion-pipeline",
+        confidenceScore: 0.87,
+        confidenceVector: {
+          extraction: 0.92,
+          temporal: 0.85,
+          venueMatch: 0.9,
+          geocode: 0.8,
+          overall: 0.87,
+        },
+        ocrText: "WEUP PRESENTS: HOUSTON NIGHTS",
+        processingMetadata: {
+          ocrEngine: "StubOCR",
+          ocrVersion: "1.0.0",
+          modelName: "StubLLM",
+          modelVersion: "1.0.0",
+        },
+      },
+      issues: [],
+      executedAt: "2026-09-29T10:05:00Z",
     },
+    createdAt: "2026-09-29T10:00:00Z",
+    updatedAt: "2026-09-29T10:05:00Z",
     ...overrides,
   };
 }
@@ -150,16 +152,26 @@ describe("projectProvenanceStages", () => {
   it("lists issues and marks failed jobs as failed, never as pending", () => {
     const job = buildJob({
       status: "FAILED",
-      issues: [
-        {
-          code: "OCR_EMPTY",
-          message: "No text extracted from flyer",
-          severity: "Error",
-          isRetryable: true,
-          field: null,
-          metadata: {},
+      errorContext: "OCR engine crashed.",
+      result: {
+        jobId: "job-123",
+        status: "FAILED",
+        evidence: {
+          assetId: "flyer.png",
+          capturedAt: "2026-09-29T10:01:00Z",
+          extractedBy: "flyer-ingestion-pipeline",
+          confidenceScore: 0,
         },
-      ],
+        issues: [
+          {
+            code: "OCR_EMPTY",
+            message: "No text extracted from flyer",
+            severity: "ERROR",
+            field: "assetId",
+          },
+        ],
+        executedAt: "2026-09-29T10:05:00Z",
+      },
     });
     const stages = projectProvenanceStages(buildEvent(), job);
     const byStage = Object.fromEntries(stages.map((s) => [s.stage, s]));
@@ -194,7 +206,7 @@ describe("useProvenanceDrawer", () => {
     await flushPromises();
 
     expect(getIngestionJob).toHaveBeenCalledWith("job-123");
-    expect(drawer.jobRecord.value?.jobId).toBe("job-123");
+    expect(drawer.jobRecord.value?.id).toBe("job-123");
     expect(drawer.isLoadingJob.value).toBe(false);
   });
 

@@ -47,12 +47,13 @@ describe("weupNavModes contract", () => {
     expect(NAV_SURFACE_MAP.SAVED.owner).toBe("G6");
   });
 
-  it("declares PROFILE/CREATE projections with downstream owners (no invented surfaces)", () => {
+  it("declares PROFILE/CREATE as adapted surfaces owned by G9/G11", () => {
     // G9 resolved the PROFILE surface: ADAPTED with the ProfilePanel overlay
-    // sheet. CREATE remains a declared projection owned by G11.
+    // sheet. G11 resolved the CREATE surface: ADAPTED with the AddEventWizard
+    // ingestion flow.
     expect(NAV_SURFACE_MAP.PROFILE.disposition).toBe("ADAPTED");
     expect(NAV_SURFACE_MAP.PROFILE.owner).toBe("G9");
-    expect(NAV_SURFACE_MAP.CREATE.disposition).toBe("PROJECTION_DEFINED");
+    expect(NAV_SURFACE_MAP.CREATE.disposition).toBe("ADAPTED");
     expect(NAV_SURFACE_MAP.CREATE.owner).toBe("G11");
   });
 

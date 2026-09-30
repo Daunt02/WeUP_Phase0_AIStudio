@@ -106,10 +106,10 @@ export const NAV_SURFACE_MAP: Readonly<Record<WeupNavMode, NavSurfaceMapping>> =
       sourceBehavior:
         "HomeClient handleModeChange: mode === 'CREATE' sets modalState = 'ADD_EVENT', opening AddEventModal (ingestion wizard).",
       vueSurface:
-        "AddEventWizard — no Vue counterpart exists yet. Surface owned by G11 (flyer/URL/venue-page/manual ingestion, job polling, evidence, review).",
-      disposition: "PROJECTION_DEFINED",
+        "AddEventWizard (useIngestionWizard) opens on CREATE mode: all five source choices, per-source validation presentation, real /api/ingestion/* submission (raw source payloads), job polling with the observed lifecycle, candidate review with evidence/issues/confidence, and acceptance into the canonical EventDetailModal preview. EXTERNAL_FEED exposes the path but blocks submission with BLOCKED_WITH_REASON. The assistant surface never touches ingestion.",
+      disposition: "ADAPTED",
       owner: "G11",
       notes:
-        "Interim G6 behavior: the mode transition is real state (active highlight + accent affordance render, dispatch recorded); the world surface is retained and no fabricated create flow is shown. G11 resolves the surface.",
+        "Implemented in G11 (WEUP-PHASE0-VUE-FINAL-SYNTHESIS-001): CREATE dispatch opens the wizard in App.vue; closing without acceptance resets to DISCOVER. Candidate acceptance projects through the canonical EventDetailModal contract labeled CANDIDATE — never promoted into canonical event state (no backend publish endpoint exists).",
     },
   };

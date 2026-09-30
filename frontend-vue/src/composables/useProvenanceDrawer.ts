@@ -13,6 +13,7 @@ import { computed, nextTick, ref, watch } from "vue";
 import type { EventDetailDto } from "../contracts/event-detail.contracts";
 import type {
   IngestionJobRecord,
+  IngestionJobStatus,
   ProvenanceStageDto,
   ProvenanceStageStatus,
 } from "../contracts/ingestion.contracts";
@@ -43,18 +44,28 @@ export function projectProvenanceStages(
 ): ProvenanceStageDto[] {
   const provenance = event.provenanceSummary;
 
+  // G11 realignment: the served job payload carries the result (candidate /
+  // evidence / issues) under `result`; the record itself holds id, sourceKind,
+  // status, and the request payload. All derivations below read that shape.
+  const result = job?.result ?? null;
+  const evidence = result?.evidence ?? null;
+  const issues = result?.issues ?? [];
+  const vector = evidence?.confidenceVector ?? null;
+
   const jobStatus: ProvenanceStageStatus = job ? "complete" : "unavailable";
   const extractionComplete =
-    !!job && job.evidence.some((item) => item.payloadSnippet || item.reference);
+    !!evidence &&
+    !!(evidence.ocrText || evidence.sourceUrl || evidence.assetId);
   const normalizationComplete =
-    !!job &&
-    (job.status === "Normalized" ||
-      job.status === "CANDIDATE_CREATED" ||
-      job.status === "REQUIRES_REVIEW" ||
-      job.status === "Completed" ||
-      job.confidenceVector != null);
+    !!result &&
+    (result.status === "CANDIDATE_CREATED" ||
+      result.status === "REQUIRES_REVIEW" ||
+      vector != null);
 
-  const failedStatuses = new Set(["FAILED", "RETRYABLE_FAILURE"]);
+  const failedStatuses = new Set<IngestionJobStatus>([
+    "FAILED",
+    "RETRYABLE_FAILURE",
+  ]);
 
   return [
     {
@@ -86,15 +97,18 @@ export function projectProvenanceStages(
       title: "Ingestion job",
       status: job ? (failedStatuses.has(job.status) ? "failed" : jobStatus) : jobStatus,
       summary: job
-        ? `${job.jobId} · ${job.status}`
+        ? `${job.id} · ${job.status}`
         : "No ingestion job is linked to this event in the detail contract — stage unavailable, not pending",
       details: job
         ? [
-            stageDetail("Job id", job.jobId, true),
+            stageDetail("Job id", job.id, true),
             stageDetail("Status", job.status, true),
-            stageDetail("Source kind", job.request.sourceKind, true),
-            stageDetail("Created", job.createdAtUtc, true),
-            stageDetail("Updated", job.updatedAtUtc, true),
+            stageDetail("Source kind", job.sourceKind, true),
+            stageDetail("Created", job.createdAt, true),
+            stageDetail("Updated", job.updatedAt, true),
+            ...(job.errorContext
+              ? [stageDetail("Error context", job.errorContext)]
+              : []),
           ]
         : [
             stageDetail(
@@ -108,20 +122,28 @@ export function projectProvenanceStages(
       title: "Extraction",
       status: extractionComplete ? "complete" : "pending",
       summary: extractionComplete
-        ? `${job!.evidence.length} evidence record${job!.evidence.length === 1 ? "" : "s"} extracted`
-        : "URL / venue-page / OCR extraction stages are stubbed in the current backend — PENDING",
-      details: job
-        ? job.evidence.map((item) =>
+        ? `Extracted by ${evidence!.extractedBy} · captured ${evidence!.capturedAt}`
+        : "No extraction payload is attached to the job record yet — PENDING",
+      details: evidence
+        ? [
+            stageDetail("Extracted by", evidence.extractedBy, true),
+            stageDetail("Captured at", evidence.capturedAt, true),
+            ...(evidence.sourceUrl
+              ? [stageDetail("Source URL", evidence.sourceUrl, true)]
+              : []),
+            ...(evidence.assetId
+              ? [stageDetail("Asset id", evidence.assetId, true)]
+              : []),
             stageDetail(
-              `${item.evidenceKind} (${formatConfidence(item.confidence)})`,
-              item.reference || item.payloadSnippet || item.evidenceId,
+              "Confidence score",
+              formatConfidence(evidence.confidenceScore),
               true,
             ),
-          )
+          ]
         : [
             stageDetail(
               "Reason",
-              "Extraction evidence becomes visible when the event is linked to an ingestion job.",
+              "Extraction evidence becomes visible when the job record carries a result.",
             ),
           ],
     },
@@ -130,19 +152,12 @@ export function projectProvenanceStages(
       title: "Normalization",
       status: normalizationComplete ? "complete" : "pending",
       summary: normalizationComplete
-        ? "Normalization vector present on the job record"
-        : "The flyer/normalize service is an explicit backend stub — PENDING",
-      details: job?.confidenceVector
-        ? (
-            Object.entries(job.confidenceVector) as Array<
-              [string, number | null]
-            >
-          ).map(([dimension, value]) =>
-            stageDetail(
-              dimension,
-              value == null ? "not measured" : formatConfidence(value),
-              true,
-            ),
+        ? `Candidate ${result!.status === "REQUIRES_REVIEW" ? "requires review" : "created"} · vector present`
+        : "No normalization outcome is attached to the job record yet — PENDING",
+      details: vector
+        ? (Object.entries(vector) as Array<[string, number]>).map(
+            ([dimension, value]) =>
+              stageDetail(dimension, formatConfidence(value), true),
           )
         : [
             stageDetail(
@@ -164,7 +179,7 @@ export function projectProvenanceStages(
         ),
         stageDetail(
           "Per-dimension vector",
-          job?.confidenceVector ? "provided by job" : "not measured — PENDING",
+          vector ? "provided by job" : "not measured — PENDING",
           true,
         ),
       ],
@@ -174,12 +189,12 @@ export function projectProvenanceStages(
       title: "Issues",
       status: job ? "complete" : "unavailable",
       summary: job
-        ? job.issues.length === 0
+        ? issues.length === 0
           ? "No issues recorded on the job"
-          : `${job.issues.length} issue${job.issues.length === 1 ? "" : "s"} recorded`
+          : `${issues.length} issue${issues.length === 1 ? "" : "s"} recorded`
         : "Issue ledger requires a linked ingestion job — unavailable",
       details: job
-        ? job.issues.map((issue) =>
+        ? issues.map((issue) =>
             stageDetail(
               `${issue.code} · ${issue.severity}`,
               issue.message + (issue.field ? ` (field: ${issue.field})` : ""),

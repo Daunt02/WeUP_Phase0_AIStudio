@@ -166,18 +166,29 @@
             @toggle-category="onAssistantToggleCategory"
             @select-event="onAssistantSelectEvent"
           />
+
+          <!-- G11 (Create): the ingestion wizard. CREATE mode opens this
+               surface; accepted candidates flow into the canonical
+               EventDetailModal preview below — never into canonical stores. -->
+          <AddEventWizard
+            v-model="isCreateWizardOpen"
+            :map-center="assistantMapCenter"
+            @close="onCreateWizardClose"
+            @candidate-accepted="onCandidateAccepted"
+          />
         </div>
 
         <EventDetailModal
-          :model-value="isOpen"
-          :event="eventDetail"
+          :model-value="modalOpen"
+          :event="modalEvent"
           :is-loading="isLoading"
           :is-save-pending="isSavePending"
           :error="error"
           :session-kind="selectedEventSessionKind"
+          :provenance-job-id="candidatePreview?.jobId ?? null"
           @update:model-value="onModalVisibilityChange"
-          @toggle-save="toggleSavedState"
-          @share="showSharePlaceholder"
+          @toggle-save="onModalToggleSave"
+          @share="onModalShare"
         />
       </q-page>
     </q-page-container>
@@ -187,6 +198,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from "vue";
 import { useQuasar } from "quasar";
+import AddEventWizard from "./components/AddEventWizard.vue";
 import CalendarOverlayShell from "./components/CalendarOverlayShell.vue";
 import EventDetailModal from "./components/EventDetailModal.vue";
 import MapSurface from "./components/MapSurface.vue";
@@ -211,13 +223,17 @@ import { useSavedEventsCollection } from "./composables/useSavedEventsCollection
 import { useSocialPrototype } from "./composables/useSocialPrototype";
 import { useUserContextPreferences } from "./composables/useUserContextPreferences";
 import { useWeupNavMode } from "./composables/useWeupNavMode";
+import type { AcceptedIngestionCandidate } from "./composables/useIngestionWizard";
 import type { WeupNavMode } from "./navigation/weupNavModes";
 import type {
   EventMapFeedQueryDto,
   EventMapItemDto,
 } from "./contracts/map-feed.contracts";
 import { shareEventDetail } from "./services/eventDetailService";
-import type { SaveSessionKind } from "./contracts/event-detail.contracts";
+import type {
+  EventDetailDto,
+  SaveSessionKind,
+} from "./contracts/event-detail.contracts";
 
 const $q = useQuasar();
 
@@ -252,6 +268,22 @@ const isProfileSheetOpen = ref(false);
  * EventDetailModal when an AI suggestion resolves to a live event.
  */
 const isAssistantOpen = ref(false);
+
+/**
+ * G11 (Create): the ingestion wizard mount flag. CREATE mode opens the
+ * wizard; closing it without an accepted candidate returns the shell to
+ * DISCOVER. The assistant session (G10) never touches this surface.
+ */
+const isCreateWizardOpen = ref(false);
+
+/**
+ * G11: an accepted ingestion candidate awaiting review in the canonical
+ * event surface. The candidate is projected through the existing
+ * EventDetailModal contract (never a parallel model) and is explicitly
+ * labeled CANDIDATE — it never enters canonical event state, saved state,
+ * or the selection/fetch path (no backend publish endpoint exists).
+ */
+const candidatePreview = ref<AcceptedIngestionCandidate | null>(null);
 
 /**
  * G10: map-center context for the assistant's Gemini payload, derived from
@@ -375,10 +407,11 @@ function handleNavModeChange(mode: WeupNavMode): void {
       openProfileSheet();
       break;
     case "CREATE":
-      // PROJECTION_DEFINED (owner G11): no Vue create wizard exists yet.
-      // World surface retained; no fabricated create flow is shown.
+      // G11 (Create/Ingestion): the wizard surface now exists — CREATE opens
+      // the real ingestion flow instead of a projection placeholder.
       closeSavedSheet();
       closeProfileSheet();
+      isCreateWizardOpen.value = true;
       break;
   }
 }
@@ -565,6 +598,83 @@ const selectedEventSessionKind = computed<SaveSessionKind | null>(() => {
   return savedEventState.getCachedSavedState(eventId)?.sessionKind ?? null;
 });
 
+// ─── G11 candidate preview (Create → Event edge) ────────────────────────────
+// An accepted candidate is projected through the EXISTING EventDetailModal
+// contract. The projection is honest about what it is: id is prefixed
+// `candidate:`, status is CANDIDATE_REVIEW, and provenance states that this
+// is not a published canonical event. Save/share are intercepted below so a
+// candidate can never mutate canonical or saved state.
+const CANDIDATE_FALLBACK_COORDS = { lat: 29.7604, lng: -95.3698 };
+
+function projectCandidateToEventDetail(
+  accepted: AcceptedIngestionCandidate,
+): EventDetailDto {
+  const candidate = accepted.candidate;
+  const job = accepted.job;
+  const hasCoords = candidate.latitude != null && candidate.longitude != null;
+  return {
+    id: `candidate:${job.id}`,
+    title: candidate.title?.trim() || "UNTITLED_EVENT",
+    description: candidate.description ?? null,
+    venueName: candidate.venueName?.trim() || "UNKNOWN_VENUE",
+    address:
+      candidate.address ??
+      (hasCoords
+        ? "Coordinates only — no address extracted"
+        : "Location pending extraction"),
+    lat: candidate.latitude ?? CANDIDATE_FALLBACK_COORDS.lat,
+    lng: candidate.longitude ?? CANDIDATE_FALLBACK_COORDS.lng,
+    category: candidate.category ?? "nightlife",
+    categories: candidate.category ? [candidate.category] : ["nightlife"],
+    startUtc: candidate.startTime ?? new Date().toISOString(),
+    endUtc: candidate.endTime ?? null,
+    timezone: "America/Chicago",
+    flyerImageUrl: candidate.imageUrl ?? null,
+    mediaRefs: [],
+    tags: candidate.tags ?? [],
+    status: "CANDIDATE_REVIEW",
+    confidence: job.result?.evidence?.confidenceScore ?? 0.5,
+    sourceKind: `ingestion:${job.sourceKind}`,
+    provenanceSummary: {
+      primarySourceKind: `ingestion:${job.sourceKind}`,
+      sourceCount: 1,
+      firstObservedAtUtc: job.createdAt,
+      lastObservedAtUtc: job.updatedAt,
+      summaryLabel: "Ingestion candidate — not a published canonical event",
+    },
+    savedByCurrentUser: false,
+    version: 0,
+    lastChangeType: null,
+    concurrencyToken: null,
+  };
+}
+
+const modalEvent = computed<EventDetailDto | null>(() =>
+  candidatePreview.value
+    ? projectCandidateToEventDetail(candidatePreview.value)
+    : eventDetail.value,
+);
+
+const modalOpen = computed(
+  () => isOpen.value || candidatePreview.value !== null,
+);
+
+function onCreateWizardClose(): void {
+  isCreateWizardOpen.value = false;
+  navMode.resetMode();
+}
+
+/**
+ * G11: an accepted candidate flows into the canonical event experience via
+ * the existing EventDetailModal contract. The wizard closes; the preview
+ * opens as the EVENT surface.
+ */
+function onCandidateAccepted(accepted: AcceptedIngestionCandidate): void {
+  isCreateWizardOpen.value = false;
+  candidatePreview.value = accepted;
+  navMode.resetMode();
+}
+
 const mapItemsState = ref<EventMapItemDto[]>([]);
 const isCalendarFilterRefreshPending = ref(false);
 const calendarDegradedReason = ref<string | null>(null);
@@ -733,11 +843,42 @@ function onMapFeedQueryUpdated(query: EventMapFeedQueryDto): void {
 }
 
 function onModalVisibilityChange(isVisible: boolean): void {
+  if (candidatePreview.value) {
+    // Candidate preview mode: closing clears the preview. The canonical
+    // selection/fetch path is untouched — a candidate never owns selection.
+    if (!isVisible) {
+      candidatePreview.value = null;
+    }
+    return;
+  }
   // Closing the dialog clears the shared selection so the map returns to its
   // default interaction state without a stranded highlighted marker.
   if (!isVisible) {
     closeModal();
   }
+}
+
+function onModalToggleSave(): void {
+  if (candidatePreview.value) {
+    $q.notify({
+      type: "warning",
+      message:
+        "This is an ingestion candidate, not a published event — saving is unavailable until the backend persists it.",
+    });
+    return;
+  }
+  toggleSavedState();
+}
+
+function onModalShare(): void {
+  if (candidatePreview.value) {
+    $q.notify({
+      type: "info",
+      message: "Sharing is unavailable for unreviewed candidates.",
+    });
+    return;
+  }
+  void showSharePlaceholder();
 }
 
 async function showSharePlaceholder(): Promise<void> {

@@ -1,26 +1,29 @@
 /**
  * WEUP-SYNTH:
- * source=components/ReceiptDrawer.tsx
+ * source=types/ingestion.ts (authoritative)
  * destination=frontend-vue/src/contracts/ingestion.contracts.ts
  * mission=WEUP-PHASE0-VUE-FINAL-SYNTHESIS-001
- * notes=New contract surface per G2 arbitration (ingestion/OCR/normalization
- *   DTOs had no Vue counterpart). Backend-aligned shapes are camelCase per the
- *   WeUP.Contracts.Ingestion serialization policy. ProvenanceStage* types are
- *   the Vue-side projection of mission section 22's 8-stage chain.
+ * notes=G2 arbitration outcome: the authoritative ingestion model is the one
+ *   served by the Next API substrate (app/api/ingestion/**), whose handlers
+ *   return lib/ingestion IngestionJobRecord payloads verbatim. An earlier
+ *   draft of this file modeled a mixed-case DTO set that no served route
+ *   produces; it is realigned here to the authoritative types/ingestion.ts
+ *   shapes. ProvenanceStageDto (the Vue-side 8-stage projection from mission
+ *   section 22) is unchanged — it is UI projection, not a competing model.
  */
 
-/** Backend DTO: WeUP.Contracts.Ingestion.IngestionSourceKind */
+/** Authoritative: types/ingestion.ts IngestionSourceKind. */
 export type IngestionSourceKind =
-  | "ManualSubmission"
-  | "PastedUrl"
-  | "VenuePage"
-  | "FlyerUpload"
-  | "ExternalFeed";
+  | "MANUAL"
+  | "URL"
+  | "VENUE_PAGE"
+  | "EXTERNAL_FEED"
+  | "FLYER_OCR";
 
 /**
- * Backend DTO: WeUP.Contracts.Ingestion.IngestionJobStatus.
- * Mixed-case enum as shipped by the backend; the provenance projection maps
- * these to display labels rather than inventing a parallel status model.
+ * Authoritative: types/ingestion.ts IngestionJobStatus.
+ * RECEIVED -> VALIDATING -> NORMALIZING -> CANDIDATE_CREATED -> REQUIRES_REVIEW,
+ * with terminal FAILED / RETRYABLE_FAILURE.
  */
 export type IngestionJobStatus =
   | "RECEIVED"
@@ -29,143 +32,126 @@ export type IngestionJobStatus =
   | "CANDIDATE_CREATED"
   | "REQUIRES_REVIEW"
   | "FAILED"
-  | "RETRYABLE_FAILURE"
-  | "Pending"
-  | "Processing"
-  | "OCR"
-  | "Normalized"
-  | "ReadyForDedup"
-  | "Completed";
+  | "RETRYABLE_FAILURE";
 
-/** Backend DTO: WeUP.Contracts.Ingestion.IngestionIssueSeverity */
-export type IngestionIssueSeverity = "Warning" | "Error";
-
-/** Backend DTO: WeUP.Contracts.Ingestion.CanonicalIngestionIssue */
+/** Authoritative: types/ingestion.ts CanonicalIngestionIssue. */
 export interface CanonicalIngestionIssue {
   readonly code: string;
   readonly message: string;
-  readonly severity: IngestionIssueSeverity;
-  readonly isRetryable: boolean;
-  readonly field: string | null;
-  readonly metadata?: Readonly<Record<string, string | null>>;
+  readonly severity: "WARNING" | "ERROR";
+  readonly field?: string;
 }
 
-/**
- * Backend DTO: WeUP.Contracts.Ingestion.CanonicalSourceEvidence.
- * G2 arbitration: adopted as the evidence contract for the provenance chain.
- */
+/** Authoritative: types/ingestion.ts CanonicalSourceEvidence. */
 export interface CanonicalSourceEvidence {
-  readonly evidenceId: string;
-  readonly evidenceKind: string;
-  readonly reference: string;
-  readonly mimeType: string | null;
-  readonly payloadSnippet: string | null;
-  readonly observedAtUtc: string;
-  readonly confidence: number;
-  readonly metadata?: Readonly<Record<string, string | null>>;
+  readonly sourceUrl?: string;
+  readonly assetId?: string;
+  readonly rawPayload?: unknown;
+  readonly capturedAt: string;
+  readonly extractedBy: string;
+  readonly confidenceScore: number;
+  readonly confidenceVector?: ConfidenceVector;
+  readonly ocrText?: string;
+  readonly processingMetadata?: Readonly<Record<string, unknown>>;
 }
 
-/**
- * Per-dimension confidence breakdown for the provenance CONFIDENCE stage.
- * G2 arbitration: ADOPT_AS_NEW_CONTRACT. No Vue equivalent existed; the
- * vector is populated only when a job record actually carries the evidence.
- */
+/** Authoritative: types/ingestion.ts ConfidenceVector. */
 export interface ConfidenceVector {
-  readonly extraction: number | null;
-  readonly normalization: number | null;
-  readonly temporal: number | null;
-  readonly venueMatch: number | null;
-  readonly geocode: number | null;
-  readonly overall: number | null;
+  readonly extraction: number;
+  readonly temporal: number;
+  readonly venueMatch: number;
+  readonly geocode: number;
+  readonly overall: number;
 }
 
-/**
- * Backend DTO: WeUP.Contracts.Ingestion.IngestionRequestEnvelope (subset used
- * by the provenance surface).
- */
-export interface IngestionRequestEnvelope {
-  readonly requestId: string;
-  readonly sourceKind: IngestionSourceKind;
-  readonly submitterId: string;
-  readonly submittedAtUtc: string;
-  readonly sourceLabel: string | null;
-}
-
-/**
- * Backend DTO: WeUP.Contracts.Ingestion.CanonicalEventCandidate (subset).
- * A candidate is NEVER a canonical event until the backend approves it; the
- * provenance surface may cite it but never promotes it to event state.
- */
-export interface CanonicalEventCandidate {
-  readonly candidateId: string;
-  readonly title: string;
-  readonly venueName: string;
-  readonly address: string | null;
-  readonly startUtc: string | null;
-  readonly endUtc: string | null;
-  readonly latitude: number | null;
-  readonly longitude: number | null;
-  readonly priceTier: string | null;
-}
-
-/**
- * Backend DTO: WeUP.Contracts.Ingestion.AdapterCapabilityDescriptor (subset).
- */
-export interface AdapterCapabilityDescriptor {
-  readonly adapterKey: string;
-  readonly displayName: string;
-  readonly version: string;
-  readonly supportedSourceKinds: IngestionSourceKind[];
-  readonly isRetrySafe: boolean;
-  readonly requiresNetworkAccess: boolean;
-}
-
-/**
- * Backend DTO: WeUP.Contracts.Ingestion.IngestionResult.
- * Response shape of GET /api/ingestion/jobs/{id}.
- */
-export interface IngestionJobRecord {
-  readonly jobId: string;
-  readonly request: IngestionRequestEnvelope;
-  readonly status: IngestionJobStatus;
-  readonly candidate: CanonicalEventCandidate | null;
-  readonly evidence: CanonicalSourceEvidence[];
-  readonly issues: CanonicalIngestionIssue[];
-  readonly adapter: AdapterCapabilityDescriptor | null;
-  readonly createdAtUtc: string;
-  readonly updatedAtUtc: string;
-  /** Non-authoritative per-dimension vector when the job carries one. */
-  readonly confidenceVector?: ConfidenceVector | null;
-}
-
-/**
- * Backend DTO: WeUP.Contracts.Ocr.FlyerOcrExtractionResult (subset).
- * G2 arbitration: ADOPT_WITH_CAVEAT — the flyer OCR service is an explicit
- * backend stub (hardcoded 'Houston Nights' output). The contract is adopted
- * for shape only; the provenance surface MUST label OCR output as stubbed
- * until a real extractor lands.
- */
+/** Authoritative: types/ingestion.ts FlyerOcrResult. */
 export interface FlyerOcrResult {
-  readonly extractionId: string;
-  readonly jobId: string;
-  readonly engine: string;
-  readonly engineVersion: string;
-  readonly confidence: number;
-  readonly success: boolean;
   readonly rawText: string;
+  readonly blocks?: unknown[];
+  readonly confidence: number;
+  readonly ocrEngine: string;
+  readonly ocrVersion: string;
 }
 
-/**
- * Normalization outcome attached to a flyer job.
- * G2 arbitration: ADOPT_WITH_CAVEAT (same stub caveat as FlyerOcrResult).
- */
+/** Authoritative: types/ingestion.ts FlyerNormalizationResult. */
 export interface FlyerNormalizationResult {
-  readonly candidate: CanonicalEventCandidate | null;
+  readonly candidate: CanonicalEventCandidate;
   readonly confidenceVector: ConfidenceVector;
   readonly issues: CanonicalIngestionIssue[];
   readonly modelName: string;
   readonly modelVersion: string;
-  readonly stubbed: boolean;
+}
+
+/**
+ * Authoritative: types/ingestion.ts CanonicalEventCandidate.
+ * A candidate is NEVER a canonical event until the backend persists it; the
+ * Vue surface may preview it through the canonical event grammar but must
+ * never promote it into canonical event state.
+ */
+export interface CanonicalEventCandidate {
+  readonly title?: string;
+  readonly description?: string;
+  readonly venueName?: string;
+  readonly address?: string;
+  readonly startTime?: string;
+  readonly endTime?: string;
+  readonly category?: string;
+  readonly priceTier?: string;
+  readonly imageUrl?: string;
+  readonly latitude?: number;
+  readonly longitude?: number;
+  readonly tags?: string[];
+}
+
+/** Authoritative: types/ingestion.ts IngestionRequestEnvelope. */
+export interface IngestionRequestEnvelope {
+  readonly sourceKind: IngestionSourceKind;
+  readonly payload: Record<string, unknown>;
+  readonly metadata?: Record<string, unknown>;
+}
+
+/** Authoritative: types/ingestion.ts IngestionResult. */
+export interface IngestionResult {
+  readonly jobId: string;
+  readonly status: IngestionJobStatus;
+  readonly candidate?: CanonicalEventCandidate;
+  readonly evidence: CanonicalSourceEvidence;
+  readonly issues: CanonicalIngestionIssue[];
+  readonly executedAt: string;
+}
+
+/** Authoritative: types/ingestion.ts AdapterCapabilityDescriptor. */
+export interface AdapterCapabilityDescriptor {
+  readonly adapterId: string;
+  readonly supportedKinds: IngestionSourceKind[];
+  readonly version: string;
+}
+
+/**
+ * Authoritative: types/ingestion.ts IngestionJobRecord — the exact payload
+ * returned by GET /api/ingestion/jobs/{id} and by every POST
+ * /api/ingestion/* route (lib/ingestion/coordinator submit/getJobStatus).
+ */
+export interface IngestionJobRecord {
+  readonly id: string;
+  readonly sourceKind: IngestionSourceKind;
+  readonly status: IngestionJobStatus;
+  readonly requestPayload: Record<string, unknown>;
+  readonly result?: IngestionResult;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly errorContext?: string;
+}
+
+/**
+ * Payload of GET /api/ingestion/flyers/{id}/evidence — the evidence slice of
+ * a flyer job's result plus its issue ledger.
+ */
+export interface FlyerEvidenceDto {
+  readonly jobId: string;
+  readonly sourceKind: IngestionSourceKind;
+  readonly evidence: CanonicalSourceEvidence;
+  readonly issues: CanonicalIngestionIssue[];
 }
 
 /** Mission section 22: the 8 required provenance stages. */
@@ -201,4 +187,114 @@ export interface ProvenanceStageDto {
     readonly value: string;
     readonly mono: boolean;
   }>;
+}
+
+// ─── G11: ingestion state-machine vocabulary ────────────────────────────────
+// Derived from the authoritative lib/ingestion/coordinator lifecycle:
+// RECEIVED -> VALIDATING -> NORMALIZING -> (adapter result status), with
+// terminal FAILED / RETRYABLE_FAILURE. These helpers are pure and unit-tested.
+
+/** Ordered observable lifecycle stages (mission section 12). The last two are
+ * terminal review states — CANDIDATE_CREATED / REQUIRES_REVIEW stop polling. */
+export const INGESTION_STATUS_FLOW: readonly IngestionJobStatus[] = [
+  "RECEIVED",
+  "VALIDATING",
+  "NORMALIZING",
+  "CANDIDATE_CREATED",
+  "REQUIRES_REVIEW",
+] as const;
+
+/** Terminal statuses: polling stops, the job never advances further. */
+export const TERMINAL_INGESTION_STATUSES: ReadonlySet<IngestionJobStatus> =
+  new Set(["CANDIDATE_CREATED", "REQUIRES_REVIEW", "FAILED", "RETRYABLE_FAILURE"]);
+
+export function isTerminalIngestionStatus(status: IngestionJobStatus): boolean {
+  return TERMINAL_INGESTION_STATUSES.has(status);
+}
+
+export function isFailedIngestionStatus(status: IngestionJobStatus): boolean {
+  return status === "FAILED" || status === "RETRYABLE_FAILURE";
+}
+
+/** Human-readable labels for the observable lifecycle (never a fake stage). */
+export function ingestionStatusLabel(status: IngestionJobStatus): string {
+  switch (status) {
+    case "RECEIVED":
+      return "Received";
+    case "VALIDATING":
+      return "Validating payload";
+    case "NORMALIZING":
+      return "Extracting + normalizing";
+    case "CANDIDATE_CREATED":
+      return "Candidate created";
+    case "REQUIRES_REVIEW":
+      return "Requires review";
+    case "FAILED":
+      return "Failed";
+    case "RETRYABLE_FAILURE":
+      return "Retryable failure";
+  }
+}
+
+/**
+ * Per-source submission metadata for the CREATE flow. `submittable` reflects
+ * surveyed backend reality (lib/ingestion/resolver.ts + route handlers):
+ * EXTERNAL_FEED has no registered resolver adapter and no POST route, so the
+ * UI must expose the path honestly and block submission with the reason.
+ */
+export interface IngestionSourceMeta {
+  readonly kind: IngestionSourceKind;
+  readonly label: string;
+  readonly hint: string;
+  readonly submittable: boolean;
+  readonly blockedReason: string | null;
+}
+
+export const INGESTION_SOURCE_METAS: readonly IngestionSourceMeta[] = [
+  {
+    kind: "MANUAL",
+    label: "Manual entry",
+    hint: "Type the event details yourself — highest-confidence path",
+    submittable: true,
+    blockedReason: null,
+  },
+  {
+    kind: "URL",
+    label: "Paste link",
+    hint: "Submit a URL; the backend extraction stage is currently stubbed",
+    submittable: true,
+    blockedReason: null,
+  },
+  {
+    kind: "VENUE_PAGE",
+    label: "Venue page",
+    hint: "Submit a venue page URL; the backend crawler is currently stubbed",
+    submittable: true,
+    blockedReason: null,
+  },
+  {
+    kind: "FLYER_OCR",
+    label: "Flyer upload",
+    hint: "Submit a flyer asset; the backend OCR/normalization are explicit stubs",
+    submittable: true,
+    blockedReason: null,
+  },
+  {
+    kind: "EXTERNAL_FEED",
+    label: "External feed",
+    hint: "Feed adapter ingestion",
+    submittable: false,
+    blockedReason:
+      "No feed adapter is registered in the backend resolver and no POST /api/ingestion/external-feed route exists — submission is blocked until the backend lands one.",
+  },
+] as const;
+
+export function ingestionSourceMeta(
+  kind: IngestionSourceKind,
+): IngestionSourceMeta {
+  const meta = INGESTION_SOURCE_METAS.find((entry) => entry.kind === kind);
+  if (!meta) {
+    throw new Error(`Unknown ingestion source kind: ${kind}`);
+  }
+  return meta;
 }

@@ -307,8 +307,14 @@ const props = withDefaults(
     isSavePending: boolean;
     error: string | null;
     sessionKind?: SaveSessionKind | null;
+    /**
+     * G11 (Create): explicit ingestion job id to link when the modal renders
+     * an accepted candidate preview. The provenance drawer then loads the
+     * real job record — never a fabricated link.
+     */
+    provenanceJobId?: string | null;
   }>(),
-  { sessionKind: null },
+  { sessionKind: null, provenanceJobId: null },
 );
 
 const emit = defineEmits<{
@@ -519,7 +525,10 @@ function openProvenanceDrawer(): void {
     return;
   }
 
-  provenanceDrawer.openDrawer(props.event);
+  provenanceDrawer.openDrawer(
+    props.event,
+    props.provenanceJobId ? { jobId: props.provenanceJobId } : undefined,
+  );
 }
 
 function onProvenanceDrawerModelValue(value: boolean): void {
