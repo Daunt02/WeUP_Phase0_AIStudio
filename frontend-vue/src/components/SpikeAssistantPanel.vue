@@ -526,6 +526,15 @@ function onSuggestionTap(): void {
     emit("select-event", outcome.eventId);
   }
 }
+
+/**
+ * WEUP-2.5D (D17): expose the thinking flag (read-only) so the shell's
+ * interaction state machine can coordinate the Z4 command state. No new
+ * execution path — the session remains the sole owner of its state.
+ */
+defineExpose({
+  isAssistantThinking: computed(() => session.isThinking.value),
+});
 </script>
 
 <style scoped>

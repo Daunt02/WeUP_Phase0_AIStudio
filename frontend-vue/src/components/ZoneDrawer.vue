@@ -83,7 +83,11 @@
           v-for="edge in corridorGraph.edges"
           :key="edge.id"
           class="weup-corridor"
-          :class="{ 'is-active': corridorEdgeState(edge) === 'active' }"
+          :class="{
+            'is-active':
+              corridorEdgeState(edge) === 'active' ||
+              corridorEdgeState(edge) === 'emphasized',
+          }"
           :data-state="corridorEdgeState(edge)"
         >
           <path
@@ -149,12 +153,19 @@ const props = withDefaults(
     map?: unknown;
     /** Canonical district code currently applied as a filter. */
     activeDistrict?: string;
+    /**
+     * WEUP-2.5D (D17): district of the SELECTED cluster. Edges touching it
+     * render emphasized (related-topology emphasis on select). Optional;
+     * defaults to undefined (no emphasis) — existing callers unaffected.
+     */
+    emphasizedDistrict?: string;
     /** Zone layer visibility. */
     visible?: boolean;
   }>(),
   {
     map: undefined,
     activeDistrict: undefined,
+    emphasizedDistrict: undefined,
     visible: true,
   },
 );
@@ -280,23 +291,29 @@ const corridorGraph = computed<{ nodes: CorridorNode[]; edges: CorridorEdge[] }>
   },
 );
 
-/** Corridor activation state: an edge is active when the canonical district
-    filter touches either endpoint. Intensity/activation derive from the
-    existing activeDistrict prop — nothing invented. */
-function corridorEdgeState(edge: CorridorEdge): "active" | "visible" {
-  if (!props.activeDistrict) {
-    return "visible";
+/** WEUP-2.5D (D08/D17): corridor state. Priority: emphasized (cluster
+    SELECT — more specific) > active (district filter) > visible.
+    Emphasis derives from the D17 state machine's emphasizedDistrict prop —
+    nothing invented. */
+function corridorEdgeState(
+  edge: CorridorEdge,
+): "emphasized" | "active" | "visible" {
+  const touches = (district: string | undefined): boolean =>
+    !!district &&
+    (edge.a.district === district || edge.b.district === district);
+  if (touches(props.emphasizedDistrict)) {
+    return "emphasized";
   }
-  return edge.a.district === props.activeDistrict ||
-    edge.b.district === props.activeDistrict
-    ? "active"
-    : "visible";
+  if (touches(props.activeDistrict)) {
+    return "active";
+  }
+  return "visible";
 }
 
 function corridorMarker(edge: CorridorEdge): string {
-  return corridorEdgeState(edge) === "active"
-    ? "url(#weup-corridor-arrow-active)"
-    : "url(#weup-corridor-arrow)";
+  return corridorEdgeState(edge) === "visible"
+    ? "url(#weup-corridor-arrow)"
+    : "url(#weup-corridor-arrow-active)";
 }
 
 function getMap(): any {
@@ -646,6 +663,20 @@ onBeforeUnmount(() => {
 .weup-corridor[data-state="active"] .weup-corridor-path {
   stroke: var(--weup-glow-signal-color);
   stroke-width: 2.5;
+}
+
+/* WEUP-2.5D (D17): emphasized = related-topology emphasis on cluster SELECT
+   (state machine's emphasizedDistrict). Stronger than active: thicker path +
+   signal glow. All values tokenized. */
+.weup-corridor[data-state="emphasized"] .weup-corridor-path {
+  stroke: var(--weup-glow-signal-color);
+  stroke-width: 3;
+  filter: drop-shadow(var(--weup-glow-signal));
+}
+
+.weup-corridor[data-state="emphasized"] .weup-corridor-label {
+  fill: #ffffff;
+  font-weight: 700;
 }
 
 .weup-corridor-arrowhead {

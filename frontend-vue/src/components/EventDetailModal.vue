@@ -21,7 +21,7 @@ ProvenanceDrawer (mission section 22 chain; stubbed stages PENDING).
 <template>
   <q-dialog
     :model-value="modelValue"
-    :maximized="isCompact"
+    :maximized="isCompact && props.composition !== 'tablet'"
     transition-show="slide-up"
     transition-hide="slide-down"
     @update:model-value="onDialogModelValue"
@@ -30,6 +30,7 @@ ProvenanceDrawer (mission section 22 chain; stubbed stages PENDING).
       class="event-detail-modal"
       data-plane="z3"
       :data-state="isLoading ? 'visible' : 'expanded'"
+      :data-composition="props.composition ?? undefined"
     >
       <q-card-section class="modal-header">
         <div>
@@ -295,6 +296,7 @@ import {
 import { useDiscoveryState } from "../composables/useDiscoveryState";
 import { useTemporalNavigation } from "../composables/useTemporalNavigation";
 import { useProvenanceDrawer } from "../composables/useProvenanceDrawer";
+import type { CompositionKind } from "../composables/useInteractionStateMachine";
 import EventSignalChips, {
   type TemporalSignalContext,
 } from "./EventSignalChips.vue";
@@ -317,8 +319,15 @@ const props = withDefaults(
      * real job record — never a fabricated link.
      */
     provenanceJobId?: string | null;
+    /**
+     * WEUP-2.5D (D16): optional composition hint from the shell's interaction
+     * state machine. mobile → maximized bottom flow (default); tablet/
+     * desktop/wide → right-docked Z3 inspector panel. Null preserves the
+     * legacy isCompact behavior.
+     */
+    composition?: CompositionKind | null;
   }>(),
-  { sessionKind: null, provenanceJobId: null },
+  { sessionKind: null, provenanceJobId: null, composition: null },
 );
 
 const emit = defineEmits<{
@@ -549,6 +558,23 @@ function onProvenanceDrawerModelValue(value: boolean): void {
   max-height: min(90vh, 880px);
   border-radius: 24px;
   overflow: hidden;
+}
+
+/* WEUP-2.5D (D15/D14): tablet/desktop/wide compositions dock the Z3 inspector
+   as a right-side panel instead of a centered dialog. margin-left: auto
+   pushes the card to the right edge of the q-dialog flex inner — no Quasar
+   internals are overridden. Mobile (maximized) keeps the slide-up bottom
+   flow via the existing rule below. Every value tokenized. */
+.event-detail-modal[data-composition="tablet"],
+.event-detail-modal[data-composition="desktop"],
+.event-detail-modal[data-composition="wide"] {
+  margin-left: auto;
+  width: min(420px, 92vw);
+  max-width: 420px;
+  height: 100vh;
+  max-height: 100vh;
+  border-radius: var(--weup-radius-surface) 0 0 var(--weup-radius-surface);
+  box-shadow: var(--weup-elevation-4);
 }
 
 .modal-header {

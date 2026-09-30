@@ -12,7 +12,14 @@
     authoritative UI state remains useDiscoveryState + the existing composables.
 -->
 <template>
-  <q-layout view="hHh lpR fFf" class="weup-shell">
+  <!-- WEUP-2.5D (D17): data-composition (mobile|tablet|desktop|wide) is the
+       single source of truth for responsive composition, driven by the
+       interaction state machine's canonical breakpoints. -->
+  <q-layout
+    view="hHh lpR fFf"
+    class="weup-shell"
+    :data-composition="interaction.composition.value"
+  >
     <q-header class="weup-header">
       <WeupTopBar
         :feed-status="feedStatus"
@@ -26,17 +33,22 @@
 
     <q-page-container>
       <q-page class="weup-page">
-        <!-- WEUP-2.5D (D12): when a Z3 inspector is open (modalOpen), the
-             .weup-has-selection hook dims non-selected Z2 objects via the
-             global token rule (opacity step, never removal). -->
+        <!-- WEUP-2.5D (D12/D17): .weup-has-selection dims non-selected Z2 when
+             a Z3 inspector is open; .weup-side-open (D14/D15) docks the side
+             inspector column on tablet/desktop compositions. -->
         <div
           class="surface-stack"
-          :class="{ 'weup-has-selection': modalOpen }"
+          :class="{
+            'weup-has-selection': modalOpen,
+            'weup-side-open': interaction.sideInspectorOpen.value,
+            'weup-overlay-docked': overlayDocked,
+          }"
         >
           <MapSurface
             :selected-event-id="discovery.selectedEventId.value"
             :selected-event-saved-state="selectedEventSavedState"
             :active-filters="discovery.activeFilters.value"
+            :emphasized-district="interaction.emphasizedCorridorDistrict.value"
             @update:selected-event-id="onMapSelectedEventChanged"
             @filters-updated="onMapFiltersUpdated"
             @map-feed-query-updated="onMapFeedQueryUpdated"
@@ -165,6 +177,7 @@
           </button>
 
           <SpikeAssistantPanel
+            ref="assistantRef"
             v-model="isAssistantOpen"
             :map-center="assistantMapCenter"
             :active-categories="assistantActiveCategories"
@@ -177,6 +190,7 @@
                surface; accepted candidates flow into the canonical
                EventDetailModal preview below — never into canonical stores. -->
           <AddEventWizard
+            ref="wizardRef"
             v-model="isCreateWizardOpen"
             :map-center="assistantMapCenter"
             @close="onCreateWizardClose"
@@ -192,6 +206,7 @@
           :error="error"
           :session-kind="selectedEventSessionKind"
           :provenance-job-id="candidatePreview?.jobId ?? null"
+          :composition="interaction.composition.value"
           @update:model-value="onModalVisibilityChange"
           @toggle-save="onModalToggleSave"
           @share="onModalShare"
@@ -236,6 +251,10 @@ import type {
   EventMapItemDto,
 } from "./contracts/map-feed.contracts";
 import { shareEventDetail } from "./services/eventDetailService";
+import {
+  useInteractionStateMachine,
+  useViewportWidth,
+} from "./composables/useInteractionStateMachine";
 import type {
   EventDetailDto,
   SaveSessionKind,
@@ -682,8 +701,55 @@ function onCandidateAccepted(accepted: AcceptedIngestionCandidate): void {
 }
 
 const mapItemsState = ref<EventMapItemDto[]>([]);
-const isCalendarFilterRefreshPending = ref(false);
-const calendarDegradedReason = ref<string | null>(null);
+
+// ─── WEUP-2.5D (D17): interaction state machine ─────────────────────────────
+// Central coordination for Signal / Cluster / Corridor / Inspector / Command /
+// Navigation state (mission §XIV): STATE → DEPTH → VISUAL → SURFACE. Reads the
+// canonical composables (discovery, temporal, navMode, modal, sheets); owns no
+// business logic and creates no execution paths. Drives data-composition on
+// the shell, corridor emphasis on cluster SELECT, and Z2 dimming.
+const viewportWidth = useViewportWidth();
+const assistantRef = ref<{ isAssistantThinking?: boolean } | null>(null);
+const wizardRef = ref<{ isWizardDegraded?: boolean } | null>(null);
+const selectedDistrict = computed<string | null>(() => {
+  const id = discovery.selectedEventId.value;
+  if (!id) return null;
+  return (
+    mapItemsState.value.find((item) => item.eventId === id)?.district ?? null
+  );
+});
+const interaction = useInteractionStateMachine({
+  viewportWidth,
+  temporalDayKey: temporal.activeDayKey,
+  selectedEventId: computed(() => discovery.selectedEventId.value),
+  selectedDistrict,
+  activeDistrict: computed(
+    () => discovery.activeFilters.value.district ?? null,
+  ),
+  inspectorOpen: modalOpen,
+  inspectorExpanded: computed(() => modalOpen.value && !isLoading.value),
+  assistantOpen: isAssistantOpen,
+  wizardOpen: isCreateWizardOpen,
+  wizardDegraded: computed(() => wizardRef.value?.isWizardDegraded === true),
+  assistantThinking: computed(
+    () => assistantRef.value?.isAssistantThinking === true,
+  ),
+  activeNavMode: computed(() => navMode.activeMode.value),
+  sideInspectorOpen: computed(
+    () => isSavedSheetOpen.value || isProfileSheetOpen.value,
+  ),
+});
+
+/**
+ * WEUP-2.5D (D14/D15): the calendar signal grid docks into the side inspector
+ * column on tablet/desktop/wide compositions when open and no sheet claims
+ * the column (sheets take priority). Pure compositional flag — no behavior.
+ */
+const overlayDocked = computed(
+  () => discovery.overlayMode.value !== "closed",
+);
+
+const isCalendarFilterRefreshPending = ref(false);const calendarDegradedReason = ref<string | null>(null);
 const latestMapFeedQueryState = ref<EventMapFeedQueryDto | null>(null);
 let refreshDegradedHandle: ReturnType<typeof setTimeout> | null = null;
 
@@ -1066,5 +1132,121 @@ onBeforeUnmount(() => {
     transform: none;
     opacity: 1;
   }
+}
+
+/* ==========================================================================
+ * WEUP-2.5D (D14–D16): explicit responsive compositions (mission §XVI).
+ * .weup-shell[data-composition] is set by the D17 interaction state machine —
+ * the single source of truth (canonical breakpoints; mirrors the token
+ * literals since CSS vars cannot drive @media). Mobile-first: before JS
+ * runs, the base below IS the mobile composition.
+ * Grid areas: "stage" (Z0 map + overlays) and "side" (docked inspector).
+ * No flex-wrap-only layouts; every composition is explicit. Information
+ * hierarchy is intact at every size; smaller sizes reduce simultaneous
+ * information, never semantic capability.
+ * ========================================================================== */
+
+/* Base: explicit single-area stage. MapSurface fills it; every other surface
+   overlays (absolute) or docks (grid-area: side) per composition below. */
+.surface-stack {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: "stage";
+}
+.surface-stack > .map-surface {
+  grid-area: stage;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ── D16 mobile (0–767px): first-class (mission §XII) ──
+   MAP (full-bleed Z0) + floating Z2 markers + bottom signal tray
+   (CalendarOverlayShell) + Z1 bottom nav. Inspector = bottom-docked Z3
+   (EventDetailModal slides up; maximized on compact). Sheets = bottom sheets.
+   Gestures: pan-x/pan-y only — browser/app navigation is never hijacked
+   (no swipe handlers added anywhere; TemporalNavigationControls keeps its
+   own scoped scrubber touch handling). */
+.weup-shell[data-composition="mobile"] .surface-stack {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "stage";
+  touch-action: pan-x pan-y;
+  overscroll-behavior-y: contain;
+}
+
+/* ── D15 tablet (768–1023px): DESIGNED composition ──
+   Map + collapsible side inspector + condensed intelligence strip.
+   Collapsible = the side column exists only while .weup-side-open (a
+   saved/profile sheet is open) or .weup-overlay-docked (calendar grid open);
+   closing the sheet returns the full stage. This replaces the previous
+   fallback where tablet got the mobile bottom bar. */
+.weup-shell[data-composition="tablet"]
+  .surface-stack:is(.weup-side-open, .weup-overlay-docked) {
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 32vw);
+  grid-template-areas: "stage side";
+}
+
+/* ── D14 desktop (1024–1439px): full surface ──
+   Z0 map (stage) + Z1 persistent left rail (D11, floating) + Z1 intelligence
+   panels + Z2 signal grid + Z3 inspector docked side + Z4 command overlays. */
+.weup-shell[data-composition="desktop"]
+  .surface-stack:is(.weup-side-open, .weup-overlay-docked) {
+  grid-template-columns: minmax(0, 1fr) clamp(340px, 26vw, 400px);
+  grid-template-areas: "stage side";
+}
+
+/* ── wide (≥1440px): full intelligence surfaces, wider inspector ── */
+.weup-shell[data-composition="wide"]
+  .surface-stack:is(.weup-side-open, .weup-overlay-docked) {
+  grid-template-columns: minmax(0, 1fr) clamp(360px, 28vw, 460px);
+  grid-template-areas: "stage side";
+}
+
+/* Docked sheets (tablet/desktop/wide): bottom sheet → side inspector panel.
+   Sheets take priority over the calendar overlay for the side column.
+   Every value tokenized. */
+.weup-shell[data-composition="tablet"] .surface-stack.weup-side-open .saved-sheet-wrap,
+.weup-shell[data-composition="desktop"] .surface-stack.weup-side-open .saved-sheet-wrap,
+.weup-shell[data-composition="wide"] .surface-stack.weup-side-open .saved-sheet-wrap {
+  position: static;
+  grid-area: side;
+  inset-inline: auto;
+  bottom: auto;
+  z-index: auto;
+  max-width: none;
+  margin-inline: 0;
+  max-height: none;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  border-radius: var(--weup-radius-surface);
+  box-shadow: var(--weup-elevation-3);
+  background: var(--weup-depth-surface-active);
+  backdrop-filter: blur(var(--weup-blur-background));
+  -webkit-backdrop-filter: blur(var(--weup-blur-background));
+}
+
+/* Calendar signal grid docks into the side column when open and no sheet
+   claims it. When a sheet is open, the overlay keeps its bottom-tray overlay
+   mode (it underlaps the docked sheet; sheet z-150 > overlay z-20). */
+.weup-shell[data-composition="tablet"]
+  .surface-stack.weup-overlay-docked:not(.weup-side-open)
+  .overlay-anchor.is-open,
+.weup-shell[data-composition="desktop"]
+  .surface-stack.weup-overlay-docked:not(.weup-side-open)
+  .overlay-anchor.is-open,
+.weup-shell[data-composition="wide"]
+  .surface-stack.weup-overlay-docked:not(.weup-side-open)
+  .overlay-anchor.is-open {
+  position: static;
+  grid-area: side;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  top: auto;
+  z-index: auto;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
 }
 </style>

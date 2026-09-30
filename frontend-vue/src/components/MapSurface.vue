@@ -60,6 +60,7 @@
         v-if="map && !tokenMissing"
         :map="map"
         :active-district="resolvedActiveFilters.district"
+        :emphasized-district="props.emphasizedDistrict ?? undefined"
         :visible="zonesVisible"
         @zone-selected="onZoneSelected"
         @update:visible="zonesVisible = $event"
@@ -114,10 +115,16 @@ const props = withDefaults(
     selectedEventId?: string | null;
     selectedEventSavedState?: boolean | null;
     activeFilters?: DiscoveryFilterState;
+    /**
+     * WEUP-2.5D (D17): district of the selected cluster, from the interaction
+     * state machine. Passed to ZoneDrawer for corridor emphasis. Optional.
+     */
+    emphasizedDistrict?: string | null;
   }>(),
   {
     selectedEventId: null,
     selectedEventSavedState: null,
+    emphasizedDistrict: null,
   },
 );
 

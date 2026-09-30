@@ -853,6 +853,15 @@ watch(
 onBeforeUnmount(() => {
   wizard.dispose();
 });
+
+/**
+ * WEUP-2.5D (D17): expose the degraded flag (read-only) so the shell's
+ * interaction state machine can coordinate the Z4 command state. No new
+ * execution path — the wizard stages remain owned by useIngestionWizard.
+ */
+defineExpose({
+  isWizardDegraded: computed(() => wizard.stage.value === "ERROR"),
+});
 </script>
 
 <style scoped>
