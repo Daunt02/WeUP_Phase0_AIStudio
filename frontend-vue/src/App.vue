@@ -143,6 +143,29 @@
             "
             @mode-change="handleNavModeChange"
           />
+
+          <!-- G10 (Assistant): Spike co-pilot launcher. The nav modes are a
+               closed 1:1 translation of the source ViewMode, so the assistant
+               surface gets its own FAB rather than a sixth nav tab. The
+               panel itself renders at z-index 50 per the G4 z-layer map
+               (wizard_assistant_drawer). -->
+          <button
+            type="button"
+            class="assistant-fab"
+            aria-label="Open Spike co-pilot assistant"
+            @click="isAssistantOpen = true"
+          >
+            <q-icon name="pets" />
+          </button>
+
+          <SpikeAssistantPanel
+            v-model="isAssistantOpen"
+            :map-center="assistantMapCenter"
+            :active-categories="assistantActiveCategories"
+            :map-items="mapItemsState"
+            @toggle-category="onAssistantToggleCategory"
+            @select-event="onAssistantSelectEvent"
+          />
         </div>
 
         <EventDetailModal
@@ -169,6 +192,7 @@ import EventDetailModal from "./components/EventDetailModal.vue";
 import MapSurface from "./components/MapSurface.vue";
 import ProfilePanel from "./components/ProfilePanel.vue";
 import SavedEventsPanel from "./components/SavedEventsPanel.vue";
+import SpikeAssistantPanel from "./components/SpikeAssistantPanel.vue";
 import WeupBottomNav from "./components/WeupBottomNav.vue";
 import WeupTopBar, {
   type TopBarFeedStatus,
@@ -221,6 +245,60 @@ const profileFolders = useProfileFolders();
 const socialPrototype = useSocialPrototype();
 const isSavedSheetOpen = ref(false);
 const isProfileSheetOpen = ref(false);
+
+/**
+ * G10 (Assistant): the Spike co-pilot panel mount flag. The assistant owns
+ * only its session state; the canonical discovery selection still drives
+ * EventDetailModal when an AI suggestion resolves to a live event.
+ */
+const isAssistantOpen = ref(false);
+
+/**
+ * G10: map-center context for the assistant's Gemini payload, derived from
+ * the canonical map feed query bbox ("lng1,lat1,lng2,lat2"). Falls back to
+ * the Houston domain center (29.76, -95.36) before the first feed query —
+ * the same fallback the server route uses.
+ */
+const assistantMapCenter = computed<{ lat: number; lng: number }>(() => {
+  const bbox = latestMapFeedQueryState.value?.bbox;
+  if (bbox) {
+    const parts = bbox.split(",").map(Number);
+    if (parts.length === 4 && parts.every((part) => Number.isFinite(part))) {
+      return {
+        lat: (parts[1] + parts[3]) / 2,
+        lng: (parts[0] + parts[2]) / 2,
+      };
+    }
+  }
+  return { lat: 29.76, lng: -95.36 };
+});
+
+const assistantActiveCategories = computed<readonly string[]>(
+  () => discovery.activeFilters.value.categories ?? [],
+);
+
+/**
+ * G10: assistant category chips toggle the CANONICAL discovery categories
+ * through the same onMapFiltersUpdated path as the top bar — no second
+ * filter authority.
+ */
+function onAssistantToggleCategory(category: string): void {
+  const next = new Set(assistantActiveCategories.value);
+  if (next.has(category)) {
+    next.delete(category);
+  } else {
+    next.add(category);
+  }
+  onMapFiltersUpdated({ categories: [...next] });
+}
+
+/**
+ * G10: an AI suggestion resolved to a canonical eventId drives the shared
+ * selection path — EventDetailModal opens via the existing wiring.
+ */
+function onAssistantSelectEvent(eventId: string): void {
+  discovery.selectEvent(eventId);
+}
 const feedStatus = ref<TopBarFeedStatus>({
   isLoading: true,
   error: null,
@@ -746,6 +824,42 @@ onBeforeUnmount(() => {
   border-top: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 18px 18px 18px 18px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+}
+
+/* G10 (Assistant): Spike co-pilot launcher FAB. Sits above the bottom nav
+   (G4 toast-adjacent chrome zone), accent grammar from the source panel. */
+.assistant-fab {
+  position: absolute;
+  right: 16px;
+  bottom: calc(96px + env(safe-area-inset-bottom));
+  z-index: 45;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid rgba(0, 255, 156, 0.35);
+  background: rgba(5, 5, 5, 0.85);
+  color: #00ff9c;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 0 24px rgba(0, 255, 156, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+.assistant-fab:hover {
+  transform: scale(1.06);
+  box-shadow: 0 0 32px rgba(0, 255, 156, 0.4);
+}
+.assistant-fab:active {
+  transform: scale(0.96);
+}
+@media (prefers-reduced-motion: reduce) {
+  .assistant-fab {
+    transition: none;
+  }
 }
 
 .saved-sheet-close {
