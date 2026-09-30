@@ -16,6 +16,7 @@
     <div
       v-if="isOpen"
       class="social-panel"
+      data-plane="z1"
       role="dialog"
       aria-label="Social signal panel (prototype)"
     >
@@ -240,6 +241,9 @@ function formatEventDate(value: string): string {
 <style scoped>
 /* G4 tokens: dark prototype surface. Slide-in 300-500ms ease; reduced-motion
    collapses the transition entirely (motion rules: terminating only). */
+/* WEUP-2.5D (D10): intelligence surface — Z1 structure with a signal edge
+   (mission §X: activity surfaces carry signal illumination). Elevation from
+   the global [data-plane="z1"] rule; the edge marks live activity. */
 .social-panel {
   position: fixed;
   right: 12px;
@@ -252,10 +256,10 @@ function formatEventDate(value: string): string {
   background: rgba(5, 5, 5, 0.94);
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--weup-glow-signal-soft);
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 50px 100px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--weup-elevation-2), var(--weup-glow-signal);
 }
 
 .social-panel-enter-active,

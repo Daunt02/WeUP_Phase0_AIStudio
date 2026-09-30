@@ -26,7 +26,11 @@ ProvenanceDrawer (mission section 22 chain; stubbed stages PENDING).
     transition-hide="slide-down"
     @update:model-value="onDialogModelValue"
   >
-    <q-card class="event-detail-modal">
+    <q-card
+      class="event-detail-modal"
+      data-plane="z3"
+      :data-state="isLoading ? 'visible' : 'expanded'"
+    >
       <q-card-section class="modal-header">
         <div>
           <div class="eyebrow">Event Detail</div>

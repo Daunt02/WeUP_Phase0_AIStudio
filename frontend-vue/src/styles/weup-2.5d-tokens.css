@@ -49,6 +49,11 @@
   --weup-motion-focus-duration: 140ms;
   --weup-motion-expand-duration: 220ms;
   --weup-motion-easing: cubic-bezier(0.2, 0, 0.2, 1);
+  /* Live-processing indicators only (skeletons, job polling). Never for
+     decorative loops. Terminate with the underlying job (mission §XIX). */
+  --weup-motion-processing-duration: 2.2s;
+  --weup-motion-processing-easing: ease-in-out;
+  --weup-motion-slot-duration: 1.8s;
 
   /* ---- perspective / blur / opacity ---- */
   --weup-perspective-scene: 1200px; /* Z0 container only; never on text panels */

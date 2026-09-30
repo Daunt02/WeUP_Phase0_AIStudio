@@ -26,7 +26,13 @@
 
     <q-page-container>
       <q-page class="weup-page">
-        <div class="surface-stack">
+        <!-- WEUP-2.5D (D12): when a Z3 inspector is open (modalOpen), the
+             .weup-has-selection hook dims non-selected Z2 objects via the
+             global token rule (opacity step, never removal). -->
+        <div
+          class="surface-stack"
+          :class="{ 'weup-has-selection': modalOpen }"
+        >
           <MapSurface
             :selected-event-id="discovery.selectedEventId.value"
             :selected-event-saved-state="selectedEventSavedState"

@@ -23,9 +23,15 @@
   </Transition>
 
   <Transition name="assistant-panel">
+    <!-- WEUP-2.5D (D13): Z4 command plane — the operational command surface,
+         visually unmistakable as authority, not content. data-state reflects
+         the EXISTING session execution state only (isThinking); no new
+         execution paths are created here. -->
     <section
       v-if="modelValue"
       class="assistant-panel"
+      data-plane="z4"
+      :data-state="session.isThinking.value ? 'actionable' : 'visible'"
       role="dialog"
       aria-modal="true"
       aria-label="WeUP co-pilot assistant"
@@ -552,6 +558,9 @@ function onSuggestionTap(): void {
 }
 
 /* ── Panel frame ── */
+/* WEUP-2.5D (D13): Z4 authority boundary — elevation.4 + command glow from
+   the token system. The global [data-plane="z4"] rule agrees; this scoped
+   rule carries the layout specifics. */
 .assistant-panel {
   position: fixed;
   inset-inline: 0;
@@ -564,7 +573,7 @@ function onSuggestionTap(): void {
   background: rgba(5, 5, 5, 0.95);
   border-top: 1px solid var(--assistant-line);
   border-radius: 18px 18px 0 0;
-  box-shadow: 0 -20px 100px rgba(0, 0, 0, 0.9);
+  box-shadow: var(--weup-elevation-4), var(--weup-glow-command);
   color: var(--assistant-ink);
 }
 .assistant-panel-enter-active,

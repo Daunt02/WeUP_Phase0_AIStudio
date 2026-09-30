@@ -12,7 +12,7 @@
   the same authority.
 -->
 <template>
-  <div class="temporal-navigation-controls">
+  <div class="temporal-navigation-controls" data-plane="z1">
     <!-- Container: responsive for mobile and desktop -->
     <q-card flat bordered class="controls-card">
       <q-card-section class="controls-section">
@@ -83,6 +83,7 @@
             :color="mode.value === activeMode ? 'primary' : 'grey-8'"
             size="sm"
             class="preset-btn"
+            :class="{ 'is-active-mode': mode.value === activeMode }"
             @click="onSelectMode(mode.value)"
             :aria-pressed="mode.value === activeMode"
             :aria-label="`Navigate to ${mode.label}`"
@@ -743,10 +744,18 @@ function handleTouchEnd(): void {
   user-select: none;
 }
 
+/* WEUP-2.5D (D10): the temporal authority surface. The controls card floats
+   above pure structure (elevation.2); the ACTIVE temporal mode carries the
+   selection glow — exactly one mode is active at a time (deterministic). */
 .controls-card {
   background: rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
+  box-shadow: var(--weup-elevation-2);
+}
+
+.preset-btn.is-active-mode {
+  box-shadow: var(--weup-glow-active);
 }
 
 .controls-section {

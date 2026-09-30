@@ -11,13 +11,15 @@ by prototype isolation. Signal chips are informational; they never override
 canonical event identity, saved state, coordinates, or provenance.
 -->
 <template>
-  <div class="signals-section">
+  <div class="signals-section" data-plane="z2">
     <div class="signals-title">Signal state</div>
     <div class="signals-grid">
       <div
         v-for="signal in signals"
         :key="signal.label"
         class="signal-chip"
+        data-plane="z2"
+        :data-state="signal.unavailable ? 'archived' : 'idle'"
         :class="{ 'signal-unavailable': signal.unavailable }"
         :title="signal.sourceCitation"
       >
@@ -189,15 +191,22 @@ const signals = computed<SignalChip[]>(() => {
   gap: 8px;
 }
 
+/* WEUP-2.5D (D09): chips are Z2 signal objects. Unavailable signals render
+   as [data-state="archived"] via the global rule (dimmed + desaturated) —
+   a non-color cue alongside the existing "unavailable" label. */
 .signal-chip {
   display: flex;
   flex-direction: column;
   gap: 2px;
   padding: 8px 12px;
-  border-radius: 9999px;
+  border-radius: var(--weup-radius-pill);
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(0, 255, 156, 0.1);
   min-width: 0;
+}
+
+.signal-chip:hover {
+  box-shadow: var(--weup-elevation-2);
 }
 
 .signal-label {
@@ -236,7 +245,7 @@ const signals = computed<SignalChip[]>(() => {
   display: inline-block;
   width: 64px;
   height: 6px;
-  border-radius: 9999px;
+  border-radius: var(--weup-radius-pill);
   background: rgba(255, 255, 255, 0.1);
   overflow: hidden;
 }
@@ -244,8 +253,8 @@ const signals = computed<SignalChip[]>(() => {
 .signal-bar-fill {
   display: block;
   height: 100%;
-  background: #00ff9c;
-  border-radius: 9999px;
+  background: var(--weup-glow-signal-color);
+  border-radius: var(--weup-radius-pill);
 }
 
 .mono {

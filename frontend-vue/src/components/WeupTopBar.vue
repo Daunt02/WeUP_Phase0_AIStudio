@@ -11,7 +11,7 @@
     continuously, and they honor prefers-reduced-motion (G4 motion rules).
 -->
 <template>
-  <div class="weup-topbar">
+  <div class="weup-topbar" data-plane="z1">
     <div class="brand-block">
       <h1 class="brand-mark">WEUP</h1>
       <span class="brand-sub">Signal_Network</span>

@@ -12,6 +12,7 @@
 <template>
   <nav
     class="weup-bottom-nav"
+    data-plane="z1"
     aria-label="Primary navigation"
   >
     <div class="nav-cluster">
@@ -288,6 +289,29 @@ const emit = defineEmits<{
 
   .nav-create.is-active .create-icon {
     transform: none;
+  }
+}
+
+/* WEUP-2.5D (D11): desktop persistent side rail (mission §XI). Same
+   component, same tabs, same emits, same aria — only the composition
+   changes. NOT a shrunk desktop nav on mobile: below the desktop
+   breakpoint the bottom-bar composition is untouched.
+   Breakpoint = --weup-breakpoint-desktop-min (1024px); CSS media queries
+   cannot consume var(), so the value is pinned here with the token named. */
+@media (min-width: 1024px) {
+  .weup-bottom-nav {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: auto;
+    align-items: center;
+    padding-bottom: 0;
+    padding-left: max(1rem, env(safe-area-inset-left));
+  }
+
+  .weup-bottom-nav .nav-cluster {
+    flex-direction: column;
+    gap: var(--weup-spacing-1);
   }
 }
 </style>

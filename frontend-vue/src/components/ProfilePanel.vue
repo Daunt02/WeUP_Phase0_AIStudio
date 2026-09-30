@@ -19,8 +19,11 @@
       explicitly unavailable, never invented.
 -->
 <template>
-  <div class="profile-panel">
+  <div class="profile-panel" data-plane="z1">
     <!-- Operator header: identity is session-derived, never fabricated. -->
+    <!-- WEUP-2.5D (D10): identity surface stays deliberately flat (Z1
+         structural elevation only) — it frames the operator, it is not a
+         signal. -->
     <section class="profile-header">
       <div class="identity-block">
         <div class="avatar">

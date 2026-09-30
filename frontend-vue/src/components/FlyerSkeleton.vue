@@ -14,6 +14,7 @@
   <div
     class="flyer-skeleton"
     role="status"
+    data-plane="z2"
     :aria-label="ariaLabel"
     data-testid="flyer-skeleton"
   >
@@ -117,7 +118,8 @@ const ariaLabel = computed(() => {
   position: absolute;
   inset: 0;
   background: rgba(0, 255, 156, 0.02);
-  animation: skeleton-pulse 2.2s ease-in-out infinite;
+  animation: skeleton-pulse var(--weup-motion-processing-duration)
+    var(--weup-motion-processing-easing) infinite;
   pointer-events: none;
 }
 
@@ -134,8 +136,9 @@ const ariaLabel = computed(() => {
 .slot-sub,
 .slot-cell {
   background: rgba(255, 255, 255, 0.06);
-  border-radius: 999px;
-  animation: slot-pulse 1.8s ease-in-out infinite;
+  border-radius: var(--weup-radius-pill);
+  animation: slot-pulse var(--weup-motion-slot-duration)
+    var(--weup-motion-processing-easing) infinite;
 }
 
 .slot-badge {
@@ -220,8 +223,11 @@ const ariaLabel = computed(() => {
   color: rgba(255, 255, 255, 0.35);
 }
 
+/* WEUP-2.5D (D09): stage states are observed lifecycle facts (mission
+   §12/13). Active stage carries signal glow; done stages keep the signal
+   color without glow — temporal activity, not decoration. */
 .stage-done .stage-dot {
-  background: #00ff9c;
+  background: var(--weup-glow-signal-color);
 }
 
 .stage-done .stage-label {
@@ -229,13 +235,14 @@ const ariaLabel = computed(() => {
 }
 
 .stage-active .stage-dot {
-  background: #00ff9c;
-  box-shadow: 0 0 12px rgba(0, 255, 156, 0.8);
-  animation: skeleton-pulse 1.2s ease-in-out infinite;
+  background: var(--weup-glow-signal-color);
+  box-shadow: var(--weup-glow-signal);
+  animation: skeleton-pulse var(--weup-motion-slot-duration)
+    var(--weup-motion-processing-easing) infinite;
 }
 
 .stage-active .stage-label {
-  color: #00ff9c;
+  color: var(--weup-glow-signal-color);
 }
 
 .job-id {

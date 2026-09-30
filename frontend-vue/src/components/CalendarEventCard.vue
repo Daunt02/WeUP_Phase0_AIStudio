@@ -3,6 +3,8 @@
     flat
     bordered
     class="calendar-event-card"
+    data-plane="z2"
+    :data-state="isSelected ? 'selected' : 'idle'"
     :class="{
       'is-selected': isSelected,
       'is-saved': event.source.savedByCurrentUser,
@@ -14,11 +16,17 @@
     @click="$emit('select-event', event.eventId)"
   >
     <q-card-section class="card-body">
-      <div class="card-time">{{ event.displayTimeLabel }}</div>
-      <div class="card-title">{{ event.source.title }}</div>
-      <div class="card-meta">{{ event.secondaryLabel }}</div>
-      <div class="card-taxonomy">
-        {{ event.source.primaryCategory }}
+      <div class="card-plane card-plane-metadata">
+        <div class="card-time">{{ event.displayTimeLabel }}</div>
+        <div class="card-taxonomy">
+          {{ event.source.primaryCategory }}
+        </div>
+      </div>
+      <div class="card-plane card-plane-identity">
+        <div class="card-title">{{ event.source.title }}</div>
+      </div>
+      <div class="card-plane card-plane-description">
+        <div class="card-meta">{{ event.secondaryLabel }}</div>
       </div>
       <q-chip
         v-if="event.source.savedByCurrentUser"
@@ -26,7 +34,7 @@
         square
         color="red-1"
         text-color="red-9"
-        class="saved-chip"
+        class="saved-chip card-plane card-plane-action"
       >
         Saved
       </q-chip>
@@ -52,25 +60,35 @@ defineEmits<{
 </script>
 
 <style scoped>
+/* WEUP-2.5D (D09): layered signal-card surface. Base elevation comes from
+   the global [data-plane="z2"] rule; selected/focused glow from the global
+   [data-state] rules; transitions from the token motion grammar. */
 .calendar-event-card {
   cursor: pointer;
-  border-radius: 10px;
+  border-radius: var(--weup-radius-card);
   border-color: rgba(15, 23, 42, 0.14);
   background: rgba(255, 255, 255, 0.94);
-  transition:
-    transform 120ms ease,
-    box-shadow 120ms ease,
-    border-color 120ms ease;
 }
 
 .calendar-event-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.14);
+  box-shadow: var(--weup-elevation-3);
+}
+
+.calendar-event-card:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.65);
+  outline-offset: 2px;
 }
 
 .calendar-event-card.is-selected {
   border-color: rgba(37, 99, 235, 0.5);
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+/* Semantic internal planes (mission §IX): metadata / identity /
+   description / action. Separators are structural, not decorative. */
+.card-plane + .card-plane {
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  padding-top: var(--weup-spacing-1);
+  margin-top: var(--weup-spacing-1);
 }
 
 .calendar-event-card.is-saved {

@@ -1,12 +1,12 @@
 <template>
-  <div class="timeline-header">
+  <div class="timeline-header" data-plane="z1">
     <div class="left">
       <q-chip color="blue-1" text-color="blue-10" square>
         Temporal Overlay
       </q-chip>
       <div class="meta">
         <div class="state-label">{{ stateLabel }}</div>
-        <div class="count-label">
+        <div class="count-label weup-telemetry">
           {{ totalCount }} events in current map window
         </div>
         <div v-if="isFilterRefreshPending" class="status-label">

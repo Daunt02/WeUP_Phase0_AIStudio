@@ -22,7 +22,12 @@
     transition-hide="slide-down"
     @update:model-value="onDialogModelValue"
   >
-    <q-card class="add-event-wizard">
+    <q-card
+      class="add-event-wizard"
+      data-plane="z4"
+      :data-state="wizardPlaneState"
+      :class="{ 'is-degraded': wizard.stage.value === 'ERROR' }"
+    >
       <q-card-section class="wizard-header">
         <div>
           <div class="wizard-eyebrow">Create</div>
@@ -645,6 +650,25 @@ function sourceIcon(kind: IngestionSourceKind): string {
   }
 }
 
+/**
+ * WEUP-2.5D (D13): command-plane state projection. Maps the EXISTING wizard
+ * stage to the canonical data-state vocabulary for Z4 execution-state
+ * feedback. No new execution paths; stages are owned by useIngestionWizard.
+ */
+const wizardPlaneState = computed<
+  "visible" | "expanded" | "actionable"
+>(() => {
+  switch (wizard.stage.value) {
+    case "SUBMITTING":
+    case "PROCESSING":
+      return "actionable";
+    case "REVIEW":
+      return "expanded";
+    default:
+      return "visible";
+  }
+});
+
 const stageTitle = computed(() => {
   switch (wizard.stage.value) {
     case "SOURCE":
@@ -847,6 +871,12 @@ onBeforeUnmount(() => {
   border-radius: 24px;
   color: #fff;
   overflow: hidden;
+}
+
+/* WEUP-2.5D (D13): degraded execution state — warning glow replaces the
+   command glow. The error copy itself is the non-color cue (mission §XVIII). */
+.add-event-wizard.is-degraded {
+  box-shadow: var(--weup-elevation-4), var(--weup-glow-warning);
 }
 
 .wizard-header {

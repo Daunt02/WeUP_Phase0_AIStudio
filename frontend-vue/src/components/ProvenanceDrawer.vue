@@ -12,7 +12,9 @@ isolation: fabricated keys forbidden, decorative pseudo-QR forbidden).
 Stubbed backend stages are labeled PENDING, never rendered as success.
 -->
 <template>
-  <div v-if="isOpen" class="provenance-drawer-root" role="dialog" aria-modal="true" aria-label="Event provenance">
+  <!-- WEUP-2.5D (D12): Z3 active-interaction surface. Plane membership is
+       static; entering/exiting is the motion-grammar expand/collapse pair. -->
+  <div v-if="isOpen" class="provenance-drawer-root" data-plane="z3" role="dialog" aria-modal="true" aria-label="Event provenance">
     <div class="drawer-dimmer" @click="close" />
 
     <div class="drawer-sheet">
@@ -159,10 +161,15 @@ function stageStatusLabel(status: ProvenanceStageStatus): string {
   z-index: 6100;
 }
 
+/* WEUP-2.5D (D12): Z3 inspector. Dimmer uses the canonical inspector
+   backdrop blur; the sheet rises on elevation.3 and enters on the motion
+   grammar (expand = 220ms staged; collapse is its exact inverse). */
 .drawer-dimmer {
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(var(--weup-blur-background));
+  -webkit-backdrop-filter: blur(var(--weup-blur-background));
 }
 
 .drawer-sheet {
@@ -177,8 +184,9 @@ function stageStatusLabel(status: ProvenanceStageStatus): string {
   -webkit-backdrop-filter: blur(24px);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 18px 18px 0 0;
-  box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.8);
-  animation: drawer-slide-up 400ms ease;
+  box-shadow: var(--weup-elevation-3);
+  animation: drawer-slide-up var(--weup-motion-expand-duration)
+    var(--weup-motion-easing);
   overflow: hidden;
 }
 

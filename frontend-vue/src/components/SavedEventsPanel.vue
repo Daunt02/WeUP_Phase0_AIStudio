@@ -15,12 +15,16 @@
     button has no backend counterpart and is excluded by §31.
 -->
 <template>
-  <div class="saved-events-panel">
+  <div class="saved-events-panel" data-plane="z1">
     <div class="panel-header">
       <div class="header-copy">
         <div class="title-row">
           <div class="panel-title">Shortlist</div>
-          <q-badge class="count-badge" rounded>
+          <q-badge
+            class="count-badge"
+            :class="{ 'has-count': savedCountBadgeValue > 0 }"
+            rounded
+          >
             {{ savedCountBadgeValue }}
           </q-badge>
         </div>
@@ -255,12 +259,16 @@ function onSelect(item: SavedEventDto): void {
 <style scoped>
 /* G4 dark surface grammar: #050505 substrate, accent #00FF9C, mono captions.
    Card primitive: rounded-2xl rows, saved indicator state color. */
+/* WEUP-2.5D (D10): curated-signal surface. Raised above pure structure
+   (elevation.2) — the shortlist is working state, not chrome. The count
+   badge glows only when the count is real and non-zero. */
 .saved-events-panel {
   display: flex;
   flex-direction: column;
   min-height: 240px;
   color: #fff;
   background: transparent;
+  box-shadow: var(--weup-elevation-2);
 }
 
 .panel-header {
@@ -296,6 +304,10 @@ function onSelect(item: SavedEventDto): void {
   color: #000;
   font-weight: 800;
   font-size: 12px;
+}
+
+.count-badge.has-count {
+  box-shadow: var(--weup-glow-signal);
 }
 
 .panel-meta {

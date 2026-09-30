@@ -1,6 +1,9 @@
 <template>
+  <!-- WEUP-2.5D (D10): pure Z1 structure — the shell frames, it never
+       represents a signal. Flat elevation.1 from the data-plane rule. -->
   <div
     class="overlay-anchor"
+    data-plane="z1"
     :class="[anchorClass, `phase-${transitionPhase}`]"
     :data-transition-phase="transitionPhase"
   >

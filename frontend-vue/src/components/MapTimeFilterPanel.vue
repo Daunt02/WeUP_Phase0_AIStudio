@@ -1,5 +1,7 @@
 <template>
-  <div class="filter-panel">
+  <!-- WEUP-2.5D (D10): Z1/Z2 boundary — this panel filters the map feed, so
+       it sits one elevation step above pure structure. -->
+  <div class="filter-panel" data-plane="z1">
     <q-select
       :model-value="preset"
       :options="presetOptions"
@@ -104,6 +106,7 @@ const isCustomPreset = computed(() => isCustomRangePreset(props.preset));
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 12px;
   align-items: end;
+  box-shadow: var(--weup-elevation-2);
 }
 
 .validation-banner {
