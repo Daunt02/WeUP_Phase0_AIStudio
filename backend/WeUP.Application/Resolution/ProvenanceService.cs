@@ -38,12 +38,6 @@ public sealed class ProvenanceService : IProvenanceService
         _log = null!;
     }
 
-    public ProvenanceService(WeUpDbContext db, ILogger<ProvenanceService> log)
-    {
-        _db = db;
-        _log = log;
-    }
-
     public FieldLineage[] GetFieldLineage(IEnumerable<ProvenanceEntry> entries, string? fieldName = null)
     {
         var allLineage = entries
