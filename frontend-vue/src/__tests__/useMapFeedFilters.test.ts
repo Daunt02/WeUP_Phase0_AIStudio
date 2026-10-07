@@ -12,15 +12,23 @@ describe("useMapFeedFilters", () => {
     });
 
     expect(filters.validationError.value).toBeNull();
+    // Garden G-04: stale-test repair — the temporal contract now carries
+    // marketTimezone/referenceInstantUtc (implementation is authoritative).
     expect(filters.toCalendarOverlayTemporalQuery()).toEqual({
       preset: TimeWindowPreset.Tomorrow,
       timezone: "America/Chicago",
+      marketTimezone: "America/Chicago",
+      referenceInstantUtc: undefined,
     });
 
     expect(filters.buildMapFeedQuery("-95.4,29.6,-95.1,29.9")).toEqual({
       bbox: "-95.4,29.6,-95.1,29.9",
       preset: TimeWindowPreset.Tomorrow,
       timezone: "America/Chicago",
+      marketTimezone: "America/Chicago",
+      fromUtc: undefined,
+      toUtc: undefined,
+      referenceInstantUtc: undefined,
       includeSavedOnly: true,
     });
   });

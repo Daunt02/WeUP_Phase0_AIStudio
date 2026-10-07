@@ -1,22 +1,59 @@
+<!--
+  WEUP-SYNTH (G6 — Navigation):
+  sources=[components/TopBar.tsx, components/BottomNav.tsx, components/InteractionLayer.tsx]
+  destination=frontend-vue/src/App.vue
+  mission=WEUP-PHASE0-VUE-FINAL-SYNTHESIS-001
+  notes=App.vue is now the coherent application shell (mission §2): WORLD
+    (MapSurface) / CALENDAR (CalendarOverlayShell) / EVENT (EventDetailModal)
+    surfaces composed with the canonical WeupTopBar + WeupBottomNav chrome and
+    the SAVED overlay sheet. All pre-existing behavior and contracts are
+    preserved (discovery handlers, calendar sync, modal, share, persistence);
+    G6 only extends. Mode dispatch follows navigation/weupNavModes.ts; the
+    authoritative UI state remains useDiscoveryState + the existing composables.
+-->
 <template>
-  <q-layout view="hHh lpR fFf" class="app-layout">
-    <q-header bordered class="header">
-      <q-toolbar>
-        <q-toolbar-title>WeUP Discovery Map</q-toolbar-title>
-      </q-toolbar>
+  <!-- WEUP-2.5D (D17): data-composition (mobile|tablet|desktop|wide) is the
+       single source of truth for responsive composition, driven by the
+       interaction state machine's canonical breakpoints. -->
+  <q-layout
+    view="hHh lpR fFf"
+    class="weup-shell"
+    :data-composition="interaction.composition.value"
+  >
+    <q-header class="weup-header">
+      <WeupTopBar
+        :feed-status="feedStatus"
+        :district="discovery.activeFilters.value.district"
+        :known-districts="knownDistricts"
+        @mode-change="handleNavModeChange"
+        @apply-district-filter="onTopBarDistrictFilter"
+        @clear-district-filter="onTopBarDistrictClear"
+      />
     </q-header>
 
     <q-page-container>
-      <q-page class="map-page">
-        <div class="map-stack">
+      <q-page class="weup-page">
+        <!-- WEUP-2.5D (D12/D17): .weup-has-selection dims non-selected Z2 when
+             a Z3 inspector is open; .weup-side-open (D14/D15) docks the side
+             inspector column on tablet/desktop compositions. -->
+        <div
+          class="surface-stack"
+          :class="{
+            'weup-has-selection': modalOpen,
+            'weup-side-open': interaction.sideInspectorOpen.value,
+            'weup-overlay-docked': overlayDocked,
+          }"
+        >
           <MapSurface
             :selected-event-id="discovery.selectedEventId.value"
             :selected-event-saved-state="selectedEventSavedState"
             :active-filters="discovery.activeFilters.value"
+            :emphasized-district="interaction.emphasizedCorridorDistrict.value"
             @update:selected-event-id="onMapSelectedEventChanged"
             @filters-updated="onMapFiltersUpdated"
             @map-feed-query-updated="onMapFeedQueryUpdated"
             @map-items-updated="onMapItemsUpdated"
+            @feed-status-changed="onFeedStatusChanged"
           />
 
           <CalendarOverlayShell
@@ -26,20 +63,153 @@
             :items="calendarItems"
             :is-filter-refresh-pending="isCalendarFilterRefreshPending"
             :degraded-reason="calendarDegradedReason"
+            :layout-mode="calendarLayoutMode"
+            :active-day-key="temporal.activeDayKey.value"
+            :scrub-cursor-utc="temporal.scrubCursorUtc.value"
             @set-layer="discovery.setOverlayMode"
             @select-event="discovery.selectEvent"
+            @date-select="onCalendarDateSelect"
+            @layout-mode-change="calendarLayoutMode = $event"
+          />
+
+          <!-- SAVED mode surface: existing SavedEventsPanel mounted as a shell
+               overlay sheet, wired to useSavedEventsCollection. -->
+          <Transition name="saved-sheet">
+            <div
+              v-if="isSavedSheetOpen"
+              class="saved-sheet-wrap"
+              role="dialog"
+              aria-label="Saved events"
+            >
+              <button
+                type="button"
+                class="saved-sheet-close"
+                aria-label="Close saved events"
+                @click="onSavedSheetClose"
+              >
+                <q-icon name="close" />
+              </button>
+              <SavedEventsPanel
+                :items="savedCollection.items.value"
+                :saved-count-badge-value="
+                  savedCollection.surfaceSnapshot.value.savedCountBadgeValue
+                "
+                :resolved-count="savedCollection.resolvedCount.value"
+                :missing-or-deleted-count="
+                  savedCollection.missingOrDeletedCount.value
+                "
+                :session-kind="savedCollection.sessionKind.value"
+                :is-loading="savedCollection.isLoading.value"
+                :is-refreshing="savedCollection.isRefreshing.value"
+                :degraded-reason="savedCollection.degradedReason.value"
+                :error="savedCollection.error.value"
+                :selected-event-id="discovery.selectedEventId.value"
+                :folder-names="profileFolders.folderNames.value"
+                :folder-name-by-event-id="folderNameByEventId"
+                @refresh="onSavedPanelRefresh"
+                @select-event="onSavedPanelSelectEvent"
+                @unsave-event="onSavedPanelUnsave"
+                @assign-folder="onSavedPanelAssignFolder"
+              />
+            </div>
+          </Transition>
+
+          <!-- PROFILE mode surface (G9): ProfilePanel mounted as a shell
+               overlay sheet, wired to the canonical saved-state authority.
+               Fabrication path excluded: every field cites its real source. -->
+          <Transition name="saved-sheet">
+            <div
+              v-if="isProfileSheetOpen"
+              class="saved-sheet-wrap profile-sheet-wrap"
+              role="dialog"
+              aria-label="Profile"
+            >
+              <button
+                type="button"
+                class="saved-sheet-close"
+                aria-label="Close profile"
+                @click="onProfileSheetClose"
+              >
+                <q-icon name="close" />
+              </button>
+              <ProfilePanel
+                :session-kind="savedCollection.sessionKind.value"
+                :saved-count="
+                  savedCollection.surfaceSnapshot.value.savedCountBadgeValue
+                "
+                :resolved-count="savedCollection.resolvedCount.value"
+                :saved-in-current-view="profileSavedInCurrentView"
+                :city-label="profileCityLabel"
+                :district-label="profileDistrictLabel"
+                :preferred-district-labels="profilePreferredDistrictLabels"
+                :folders="profileFoldersView"
+                :prototype-folders-label="profileFolders.prototypeLabel"
+                :social-unlocked-count="
+                  socialPrototype.unlockedTierLevels.length
+                "
+                @create-folder="onProfileCreateFolder"
+                @delete-folder="onProfileDeleteFolder"
+                @apply-district="onProfileApplyDistrict"
+              />
+            </div>
+          </Transition>
+
+          <WeupBottomNav
+            :active-mode="navMode.activeMode.value"
+            :saved-count="
+              savedCollection.surfaceSnapshot.value.savedCountBadgeValue
+            "
+            @mode-change="handleNavModeChange"
+          />
+
+          <!-- G10 (Assistant): Spike co-pilot launcher. The nav modes are a
+               closed 1:1 translation of the source ViewMode, so the assistant
+               surface gets its own FAB rather than a sixth nav tab. The
+               panel itself renders at z-index 50 per the G4 z-layer map
+               (wizard_assistant_drawer). -->
+          <button
+            type="button"
+            class="assistant-fab"
+            aria-label="Open Spike co-pilot assistant"
+            @click="isAssistantOpen = true"
+          >
+            <q-icon name="pets" />
+          </button>
+
+          <SpikeAssistantPanel
+            ref="assistantRef"
+            v-model="isAssistantOpen"
+            :map-center="assistantMapCenter"
+            :active-categories="assistantActiveCategories"
+            :map-items="mapItemsState"
+            @toggle-category="onAssistantToggleCategory"
+            @select-event="onAssistantSelectEvent"
+          />
+
+          <!-- G11 (Create): the ingestion wizard. CREATE mode opens this
+               surface; accepted candidates flow into the canonical
+               EventDetailModal preview below — never into canonical stores. -->
+          <AddEventWizard
+            ref="wizardRef"
+            v-model="isCreateWizardOpen"
+            :map-center="assistantMapCenter"
+            @close="onCreateWizardClose"
+            @candidate-accepted="onCandidateAccepted"
           />
         </div>
 
         <EventDetailModal
-          :model-value="isOpen"
-          :event="eventDetail"
+          :model-value="modalOpen"
+          :event="modalEvent"
           :is-loading="isLoading"
           :is-save-pending="isSavePending"
           :error="error"
+          :session-kind="selectedEventSessionKind"
+          :provenance-job-id="candidatePreview?.jobId ?? null"
+          :composition="interaction.composition.value"
           @update:model-value="onModalVisibilityChange"
-          @toggle-save="toggleSavedState"
-          @share="showSharePlaceholder"
+          @toggle-save="onModalToggleSave"
+          @share="onModalShare"
         />
       </q-page>
     </q-page-container>
@@ -49,28 +219,366 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from "vue";
 import { useQuasar } from "quasar";
+import AddEventWizard from "./components/AddEventWizard.vue";
 import CalendarOverlayShell from "./components/CalendarOverlayShell.vue";
 import EventDetailModal from "./components/EventDetailModal.vue";
 import MapSurface from "./components/MapSurface.vue";
+import ProfilePanel from "./components/ProfilePanel.vue";
+import SavedEventsPanel from "./components/SavedEventsPanel.vue";
+import SpikeAssistantPanel from "./components/SpikeAssistantPanel.vue";
+import WeupBottomNav from "./components/WeupBottomNav.vue";
+import WeupTopBar, {
+  type TopBarFeedStatus,
+} from "./components/WeupTopBar.vue";
 import {
   useDiscoveryState,
   type DiscoveryFilterState,
 } from "./composables/useDiscoveryState";
+import { useTemporalNavigation } from "./composables/useTemporalNavigation";
+import type { CalendarLayoutMode } from "./components/CalendarOverlayShell.vue";
 import { useAnonymousLocalPersistence } from "./composables/useAnonymousLocalPersistence";
 import { useEventDetailModal } from "./composables/useEventDetailModal";
+import { useProfileFolders } from "./composables/useProfileFolders";
 import { useSavedEventState } from "./composables/useSavedEventState";
+import { useSavedEventsCollection } from "./composables/useSavedEventsCollection";
+import { useSocialPrototype } from "./composables/useSocialPrototype";
 import { useUserContextPreferences } from "./composables/useUserContextPreferences";
+import { useWeupNavMode } from "./composables/useWeupNavMode";
+import type { AcceptedIngestionCandidate } from "./composables/useIngestionWizard";
+import type { WeupNavMode } from "./navigation/weupNavModes";
 import type {
   EventMapFeedQueryDto,
   EventMapItemDto,
 } from "./contracts/map-feed.contracts";
 import { shareEventDetail } from "./services/eventDetailService";
+import {
+  useInteractionStateMachine,
+  useViewportWidth,
+} from "./composables/useInteractionStateMachine";
+import type {
+  EventDetailDto,
+  SaveSessionKind,
+} from "./contracts/event-detail.contracts";
 
 const $q = useQuasar();
 
 const discovery = useDiscoveryState();
+// WEUP-SYNTH (G7 — Temporal): the single authoritative temporal state,
+// shared with MapSurface (same singleton instance). Calendar date selection
+// and layout mode route through it; no second temporal store exists.
+const temporal = useTemporalNavigation();
+const calendarLayoutMode = ref<CalendarLayoutMode>("masonry");
 const anonymousLocalPersistence = useAnonymousLocalPersistence();
 const userContextPreferences = useUserContextPreferences();
+
+// ─── G6 navigation shell state ──────────────────────────────────────────────
+// The nav mode is shell chrome state only: every mode request dispatches into
+// the canonical composables below. The authoritative UI state remains
+// useDiscoveryState (+ useSavedEventsCollection / the saved-sheet mount flag).
+const navMode = useWeupNavMode();
+// WEUP-SYNTH (G9 — Saved/Profile): the canonical saved-state authority is
+// instantiated BEFORE the collection so save/unsave mutations round-trip
+// into the saved panel, badge, profile counts, and (via the collection's
+// snapshot) the map/calendar projections — one source, all surfaces.
+const savedEventState = useSavedEventState();
+const savedCollection = useSavedEventsCollection(savedEventState);
+const profileFolders = useProfileFolders();
+const socialPrototype = useSocialPrototype();
+const isSavedSheetOpen = ref(false);
+const isProfileSheetOpen = ref(false);
+
+/**
+ * G10 (Assistant): the Spike co-pilot panel mount flag. The assistant owns
+ * only its session state; the canonical discovery selection still drives
+ * EventDetailModal when an AI suggestion resolves to a live event.
+ */
+const isAssistantOpen = ref(false);
+
+/**
+ * G11 (Create): the ingestion wizard mount flag. CREATE mode opens the
+ * wizard; closing it without an accepted candidate returns the shell to
+ * DISCOVER. The assistant session (G10) never touches this surface.
+ */
+const isCreateWizardOpen = ref(false);
+
+/**
+ * G11: an accepted ingestion candidate awaiting review in the canonical
+ * event surface. The candidate is projected through the existing
+ * EventDetailModal contract (never a parallel model) and is explicitly
+ * labeled CANDIDATE — it never enters canonical event state, saved state,
+ * or the selection/fetch path (no backend publish endpoint exists).
+ */
+const candidatePreview = ref<AcceptedIngestionCandidate | null>(null);
+
+/**
+ * G10: map-center context for the assistant's Gemini payload, derived from
+ * the canonical map feed query bbox ("lng1,lat1,lng2,lat2"). Falls back to
+ * the Houston domain center (29.76, -95.36) before the first feed query —
+ * the same fallback the server route uses.
+ */
+const assistantMapCenter = computed<{ lat: number; lng: number }>(() => {
+  const bbox = latestMapFeedQueryState.value?.bbox;
+  if (bbox) {
+    const parts = bbox.split(",").map(Number);
+    if (parts.length === 4 && parts.every((part) => Number.isFinite(part))) {
+      return {
+        lat: (parts[1] + parts[3]) / 2,
+        lng: (parts[0] + parts[2]) / 2,
+      };
+    }
+  }
+  return { lat: 29.76, lng: -95.36 };
+});
+
+const assistantActiveCategories = computed<readonly string[]>(
+  () => discovery.activeFilters.value.categories ?? [],
+);
+
+/**
+ * G10: assistant category chips toggle the CANONICAL discovery categories
+ * through the same onMapFiltersUpdated path as the top bar — no second
+ * filter authority.
+ */
+function onAssistantToggleCategory(category: string): void {
+  const next = new Set(assistantActiveCategories.value);
+  if (next.has(category)) {
+    next.delete(category);
+  } else {
+    next.add(category);
+  }
+  onMapFiltersUpdated({ categories: [...next] });
+}
+
+/**
+ * G10: an AI suggestion resolved to a canonical eventId drives the shared
+ * selection path — EventDetailModal opens via the existing wiring.
+ */
+function onAssistantSelectEvent(eventId: string): void {
+  discovery.selectEvent(eventId);
+}
+const feedStatus = ref<TopBarFeedStatus>({
+  isLoading: true,
+  error: null,
+  offline: false,
+});
+
+/**
+ * Canonical district taxonomy derived from the visible feed. The TopBar
+ * search resolves queries against this list only (no live search backend).
+ */
+const knownDistricts = computed<readonly string[]>(() => {
+  const districts = new Set<string>();
+  for (const item of mapItemsState.value) {
+    if (item.district && item.district.trim().length > 0) {
+      districts.add(item.district);
+    }
+  }
+  return [...districts].sort((a, b) => a.localeCompare(b));
+});
+
+function openSavedSheet(): void {
+  isSavedSheetOpen.value = true;
+  void savedCollection.loadSavedEvents();
+}
+
+function closeSavedSheet(): void {
+  isSavedSheetOpen.value = false;
+}
+
+function openProfileSheet(): void {
+  isProfileSheetOpen.value = true;
+  // Profile counts are canonical: refresh the saved collection so the
+  // panel renders current saved state.
+  void savedCollection.loadSavedEvents();
+}
+
+function closeProfileSheet(): void {
+  isProfileSheetOpen.value = false;
+}
+
+/**
+ * Mode -> surface dispatch, per navigation/weupNavModes.ts NAV_SURFACE_MAP.
+ * Every mode transition first clears selection (source handleModeChange
+ * semantics: selectedItemId is reset on any mode change).
+ */
+function handleNavModeChange(mode: WeupNavMode): void {
+  if (!navMode.requestMode(mode)) {
+    return;
+  }
+
+  discovery.clearSelection();
+
+  switch (mode) {
+    case "DISCOVER":
+      closeSavedSheet();
+      closeProfileSheet();
+      discovery.setOverlayMode("partial");
+      break;
+    case "ACTIVITY":
+      // Source: ACTIVITY opens the CulturalCalendar temporal overlay.
+      // Vue counterpart: the calendar overlay shell at expanded layer.
+      closeSavedSheet();
+      closeProfileSheet();
+      discovery.setOverlayMode("expanded");
+      break;
+    case "SAVED":
+      closeProfileSheet();
+      openSavedSheet();
+      break;
+    case "PROFILE":
+      // G9 (ProfilePanel): the profile surface now exists as a shell overlay
+      // sheet wired to the canonical saved-state authority.
+      closeSavedSheet();
+      openProfileSheet();
+      break;
+    case "CREATE":
+      // G11 (Create/Ingestion): the wizard surface now exists — CREATE opens
+      // the real ingestion flow instead of a projection placeholder.
+      closeSavedSheet();
+      closeProfileSheet();
+      isCreateWizardOpen.value = true;
+      break;
+  }
+}
+
+function onSavedSheetClose(): void {
+  closeSavedSheet();
+  navMode.resetMode();
+}
+
+function onProfileSheetClose(): void {
+  closeProfileSheet();
+  navMode.resetMode();
+}
+
+function onSavedPanelRefresh(): void {
+  void savedCollection.loadSavedEvents();
+}
+
+function onSavedPanelSelectEvent(eventId: string): void {
+  // Hand off to the EVENT surface: selection drives the shared detail modal
+  // via the existing useEventDetailModal wiring.
+  closeSavedSheet();
+  navMode.resetMode();
+  discovery.selectEvent(eventId);
+}
+
+/**
+ * G9: canonical unsave from the saved panel. The mutation goes through the
+ * sole saved-state authority; the collection's mutationRevision watcher
+ * reloads the list so panel, badge, and profile counts converge.
+ */
+async function onSavedPanelUnsave(eventId: string): Promise<void> {
+  try {
+    await savedEventState.mutateSavedState(eventId, false, () => {
+      // UI projection refreshes via the collection watcher; no direct
+      // DOM/list mutation here.
+    });
+  } catch (cause) {
+    $q.notify({
+      type: "negative",
+      message:
+        cause instanceof Error
+          ? cause.message
+          : "Failed to remove the saved event.",
+    });
+  }
+}
+
+/**
+ * G9: prototype-local folder assignment from the saved panel. This is a
+ * view-model mapping only — it never mutates the canonical saved state.
+ */
+function onSavedPanelAssignFolder(payload: {
+  eventId: string;
+  folderName: string | null;
+}): void {
+  try {
+    profileFolders.assignEventToFolder(payload.eventId, payload.folderName);
+  } catch (cause) {
+    $q.notify({
+      type: "negative",
+      message:
+        cause instanceof Error ? cause.message : "Failed to assign folder.",
+    });
+  }
+}
+
+function onProfileCreateFolder(name: string): void {
+  try {
+    profileFolders.createFolder(name);
+  } catch (cause) {
+    $q.notify({
+      type: "negative",
+      message:
+        cause instanceof Error ? cause.message : "Failed to create folder.",
+    });
+  }
+}
+
+function onProfileDeleteFolder(name: string): void {
+  profileFolders.deleteFolder(name);
+}
+
+function onProfileApplyDistrict(label: string): void {
+  onMapFiltersUpdated({ district: label });
+}
+
+// ─── G9 profile derivations ────────────────────────────────────────────────
+// Every profile field cites its real source. The operator city is the domain
+// city (Houston); district context comes from the anonymous discovery context
+// and user-context preferences (display only, non-authoritative).
+const profileCityLabel = "Houston, TX";
+
+const profileDistrictLabel = computed<string | null>(() => {
+  return (
+    discovery.activeFilters.value.district ??
+    anonymousLocalPersistence.getDiscoveryContext().lastViewedDistrict ??
+    null
+  );
+});
+
+const profilePreferredDistrictLabels = computed<readonly string[]>(() => {
+  return userContextPreferences.preferredDistrictCodes.value.map((code) =>
+    code.replace(/-/g, " "),
+  );
+});
+
+const profileFoldersView = computed(() =>
+  profileFolders.foldersWithSavedCounts(
+    savedCollection.surfaceSnapshot.value.savedEventIds,
+  ),
+);
+
+const folderNameByEventId = computed<Record<string, string>>(() => {
+  const map: Record<string, string> = {};
+  for (const eventId of savedCollection.savedEventIds.value) {
+    const folderName = profileFolders.folderNameFor(eventId);
+    if (folderName) {
+      map[eventId] = folderName;
+    }
+  }
+  return map;
+});
+
+const profileSavedInCurrentView = computed<number>(() => {
+  return (
+    userContextPreferences.savedCountSummary.value
+      ?.savedEventsInCurrentMapWindow ?? 0
+  );
+});
+
+function onFeedStatusChanged(status: TopBarFeedStatus): void {
+  feedStatus.value = status;
+}
+
+function onTopBarDistrictFilter(district: string): void {
+  onMapFiltersUpdated({ district });
+}
+
+function onTopBarDistrictClear(): void {
+  onMapFiltersUpdated({ district: undefined });
+}
 
 const selectedEventIdModel = computed<string | null>({
   get() {
@@ -85,8 +593,6 @@ const selectedEventIdModel = computed<string | null>({
     discovery.clearSelection();
   },
 });
-
-const savedEventState = useSavedEventState();
 
 const {
   eventDetail,
@@ -105,9 +611,145 @@ const selectedEventSavedState = computed(() => {
   return eventDetail.value?.savedByCurrentUser ?? null;
 });
 
+// Save-session kind for the event surface: read from the canonical
+// saved-state cache (the same authority useEventDetailModal uses). Null when
+// the state has not been resolved yet — the modal omits the chip then.
+const selectedEventSessionKind = computed<SaveSessionKind | null>(() => {
+  const eventId = eventDetail.value?.id;
+  if (!eventId) {
+    return null;
+  }
+
+  return savedEventState.getCachedSavedState(eventId)?.sessionKind ?? null;
+});
+
+// ─── G11 candidate preview (Create → Event edge) ────────────────────────────
+// An accepted candidate is projected through the EXISTING EventDetailModal
+// contract. The projection is honest about what it is: id is prefixed
+// `candidate:`, status is CANDIDATE_REVIEW, and provenance states that this
+// is not a published canonical event. Save/share are intercepted below so a
+// candidate can never mutate canonical or saved state.
+const CANDIDATE_FALLBACK_COORDS = { lat: 29.7604, lng: -95.3698 };
+
+function projectCandidateToEventDetail(
+  accepted: AcceptedIngestionCandidate,
+): EventDetailDto {
+  const candidate = accepted.candidate;
+  const job = accepted.job;
+  const hasCoords = candidate.latitude != null && candidate.longitude != null;
+  return {
+    id: `candidate:${job.id}`,
+    title: candidate.title?.trim() || "UNTITLED_EVENT",
+    description: candidate.description ?? null,
+    venueName: candidate.venueName?.trim() || "UNKNOWN_VENUE",
+    address:
+      candidate.address ??
+      (hasCoords
+        ? "Coordinates only — no address extracted"
+        : "Location pending extraction"),
+    lat: candidate.latitude ?? CANDIDATE_FALLBACK_COORDS.lat,
+    lng: candidate.longitude ?? CANDIDATE_FALLBACK_COORDS.lng,
+    category: candidate.category ?? "nightlife",
+    categories: candidate.category ? [candidate.category] : ["nightlife"],
+    startUtc: candidate.startTime ?? new Date().toISOString(),
+    endUtc: candidate.endTime ?? null,
+    timezone: "America/Chicago",
+    flyerImageUrl: candidate.imageUrl ?? null,
+    mediaRefs: [],
+    tags: candidate.tags ?? [],
+    status: "CANDIDATE_REVIEW",
+    confidence: job.result?.evidence?.confidenceScore ?? 0.5,
+    sourceKind: `ingestion:${job.sourceKind}`,
+    provenanceSummary: {
+      primarySourceKind: `ingestion:${job.sourceKind}`,
+      sourceCount: 1,
+      firstObservedAtUtc: job.createdAt,
+      lastObservedAtUtc: job.updatedAt,
+      summaryLabel: "Ingestion candidate — not a published canonical event",
+    },
+    savedByCurrentUser: false,
+    version: 0,
+    lastChangeType: null,
+    concurrencyToken: null,
+  };
+}
+
+const modalEvent = computed<EventDetailDto | null>(() =>
+  candidatePreview.value
+    ? projectCandidateToEventDetail(candidatePreview.value)
+    : eventDetail.value,
+);
+
+const modalOpen = computed(
+  () => isOpen.value || candidatePreview.value !== null,
+);
+
+function onCreateWizardClose(): void {
+  isCreateWizardOpen.value = false;
+  navMode.resetMode();
+}
+
+/**
+ * G11: an accepted candidate flows into the canonical event experience via
+ * the existing EventDetailModal contract. The wizard closes; the preview
+ * opens as the EVENT surface.
+ */
+function onCandidateAccepted(accepted: AcceptedIngestionCandidate): void {
+  isCreateWizardOpen.value = false;
+  candidatePreview.value = accepted;
+  navMode.resetMode();
+}
+
 const mapItemsState = ref<EventMapItemDto[]>([]);
-const isCalendarFilterRefreshPending = ref(false);
-const calendarDegradedReason = ref<string | null>(null);
+
+// ─── WEUP-2.5D (D17): interaction state machine ─────────────────────────────
+// Central coordination for Signal / Cluster / Corridor / Inspector / Command /
+// Navigation state (mission §XIV): STATE → DEPTH → VISUAL → SURFACE. Reads the
+// canonical composables (discovery, temporal, navMode, modal, sheets); owns no
+// business logic and creates no execution paths. Drives data-composition on
+// the shell, corridor emphasis on cluster SELECT, and Z2 dimming.
+const viewportWidth = useViewportWidth();
+const assistantRef = ref<{ isAssistantThinking?: boolean } | null>(null);
+const wizardRef = ref<{ isWizardDegraded?: boolean } | null>(null);
+const selectedDistrict = computed<string | null>(() => {
+  const id = discovery.selectedEventId.value;
+  if (!id) return null;
+  return (
+    mapItemsState.value.find((item) => item.eventId === id)?.district ?? null
+  );
+});
+const interaction = useInteractionStateMachine({
+  viewportWidth,
+  temporalDayKey: temporal.activeDayKey,
+  selectedEventId: computed(() => discovery.selectedEventId.value),
+  selectedDistrict,
+  activeDistrict: computed(
+    () => discovery.activeFilters.value.district ?? null,
+  ),
+  inspectorOpen: modalOpen,
+  inspectorExpanded: computed(() => modalOpen.value && !isLoading.value),
+  assistantOpen: isAssistantOpen,
+  wizardOpen: isCreateWizardOpen,
+  wizardDegraded: computed(() => wizardRef.value?.isWizardDegraded === true),
+  assistantThinking: computed(
+    () => assistantRef.value?.isAssistantThinking === true,
+  ),
+  activeNavMode: computed(() => navMode.activeMode.value),
+  sideInspectorOpen: computed(
+    () => isSavedSheetOpen.value || isProfileSheetOpen.value,
+  ),
+});
+
+/**
+ * WEUP-2.5D (D14/D15): the calendar signal grid docks into the side inspector
+ * column on tablet/desktop/wide compositions when open and no sheet claims
+ * the column (sheets take priority). Pure compositional flag — no behavior.
+ */
+const overlayDocked = computed(
+  () => discovery.overlayMode.value !== "closed",
+);
+
+const isCalendarFilterRefreshPending = ref(false);const calendarDegradedReason = ref<string | null>(null);
 const latestMapFeedQueryState = ref<EventMapFeedQueryDto | null>(null);
 let refreshDegradedHandle: ReturnType<typeof setTimeout> | null = null;
 
@@ -205,6 +847,16 @@ function onMapSelectedEventChanged(eventId: string | null): void {
   discovery.clearSelection();
 }
 
+/**
+ * WEUP-SYNTH (G7 — CulturalCalendar): calendar date selection is a temporal
+ * transition through the single authority. The mode/preset change flows into
+ * MapSurface's requestSignature watcher -> feed refetch -> map projection,
+ * calendar projection, selection, filters, and visible set all update.
+ */
+function onCalendarDateSelect(dayKey: string): void {
+  temporal.selectHoustonDay(dayKey);
+}
+
 function onMapFiltersUpdated(partial: Partial<DiscoveryFilterState>): void {
   discovery.applyFilters(partial);
   userContextPreferences.updateFromMapDiscoveryFilters(
@@ -263,11 +915,42 @@ function onMapFeedQueryUpdated(query: EventMapFeedQueryDto): void {
 }
 
 function onModalVisibilityChange(isVisible: boolean): void {
+  if (candidatePreview.value) {
+    // Candidate preview mode: closing clears the preview. The canonical
+    // selection/fetch path is untouched — a candidate never owns selection.
+    if (!isVisible) {
+      candidatePreview.value = null;
+    }
+    return;
+  }
   // Closing the dialog clears the shared selection so the map returns to its
   // default interaction state without a stranded highlighted marker.
   if (!isVisible) {
     closeModal();
   }
+}
+
+function onModalToggleSave(): void {
+  if (candidatePreview.value) {
+    $q.notify({
+      type: "warning",
+      message:
+        "This is an ingestion candidate, not a published event — saving is unavailable until the backend persists it.",
+    });
+    return;
+  }
+  toggleSavedState();
+}
+
+function onModalShare(): void {
+  if (candidatePreview.value) {
+    $q.notify({
+      type: "info",
+      message: "Sharing is unavailable for unreviewed candidates.",
+    });
+    return;
+  }
+  void showSharePlaceholder();
 }
 
 async function showSharePlaceholder(): Promise<void> {
@@ -306,30 +989,264 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.app-layout {
+/* G4 tokens: canonical dark application shell. One responsive composition
+   (mission §20) — mobile prioritizes MAP → DISCOVERY → EVENT → CREATE →
+   SAVED → PROFILE → ASSISTANT; desktop may expose simultaneous surfaces.
+   No duplicated business logic, no separate mobile/desktop implementations. */
+.weup-shell {
   min-height: 100vh;
-  background: linear-gradient(180deg, #f7fbff 0%, #eef5ff 100%);
+  background: #050505;
+  color: #fff;
 }
 
-.header {
-  background: #ffffff;
-  color: #1f2937;
+.weup-header {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #fff;
 }
 
-.map-page {
-  height: calc(100vh - 50px);
-  padding: 12px;
+.weup-page {
+  height: calc(100vh - 57px);
+  padding: 0;
 }
 
-.map-stack {
+.surface-stack {
   position: relative;
   height: 100%;
+  overflow: hidden;
 }
 
-@media (max-width: 768px) {
-  .map-page {
-    padding: 8px;
-    height: calc(100vh - 50px);
+/* SAVED overlay sheet: G4 drawer grammar — bottom sheet, rounded-t-[18px],
+   slide-up 400ms, overlay elevation. z-index 150: above map/calendar (0-60),
+   below the bottom nav (200) so navigation stays reachable. */
+.saved-sheet-wrap {
+  position: absolute;
+  inset-inline: 12px;
+  bottom: calc(104px + env(safe-area-inset-bottom));
+  z-index: 150;
+  max-width: 480px;
+  margin-inline: auto;
+  max-height: calc(100% - 200px);
+  overflow-y: auto;
+  background: rgba(10, 10, 10, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 18px 18px 18px 18px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+}
+
+/* G10 (Assistant): Spike co-pilot launcher FAB. Sits above the bottom nav
+   (G4 toast-adjacent chrome zone), accent grammar from the source panel. */
+.assistant-fab {
+  position: absolute;
+  right: 16px;
+  bottom: calc(96px + env(safe-area-inset-bottom));
+  z-index: 45;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid rgba(0, 255, 156, 0.35);
+  background: rgba(5, 5, 5, 0.85);
+  color: #00ff9c;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 0 24px rgba(0, 255, 156, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+.assistant-fab:hover {
+  transform: scale(1.06);
+  box-shadow: 0 0 32px rgba(0, 255, 156, 0.4);
+}
+.assistant-fab:active {
+  transform: scale(0.96);
+}
+@media (prefers-reduced-motion: reduce) {
+  .assistant-fab {
+    transition: none;
   }
+}
+
+.saved-sheet-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 18px;
+  cursor: pointer;
+  transition:
+    color 0.3s ease,
+    background-color 0.3s ease;
+}
+
+.saved-sheet-close:hover {
+  color: #00ff9c;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.saved-sheet-enter-active,
+.saved-sheet-leave-active {
+  transition:
+    transform 0.4s ease,
+    opacity 0.4s ease;
+}
+
+.saved-sheet-enter-from,
+.saved-sheet-leave-to {
+  transform: translateY(48px);
+  opacity: 0;
+}
+
+@media (max-width: 560px) {
+  .saved-sheet-wrap {
+    inset-inline: 8px;
+    bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .saved-sheet-enter-active,
+  .saved-sheet-leave-active {
+    transition: none;
+  }
+
+  .saved-sheet-enter-from,
+  .saved-sheet-leave-to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+ * WEUP-2.5D (D14–D16): explicit responsive compositions (mission §XVI).
+ * .weup-shell[data-composition] is set by the D17 interaction state machine —
+ * the single source of truth (canonical breakpoints; mirrors the token
+ * literals since CSS vars cannot drive @media). Mobile-first: before JS
+ * runs, the base below IS the mobile composition.
+ * Grid areas: "stage" (Z0 map + overlays) and "side" (docked inspector).
+ * No flex-wrap-only layouts; every composition is explicit. Information
+ * hierarchy is intact at every size; smaller sizes reduce simultaneous
+ * information, never semantic capability.
+ * ========================================================================== */
+
+/* Base: explicit single-area stage. MapSurface fills it; every other surface
+   overlays (absolute) or docks (grid-area: side) per composition below. */
+.surface-stack {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: "stage";
+}
+.surface-stack > .map-surface {
+  grid-area: stage;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ── D16 mobile (0–767px): first-class (mission §XII) ──
+   MAP (full-bleed Z0) + floating Z2 markers + bottom signal tray
+   (CalendarOverlayShell) + Z1 bottom nav. Inspector = bottom-docked Z3
+   (EventDetailModal slides up; maximized on compact). Sheets = bottom sheets.
+   Gestures: pan-x/pan-y only — browser/app navigation is never hijacked
+   (no swipe handlers added anywhere; TemporalNavigationControls keeps its
+   own scoped scrubber touch handling). */
+.weup-shell[data-composition="mobile"] .surface-stack {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "stage";
+  touch-action: pan-x pan-y;
+  overscroll-behavior-y: contain;
+}
+
+/* ── D15 tablet (768–1023px): DESIGNED composition ──
+   Map + collapsible side inspector + condensed intelligence strip.
+   Collapsible = the side column exists only while .weup-side-open (a
+   saved/profile sheet is open) or .weup-overlay-docked (calendar grid open);
+   closing the sheet returns the full stage. This replaces the previous
+   fallback where tablet got the mobile bottom bar. */
+.weup-shell[data-composition="tablet"]
+  .surface-stack:is(.weup-side-open, .weup-overlay-docked) {
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 32vw);
+  grid-template-areas: "stage side";
+}
+
+/* ── D14 desktop (1024–1439px): full surface ──
+   Z0 map (stage) + Z1 persistent left rail (D11, floating) + Z1 intelligence
+   panels + Z2 signal grid + Z3 inspector docked side + Z4 command overlays. */
+.weup-shell[data-composition="desktop"]
+  .surface-stack:is(.weup-side-open, .weup-overlay-docked) {
+  grid-template-columns: minmax(0, 1fr) clamp(340px, 26vw, 400px);
+  grid-template-areas: "stage side";
+}
+
+/* ── wide (≥1440px): full intelligence surfaces, wider inspector ── */
+.weup-shell[data-composition="wide"]
+  .surface-stack:is(.weup-side-open, .weup-overlay-docked) {
+  grid-template-columns: minmax(0, 1fr) clamp(360px, 28vw, 460px);
+  grid-template-areas: "stage side";
+}
+
+/* Docked sheets (tablet/desktop/wide): bottom sheet → side inspector panel.
+   Sheets take priority over the calendar overlay for the side column.
+   Every value tokenized. */
+.weup-shell[data-composition="tablet"] .surface-stack.weup-side-open .saved-sheet-wrap,
+.weup-shell[data-composition="desktop"] .surface-stack.weup-side-open .saved-sheet-wrap,
+.weup-shell[data-composition="wide"] .surface-stack.weup-side-open .saved-sheet-wrap {
+  position: static;
+  grid-area: side;
+  inset-inline: auto;
+  bottom: auto;
+  z-index: auto;
+  max-width: none;
+  margin-inline: 0;
+  max-height: none;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  border-radius: var(--weup-radius-surface);
+  box-shadow: var(--weup-elevation-3);
+  background: var(--weup-depth-surface-active);
+  backdrop-filter: blur(var(--weup-blur-background));
+  -webkit-backdrop-filter: blur(var(--weup-blur-background));
+}
+
+/* Calendar signal grid docks into the side column when open and no sheet
+   claims it. When a sheet is open, the overlay keeps its bottom-tray overlay
+   mode (it underlaps the docked sheet; sheet z-150 > overlay z-20). */
+.weup-shell[data-composition="tablet"]
+  .surface-stack.weup-overlay-docked:not(.weup-side-open)
+  .overlay-anchor.is-open,
+.weup-shell[data-composition="desktop"]
+  .surface-stack.weup-overlay-docked:not(.weup-side-open)
+  .overlay-anchor.is-open,
+.weup-shell[data-composition="wide"]
+  .surface-stack.weup-overlay-docked:not(.weup-side-open)
+  .overlay-anchor.is-open {
+  position: static;
+  grid-area: side;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  top: auto;
+  z-index: auto;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
 }
 </style>

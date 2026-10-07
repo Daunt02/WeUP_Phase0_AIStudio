@@ -1,6 +1,9 @@
 <template>
+  <!-- WEUP-2.5D (D10): pure Z1 structure — the shell frames, it never
+       represents a signal. Flat elevation.1 from the data-plane rule. -->
   <div
     class="overlay-anchor"
+    data-plane="z1"
     :class="[anchorClass, `phase-${transitionPhase}`]"
     :data-transition-phase="transitionPhase"
   >
@@ -27,7 +30,9 @@
           :total-count="items.length"
           :is-filter-refresh-pending="isFilterRefreshPending"
           :transition-phase="transitionPhase"
+          :layout-mode="layoutMode"
           @set-layer="$emit('set-layer', $event)"
+          @layout-mode-change="$emit('layout-mode-change', $event)"
         />
 
         <q-linear-progress
@@ -48,13 +53,21 @@
           :error="error"
           :transition-phase="transitionPhase"
           :defer-selection-motion="shouldDeferSelectionMotion"
+          :layout-mode="layoutMode"
+          :active-day-key="activeDayKey"
+          :scrub-cursor-utc="scrubCursorUtc"
           @select-event="$emit('select-event', $event)"
+          @date-select="$emit('date-select', $event)"
         />
       </q-card>
     </transition>
   </div>
 </template>
 
+<!--
+  WEUP-SYNTH (G7 — Temporal): layout-mode + date-select passthrough for the
+  CulturalCalendar day-column projection. No new state; the shell only routes.
+-->
 <script setup lang="ts">
 import { computed, toRef } from "vue";
 import type {
@@ -65,6 +78,8 @@ import { useCalendarTransitionState } from "../composables/useCalendarTransition
 import CalendarEventGrid from "./CalendarEventGrid.vue";
 import CalendarTimelineHeader from "./CalendarTimelineHeader.vue";
 
+export type CalendarLayoutMode = "masonry" | "day-column";
+
 const props = defineProps<{
   layer: CalendarOverlayLayerState;
   overlayHeight: string;
@@ -74,11 +89,21 @@ const props = defineProps<{
   error?: string | null;
   isFilterRefreshPending?: boolean;
   degradedReason?: string | null;
+  /** WEUP-SYNTH (G7): calendar projection mode. */
+  layoutMode?: CalendarLayoutMode;
+  /** WEUP-SYNTH (G7): selected Houston day key, if any. */
+  activeDayKey?: string | null;
+  /** WEUP-SYNTH (G7): Tonight scrub-cursor instant, if any. */
+  scrubCursorUtc?: string | null;
 }>();
 
 defineEmits<{
   (event: "set-layer", layer: CalendarOverlayLayerState): void;
   (event: "select-event", eventId: string): void;
+  /** WEUP-SYNTH (G7): routed to useTemporalNavigation.selectHoustonDay. */
+  (event: "date-select", dayKey: string): void;
+  /** WEUP-SYNTH (G7): calendar projection mode toggle. */
+  (event: "layout-mode-change", mode: CalendarLayoutMode): void;
 }>();
 
 const anchorClass = computed(() => {

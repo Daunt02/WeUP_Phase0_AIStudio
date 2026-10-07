@@ -1,22 +1,92 @@
+<!--
+  WEUP-SYNTH (G7 — Temporal):
+  sources=[components/TimelineControl.tsx, components/CulturalCalendar.tsx]
+  destination=frontend-vue/src/components/TemporalNavigationControls.vue
+  mission=WEUP-PHASE0-VUE-FINAL-SYNTHESIS-001
+  notes=TimelineControl merged: hold-to-scrub glass pill with label arbitration
+  (NOW/6PM/9PM/MIDNIGHT/3AM/FRI/SAT/SUN) and the six-mode inventory
+  (NOW/TODAY/TONIGHT/TOMORROW/WEEKEND/CUSTOM). Every gesture drives the single
+  temporal authority (useTemporalNavigation singleton); scrub/timeline
+  interactions are real state transitions, never decorative animation.
+  Pre-existing preset/step/scrub-track behavior is preserved and now shares
+  the same authority.
+-->
 <template>
-  <div class="temporal-navigation-controls">
+  <div class="temporal-navigation-controls" data-plane="z1">
     <!-- Container: responsive for mobile and desktop -->
     <q-card flat bordered class="controls-card">
       <q-card-section class="controls-section">
-        <!-- Preset buttons row -->
+        <!-- WEUP-SYNTH (TimelineControl): hold-to-scrub glass pill -->
+        <div class="scrub-pill-wrap">
+          <div
+            ref="pillRef"
+            class="scrub-pill"
+            :class="{ holding: isHolding }"
+            role="slider"
+            tabindex="0"
+            aria-label="Temporal scrub control"
+            :aria-valuetext="scrubReadout"
+            @pointerdown="onPillPointerDown"
+            @pointermove="onPillPointerMove"
+            @pointerup="onPillPointerUp"
+            @pointercancel="onPillPointerUp"
+            @keydown.left.prevent="onPillKeyStep(-1)"
+            @keydown.right.prevent="onPillKeyStep(1)"
+          >
+            <div class="pill-identity">
+              <q-icon
+                name="schedule"
+                size="sm"
+                class="pill-clock"
+                :class="{ holding: isHolding }"
+              />
+              <div class="pill-labels">
+                <span class="pill-state">{{
+                  isHolding ? "EXPLORING FUTURE" : modeReadout
+                }}</span>
+                <span class="pill-time">{{ scrubReadout }}</span>
+              </div>
+            </div>
+
+            <div v-if="isHolding" class="pill-scrub-labels">
+              <span
+                v-for="(label, index) in scrubLabels"
+                :key="label"
+                class="pill-scrub-label"
+                :class="{ active: label === activeScrubLabel }"
+                :style="{ opacity: labelOpacity(index) }"
+              >
+                {{ label }}
+              </span>
+            </div>
+
+            <div v-if="isHolding" class="pill-progress-track">
+              <div
+                class="pill-progress"
+                :style="{ width: pillProgressWidth }"
+              ></div>
+            </div>
+          </div>
+          <span v-if="!isHolding" class="pill-hint"
+            >Hold + Slide to Scrub Time</span
+          >
+        </div>
+
+        <!-- Mode buttons row: the six canonical temporal modes -->
         <div class="presets-row">
           <q-btn
-            v-for="preset in presetOptions"
-            :key="preset.value"
-            :label="preset.label"
-            :outline="preset.value !== activePreset"
-            :unelevated="preset.value === activePreset"
-            :color="preset.value === activePreset ? 'primary' : 'grey-8'"
+            v-for="mode in modeOptions"
+            :key="mode.value"
+            :label="mode.label"
+            :outline="mode.value !== activeMode"
+            :unelevated="mode.value === activeMode"
+            :color="mode.value === activeMode ? 'primary' : 'grey-8'"
             size="sm"
             class="preset-btn"
-            @click="onSelectPreset(preset.value)"
-            :aria-pressed="preset.value === activePreset"
-            :aria-label="`Navigate to ${preset.label}`"
+            :class="{ 'is-active-mode': mode.value === activeMode }"
+            @click="onSelectMode(mode.value)"
+            :aria-pressed="mode.value === activeMode"
+            :aria-label="`Navigate to ${mode.label}`"
           />
         </div>
 
@@ -156,9 +226,12 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import type { TimeWindowPreset } from "../contracts/time-window.contracts";
-import { TimeWindowPreset } from "../contracts/time-window.contracts";
-import type { UseTemporalNavigation } from "../composables/useTemporalNavigation";
+import {
+  TIMELINE_SCRUB_LABELS,
+  type TemporalMode,
+  type TimelineScrubLabel,
+  type UseTemporalNavigation,
+} from "../composables/useTemporalNavigation";
 
 const isDevelopment = import.meta.env.DEV;
 
@@ -168,20 +241,33 @@ interface TemporalNavigationControlsProps {
 
 const props = defineProps<TemporalNavigationControlsProps>();
 
-// Preset options for buttons
-const presetOptions = [
-  { value: TimeWindowPreset.Now, label: "Now" },
-  { value: TimeWindowPreset.Tonight, label: "Tonight" },
-  { value: TimeWindowPreset.Tomorrow, label: "Tomorrow" },
-  { value: TimeWindowPreset.ThisWeekend, label: "This Weekend" },
-  { value: TimeWindowPreset.Custom, label: "Custom" },
-] as const;
+// WEUP-SYNTH (G7 — TimelineControl): the six canonical temporal modes.
+// TODAY is a Houston-day CustomRange; the rest map 1:1 to backend presets.
+const modeOptions: ReadonlyArray<{ value: TemporalMode; label: string }> = [
+  { value: "NOW", label: "Now" },
+  { value: "TODAY", label: "Today" },
+  { value: "TONIGHT", label: "Tonight" },
+  { value: "TOMORROW", label: "Tomorrow" },
+  { value: "WEEKEND", label: "Weekend" },
+  { value: "CUSTOM", label: "Custom" },
+];
 
-// Scrubbing state
+const scrubLabels = TIMELINE_SCRUB_LABELS;
+
+// Scrubbing state (linear track)
 const isScrubbing = ref(false);
 
+// WEUP-SYNTH (G7 — TimelineControl): hold-to-scrub pill state
+const pillRef = ref<HTMLElement | null>(null);
+const isHolding = ref(false);
+const dragX = ref(0);
+const activeScrubLabel = ref<TimelineScrubLabel | null>(null);
+const DRAG_LIMIT = 150;
+
 // Computed properties from temporal state
-const activePreset = computed(() => props.temporal.preset.value);
+const activeMode = computed<TemporalMode>(
+  () => props.temporal.activeTemporalMode.value,
+);
 const currentPreset = computed(() => props.temporal.preset.value);
 const scrubPosition = computed(() => props.temporal.scrubPosition.value);
 const isScrubbingActive = computed(
@@ -228,25 +314,29 @@ const requestSignaturePreview = computed(() => {
 });
 
 const statusMessage = computed(() => {
-  const preset = currentPreset.value;
+  const mode = activeMode.value;
   const offset = stepOffset.value;
+  const dayKey = props.temporal.activeDayKey.value;
 
-  let base = "";
-  switch (preset) {
-    case TimeWindowPreset.Now:
+  let base: string;
+  switch (mode) {
+    case "NOW":
       base = "Now";
       break;
-    case TimeWindowPreset.Tonight:
+    case "TODAY":
+      base = dayKey ? `Today (${dayKey})` : "Today";
+      break;
+    case "TONIGHT":
       base = "Tonight";
       break;
-    case TimeWindowPreset.Tomorrow:
+    case "TOMORROW":
       base = "Tomorrow";
       break;
-    case TimeWindowPreset.ThisWeekend:
-      base = "This Weekend";
+    case "WEEKEND":
+      base = "Weekend";
       break;
-    case TimeWindowPreset.Custom:
-      base = "Custom Range";
+    case "CUSTOM":
+      base = dayKey ? `Custom (${dayKey})` : "Custom Range";
       break;
   }
 
@@ -258,11 +348,118 @@ const statusMessage = computed(() => {
   return base;
 });
 
+/**
+ * WEUP-SYNTH (G7 — TimelineControl): pill readout state.
+ * modeReadout names the active mode; scrubReadout shows the live scrub label
+ * while holding, else the Tonight cursor label, else the mode.
+ */
+const modeReadout = computed(() => {
+  const mode = activeMode.value;
+  const dayKey = props.temporal.activeDayKey.value;
+  if ((mode === "TODAY" || mode === "CUSTOM") && dayKey) {
+    return dayKey;
+  }
+  return mode;
+});
+
+const scrubReadout = computed(() => {
+  if (isHolding.value && activeScrubLabel.value) {
+    return activeScrubLabel.value;
+  }
+  if (
+    activeMode.value === "TONIGHT" &&
+    props.temporal.scrubCursorLabel.value
+  ) {
+    return props.temporal.scrubCursorLabel.value as string;
+  }
+  return modeReadout.value;
+});
+
 // Event handlers
 
-function onSelectPreset(preset: TimeWindowPreset): void {
-  props.temporal.selectPreset(preset);
+function onSelectMode(mode: TemporalMode): void {
+  props.temporal.selectTemporalMode(mode);
 }
+
+/**
+ * WEUP-SYNTH (G7 — TimelineControl): hold-to-scrub gesture. Press-and-hold
+ * reveals the scrub labels; sliding maps pointer X to the nearest label and
+ * every label change is a real temporal transition via scrubToLabel. Release
+ * springs the drag offset back (finite, state-driven motion).
+ */
+function onPillPointerDown(event: PointerEvent): void {
+  isHolding.value = true;
+  dragX.value = 0;
+  activeScrubLabel.value = null;
+  try {
+    pillRef.value?.setPointerCapture(event.pointerId);
+  } catch {
+    // Pointer capture is best-effort (jsdom / older engines).
+  }
+  event.preventDefault();
+}
+
+function onPillPointerMove(event: PointerEvent): void {
+  if (!isHolding.value || !pillRef.value) {
+    return;
+  }
+  const rect = pillRef.value.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const delta = Math.max(
+    -DRAG_LIMIT,
+    Math.min(DRAG_LIMIT, event.clientX - centerX),
+  );
+  dragX.value = delta;
+  const index = Math.round(
+    ((delta + DRAG_LIMIT) / (2 * DRAG_LIMIT)) * (scrubLabels.length - 1),
+  );
+  const label =
+    scrubLabels[Math.max(0, Math.min(scrubLabels.length - 1, index))];
+  if (label !== activeScrubLabel.value) {
+    activeScrubLabel.value = label;
+    props.temporal.scrubToLabel(label);
+  }
+}
+
+function onPillPointerUp(event: PointerEvent): void {
+  if (!isHolding.value) {
+    return;
+  }
+  isHolding.value = false;
+  dragX.value = 0;
+  activeScrubLabel.value = null;
+  try {
+    pillRef.value?.releasePointerCapture(event.pointerId);
+  } catch {
+    // Best-effort.
+  }
+}
+
+/** Keyboard alternative to the hold-and-slide gesture. */
+function onPillKeyStep(direction: -1 | 1): void {
+  const current = activeScrubLabel.value
+    ? scrubLabels.indexOf(activeScrubLabel.value)
+    : direction > 0
+      ? -1
+      : scrubLabels.length;
+  const next = Math.max(
+    0,
+    Math.min(scrubLabels.length - 1, current + direction),
+  );
+  const label = scrubLabels[next];
+  activeScrubLabel.value = label;
+  props.temporal.scrubToLabel(label);
+}
+
+/** Label opacity falls off with distance from the drag position (source grammar). */
+function labelOpacity(index: number): number {
+  const center = ((dragX.value + DRAG_LIMIT) / (2 * DRAG_LIMIT)) * (scrubLabels.length - 1);
+  return Math.max(0.2, 1 - Math.abs(index - center) * 0.28);
+}
+
+const pillProgressWidth = computed(() => {
+  return `${(Math.abs(dragX.value) / DRAG_LIMIT) * 50}%`;
+});
 
 function onStepForward(): void {
   props.temporal.stepDateTime(1, "day");
@@ -368,15 +565,197 @@ function handleTouchEnd(): void {
 </script>
 
 <style scoped>
+/* ── WEUP-SYNTH (G7 — TimelineControl): hold-to-scrub glass pill ──────────
+   Source grammar: bg-black/80 backdrop-blur-3xl border-white/10 rounded-full
+   px-6 py-4, mono labels, #00FF9C active state, bottom scrub-progress bar.
+   G4 tokens: pill radius, overlay elevation, mono typography, brand accent. */
+
+.scrub-pill-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  user-select: none;
+}
+
+.scrub-pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 90vw;
+  padding: 1rem 1.5rem;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+  cursor: grab;
+  touch-action: none;
+  transition: border-color 0.5s ease;
+  overflow: hidden;
+}
+
+.scrub-pill:hover {
+  border-color: rgba(0, 255, 156, 0.4);
+}
+
+.scrub-pill.holding {
+  cursor: grabbing;
+  border-color: rgba(0, 255, 156, 0.4);
+}
+
+.scrub-pill:focus-visible {
+  outline: 2px solid #00ff9c;
+  outline-offset: 2px;
+}
+
+.pill-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.pill-clock {
+  color: rgba(255, 255, 255, 0.4);
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease;
+}
+
+.pill-clock.holding {
+  transform: scale(1.2);
+  color: #00ff9c;
+}
+
+.pill-labels {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.pill-state {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+}
+
+.pill-time {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 14px;
+  font-weight: 900;
+  color: #00ff9c;
+  white-space: nowrap;
+}
+
+.pill-scrub-labels {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 0.5rem;
+  overflow: hidden;
+  animation: pill-labels-in 0.25s ease;
+}
+
+@keyframes pill-labels-in {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.pill-scrub-label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+}
+
+.pill-scrub-label.active {
+  color: #00ff9c;
+}
+
+.pill-progress-track {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  pointer-events: none;
+}
+
+.pill-progress {
+  height: 100%;
+  margin: 0 auto;
+  background: rgba(0, 255, 156, 0.4);
+  border-radius: 9999px;
+  transition: width 0.1s ease-out;
+}
+
+.pill-hint {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 8px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrub-pill,
+  .scrub-pill *,
+  .pill-scrub-labels {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@media (max-width: 512px) {
+  .scrub-pill {
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+  }
+
+  .pill-scrub-labels {
+    gap: 0.6rem;
+  }
+
+  .pill-scrub-label {
+    font-size: 8px;
+  }
+}
+
 .temporal-navigation-controls {
   padding: 0.5rem;
   user-select: none;
 }
 
+/* WEUP-2.5D (D10): the temporal authority surface. The controls card floats
+   above pure structure (elevation.2); the ACTIVE temporal mode carries the
+   selection glow — exactly one mode is active at a time (deterministic). */
 .controls-card {
   background: rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
+  box-shadow: var(--weup-elevation-2);
+}
+
+.preset-btn.is-active-mode {
+  box-shadow: var(--weup-glow-active);
 }
 
 .controls-section {

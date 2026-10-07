@@ -117,12 +117,16 @@ async function resolveAnonymousSavedItem(
 }
 
 async function buildAnonymousSavedEventsResponse(
-  query: Required<SavedEventsQueryDto>,
+  query: SavedEventsQueryDto,
   savedEventIds: readonly string[],
   savedAt: string,
 ): Promise<SavedEventsResponseDto & { degradedReason: string | null }> {
-  const start = (query.page - 1) * query.pageSize;
-  const pageItems = savedEventIds.slice(start, start + query.pageSize);
+  // Garden Vue audit: SavedEventsQueryDto.page/pageSize are optional by contract;
+  // normalize here instead of asserting Required<> (which the callers cannot satisfy).
+  const page = Math.max(1, query.page ?? 1);
+  const pageSize = Math.min(100, Math.max(1, query.pageSize ?? 50));
+  const start = (page - 1) * pageSize;
+  const pageItems = savedEventIds.slice(start, start + pageSize);
   const resolvedResults = await Promise.all(
     pageItems.map((eventId) => resolveAnonymousSavedItem(eventId, savedAt)),
   );
@@ -138,8 +142,8 @@ async function buildAnonymousSavedEventsResponse(
   return {
     items,
     totalCount: savedEventIds.length,
-    page: query.page,
-    pageSize: query.pageSize,
+    page,
+    pageSize,
     hasNextPage: start + items.length < savedEventIds.length,
     resolvedCount,
     missingOrDeletedCount: items.length - resolvedCount,
@@ -200,7 +204,7 @@ export function useSavedEventsCollection(
     const query = {
       page: page.value,
       pageSize: pageSize.value,
-    } satisfies Required<SavedEventsQueryDto>;
+    } satisfies SavedEventsQueryDto;
 
     try {
       const remote = await fetchSavedEvents(query);

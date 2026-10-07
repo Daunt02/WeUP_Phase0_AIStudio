@@ -137,13 +137,24 @@ vi.mock("../components/EventDetailModal.vue", () => ({
   }),
 }));
 
-vi.mock("../services/eventDetailService", () => ({
-  fetchEventDetail,
-  fetchSavedState,
-  saveEvent,
-  unsaveEvent,
-  shareEventDetail: vi.fn(),
-}));
+vi.mock("../services/eventDetailService", async () => {
+  // G6: App.vue now wires useSavedEventsCollection, which imports
+  // ApiRequestError from this module. Keep the class export real so the
+  // catch-path `instanceof` check in loadSavedEvents() works under the mock.
+  const actual =
+    await vi.importActual<typeof import("../services/eventDetailService")>(
+      "../services/eventDetailService",
+    );
+
+  return {
+    ApiRequestError: actual.ApiRequestError,
+    fetchEventDetail,
+    fetchSavedState,
+    saveEvent,
+    unsaveEvent,
+    shareEventDetail: vi.fn(),
+  };
+});
 
 import App from "../App.vue";
 import { resetDiscoveryStateForTests } from "../composables/useDiscoveryState";

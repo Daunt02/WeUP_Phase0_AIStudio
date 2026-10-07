@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { TimeWindowPreset } from "../contracts/time-window.contracts";
 
 const { migrateAnonymousSaveState, ApiRequestError } = vi.hoisted(() => {
   class MockApiRequestError extends Error {
@@ -60,7 +61,7 @@ describe("useSaveStateMigration", () => {
     persistence.setDiscoveryContext({
       lastViewedDistrict: "mission",
       lastTemporalFilter: {
-        preset: "tonight",
+        preset: TimeWindowPreset.Tonight,
         timezone: "America/Los_Angeles",
       },
       recentMapViewport: {

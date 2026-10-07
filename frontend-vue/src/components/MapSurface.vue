@@ -1,3 +1,21 @@
+<!--
+  WEUP-SYNTH:
+  sources=[
+    components/MapCanvas.tsx,
+    components/WorldLayer.tsx,
+    components/GeoControls.tsx,
+    components/InteractionLayer.tsx
+  ]
+  destination=frontend-vue/src/components/MapSurface.vue
+  mission=WEUP-PHASE0-VUE-FINAL-SYNTHESIS-001
+  notes=AI Studio world-surface behavior synthesized into the existing map
+  architecture. Feed contracts stay canonical: events flow exclusively through
+  fetchEventMapFeed; selection resolves by eventId only; server/client cluster
+  rendering, saved-state rendering, viewport refresh, and the temporal query
+  path are preserved. Carried over from the sources: dark basemap grammar,
+  GeolocateControl, hover-ring/press ghost interaction affordances, selected
+  marker label, and the pulse/zone layers (VenuePulseLayer, ZoneDrawer).
+-->
 <template>
   <q-card flat bordered class="map-surface">
     <q-card-section class="controls-row">
@@ -16,12 +34,37 @@
         @update:include-saved-only="includeSavedOnly = $event"
         @refresh="refreshFromCurrentViewport"
       />
+
+      <!-- WEUP-SYNTH (G7 — TimelineControl): temporal scrub pill + six-mode
+           row. Shares the single temporal authority below; the filter panel
+           above is untouched. -->
+      <TemporalNavigationControls :temporal="temporal" />
     </q-card-section>
 
     <q-separator />
 
-    <q-card-section class="map-body">
+    <q-card-section class="map-body weup-plane-z0" data-plane="z0">
       <div ref="mapContainer" class="map-canvas" />
+
+      <!-- WEUP-2.5D (D06): atmospheric depth layers. Non-interactive Z0 cues
+           only — pointer-events:none, never above signal objects. The
+           perspective context below lets overlays separate in Z without
+           touching mapbox's own rendering or the token-less fallback. -->
+      <div class="weup-atmosphere weup-atmosphere-top" aria-hidden="true" />
+      <div class="weup-atmosphere weup-atmosphere-bottom" aria-hidden="true" />
+
+      <!-- WEUP-SYNTH world layers: pulses + district zones, both driven by
+           canonical markers and the shared discovery filters. -->
+      <VenuePulseLayer v-if="map && !tokenMissing" :map="map" :markers="markers" />
+      <ZoneDrawer
+        v-if="map && !tokenMissing"
+        :map="map"
+        :active-district="resolvedActiveFilters.district"
+        :emphasized-district="props.emphasizedDistrict ?? undefined"
+        :visible="zonesVisible"
+        @zone-selected="onZoneSelected"
+        @update:visible="zonesVisible = $event"
+      />
 
       <q-banner v-if="tokenMissing" class="banner error" rounded>
         Missing VITE_MAPBOX_ACCESS_TOKEN. Map cannot render.
@@ -49,6 +92,13 @@ import type { FeatureCollection, Point } from "geojson";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 import MapTimeFilterPanel from "./MapTimeFilterPanel.vue";
+import TemporalNavigationControls from "./TemporalNavigationControls.vue";
+import VenuePulseLayer from "./VenuePulseLayer.vue";
+import ZoneDrawer from "./ZoneDrawer.vue";
+import {
+  GHOST_LONG_PRESS_MS,
+  resolveBasemapStyle,
+} from "./mapWorld";
 import type {
   EventMapDensityControlDto,
   EventMapFeedClusterDto,
@@ -57,7 +107,7 @@ import type {
   EventMapMarkerViewModel,
 } from "../contracts/map-feed.contracts";
 import type { DiscoveryFilterState } from "../composables/useDiscoveryState";
-import { useMapFeedFilters } from "../composables/useMapFeedFilters";
+import { useTemporalNavigation } from "../composables/useTemporalNavigation";
 import { useMapEvents } from "../composables/useMapEvents";
 
 const props = withDefaults(
@@ -65,10 +115,16 @@ const props = withDefaults(
     selectedEventId?: string | null;
     selectedEventSavedState?: boolean | null;
     activeFilters?: DiscoveryFilterState;
+    /**
+     * WEUP-2.5D (D17): district of the selected cluster, from the interaction
+     * state machine. Passed to ZoneDrawer for corridor emphasis. Optional.
+     */
+    emphasizedDistrict?: string | null;
   }>(),
   {
     selectedEventId: null,
     selectedEventSavedState: null,
+    emphasizedDistrict: null,
   },
 );
 
@@ -84,11 +140,35 @@ const CLIENT_CLUSTER_COUNT_LAYER_ID = "weup-event-cluster-count";
 const SERVER_CLUSTER_LAYER_ID = "weup-event-server-clusters";
 const SERVER_CLUSTER_COUNT_LAYER_ID = "weup-event-server-cluster-count";
 const SELECTED_MARKER_LAYER_ID = "weup-selected-event-marker";
+// WEUP-SYNTH (InteractionLayer): hover ring + selected label affordances on
+// the existing sources via mapbox feature rendering (no second state store).
+const HOVER_SOURCE_ID = "weup-events-hover";
+const HOVER_RING_LAYER_ID = "weup-marker-hover-ring";
+const SELECTED_LABEL_LAYER_ID = "weup-selected-event-label";
 
 const mapContainer = ref<HTMLElement | null>(null);
 const map = ref<any>(null);
 const currentZoom = ref(11);
 const clusterSourceConfigKey = ref<string | null>(null);
+
+// WEUP-SYNTH (InteractionLayer): transient interaction state only. Hover and
+// ghost previews never write to any store; selection happens exclusively
+// through emitSelection() → selectEvent().
+const hoveredEventId = ref<string | null>(null);
+const zonesVisible = ref(true);
+
+// WEUP-SYNTH (G7 — Temporal): the single authoritative temporal state.
+// useTemporalNavigation is a superset of useMapFeedFilters (same refs +
+// temporal actions); the filter panel bindings below are unchanged. When a
+// temporal transition makes the selection stale, the authority notifies and
+// MapSurface clears selection through its canonical emit path.
+const temporal = useTemporalNavigation({
+  onSelectedEventChange: (eventId) => {
+    if (eventId === null) {
+      emits("update:selectedEventId", null);
+    }
+  },
+});
 
 const {
   preset,
@@ -99,7 +179,7 @@ const {
   validationError,
   requestSignature,
   buildMapFeedQuery,
-} = useMapFeedFilters();
+} = temporal;
 
 const {
   events,
@@ -131,7 +211,26 @@ const emits = defineEmits<{
   (event: "map-feed-query-updated", query: EventMapFeedQueryDto): void;
   (event: "map-items-updated", items: EventMapItemDto[]): void;
   (event: "filters-updated", filters: Partial<DiscoveryFilterState>): void;
+  (
+    event: "feed-status-changed",
+    status: { isLoading: boolean; error: string | null; offline: boolean },
+  ): void;
 }>();
+
+// WEUP-SYNTH (G6 — Navigation): project the real feed state upward so the
+// canonical TopBar LIVE pill derives from useMapEvents instead of a hardcoded
+// value. Additive emit only; no existing contract is altered.
+watch(
+  [isLoading, error, tokenMissing],
+  ([nextIsLoading, nextError, nextOffline]) => {
+    emits("feed-status-changed", {
+      isLoading: nextIsLoading,
+      error: nextError,
+      offline: nextOffline,
+    });
+  },
+  { immediate: true },
+);
 
 type MarkerFeatureProperties = {
   eventId: string;
@@ -277,6 +376,13 @@ function ensureSources(currentMap: any): void {
 
   if (!currentMap.getSource(SELECTED_SOURCE_ID)) {
     currentMap.addSource(SELECTED_SOURCE_ID, {
+      type: "geojson",
+      data: toFeatureCollection([]),
+    });
+  }
+
+  if (!currentMap.getSource(HOVER_SOURCE_ID)) {
+    currentMap.addSource(HOVER_SOURCE_ID, {
       type: "geojson",
       data: toFeatureCollection([]),
     });
@@ -431,6 +537,48 @@ function ensureLayers(currentMap: any): void {
       },
     });
   }
+
+  // WEUP-SYNTH (MapCanvas): selected-event title label under the selected
+  // marker, rendered from the same canonical source as the selected ring.
+  if (!currentMap.getLayer(SELECTED_LABEL_LAYER_ID)) {
+    currentMap.addLayer({
+      id: SELECTED_LABEL_LAYER_ID,
+      type: "symbol",
+      source: SELECTED_SOURCE_ID,
+      layout: {
+        "text-field": ["get", "title"],
+        "text-size": 10,
+        "text-transform": "uppercase",
+        "text-letter-spacing": 0.2,
+        "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+        "text-anchor": "top",
+        "text-offset": [0, 1.4],
+        "text-max-width": 12,
+      },
+      paint: {
+        "text-color": "#FFFFFF",
+        "text-halo-color": "rgba(0,0,0,0.9)",
+        "text-halo-width": 2,
+      },
+    });
+  }
+
+  // WEUP-SYNTH (InteractionLayer): hover ring affordance. Driven by the
+  // transient hoveredEventId ref — never touches selection or feed state.
+  if (!currentMap.getLayer(HOVER_RING_LAYER_ID)) {
+    currentMap.addLayer({
+      id: HOVER_RING_LAYER_ID,
+      type: "circle",
+      source: HOVER_SOURCE_ID,
+      paint: {
+        "circle-radius": 9,
+        "circle-color": "rgba(0,0,0,0)",
+        "circle-stroke-color": "#FFFFFF",
+        "circle-stroke-width": 2,
+        "circle-stroke-opacity": 0.9,
+      },
+    });
+  }
 }
 
 function setSourceData(sourceId: string, data: FeatureCollection<Point>): void {
@@ -569,6 +717,15 @@ function updateMapRendering(): void {
     toServerClusterFeatureCollection(serverClustersToRender),
   );
 
+  // Hover ring follows the transient hover ref; never the selection state.
+  const hoveredMarker =
+    hoveredEventId.value === null
+      ? null
+      : (markers.value.find(
+          (marker) => marker.eventId === hoveredEventId.value,
+        ) ?? null);
+  setSourceData(HOVER_SOURCE_ID, toFeatureCollection(hoveredMarker ? [hoveredMarker] : []));
+
   setLayerVisibility(
     currentMap,
     PLAIN_MARKER_LAYER_ID,
@@ -604,6 +761,12 @@ function updateMapRendering(): void {
     SELECTED_MARKER_LAYER_ID,
     selectedMarker !== null,
   );
+  setLayerVisibility(
+    currentMap,
+    SELECTED_LABEL_LAYER_ID,
+    selectedMarker !== null,
+  );
+  setLayerVisibility(currentMap, HOVER_RING_LAYER_ID, hoveredMarker !== null);
 }
 
 function emitSelection(eventId: string): void {
@@ -611,7 +774,20 @@ function emitSelection(eventId: string): void {
   emits("event-selected", eventId);
 }
 
+function onZoneSelected(district: string | undefined): void {
+  // WEUP-SYNTH (ZoneDrawer): zone tap-to-filter routes through the shared
+  // discovery filters so zones and the calendar stay in sync. App.vue's
+  // filters-updated handler applies this via useDiscoveryState.applyFilters.
+  emits("filters-updated", { district });
+}
+
 function onSingleMarkerClick(evt: any): void {
+  // A long-press that resolved to selection suppresses the synthetic click
+  // that may follow it on release.
+  if (Date.now() < suppressClickUntil) {
+    return;
+  }
+
   const eventId = evt.features?.[0]?.properties?.eventId as string | undefined;
   if (!eventId) {
     return;
@@ -619,6 +795,173 @@ function onSingleMarkerClick(evt: any): void {
 
   // Selection invariant: resolve marker interaction using canonical eventId only.
   emitSelection(eventId);
+}
+
+/*
+ * WEUP-SYNTH (InteractionLayer): hover ring + press ghost preview.
+ *
+ * Hover shows a white ring on the marker under the pointer (desktop).
+ * Press-and-hold shows a translucent ghost projection of the canonical
+ * marker; releasing resolves to full selection through emitSelection().
+ * Ghost previews are visual only — they never write to any store.
+ */
+const SINGLE_MARKER_LAYER_IDS = [
+  PLAIN_MARKER_LAYER_ID,
+  CLIENT_SINGLE_LAYER_ID,
+  SELECTED_MARKER_LAYER_ID,
+];
+
+let pressTimer: ReturnType<typeof setTimeout> | null = null;
+let pressStart: {
+  x: number;
+  y: number;
+  eventId: string;
+  lngLat: [number, number];
+} | null = null;
+let ghostMarker: any = null;
+let ghostMarkerEventId: string | null = null;
+let suppressClickUntil = 0;
+
+function markerFeatureAt(point: {
+  x: number;
+  y: number;
+}): { eventId: string; lngLat: [number, number] } | null {
+  const currentMap = map.value;
+  if (!currentMap) {
+    return null;
+  }
+
+  const features = currentMap.queryRenderedFeatures(point, {
+    layers: SINGLE_MARKER_LAYER_IDS,
+  });
+  const feature = features?.[0] as any;
+  const eventId = feature?.properties?.eventId as string | undefined;
+  const coordinates = feature?.geometry?.coordinates as
+    | [number, number]
+    | undefined;
+  if (!eventId || !coordinates) {
+    return null;
+  }
+
+  return { eventId, lngLat: coordinates };
+}
+
+function hideGhost(): void {
+  if (ghostMarker) {
+    ghostMarker.remove();
+    ghostMarker = null;
+  }
+  ghostMarkerEventId = null;
+}
+
+function showGhost(eventId: string, lngLat: [number, number]): void {
+  const currentMap = map.value;
+  if (!currentMap) {
+    return;
+  }
+
+  hideGhost();
+
+  const element = document.createElement("div");
+  element.className = "weup-ghost-marker";
+  element.setAttribute("aria-hidden", "true");
+
+  ghostMarker = new mapboxgl.Marker({ element, anchor: "bottom" })
+    .setLngLat(lngLat)
+    .addTo(currentMap);
+  ghostMarkerEventId = eventId;
+}
+
+function clearPressTimer(): void {
+  if (pressTimer !== null) {
+    clearTimeout(pressTimer);
+    pressTimer = null;
+  }
+}
+
+function onCanvasPointerDown(evt: PointerEvent): void {
+  const currentMap = map.value;
+  if (!currentMap) {
+    return;
+  }
+
+  const rect = currentMap.getCanvas().getBoundingClientRect();
+  const hit = markerFeatureAt({
+    x: evt.clientX - rect.left,
+    y: evt.clientY - rect.top,
+  });
+  if (!hit) {
+    return;
+  }
+
+  pressStart = { x: evt.clientX, y: evt.clientY, ...hit };
+  clearPressTimer();
+  pressTimer = setTimeout(() => {
+    pressTimer = null;
+    if (pressStart) {
+      showGhost(pressStart.eventId, pressStart.lngLat);
+    }
+  }, GHOST_LONG_PRESS_MS);
+}
+
+function onCanvasPointerMove(evt: PointerEvent): void {
+  if (!pressStart) {
+    return;
+  }
+
+  const moved =
+    Math.abs(evt.clientX - pressStart.x) > 12 ||
+    Math.abs(evt.clientY - pressStart.y) > 12;
+  if (moved) {
+    // A drag is a viewport gesture, not a press — cancel the ghost.
+    clearPressTimer();
+    hideGhost();
+    pressStart = null;
+  }
+}
+
+function onCanvasPointerUp(): void {
+  clearPressTimer();
+  const start = pressStart;
+  const ghostEventId = ghostMarkerEventId;
+  pressStart = null;
+  hideGhost();
+
+  if (ghostEventId !== null && start && start.eventId === ghostEventId) {
+    // Ghost preview resolves to full selection on release.
+    suppressClickUntil = Date.now() + 350;
+    emitSelection(start.eventId);
+  }
+}
+
+function onCanvasPointerLeave(): void {
+  clearPressTimer();
+  pressStart = null;
+  hideGhost();
+}
+
+function bindMarkerHover(currentMap: any): void {
+  for (const layerId of SINGLE_MARKER_LAYER_IDS) {
+    currentMap.on("mousemove", layerId, (evt: any) => {
+      const eventId = evt.features?.[0]?.properties?.eventId as
+        | string
+        | undefined;
+      if (eventId && eventId !== hoveredEventId.value) {
+        hoveredEventId.value = eventId;
+      }
+    });
+    currentMap.on("mouseleave", layerId, () => {
+      if (hoveredEventId.value !== null) {
+        hoveredEventId.value = null;
+      }
+    });
+  }
+
+  const canvas = currentMap.getCanvas() as HTMLElement;
+  canvas.addEventListener("pointerdown", onCanvasPointerDown);
+  canvas.addEventListener("pointermove", onCanvasPointerMove);
+  canvas.addEventListener("pointerup", onCanvasPointerUp);
+  canvas.addEventListener("pointerleave", onCanvasPointerLeave);
 }
 
 function fitMapToEvents(
@@ -782,10 +1125,19 @@ onMounted(async () => {
 
   mapboxgl.accessToken = token;
 
+  // WEUP-SYNTH (WorldLayer): dark basemap style grammar. The token contract
+  // (VITE_MAPBOX_ACCESS_TOKEN) and the missing-token banner are unchanged.
+  // An optional VITE_MAPBOX_STYLE_URL env override replaces the default.
+  const basemapStyle = resolveBasemapStyle(
+    import.meta.env.VITE_MAPBOX_STYLE_URL as string | undefined,
+  );
+
   const currentMap = new mapboxgl.Map({
     container: mapContainer.value,
-    style: "mapbox://styles/mapbox/light-v11",
-    center: [-95.3698, 29.7604],
+    style: basemapStyle,
+    // Garden Vue audit: default viewport must match the shipped seed dataset's
+    // market (San Francisco). Houston was showing an empty market on first paint.
+    center: [-122.4194, 37.7749],
     zoom: 11,
   });
 
@@ -794,11 +1146,25 @@ onMounted(async () => {
     "top-right",
   );
 
+  // WEUP-SYNTH (GeoControls): locate-me joins the existing control stack.
+  // Device-local geolocation only; the map moveend handler refetches the
+  // viewport feed, so no new data path is introduced.
+  currentMap.addControl(
+    new mapboxgl.GeolocateControl({
+      positionOptions: { enableHighAccuracy: true, timeout: 6000 },
+      trackUserLocation: false,
+      showUserLocation: true,
+      showAccuracyCircle: true,
+    }),
+    "top-right",
+  );
+
   currentMap.on("load", async () => {
     currentZoom.value = currentMap.getZoom();
     ensureSources(currentMap);
     ensureLayers(currentMap);
     updateMapRendering();
+    bindMarkerHover(currentMap);
     await refreshFromCurrentViewport();
   });
 
@@ -883,17 +1249,42 @@ watch(
   { deep: true },
 );
 
-watch(requestSignature, async () => {
-  // Filter changes always produce one canonical request payload. Reload from the
-  // current viewport only after that payload is valid.
-  await refreshFromCurrentViewport();
+// Hover is transient interaction state; it re-renders the hover ring only
+// and never touches selection, feed, or filter state.
+watch(hoveredEventId, () => {
+  updateMapRendering();
 });
+
+watch(
+  [
+    requestSignature,
+    () => resolvedActiveFilters.value.district,
+    () => resolvedActiveFilters.value.categories,
+  ],
+  async () => {
+    // Filter changes always produce one canonical request payload. Reload from the
+    // current viewport only after that payload is valid. District/category are
+    // watched here (not in requestSignature) because they arrive via the
+    // discovery filter state, not the temporal filter panel.
+    await refreshFromCurrentViewport();
+  },
+  { deep: true },
+);
 
 onBeforeUnmount(() => {
   const currentMap = map.value;
   if (currentMap) {
+    const canvas = currentMap.getCanvas() as HTMLElement | undefined;
+    if (canvas) {
+      canvas.removeEventListener("pointerdown", onCanvasPointerDown);
+      canvas.removeEventListener("pointermove", onCanvasPointerMove);
+      canvas.removeEventListener("pointerup", onCanvasPointerUp);
+      canvas.removeEventListener("pointerleave", onCanvasPointerLeave);
+    }
     currentMap.remove();
   }
+  clearPressTimer();
+  hideGhost();
   map.value = null;
 });
 </script>
@@ -919,12 +1310,22 @@ onBeforeUnmount(() => {
   flex: 1;
   min-height: 420px;
   padding: 0;
+  /* WEUP-2.5D (D06): controlled perspective on the Z0 container. Mapbox's own
+     rendering is untouched; only token-driven overlays separate in Z. */
+  perspective: var(--weup-perspective-scene);
 }
 
 .map-canvas {
   width: 100%;
   height: 100%;
   min-height: 420px;
+  transform: translateZ(0);
+}
+
+/* WEUP-2.5D (D06): atmosphere sits behind the interactive canvas in Z,
+   giving the substrate parallax depth without intercepting input. */
+.map-body .weup-atmosphere {
+  transform: translateZ(-40px) scale(1.04);
 }
 
 .banner {
@@ -932,7 +1333,46 @@ onBeforeUnmount(() => {
   left: 16px;
   right: 16px;
   bottom: 16px;
-  z-index: 10;
+  z-index: var(--weup-z-1);
+}
+
+/*
+ * WEUP-SYNTH (GeoControls / G4 control grammar): glass treatment for the
+ * native mapbox control stack, matching the dark AI Studio control language.
+ */
+.map-body :deep(.mapboxgl-ctrl-top-right .mapboxgl-ctrl-group) {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(var(--weup-blur-background));
+  -webkit-backdrop-filter: blur(var(--weup-blur-background));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--weup-radius-surface);
+  box-shadow: var(--weup-elevation-3);
+  overflow: hidden;
+}
+
+.map-body :deep(.mapboxgl-ctrl-group button) {
+  width: 40px;
+  height: 40px;
+  background-color: transparent;
+}
+
+.map-body :deep(.mapboxgl-ctrl-group button + button) {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/*
+ * WEUP-SYNTH (InteractionLayer): ghost preview marker. Translucent dashed
+ * projection of a canonical marker shown on press-and-hold; static by
+ * design (motion governance: no decorative loops).
+ */
+.map-body .weup-ghost-marker {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--weup-radius-pill);
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px dashed rgba(255, 255, 255, 0.85);
+  box-shadow: var(--weup-glow-signal);
+  pointer-events: none;
 }
 
 .error {

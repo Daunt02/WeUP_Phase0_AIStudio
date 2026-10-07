@@ -62,6 +62,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Vue app dependencies
+        # Garden G-04: frontend-vue/ is the canonical Vue 3 + Quasar app
+        # (standalone package, own lockfile) with a Vitest suite excluded from CI.
+        run: npm ci --prefix frontend-vue
+
+      - name: Run Vue Vitest suite
+        # Garden G-04: first-class CI stage; fails the job when Vitest fails.
+        run: npm test --prefix frontend-vue
+
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
 

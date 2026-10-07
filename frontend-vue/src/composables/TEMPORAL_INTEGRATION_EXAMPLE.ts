@@ -10,21 +10,22 @@
 // =============================================================================
 
 import { computed, ref, watch } from "vue";
-import TemporalNavigationControls from "./components/TemporalNavigationControls.vue";
-import MapSurface from "./components/MapSurface.vue";
-import CalendarOverlayShell from "./components/CalendarOverlayShell.vue";
-import { useTemporalNavigation } from "./composables/useTemporalNavigation";
-import type { EventMapFeedQueryDto } from "./contracts/map-feed.contracts";
+import TemporalNavigationControls from "../components/TemporalNavigationControls.vue";
+import MapSurface from "../components/MapSurface.vue";
+import CalendarOverlayShell from "../components/CalendarOverlayShell.vue";
+import { useTemporalNavigation } from "./useTemporalNavigation";
+import type { EventMapFeedQueryDto } from "../contracts/map-feed.contracts";
+import { TimeWindowPreset } from "../contracts/time-window.contracts";
 
 /**
  * SETUP: Initialize temporal navigation
  */
 const temporal = useTemporalNavigation({
   // Optional: set initial preset
-  preset: "now",
+  preset: TimeWindowPreset.Now,
   // debounceMs defaults to 300
   debounceMs: 300,
-  onSelectedEventChange: (eventId) => {
+  onSelectedEventChange: (eventId: string | null) => {
     // Optional: callback when selection should change
     if (!eventId) {
       selectedEventId.value = null;
@@ -319,7 +320,7 @@ function restoreTemporalFromUrl(params: URLSearchParams): void {
       .toISOString()
       .slice(0, 16);
     temporal.customEndLocal.value = new Date(endUtc).toISOString().slice(0, 16);
-    temporal.selectPreset("custom");
+    temporal.selectPreset(TimeWindowPreset.Custom);
   }
 }
 
@@ -347,7 +348,7 @@ function setupKeyboardShortcuts(): void {
         // Quick preset: press 'n' for "Now"
         if (e.ctrlKey || e.metaKey) {
           e.preventDefault();
-          temporal.selectPreset("now");
+          temporal.selectPreset(TimeWindowPreset.Now);
         }
         break;
     }
